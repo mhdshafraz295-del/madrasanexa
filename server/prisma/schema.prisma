@@ -1,0 +1,2469 @@
+// MadrasaNexa Multi-Tenant Prisma Schema
+// Provider: MySQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ENUMS (Exactly 9)
+// ==========================================
+
+enum UserRole {
+  SUPER_ADMIN
+  MADRASA_ADMIN
+}
+
+enum MadrasaStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRING_SOON
+  EXPIRED
+  SUSPENDED
+  CANCELLED
+}
+
+enum OnboardingRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum InvoiceStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+  VOID
+}
+
+enum PaymentStatus {
+  COMPLETED
+  VOID
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CARD
+  OTHER
+}
+
+enum WhatsAppStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum FileType {
+  MADRASA_LOGO
+  STUDENT_PHOTO
+  STUDENT_DOCUMENT
+  REPORT
+  RECEIPT
+  OTHER
+  ABOUT_US_HERO
+  ABOUT_US_STORY
+  SUBSCRIPTION_RECEIPT
+  EXAM_PAST_PAPER
+  CURRICULUM_RESOURCE
+  MADRASA_HERO_IMAGE
+}
+
+enum PaymentVerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AboutUsStatus {
+  DRAFT
+  PUBLISHED
+  UNPUBLISHED
+}
+
+enum AboutUsLanguage {
+  AR
+  TA
+}
+
+enum AboutUsTranslationState {
+  DRAFT
+  PUBLISHED
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AnnouncementAudience {
+  ALL_MADRASAS
+  SELECTED_MADRASAS
+}
+
+enum AnnouncementPriority {
+  NORMAL
+  IMPORTANT
+  URGENT
+}
+
+enum AnnouncementCategory {
+  GENERAL
+  SYSTEM
+  MAINTENANCE
+  UPDATE
+  BILLING
+  EVENT
+  OTHER
+}
+
+enum MarkingAssessmentStatus {
+  DRAFT
+  FINALIZED
+}
+
+enum EmailSenderMode {
+  PLATFORM
+  CUSTOM_SMTP
+}
+
+enum SmtpSecurity {
+  SSL_TLS
+  STARTTLS
+}
+
+enum NotificationChannel {
+  SMS
+  EMAIL
+}
+
+enum NotificationStatus {
+  PENDING
+  PROCESSING
+  SENT
+  FAILED
+  CANCELLED
+  DELIVERY_UNKNOWN
+  SKIPPED_NO_RECIPIENT
+}
+
+enum NotificationEventType {
+  FEE_PARTIAL_PAYMENT
+  FEE_FULLY_PAID
+  FEE_MONTH_END_REMINDER
+  SALARY_PAID
+  TIMETABLE_FINALIZED
+  FOLLOW_UP_ASSIGNED
+  FOLLOW_UP_REMINDER
+  INVOICE_DUE_SOON_REMINDER
+  APPLICATION_STATUS_UPDATE
+  EXAM_RESULT_PUBLISHED
+  DAILY_ACTIVITY_LOGGED
+  MADRASA_NOTICE_BROADCAST
+}
+
+enum TimetableRecipientScope {
+  ALL_TEACHING_STAFF
+  USTADH_ONLY
+  SCHOOL_TEACHER_ONLY
+  SELECTED_STAFF
+  AFFECTED_STAFF_ONLY
+}
+
+enum InterviewRound {
+  FIRST
+  SECOND
+}
+
+enum InterviewSchedulingMethod {
+  SAME_TIME
+  INDIVIDUAL_SLOTS
+}
+
+enum InterviewAppointmentStatus {
+  SCHEDULED
+  RESCHEDULED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InterviewAttendance {
+  PRESENT
+  ABSENT
+}
+
+enum InterviewResult {
+  PENDING
+  PASSED
+  NEEDS_SECOND_INTERVIEW
+  REJECTED
+}
+
+enum InterviewEmailStatus {
+  PENDING
+  CLAIMED
+  SENT
+  FAILED
+  UNCERTAIN
+}
+
+// ==========================================
+// MODELS (Exactly 17)
+// ==========================================
+
+/// Platform Users (SUPER_ADMIN or MADRASA_ADMIN)
+model User {
+  reviewedApplications StudentApplication[] @relation("ApplicationReviewedBy")
+  uploadedPastPapers ExamPastPaper[] @relation("PastPaperUploadedBy")
+  uploadedCurriculumResources CurriculumResource[] @relation("CurriculumUploadedBy")
+  recordedDailyActivities StudentDailyActivity[] @relation("ActivityRecordedBy")
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  passwordHash       String
+  role               UserRole
+  madrasaId          String?
+  isActive           Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+  tokenVersion       Int       @default(0)
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  // Relations
+  madrasa              Madrasa?                   @relation(fields: [madrasaId], references: [id], onDelete: SetNull)
+  activityLogs         ActivityLog[]
+  reviewedOnboardings  MadrasaOnboardingRequest[] @relation("ReviewedOnboardings")
+  createdAnnouncements       Announcement[]                  @relation("CreatedAnnouncements")
+  announcementReads          AnnouncementRead[]
+  reviewedPaymentSubmissions SubscriptionPaymentSubmission[] @relation("ReviewedPaymentSubmissions")
+  publishedHomepageContents  HomepageContent[]               @relation("PublishedHomepageContent")
+  createdMarkingAssessments  MarkingAssessment[]             @relation("CreatedAssessments")
+  createdAttendanceSessions  AttendanceSession[]             @relation("CreatedAttendanceSessions")
+  recordedUstadhAttendances  UstadhAttendanceRecord[]        @relation("RecordedUstadhAttendance")
+  paidUstadhSalaries         UstadhSalary[]                  @relation("PaidUstadhSalaries")
+  createdExpenses            Expense[]                       @relation("ExpenseCreatedBy")
+  updatedExpenses            Expense[]                       @relation("ExpenseUpdatedBy")
+  publishedTimetables        TimetablePublication[]          @relation("PublishedTimetables")
+  createdStudentQualifications  StudentQualification[]       @relation("QualificationCreatedBy")
+  reviewedStudentQualifications StudentQualification[]       @relation("QualificationReviewedBy")
+  reportedStudentIncidents      StudentIncident[]            @relation("IncidentReportedByUser")
+  reviewedStudentIncidents      StudentIncident[]            @relation("IncidentReviewedByUser")
+  createdStudentMeetings        StudentMeeting[]             @relation("MeetingCreatedByUser")
+  createdStudentFollowUps       StudentFollowUp[]            @relation("FollowUpCreatedByUser")
+  assignedStudentFollowUps      StudentFollowUp[]            @relation("FollowUpAssignedToUser")
+  completedStudentFollowUps     StudentFollowUp[]            @relation("FollowUpCompletedByUser")
+  publishedAlumniProfiles       AlumniProfile[]              @relation("AlumniPublishedBy")
+  recordedAlumniConsents        AlumniConsentRecord[]        @relation("ConsentRecordRecordedBy")
+  requestedAlumniVerifications  AlumniVerificationRequest[]  @relation("AlumniRequestedByUser")
+  respondedAlumniVerifications  AlumniVerificationRequest[]  @relation("AlumniRespondedByUser")
+  createdInterviewSchedules     InterviewSchedule[]          @relation("ScheduleCreatedBy")
+  createdInterviewAppointments  InterviewAppointment[]       @relation("AppointmentCreatedBy")
+  recordedInterviewEvaluations  InterviewEvaluation[]        @relation("EvaluationEvaluatedBy")
+  createdFeatureOverrides       MadrasaFeatureOverride[]     @relation("OverrideCreatedBy")
+  updatedFeatureOverrides       MadrasaFeatureOverride[]     @relation("OverrideUpdatedBy")
+
+  @@index([madrasaId])
+  @@index([role])
+  @@map("users")
+}
+
+/// Tenant Institution
+model Madrasa {
+  profile MadrasaProfile?
+  admissionPeriods AdmissionPeriod[]
+  studentApplications StudentApplication[]
+  examPastPapers ExamPastPaper[]
+  curriculumResources CurriculumResource[]
+  studentDailyActivities StudentDailyActivity[]
+  customFieldDefinitions CustomFieldDefinition[]
+  customFieldValues CustomFieldValue[]
+  id         String        @id @default(cuid())
+  code       String        @unique
+  name       String
+  slug       String        @unique
+  email      String?
+  phone      String?
+  address    String?       @db.Text
+  status     MadrasaStatus @default(ACTIVE)
+  logoFileId String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  archivedAt DateTime?
+
+  // Relations
+  users                 User[]
+  settings              MadrasaSetting?
+  subscriptions         Subscription[]
+  subscriptionPayments  SubscriptionPayment[]
+  academicSections      AcademicSection[]
+  classes               Class[]
+  students              Student[]
+  studentFeeSettings    StudentFeeSetting[]
+  invoices              Invoice[]
+  invoiceItems          InvoiceItem[]
+  payments              Payment[]
+  paymentAllocations    PaymentAllocation[]
+  receipts              Receipt[]
+  whatsAppLogs          WhatsAppLog[]
+  fileObjects           FileObject[]
+  activityLogs                  ActivityLog[]
+  onboardingRequests            MadrasaOnboardingRequest[]
+  targetedAnnouncements         AnnouncementMadrasa[]
+  subscriptionPaymentSubmissions SubscriptionPaymentSubmission[]
+  subjects                      Subject[]
+  markingAssessments            MarkingAssessment[]
+  markingAssessmentSubjects     MarkingAssessmentSubject[]
+  studentMarks                  StudentMark[]
+  attendanceSessions            AttendanceSession[]
+  attendanceRecords             AttendanceRecord[]
+  ustadhs                       Ustadh[]
+  ustadhSchedules               UstadhSchedule[]
+  ustadhAttendanceRecords       UstadhAttendanceRecord[]
+  ustadhSalaries                UstadhSalary[]
+  timetableBreaks               TimetableBreak[]
+  expenseCategories             ExpenseCategory[]
+  expenses                      Expense[]
+  expenseBudgets                ExpenseBudget[]
+  expenseMonthlyInsights        ExpenseMonthlyInsight[]
+  notificationJobs              NotificationJob[]
+  timetablePublications         TimetablePublication[]
+  emailSettings                 MadrasaEmailSetting?
+  studentQualifications         StudentQualification[]
+  studentIncidents              StudentIncident[]
+  studentMeetings               StudentMeeting[]
+  studentFollowUps              StudentFollowUp[]
+  alumniProfiles                AlumniProfile[]
+  alumniIndexSequences          AlumniIndexSequence[]
+  alumniConsentRecords          AlumniConsentRecord[]
+  targetAlumniVerifications     AlumniVerificationRequest[] @relation("AlumniTargetMadrasa")
+  requestedAlumniVerifications  AlumniVerificationRequest[] @relation("AlumniRequestingMadrasa")
+  interviewSchedules            InterviewSchedule[]
+  interviewAppointments         InterviewAppointment[]
+  interviewEvaluations          InterviewEvaluation[]
+  interviewNotifications        InterviewNotification[]
+  featureOverrides              MadrasaFeatureOverride[]
+
+  @@index([status])
+  @@map("madrasas")
+}
+
+/// Dynamic Subscription Plans
+model Plan {
+  id             String   @id @default(cuid())
+  name           String
+  code           String   @unique
+  description    String?  @db.Text
+  durationMonths Int
+  price          Decimal  @db.Decimal(12, 2)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  subscriptions      Subscription[]
+  paymentSubmissions SubscriptionPaymentSubmission[]
+  planFeatures       PlanFeature[]
+
+  @@map("plans")
+}
+
+/// Historical Madrasa Subscriptions
+model Subscription {
+  id                       String             @id @default(cuid())
+  madrasaId                String
+  planId                   String
+  status                   SubscriptionStatus @default(ACTIVE)
+  startsAt                 DateTime
+  endsAt                   DateTime
+  priceAtPurchase          Decimal            @db.Decimal(12, 2)
+  durationMonthsAtPurchase Int
+  renewedAt                DateTime?
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  // Relations
+  madrasa              Madrasa                         @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  plan                 Plan                            @relation(fields: [planId], references: [id], onDelete: Restrict)
+  subscriptionPayments SubscriptionPayment[]
+  paymentSubmissions   SubscriptionPaymentSubmission[]
+
+  @@index([madrasaId])
+  @@index([status])
+  @@index([endsAt])
+  @@map("subscriptions")
+}
+
+/// Platform Subscription Payments
+model SubscriptionPayment {
+  id             String        @id @default(cuid())
+  madrasaId      String
+  subscriptionId String
+  amount         Decimal       @db.Decimal(12, 2)
+  paymentMethod  PaymentMethod
+  reference      String?
+  paidAt         DateTime      @default(now())
+  notes          String?       @db.Text
+  createdAt      DateTime      @default(now())
+
+  // Relations
+  madrasa            Madrasa                         @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  subscription       Subscription                    @relation(fields: [subscriptionId], references: [id], onDelete: Restrict)
+  paymentSubmissions SubscriptionPaymentSubmission[]
+
+  @@index([madrasaId])
+  @@index([subscriptionId])
+  @@index([paidAt])
+  @@map("subscription_payments")
+}
+
+/// Tenant Academic Sections (e.g. Hifz, Kitab, Primary, Arabic, etc. - dynamic)
+model AcademicSection {
+  id          String   @id @default(cuid())
+  madrasaId   String
+  name        String
+  code        String?
+  description String?  @db.Text
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  classes Class[]
+
+  @@unique([id, madrasaId])
+  @@unique([madrasaId, name])
+  @@unique([madrasaId, code])
+  @@index([madrasaId, isActive, sortOrder])
+  @@map("academic_sections")
+}
+
+/// Tenant Classes
+model Class {
+  id                String   @id @default(cuid())
+  madrasaId         String
+  academicSectionId String?
+  name              String
+  code              String?
+  description       String?  @db.Text
+  defaultMonthlyFee Decimal  @db.Decimal(12, 2)
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  madrasa         Madrasa          @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  academicSection AcademicSection? @relation(fields: [academicSectionId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  students        Student[]
+  markingAssessments MarkingAssessment[]
+  attendanceSessions AttendanceSession[]
+  ustadhSchedules    UstadhSchedule[]
+  timetableBreaks    TimetableBreak[]
+  examPastPapers ExamPastPaper[]
+  curriculumResources CurriculumResource[]
+  studentApplications StudentApplication[]
+
+  // Tenant-scoped uniqueness
+  @@unique([id, madrasaId])
+  @@unique([madrasaId, academicSectionId, name])
+  @@unique([madrasaId, code])
+  @@index([madrasaId])
+  @@index([madrasaId, academicSectionId, isActive])
+  @@map("classes")
+}
+
+/// Tenant Students
+model Student {
+  convertedApplications StudentApplication[]
+  dailyActivities StudentDailyActivity[]
+  id              String        @id @default(cuid())
+  madrasaId       String
+  classId         String?
+  admissionNo     String
+  fullName        String
+  guardianName    String
+  guardianPhone   String?
+  guardianEmail   String?       @db.VarChar(255)
+  whatsappNumber  String?
+  whatsappOptIn   Boolean       @default(false)
+  whatsappOptInAt DateTime?
+  address         String?       @db.Text
+  admissionDate   DateTime
+  monthlyFee      Decimal?      @db.Decimal(12, 2)
+  status          StudentStatus @default(ACTIVE)
+  photoFileId     String?
+  notes           String?       @db.Text
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  madrasa      Madrasa             @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  class        Class?              @relation(fields: [classId], references: [id], onDelete: SetNull)
+  feeSettings  StudentFeeSetting[]
+  invoices     Invoice[]
+  payments     Payment[]
+  whatsAppLogs WhatsAppLog[]
+  studentMarks StudentMark[]
+  attendanceRecords AttendanceRecord[]
+  qualifications    StudentQualification[]
+  incidents         StudentIncident[]
+  meetings          StudentMeeting[]
+  followUps         StudentFollowUp[]
+  alumniProfile     AlumniProfile?
+
+  // Critical: Admission number unique per Madrasa
+  @@unique([madrasaId, admissionNo])
+  // Compound unique key for tenant-aware relation from Invoice & Payment
+  @@unique([id, madrasaId])
+  @@index([madrasaId, classId])
+  @@index([madrasaId, status])
+  @@map("students")
+}
+
+/// Student Fee History
+model StudentFeeSetting {
+  id            String    @id @default(cuid())
+  madrasaId     String
+  studentId     String
+  amount        Decimal   @db.Decimal(12, 2)
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  reason        String?
+  createdAt     DateTime  @default(now())
+
+  // Relations (Enforcing same-tenant relation to student)
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student Student @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+
+  @@unique([madrasaId, studentId, effectiveFrom])
+  @@index([madrasaId, studentId])
+  @@index([effectiveFrom])
+  @@map("student_fee_settings")
+}
+
+/// Tenant Invoices
+model Invoice {
+  id             String        @id @default(cuid())
+  madrasaId      String
+  studentId      String
+  invoiceNo      String
+  billingYear    Int
+  billingMonth   Int
+  issueDate      DateTime
+  dueDate        DateTime?
+  subtotal       Decimal       @db.Decimal(12, 2)
+  discountAmount Decimal       @default(0.00) @db.Decimal(12, 2)
+  totalAmount    Decimal       @db.Decimal(12, 2)
+  paidAmount     Decimal       @default(0.00) @db.Decimal(12, 2)
+  balanceAmount  Decimal       @db.Decimal(12, 2)
+  status         InvoiceStatus @default(PENDING)
+  notes          String?       @db.Text
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  madrasa      Madrasa             @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student      Student             @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  items        InvoiceItem[]
+  allocations  PaymentAllocation[]
+  whatsAppLogs WhatsAppLog[]
+
+  // Compound key for tenant-aware foreign keys from items & allocations
+  @@unique([id, madrasaId])
+  // Tenant-scoped invoice number
+  @@unique([madrasaId, invoiceNo])
+  // Prevent duplicate invoice for student in same month
+  @@unique([madrasaId, studentId, billingYear, billingMonth])
+  @@index([madrasaId, status])
+  @@index([madrasaId, billingYear, billingMonth])
+  @@index([madrasaId, studentId])
+  @@map("invoices")
+}
+
+/// Invoice Line Items
+model InvoiceItem {
+  id          String   @id @default(cuid())
+  madrasaId   String
+  invoiceId   String
+  description String
+  quantity    Int      @default(1)
+  unitAmount  Decimal  @db.Decimal(12, 2)
+  totalAmount Decimal  @db.Decimal(12, 2)
+  createdAt   DateTime @default(now())
+
+  // Relations (Enforcing same-tenant relation to invoice)
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  invoice Invoice @relation(fields: [invoiceId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+
+  @@index([madrasaId, invoiceId])
+  @@map("invoice_items")
+}
+
+/// Financial Payments
+model Payment {
+  id             String        @id @default(cuid())
+  madrasaId      String
+  studentId      String
+  paymentNo      String
+  amount         Decimal       @db.Decimal(12, 2)
+  paymentMethod  PaymentMethod
+  reference      String?
+  idempotencyKey String?
+  notes          String?       @db.Text
+  status         PaymentStatus @default(COMPLETED)
+  paidAt         DateTime      @default(now())
+  voidedAt       DateTime?
+  voidReason     String?       @db.Text
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  madrasa      Madrasa             @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student      Student             @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  allocations  PaymentAllocation[]
+  receipt      Receipt?
+  whatsAppLogs WhatsAppLog[]
+
+  // Compound key for tenant-aware foreign keys from receipt & allocations
+  @@unique([id, madrasaId])
+  // Tenant-scoped uniqueness
+  @@unique([madrasaId, paymentNo])
+  @@unique([madrasaId, idempotencyKey])
+  @@index([madrasaId, studentId])
+  @@index([madrasaId, paidAt])
+  @@index([madrasaId, status])
+  @@map("payments")
+}
+
+/// Payment Allocation for Partial and Multi-Invoice Payments
+model PaymentAllocation {
+  id        String   @id @default(cuid())
+  madrasaId String
+  paymentId String
+  invoiceId String
+  amount    Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+
+  // Relations (Enforcing same-tenant relation for payment & invoice)
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  payment Payment @relation(fields: [paymentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  invoice Invoice @relation(fields: [invoiceId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+
+  // Prevent duplicate allocation row for same payment and invoice
+  @@unique([paymentId, invoiceId])
+  @@index([madrasaId, paymentId])
+  @@index([madrasaId, invoiceId])
+  @@map("payment_allocations")
+}
+
+/// Official Payment Receipts
+model Receipt {
+  id        String   @id @default(cuid())
+  madrasaId String
+  paymentId String   @unique
+  receiptNo String
+  issuedAt  DateTime @default(now())
+  createdAt DateTime @default(now())
+
+  // Relations (Enforcing same-tenant relation for payment)
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  payment Payment @relation(fields: [paymentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+
+  @@unique([id, madrasaId])
+  @@unique([paymentId, madrasaId])
+  @@unique([madrasaId, receiptNo])
+  @@index([madrasaId, issuedAt])
+  @@map("receipts")
+}
+
+/// WhatsApp Notification and Message Logs
+model WhatsAppLog {
+  id                String         @id @default(cuid())
+  madrasaId         String
+  studentId         String?
+  invoiceId         String?
+  paymentId         String?
+  batchId           String?
+  phoneNumber       String
+  messageType       String
+  status            WhatsAppStatus @default(PENDING)
+  providerMessageId String?
+  errorMessage      String?        @db.Text
+  retryCount        Int            @default(0)
+  sentAt            DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  // Relations
+  madrasa Madrasa  @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([madrasaId, status])
+  @@index([batchId])
+  @@index([madrasaId, createdAt])
+  @@map("whatsapp_logs")
+}
+
+/// Cloudflare R2 File Metadata
+model FileObject {
+  examPastPapers ExamPastPaper[]
+  curriculumResources CurriculumResource[]
+  id           String   @id @default(cuid())
+  madrasaId    String?
+  type         FileType
+  objectKey    String   @unique
+  originalName String
+  mimeType     String
+  size         Int
+  publicUrl    String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  madrasa Madrasa? @relation(fields: [madrasaId], references: [id], onDelete: SetNull)
+
+  // About Us Relations
+  aboutUsDraftHeroFiles      AboutUs[] @relation("AboutUsDraftHeroFile")
+  aboutUsDraftStoryFiles     AboutUs[] @relation("AboutUsDraftStoryFile")
+  aboutUsPublishedHeroFiles  AboutUs[] @relation("AboutUsPublishedHeroFile")
+  aboutUsPublishedStoryFiles AboutUs[] @relation("AboutUsPublishedStoryFile")
+
+  // Subscription Payment Receipts
+  subscriptionPaymentReceipts SubscriptionPaymentSubmission[] @relation("SubscriptionPaymentReceipt")
+
+  // Student Private Documents (Certificates & Incident Evidence)
+  studentQualificationCertificates StudentQualification[] @relation("QualificationCertificateFile")
+  studentIncidentEvidences         StudentIncident[]      @relation("IncidentEvidenceFile")
+  alumniConsentFiles               AlumniProfile[]        @relation("AlumniConsentFile")
+  alumniConsentRecordFiles         AlumniConsentRecord[]  @relation("ConsentRecordEvidenceFile")
+  appointmentInvitationFiles       InterviewAppointment[] @relation("AppointmentInvitationFile")
+  notificationAttachmentFiles      InterviewNotification[] @relation("NotificationAttachmentFile")
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, type])
+  @@map("file_objects")
+}
+
+/// Madrasa-specific Settings
+model MadrasaSetting {
+  id            String   @id @default(cuid())
+  madrasaId     String   @unique
+  invoicePrefix String   @default("INV-")
+  receiptPrefix String   @default("REC-")
+  currency      String   @default("LKR")
+  timezone      String   @default("Asia/Colombo")
+  academicYear  String?
+  receiptHeader String?  @db.Text
+  receiptFooter String?  @db.Text
+  gpaScale      Json?
+
+  // Symmetrical Notification Settings
+  autoFeePaymentSmsEnabled    Boolean  @default(false)
+  autoPartialFeeSmsEnabled    Boolean  @default(false)
+  autoFeeReminderSmsEnabled   Boolean  @default(false)
+
+  autoFeePaymentEmailEnabled  Boolean  @default(false)
+  autoPartialFeeEmailEnabled  Boolean  @default(false)
+  autoFeeReminderEmailEnabled Boolean  @default(false)
+
+  autoSalaryPaidEmailEnabled  Boolean  @default(true)
+  feeReminderSendTime         String   @default("09:00") @db.VarChar(5)
+
+  // Centralized Date & Time Settings
+  dateFormat                  String   @default("DD/MM/YYYY") @db.VarChar(20)
+  timeFormat                  String   @default("12_HOUR") @db.VarChar(10)
+  workingHoursStart           String   @default("07:30") @db.VarChar(5)
+  workingHoursEnd             String   @default("16:30") @db.VarChar(5)
+  workingDays                 Json?
+  weeklyHolidays              Json?
+  attendanceStartTime         String   @default("07:30") @db.VarChar(5)
+  attendanceClosingTime       String   @default("08:30") @db.VarChar(5)
+  lateMarkingTime             String   @default("08:00") @db.VarChar(5)
+  attendanceGracePeriodMinutes Int     @default(15)
+  autoAttendanceClosing       Boolean  @default(false)
+  timetableSlotDurationMinutes Int     @default(45)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+
+  @@map("madrasa_settings")
+}
+
+/// Tenant Custom Email Sender Settings
+model MadrasaEmailSetting {
+  id                         String          @id @default(cuid())
+  madrasaId                  String          @unique
+  mode                       EmailSenderMode @default(PLATFORM)
+
+  // Custom Identity
+  fromName                   String?         @db.VarChar(150)
+  fromEmail                  String?         @db.VarChar(255)
+  replyToEmail               String?         @db.VarChar(255)
+
+  // Custom SMTP Configuration
+  smtpHost                   String?         @db.VarChar(255)
+  smtpPort                   Int?            @default(587)
+  smtpSecurity               SmtpSecurity    @default(STARTTLS)
+  smtpUsername               String?         @db.VarChar(255)
+  smtpPasswordEncrypted      String?         @db.Text
+
+  // Verification State & Concurrency Protection
+  isVerified                 Boolean         @default(false)
+  lastTestedAt               DateTime?
+  lastVerificationErrorCode  String?         @db.VarChar(100)
+  configVersion              Int             @default(1)
+
+  createdAt                  DateTime        @default(now())
+  updatedAt                  DateTime        @updatedAt
+
+  // Relations
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+
+  @@map("madrasa_email_settings")
+}
+
+/// Platform and Tenant Audit Trail
+model ActivityLog {
+  id         String   @id @default(cuid())
+  madrasaId  String?
+  userId     String?
+  action     String
+  entityType String?
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  userAgent  String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  // Relations
+  madrasa Madrasa? @relation(fields: [madrasaId], references: [id], onDelete: SetNull)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([madrasaId, createdAt])
+  @@index([userId, createdAt])
+  @@index([action])
+  @@map("activity_logs")
+}
+
+/// Madrasa Onboarding Application Requests
+model MadrasaOnboardingRequest {
+  id                   String                  @id @default(cuid())
+  madrasaName          String
+  contactName          String
+  email                String
+  phone                String
+  whatsappNumber       String?
+  district             String?
+  address              String?                 @db.Text
+  expectedStudentCount Int?
+  message              String?                 @db.Text
+  status               OnboardingRequestStatus @default(PENDING)
+  reviewedAt           DateTime?
+  reviewedByUserId     String?
+  rejectionReason      String?                 @db.Text
+  approvedMadrasaId    String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  // Relations
+  reviewedByUser  User?    @relation("ReviewedOnboardings", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  approvedMadrasa Madrasa? @relation(fields: [approvedMadrasaId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([email])
+  @@index([phone])
+  @@index([createdAt])
+  @@map("madrasa_onboarding_requests")
+}
+
+/// Global Platform About Us CMS Singleton
+model AboutUs {
+  id     String        @id @default("global")
+  status AboutUsStatus @default(DRAFT)
+
+  // Draft Content Snapshot
+  draftTitle        String? @db.VarChar(255)
+  draftSubtitle     String? @db.Text
+  draftIntroduction String? @db.Text
+  draftStory        String? @db.Text
+  draftMission      String? @db.Text
+  draftVision       String? @db.Text
+  draftCoreValues   Json?
+  draftHighlights   Json?
+  draftCtaLabel     String? @db.VarChar(100)
+  draftCtaUrl       String? @db.VarChar(500)
+  draftHeroFileId   String?
+  draftHeroAlt      String? @db.VarChar(255)
+  draftStoryFileId  String?
+  draftStoryAlt     String? @db.VarChar(255)
+
+  // Published Content Snapshot
+  publishedTitle        String?   @db.VarChar(255)
+  publishedSubtitle     String?   @db.Text
+  publishedIntroduction String?   @db.Text
+  publishedStory        String?   @db.Text
+  publishedMission      String?   @db.Text
+  publishedVision       String?   @db.Text
+  publishedCoreValues   Json?
+  publishedHighlights   Json?
+  publishedCtaLabel     String?   @db.VarChar(100)
+  publishedCtaUrl       String?   @db.VarChar(500)
+  publishedHeroFileId   String?
+  publishedHeroAlt      String?   @db.VarChar(255)
+  publishedStoryFileId  String?
+  publishedStoryAlt     String?   @db.VarChar(255)
+  publishedAt           DateTime?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  draftHeroFile      FileObject? @relation("AboutUsDraftHeroFile", fields: [draftHeroFileId], references: [id], onDelete: SetNull)
+  draftStoryFile     FileObject? @relation("AboutUsDraftStoryFile", fields: [draftStoryFileId], references: [id], onDelete: SetNull)
+  publishedHeroFile  FileObject? @relation("AboutUsPublishedHeroFile", fields: [publishedHeroFileId], references: [id], onDelete: SetNull)
+  publishedStoryFile FileObject? @relation("AboutUsPublishedStoryFile", fields: [publishedStoryFileId], references: [id], onDelete: SetNull)
+
+  translations AboutUsTranslation[]
+
+  @@map("about_us")
+}
+
+/// Multilingual About Us Translations (AR, TA)
+model AboutUsTranslation {
+  id            String                  @id @default(cuid())
+  aboutUsId     String                  @default("global")
+  language      AboutUsLanguage
+  targetState   AboutUsTranslationState
+
+  title         String?                 @db.VarChar(255)
+  subtitle      String?                 @db.Text
+  introduction  String?                 @db.Text
+  story         String?                 @db.Text
+  mission       String?                 @db.Text
+  vision        String?                 @db.Text
+
+  coreValues    Json?
+  highlights    Json?
+
+  ctaLabel      String?                 @db.VarChar(100)
+  heroAlt       String?                 @db.VarChar(255)
+  storyAlt      String?                 @db.VarChar(255)
+
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+
+  aboutUs       AboutUs                 @relation(fields: [aboutUsId], references: [id], onDelete: Cascade)
+
+  @@unique([aboutUsId, language, targetState])
+  @@map("about_us_translations")
+}
+
+/// In-App Platform Announcements
+model Announcement {
+  id       String               @id @default(cuid())
+  title    String               @db.VarChar(255)
+  message  String               @db.Text
+  category AnnouncementCategory @default(GENERAL)
+  priority AnnouncementPriority @default(NORMAL)
+  audience AnnouncementAudience @default(ALL_MADRASAS)
+  status   AnnouncementStatus   @default(DRAFT)
+
+  publishAt   DateTime?
+  expiresAt   DateTime?
+  publishedAt DateTime?
+
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  createdBy User?                 @relation("CreatedAnnouncements", fields: [createdById], references: [id], onDelete: SetNull)
+  targets   AnnouncementMadrasa[]
+  reads     AnnouncementRead[]
+
+  @@index([status, publishAt, expiresAt])
+  @@index([audience])
+  @@index([createdAt])
+  @@map("announcements")
+}
+
+/// Target Madrasas for Selected-Audience Announcements
+model AnnouncementMadrasa {
+  id             String   @id @default(cuid())
+  announcementId String
+  madrasaId      String
+  createdAt      DateTime @default(now())
+
+  // Relations
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  madrasa      Madrasa      @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, madrasaId])
+  @@index([madrasaId])
+  @@index([announcementId])
+  @@map("announcement_madrasas")
+}
+
+/// Read Tracking for Announcements per User
+model AnnouncementRead {
+  id             String   @id @default(cuid())
+  announcementId String
+  userId         String
+  readAt         DateTime @default(now())
+
+  // Relations
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+  @@index([userId])
+  @@index([announcementId])
+  @@map("announcement_reads")
+}
+
+/// Tenant Subscription Bank Transfer Payment Submissions
+model SubscriptionPaymentSubmission {
+  id                    String                    @id @default(cuid())
+  madrasaId             String
+  planId                String
+  subscriptionId        String?
+  subscriptionPaymentId String?
+  submittedAmount       Decimal                   @db.Decimal(12, 2)
+  paymentDate           DateTime
+  reference             String?
+  notes                 String?                   @db.Text
+  receiptFileId         String
+  status                PaymentVerificationStatus @default(PENDING)
+  reviewedByUserId      String?
+  reviewedAt            DateTime?
+  rejectionReason       String?                   @db.Text
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+
+  // Relations
+  madrasa             Madrasa              @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  plan                Plan                 @relation(fields: [planId], references: [id], onDelete: Restrict)
+  subscription        Subscription?        @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  subscriptionPayment SubscriptionPayment? @relation(fields: [subscriptionPaymentId], references: [id], onDelete: SetNull)
+  receiptFile         FileObject           @relation("SubscriptionPaymentReceipt", fields: [receiptFileId], references: [id], onDelete: Restrict)
+  reviewedByUser      User?                @relation("ReviewedPaymentSubmissions", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([madrasaId, status])
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@map("subscription_payment_submissions")
+}
+
+/// Platform Official Bank Transfer Details (Configured exclusively by Super Admin)
+model PlatformBankSetting {
+  id            String   @id @default("global")
+  bankName      String?
+  accountName   String?
+  accountNumber String?
+  branch        String?
+  instructions  String?  @db.Text
+  isConfigured  Boolean  @default(false)
+  updatedAt     DateTime @updatedAt
+
+  @@map("platform_bank_settings")
+}
+
+/// Global Platform Public Homepage CMS Singleton
+model HomepageContent {
+  id               String        @id @default("global")
+  status           AboutUsStatus @default(DRAFT)
+  draftContent     Json?
+  publishedContent Json?
+  publishedAt      DateTime?
+  publishedById    String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Relations
+  publishedByUser User? @relation("PublishedHomepageContent", fields: [publishedById], references: [id], onDelete: SetNull)
+
+  @@map("homepage_contents")
+}
+
+/// Tenant Academic Subjects (Canonical Source of Truth)
+model Subject {
+  examPastPapers ExamPastPaper[]
+  curriculumResources CurriculumResource[]
+  id          String   @id @default(cuid())
+  madrasaId   String
+  name        String
+  code        String?
+  description String?  @db.Text
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  madrasa            Madrasa                    @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  assessmentSubjects MarkingAssessmentSubject[]
+  ustadhSchedules    UstadhSchedule[]
+
+  @@unique([id, madrasaId])
+  @@unique([madrasaId, name])
+  @@unique([madrasaId, code])
+  @@index([madrasaId, isActive])
+  @@map("subjects")
+}
+
+/// Class-based Marking Assessments / Examination Sessions
+model MarkingAssessment {
+  id               String                  @id @default(cuid())
+  madrasaId        String
+  classId          String
+  academicYear     String
+  term             String
+  name             String
+  status           MarkingAssessmentStatus @default(DRAFT)
+  gpaScaleSnapshot Json?
+  createdById      String?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  // Relations
+  madrasa            Madrasa                    @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  class              Class                      @relation(fields: [classId], references: [id], onDelete: Restrict)
+  createdBy          User?                      @relation("CreatedAssessments", fields: [createdById], references: [id], onDelete: SetNull)
+  assessmentSubjects MarkingAssessmentSubject[]
+
+  @@unique([madrasaId, classId, academicYear, term, name])
+  @@index([madrasaId, classId])
+  @@index([madrasaId, academicYear, term])
+  @@map("marking_assessments")
+}
+
+/// Subjects configured for a specific Marking Assessment
+model MarkingAssessmentSubject {
+  id           String   @id @default(cuid())
+  madrasaId    String
+  assessmentId String
+  subjectId    String
+  maxMark      Decimal  @db.Decimal(6, 2)
+  passMark     Decimal  @db.Decimal(6, 2)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  madrasa      Madrasa           @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  assessment   MarkingAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  subject      Subject           @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  studentMarks StudentMark[]
+
+  @@unique([assessmentId, subjectId])
+  @@index([madrasaId, assessmentId])
+  @@index([assessmentId, sortOrder])
+  @@map("marking_assessment_subjects")
+}
+
+/// Numeric Student Marks for Assessment Subjects
+model StudentMark {
+  id                  String   @id @default(cuid())
+  madrasaId           String
+  assessmentSubjectId String
+  studentId           String
+  mark                Decimal? @db.Decimal(6, 2)
+  createdById         String?
+  updatedById         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  // Relations
+  madrasa           Madrasa                  @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  assessmentSubject MarkingAssessmentSubject @relation(fields: [assessmentSubjectId], references: [id], onDelete: Cascade)
+  student           Student                  @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([assessmentSubjectId, studentId])
+  @@index([madrasaId, studentId])
+  @@index([assessmentSubjectId])
+  @@map("student_marks")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+/// Daily Attendance Session for a Class on a specific Date
+model AttendanceSession {
+  id             String             @id @default(cuid())
+  madrasaId      String
+  classId        String
+  academicYear   String
+  attendanceDate DateTime           @db.Date
+  createdById    String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  // Relations
+  madrasa   Madrasa            @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  class     Class              @relation(fields: [classId], references: [id], onDelete: Restrict)
+  createdBy User?              @relation("CreatedAttendanceSessions", fields: [createdById], references: [id], onDelete: SetNull)
+  records   AttendanceRecord[]
+
+  @@unique([madrasaId, classId, attendanceDate])
+  @@index([madrasaId, classId])
+  @@index([madrasaId, academicYear])
+  @@index([madrasaId, attendanceDate])
+  @@map("attendance_sessions")
+}
+
+/// Student Daily Attendance Record
+model AttendanceRecord {
+  id        String           @id @default(cuid())
+  madrasaId String
+  sessionId String
+  studentId String
+  status    AttendanceStatus
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  // Relations
+  madrasa Madrasa           @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  session AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student Student           @relation(fields: [studentId], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, studentId])
+  @@index([madrasaId, studentId])
+  @@index([madrasaId, status])
+  @@map("attendance_records")
+}
+
+enum Weekday {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum TeachingStaffType {
+  USTADH
+  SCHOOL_TEACHER
+}
+
+enum UstadhSalaryStatus {
+  PENDING
+  PAID
+}
+
+/// Ustadh Staff Profile
+model Ustadh {
+  id                String            @id @default(cuid())
+  madrasaId         String
+  ustadhCode        String
+  staffType         TeachingStaffType @default(USTADH)
+  fullName          String
+  phoneNumber       String?
+  whatsappNumber    String?
+  email             String?
+  address           String?           @db.Text
+  joinDate          DateTime          @db.Date
+  leaveDate         DateTime?         @db.Date
+  baseMonthlySalary Decimal           @db.Decimal(12, 2)
+  isActive          Boolean           @default(true)
+  notes             String?           @db.Text
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  // Relations
+  madrasa           Madrasa                  @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  schedules         UstadhSchedule[]
+  attendanceRecords UstadhAttendanceRecord[]
+  salaries          UstadhSalary[]
+  examinedQualifications StudentQualification[] @relation("QualificationExaminerUstadh")
+  reportedIncidents      StudentIncident[]      @relation("IncidentReportedByUstadh")
+  studentMeetings        StudentMeeting[]       @relation("MeetingUstadh")
+  assignedFollowUps      StudentFollowUp[]      @relation("FollowUpAssignedToUstadh")
+
+  @@unique([id, madrasaId])
+  @@unique([madrasaId, ustadhCode])
+  @@index([madrasaId, isActive])
+  @@index([madrasaId, staffType])
+  @@map("ustadhs")
+}
+
+/// Weekly Teaching Schedule Session
+model UstadhSchedule {
+  id            String    @id @default(cuid())
+  madrasaId     String
+  ustadhId      String
+  classId       String
+  subjectId     String
+  dayOfWeek     Weekday
+  startMinutes  Int
+  endMinutes    Int
+  effectiveFrom DateTime  @db.Date
+  effectiveTo   DateTime? @db.Date
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  madrasa           Madrasa                  @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  ustadh            Ustadh                   @relation(fields: [ustadhId], references: [id], onDelete: Restrict)
+  class             Class                    @relation(fields: [classId], references: [id], onDelete: Restrict)
+  subject           Subject                  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  attendanceRecords UstadhAttendanceRecord[]
+
+  @@index([madrasaId, ustadhId])
+  @@index([madrasaId, dayOfWeek])
+  @@index([madrasaId, classId])
+  @@index([madrasaId, subjectId])
+  @@map("ustadh_schedules")
+}
+
+/// Staff Session-based Attendance Record
+model UstadhAttendanceRecord {
+  id             String           @id @default(cuid())
+  madrasaId      String
+  ustadhId       String
+  scheduleId     String
+  attendanceDate DateTime         @db.Date
+  status         AttendanceStatus
+  recordedById   String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  // Relations
+  madrasa    Madrasa        @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  ustadh     Ustadh         @relation(fields: [ustadhId], references: [id], onDelete: Restrict)
+  schedule   UstadhSchedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+  recordedBy User?          @relation("RecordedUstadhAttendance", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  @@unique([scheduleId, attendanceDate])
+  @@index([madrasaId, ustadhId, attendanceDate])
+  @@index([madrasaId, attendanceDate])
+  @@map("ustadh_attendance_records")
+}
+
+/// Monthly Ustadh Salary Record
+model UstadhSalary {
+  id                 String             @id @default(cuid())
+  madrasaId          String
+  ustadhId           String
+  salaryMonth        DateTime           @db.Date
+  baseSalarySnapshot Decimal            @db.Decimal(12, 2)
+  payableAmount      Decimal            @db.Decimal(12, 2)
+  adjustmentReason   String?            @db.Text
+  status             UstadhSalaryStatus @default(PENDING)
+  paymentMethod      PaymentMethod?
+  paymentDate        DateTime?          @db.Date
+  paymentReference   String?
+  paymentNote        String?            @db.Text
+  paidById           String?
+  paidAt             DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  // Relations
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  ustadh  Ustadh  @relation(fields: [ustadhId], references: [id], onDelete: Restrict)
+  paidBy  User?   @relation("PaidUstadhSalaries", fields: [paidById], references: [id], onDelete: SetNull)
+
+  @@unique([madrasaId, ustadhId, salaryMonth])
+  @@index([madrasaId, salaryMonth])
+  @@index([madrasaId, status])
+  @@map("ustadh_salaries")
+}
+
+/// Timetable Break / Interval / Prayer Break
+model TimetableBreak {
+  id            String    @id @default(cuid())
+  madrasaId     String
+  classId       String
+  name          String    @db.VarChar(100)
+  dayOfWeek     Weekday
+  startMinutes  Int
+  endMinutes    Int
+  effectiveFrom DateTime  @db.Date
+  effectiveTo   DateTime? @db.Date
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Restrict)
+
+  @@index([madrasaId, classId])
+  @@index([madrasaId, dayOfWeek])
+  @@index([madrasaId, isActive])
+  @@map("timetable_breaks")
+}
+
+// ==========================================
+// EXPENSE ANALYSIS MODELS & ENUMS
+// ==========================================
+
+enum ExpenseStatus {
+  ACTIVE
+  VOID
+}
+
+/// Category for outgoing operational expenses
+model ExpenseCategory {
+  id          String   @id @default(cuid())
+  madrasaId   String
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  madrasa  Madrasa                  @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  expenses Expense[]
+  budgets  ExpenseBudget[]
+  insights ExpenseMonthlyInsight[]
+
+  @@unique([madrasaId, name])
+  @@index([madrasaId, isActive])
+  @@map("expense_categories")
+}
+
+/// Outgoing operational expense record
+model Expense {
+  id            String        @id @default(cuid())
+  madrasaId     String
+  categoryId    String
+  expenseDate   DateTime      @db.Date
+  description   String        @db.VarChar(255)
+  amount        Decimal       @db.Decimal(12, 2)
+  quantity      Decimal?      @db.Decimal(12, 3)
+  unitLabel     String?       @db.VarChar(50)
+  unitCost      Decimal?      @db.Decimal(12, 2)
+  supplierName  String?       @db.VarChar(150)
+  reasonNote    String?       @db.Text
+  status        ExpenseStatus @default(ACTIVE)
+  voidReason    String?       @db.VarChar(500)
+  voidedAt      DateTime?
+  createdById   String
+  updatedById   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  madrasa   Madrasa         @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  category  ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdBy User            @relation("ExpenseCreatedBy", fields: [createdById], references: [id])
+  updatedBy User?           @relation("ExpenseUpdatedBy", fields: [updatedById], references: [id])
+
+  @@index([madrasaId, expenseDate])
+  @@index([madrasaId, categoryId])
+  @@index([madrasaId, status])
+  @@map("expenses")
+}
+
+/// Monthly operational budget per category
+model ExpenseBudget {
+  id         String   @id @default(cuid())
+  madrasaId  String
+  categoryId String
+  year       Int
+  month      Int
+  amount     Decimal  @db.Decimal(12, 2)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  madrasa  Madrasa         @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([madrasaId, categoryId, year, month])
+  @@index([madrasaId, year, month])
+  @@map("expense_budgets")
+}
+
+/// Admin qualitative analysis note and action plan per category and month
+model ExpenseMonthlyInsight {
+  id          String   @id @default(cuid())
+  madrasaId   String
+  categoryId  String
+  year       Int
+  month      Int
+  adminReason String?  @db.Text
+  actionPlan  String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  madrasa  Madrasa         @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  category ExpenseCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([madrasaId, categoryId, year, month])
+  @@index([madrasaId, year, month])
+  @@map("expense_monthly_insights")
+}
+
+/// Universal Async Notification Job & Audit Trail
+model NotificationJob {
+  id                  String                @id @default(cuid())
+  madrasaId           String
+  channel             NotificationChannel
+  eventType           NotificationEventType
+  recipientType       String                @db.VarChar(50) // GUARDIAN, STAFF
+  recipientEntityId   String?               @db.VarChar(191) // studentId or ustadhId
+  recipientAddress    String?               @db.VarChar(255) // Nullable for SKIPPED_NO_RECIPIENT
+  recipientName       String?               @db.VarChar(255)
+  subject             String?               @db.VarChar(255)
+  message             String                @db.Text
+  payloadJson         Json?
+  relatedEntityType   String?               @db.VarChar(50)  // Payment, Invoice, UstadhSalary, TimetablePublication
+  relatedEntityId     String?               @db.VarChar(191)
+  dedupeKey           String                @db.VarChar(255)
+  status              NotificationStatus    @default(PENDING)
+  attemptCount        Int                   @default(0)
+  maxAttempts         Int                   @default(3)
+  nextAttemptAt       DateTime?             @default(now())
+  processingStartedAt DateTime?
+  sentAt              DateTime?
+  failedAt            DateTime?
+  lastError           String?               @db.Text
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+
+  @@unique([madrasaId, dedupeKey])
+  @@index([madrasaId, status, nextAttemptAt])
+  @@index([madrasaId, channel, createdAt])
+  @@index([madrasaId, eventType, createdAt])
+  @@index([status, processingStartedAt])
+  @@map("notification_jobs")
+}
+
+/// Timetable Finalization and Publication Metadata
+model TimetablePublication {
+  id                   String                  @id @default(cuid())
+  madrasaId            String
+  idempotencyKey       String                  @db.VarChar(191)
+  requestHash          String                  @db.VarChar(64)
+  effectiveDate        DateTime                @db.Date
+  sendEmail            Boolean                 @default(false)
+  recipientScope       TimetableRecipientScope
+  selectedStaffIdsJson Json?
+  staffCount           Int                     @default(0)
+  queuedCount          Int                     @default(0)
+  skippedCount         Int                     @default(0)
+  scheduleFingerprint  String                  @db.VarChar(64)
+  scheduleSnapshotJson Json
+  notes                String?                 @db.Text
+  publishedById        String
+  publishedAt          DateTime                @default(now())
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  madrasa     Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  publishedBy User    @relation("PublishedTimetables", fields: [publishedById], references: [id], onDelete: Restrict)
+
+  @@unique([madrasaId, idempotencyKey])
+  @@index([madrasaId, publishedAt])
+  @@index([publishedById])
+  @@map("timetable_publications")
+}
+
+// ==========================================
+// STUDENT QUALIFICATIONS, DISCIPLINE, MEETINGS & FOLLOW-UPS
+// ==========================================
+
+enum QualificationRecordType {
+  QUALIFICATION
+  ACHIEVEMENT
+}
+
+enum QualificationCategory {
+  HIFZ_JUZ
+  QIRAATH
+  NAZIRA_QURAN
+  TAJWEED
+  ISLAMIC_STUDIES
+  ARABIC_LANGUAGE
+  PREVIOUS_SCHOOLING
+  EXTERNAL_CERTIFICATE
+  AWARD_ACHIEVEMENT
+  OTHER
+}
+
+enum QualificationProgressStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum CertificateVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum IncidentCategory {
+  ATTENDANCE_TARDINESS
+  BEHAVIOR_CONDUCT
+  ACADEMIC_INTEGRITY
+  DRESS_CODE
+  PEER_CONFLICT
+  PROPERTY_DAMAGE
+  SAFETY_CONCERN
+  OTHER
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum IncidentVerificationStatus {
+  REPORTED
+  UNDER_REVIEW
+  CONFIRMED
+  RESOLVED
+  DISMISSED
+}
+
+enum FollowUpStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum FollowUpPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum StudentMeetingType {
+  GUARDIAN_CONFERENCE
+  ACADEMIC_REVIEW
+  DISCIPLINARY_HEARING
+  COUNSELING
+  GENERAL
+}
+
+/// Student Qualifications, Certificates & Achievements
+model StudentQualification {
+  id                 String                        @id @default(cuid())
+  madrasaId          String
+  studentId          String
+  recordType         QualificationRecordType       @default(QUALIFICATION)
+  category           QualificationCategory         @default(OTHER)
+  title              String                        @db.VarChar(191)
+  issuingAuthority   String?                       @db.VarChar(191)
+  certificateNumber  String?                       @db.VarChar(100)
+  progressStatus     QualificationProgressStatus   @default(COMPLETED)
+  verificationStatus CertificateVerificationStatus @default(PENDING)
+  achievedDate       DateTime?                     @db.Date
+  expiryDate         DateTime?                     @db.Date
+  gradeOrScore       String?                       @db.VarChar(100)
+  description        String?                       @db.Text
+  certificateFileId  String?
+  examinerUstadhId   String?
+  reviewedByUserId   String?
+  reviewedAt         DateTime?
+  rejectionReason    String?                       @db.Text
+  createdByUserId    String
+  createdAt          DateTime                      @default(now())
+  updatedAt          DateTime                      @updatedAt
+  deletedAt          DateTime?
+
+  // Relations (Same-tenant composite foreign keys where applicable)
+  madrasa         Madrasa           @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student         Student           @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  certificateFile FileObject?       @relation("QualificationCertificateFile", fields: [certificateFileId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  examinerUstadh  Ustadh?           @relation("QualificationExaminerUstadh", fields: [examinerUstadhId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  reviewedByUser  User?             @relation("QualificationReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  createdByUser   User              @relation("QualificationCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  followUps       StudentFollowUp[]
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, studentId, deletedAt])
+  @@index([madrasaId, recordType, category])
+  @@index([madrasaId, verificationStatus, progressStatus])
+  @@map("student_qualifications")
+}
+
+/// Student Discipline & Incident Records
+model StudentIncident {
+  id                   String                     @id @default(cuid())
+  madrasaId            String
+  studentId            String
+  title                String                     @db.VarChar(191)
+  category             IncidentCategory           @default(OTHER)
+  severity             IncidentSeverity           @default(LOW)
+  occurredAt           DateTime
+  location             String?                    @db.VarChar(191)
+  isConfidential       Boolean                    @default(true)
+  reportedDescription  String                     @db.Text
+  reportedByUstadhId   String?
+  reportedByUserId     String
+  reportedAt           DateTime                   @default(now())
+  verificationStatus   IncidentVerificationStatus @default(REPORTED)
+  investigatedFindings String?                    @db.Text
+  actionTaken          String?                    @db.Text
+  dismissalReason      String?                    @db.Text
+  reviewedByUserId     String?
+  reviewedAt           DateTime?
+  resolvedAt           DateTime?
+  evidenceFileId       String?
+  guardianNotified     Boolean                    @default(false)
+  guardianNotifiedAt   DateTime?
+  createdAt            DateTime                   @default(now())
+  updatedAt            DateTime                   @updatedAt
+  deletedAt            DateTime?
+
+  // Relations (Same-tenant composite foreign keys where applicable)
+  madrasa          Madrasa           @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student          Student           @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  reportedByUstadh Ustadh?           @relation("IncidentReportedByUstadh", fields: [reportedByUstadhId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  reportedByUser   User              @relation("IncidentReportedByUser", fields: [reportedByUserId], references: [id], onDelete: Restrict)
+  reviewedByUser   User?             @relation("IncidentReviewedByUser", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  evidenceFile     FileObject?       @relation("IncidentEvidenceFile", fields: [evidenceFileId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  meetings         StudentMeeting[]
+  followUps        StudentFollowUp[]
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, studentId, deletedAt])
+  @@index([madrasaId, verificationStatus, severity])
+  @@index([madrasaId, occurredAt])
+  @@map("student_incidents")
+}
+
+/// Student & Guardian Meetings / Conferences
+model StudentMeeting {
+  id                  String             @id @default(cuid())
+  madrasaId           String
+  studentId           String
+  meetingType         StudentMeetingType @default(GUARDIAN_CONFERENCE)
+  title               String             @db.VarChar(191)
+  meetingAt           DateTime
+  location            String?            @db.VarChar(191)
+  participantsSummary String             @db.VarChar(255)
+  ustadhId            String?
+  incidentId          String?
+  discussionNotes     String             @db.Text
+  outcomeSummary      String?            @db.Text
+  createdByUserId     String
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  deletedAt           DateTime?
+
+  // Relations (Same-tenant composite foreign keys where applicable)
+  madrasa       Madrasa           @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student       Student           @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  ustadh        Ustadh?           @relation("MeetingUstadh", fields: [ustadhId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  incident      StudentIncident?  @relation(fields: [incidentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  createdByUser User              @relation("MeetingCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  followUps     StudentFollowUp[]
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, studentId, meetingAt, deletedAt])
+  @@index([madrasaId, meetingType])
+  @@map("student_meetings")
+}
+
+/// Student Follow-Ups & Scheduled Reminders
+model StudentFollowUp {
+  id                 String                @id @default(cuid())
+  madrasaId          String
+  studentId          String
+  incidentId         String?
+  qualificationId    String?
+  meetingId          String?
+  title              String                @db.VarChar(191)
+  notes              String?               @db.Text
+  dueDate            DateTime              @db.Date
+  reminderAt         DateTime?
+  reminderSentAt     DateTime?
+  priority           FollowUpPriority      @default(NORMAL)
+  status             FollowUpStatus        @default(PENDING)
+  assignedToUstadhId String?
+  assignedToUserId   String?
+  completedAt        DateTime?
+  completedByUserId  String?
+  outcomeNotes       String?               @db.Text
+  createdByUserId    String
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  deletedAt          DateTime?
+
+  // Relations (Same-tenant composite foreign keys where applicable)
+  madrasa          Madrasa               @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student          Student               @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  incident         StudentIncident?      @relation(fields: [incidentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  qualification    StudentQualification? @relation(fields: [qualificationId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  meeting          StudentMeeting?       @relation(fields: [meetingId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  assignedToUstadh Ustadh?               @relation("FollowUpAssignedToUstadh", fields: [assignedToUstadhId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  assignedToUser   User?                 @relation("FollowUpAssignedToUser", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+  completedByUser  User?                 @relation("FollowUpCompletedByUser", fields: [completedByUserId], references: [id], onDelete: SetNull)
+  createdByUser    User                  @relation("FollowUpCreatedByUser", fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, studentId, status, dueDate])
+  @@index([madrasaId, status, dueDate, deletedAt])
+  @@index([madrasaId, status, reminderAt])
+  @@map("student_follow_ups")
+}
+
+
+enum ApplicationGender {
+  MALE
+  FEMALE
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CONVERTED
+}
+
+enum ExamTerm {
+  TERM_1
+  TERM_2
+  TERM_3
+  FINAL
+  MID_TERM
+  MONTHLY
+}
+
+enum CurriculumResourceType {
+  SYLLABUS
+  BOOK
+  NOTE
+  WORKSHEET
+  AUDIO_RESOURCE
+  OTHER
+}
+
+enum StudentDailyActivityType {
+  ACADEMIC
+  BEHAVIOR
+  MEMORIZATION
+  ATTENDANCE_NOTE
+  GENERAL
+}
+
+enum CustomFieldEntityType {
+  STUDENT
+  USTADH
+  CLASS
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  DROPDOWN
+  CHECKBOX
+}
+
+model MadrasaProfile {
+  id                 String    @id @default(cuid())
+  madrasaId          String    @unique
+  madrasa            Madrasa   @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  isPublished        Boolean   @default(false)
+  publishedAt        DateTime?
+  introduction       String?   @db.Text
+  mission            String?   @db.Text
+  vision             String?   @db.Text
+  syllabusInfo       String?   @db.Text
+  rulesAndRegulations String?  @db.Text
+  generatedSummary   String?   @db.Text
+  summaryGeneratedAt DateTime?
+  eventsJson         Json?
+  noticesJson        Json?
+  contactPhone       String?   @db.VarChar(50)
+  contactEmail       String?   @db.VarChar(255)
+  address            String?   @db.Text
+  heroTitle          String?   @db.VarChar(255)
+  heroSubtitle       String?   @db.Text
+  heroImageFileId    String?   @db.VarChar(191)
+  themeDraftJson     Json?
+  themePublishedJson Json?
+  curriculumJson     Json?
+  staffJson          Json?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@map("madrasa_profiles")
+}
+
+model AdmissionPeriod {
+  id           String               @id @default(cuid())
+  madrasaId    String
+  madrasa      Madrasa              @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  code         String               @db.VarChar(50)
+  name         String               @db.VarChar(191)
+  academicYear Int
+  startDate    DateTime             @db.Date
+  endDate      DateTime             @db.Date
+  isOpen       Boolean              @default(true)
+  instructions String?              @db.Text
+  capacity     Int?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  applications StudentApplication[]
+  interviewSchedules InterviewSchedule[]
+
+  @@unique([id, madrasaId])
+  @@unique([madrasaId, academicYear, code])
+  @@index([madrasaId, isOpen])
+  @@map("admission_periods")
+}
+
+model StudentApplication {
+  id                   String            @id @default(cuid())
+  madrasaId            String
+  madrasa              Madrasa           @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  admissionPeriodId    String
+  admissionPeriod      AdmissionPeriod   @relation(fields: [admissionPeriodId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  applicationNo        String            @db.VarChar(50)
+  applicantName        String            @db.VarChar(191)
+  dateOfBirth          DateTime          @db.Date
+  gender               ApplicationGender
+  guardianName         String            @db.VarChar(191)
+  guardianRelationship String            @db.VarChar(100)
+  guardianPhone        String            @db.VarChar(50)
+  guardianEmail        String?           @db.VarChar(255)
+  address              String            @db.Text
+  appliedClassId       String?
+  appliedClass         Class?            @relation(fields: [appliedClassId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  previousSchool       String?           @db.VarChar(255)
+  documentsJson        Json?
+  status               ApplicationStatus @default(PENDING)
+  submittedAt          DateTime          @default(now())
+  reviewedByUserId     String?
+  reviewedByUser       User?             @relation("ApplicationReviewedBy", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+  reviewedAt           DateTime?
+  reviewRemarks        String?           @db.Text
+  convertedStudentId   String?
+  convertedStudent     Student?          @relation(fields: [convertedStudentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  convertedAt          DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  interviewAppointments InterviewAppointment[]
+
+  @@unique([id, madrasaId])
+  @@unique([madrasaId, applicationNo])
+  @@index([madrasaId, admissionPeriodId])
+  @@index([madrasaId, status])
+  @@map("student_applications")
+}
+
+model ExamPastPaper {
+  id               String      @id @default(cuid())
+  madrasaId        String
+  madrasa          Madrasa     @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  classId          String
+  class            Class       @relation(fields: [classId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  subjectId        String?
+  subject          Subject?    @relation(fields: [subjectId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  fileObjectId     String
+  fileObject       FileObject  @relation(fields: [fileObjectId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  academicYear     Int
+  term             ExamTerm
+  examTitle        String      @db.VarChar(191)
+  examDate         DateTime?   @db.Date
+  description      String?     @db.Text
+  uploadedByUserId String
+  uploadedByUser   User        @relation("PastPaperUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, classId, subjectId])
+  @@index([madrasaId, academicYear, term])
+  @@map("exam_past_papers")
+}
+
+model CurriculumResource {
+  id               String                 @id @default(cuid())
+  madrasaId        String
+  madrasa          Madrasa                @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  classId          String
+  class            Class                  @relation(fields: [classId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  subjectId        String?
+  subject          Subject?               @relation(fields: [subjectId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  fileObjectId     String?
+  fileObject       FileObject?            @relation(fields: [fileObjectId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  title            String                 @db.VarChar(191)
+  type             CurriculumResourceType
+  author           String?                @db.VarChar(191)
+  edition          String?                @db.VarChar(100)
+  externalUrl      String?                @db.VarChar(500)
+  description      String?                @db.Text
+  isActive         Boolean                @default(true)
+  uploadedByUserId String
+  uploadedByUser   User                   @relation("CurriculumUploadedBy", fields: [uploadedByUserId], references: [id], onDelete: Restrict)
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, classId, subjectId])
+  @@index([madrasaId, type])
+  @@map("curriculum_resources")
+}
+
+model StudentDailyActivity {
+  id                 String                   @id @default(cuid())
+  madrasaId          String
+  madrasa            Madrasa                  @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  studentId          String
+  student            Student                  @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  recordedByUserId   String
+  recordedByUser     User                     @relation("ActivityRecordedBy", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+  activityDate       DateTime                 @db.Date
+  activityType       StudentDailyActivityType
+  title              String                   @db.VarChar(191)
+  notes              String?                  @db.Text
+  notifyGuardian     Boolean                  @default(false)
+  guardianNotifiedAt DateTime?
+  createdAt          DateTime                 @default(now())
+  updatedAt          DateTime                 @updatedAt
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, studentId, activityDate])
+  @@index([madrasaId, activityType])
+  @@map("student_daily_activities")
+}
+
+model CustomFieldDefinition {
+  id          String                @id @default(cuid())
+  madrasaId   String
+  madrasa     Madrasa               @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  entityType  CustomFieldEntityType
+  fieldName   String                @db.VarChar(100)
+  fieldKey    String                @db.VarChar(100)
+  fieldType   CustomFieldType
+  optionsJson Json?
+  isRequired  Boolean               @default(false)
+  isActive    Boolean               @default(true)
+  sortOrder   Int                   @default(0)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  values      CustomFieldValue[]
+
+  @@unique([id, madrasaId])
+  @@unique([id, madrasaId, entityType])
+  @@unique([madrasaId, entityType, fieldKey])
+  @@index([madrasaId, entityType, isActive])
+  @@map("custom_field_definitions")
+}
+
+model CustomFieldValue {
+  id                String                @id @default(cuid())
+  madrasaId         String
+  madrasa           Madrasa               @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  fieldDefinitionId String
+  fieldDefinition   CustomFieldDefinition @relation(fields: [fieldDefinitionId, madrasaId, entityType], references: [id, madrasaId, entityType], onDelete: Restrict)
+  entityType        CustomFieldEntityType
+  entityId          String
+  valueText         String?               @db.Text
+  valueNumber       Decimal?              @db.Decimal(12, 4)
+  valueDate         DateTime?             @db.Date
+  valueBoolean      Boolean?
+  valueJson         Json?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  @@unique([id, madrasaId])
+  @@unique([madrasaId, fieldDefinitionId, entityType, entityId])
+  @@index([madrasaId, entityType, entityId])
+  @@map("custom_field_values")
+}
+
+// ==========================================
+// ALUMNI & VERIFICATION ENUMS
+// ==========================================
+
+enum AlumniPublicationStatus {
+  DRAFT
+  PUBLISHED
+  UNPUBLISHED
+  REVOKED
+}
+
+enum AlumniConsentStatus {
+  PENDING
+  GRANTED
+  WITHDRAWN
+}
+
+enum AlumniConsentParty {
+  STUDENT
+  GUARDIAN
+  BOTH
+}
+
+enum AlumniConsentAction {
+  INITIAL_GRANT
+  WITHDRAWAL
+  RENEWAL
+}
+
+enum CharacterConductRating {
+  EXCELLENT
+  VERY_GOOD
+  GOOD
+  SATISFACTORY
+  CONDITIONAL
+}
+
+enum AlumniVerificationStatus {
+  PENDING
+  APPROVED_VERIFIED
+  REJECTED
+  CLOSED
+}
+
+// ==========================================
+// ALUMNI MODELS
+// ==========================================
+
+/// Alumni Profile (Single canonical alumni record per student)
+model AlumniProfile {
+  id                        String                  @id @default(cuid())
+  madrasaId                 String
+  studentId                 String
+  alumniIndexNumber         String                  @unique @db.VarChar(50)
+
+  // Academic & Leaving Information
+  admissionDate             DateTime                @db.Date
+  leavingDate               DateTime                @db.Date
+  leavingReason             String?                 @db.VarChar(100)
+  completedProgrammes       Json?
+  academicHighlights        Json?
+
+  // Character Assessment (Deliberate evaluation, no automatic default)
+  characterAssessmentRating CharacterConductRating?
+  characterAssessmentText   String?                 @db.Text
+  allowPublicConductShare   Boolean                 @default(false)
+
+  // Publication Lifecycle
+  publicationStatus         AlumniPublicationStatus @default(DRAFT)
+  publishedAt               DateTime?
+  publishedByUserId         String?
+  revokedAt                 DateTime?
+  revocationReason          String?                 @db.Text
+
+  // Consent Evidence Tracking
+  consentStatus             AlumniConsentStatus     @default(PENDING)
+  consentGivenBy            AlumniConsentParty?
+  consentSignerName         String?                 @db.VarChar(191)
+  consentGrantedAt          DateTime?
+  consentWithdrawnAt        DateTime?
+  consentWithdrawnReason    String?                 @db.Text
+  consentVersion            String                  @default("v1.0-2026") @db.VarChar(20)
+  consentProofType          String?                 @db.VarChar(50)
+  consentFileId             String?
+  consentNotes              String?                 @db.Text
+
+  createdAt                 DateTime                @default(now())
+  updatedAt                 DateTime                @updatedAt
+
+  // Relations
+  madrasa              Madrasa                     @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student              Student                     @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  consentFile          FileObject?                 @relation("AlumniConsentFile", fields: [consentFileId], references: [id], onDelete: SetNull)
+  publishedByUser      User?                       @relation("AlumniPublishedBy", fields: [publishedByUserId], references: [id], onDelete: SetNull)
+  consentRecords       AlumniConsentRecord[]
+  verificationRequests AlumniVerificationRequest[]
+
+  @@unique([studentId, madrasaId])
+  @@index([madrasaId, publicationStatus])
+  @@index([publicationStatus, consentStatus])
+  @@map("alumni_profiles")
+}
+
+/// Concurrency-safe tenant sequence tracker for permanent Alumni Index Numbers
+model AlumniIndexSequence {
+  id           String   @id @default(cuid())
+  madrasaId    String
+  year         Int
+  lastSequence Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+
+  @@unique([madrasaId, year])
+  @@map("alumni_index_sequences")
+}
+
+/// Append-only immutable legal audit record of all consent actions
+model AlumniConsentRecord {
+  id               String               @id @default(cuid())
+  alumniProfileId  String
+  madrasaId        String
+  action           AlumniConsentAction
+
+  consentParty     AlumniConsentParty?
+  signerName       String?              @db.VarChar(191)
+  consentVersion   String               @db.VarChar(20)
+  proofType        String?              @db.VarChar(50)
+  evidenceFileId   String?
+  withdrawalReason String?              @db.Text
+
+  recordedByUserId String
+  createdAt        DateTime             @default(now())
+
+  alumniProfile  AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  madrasa        Madrasa       @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  evidenceFile   FileObject?   @relation("ConsentRecordEvidenceFile", fields: [evidenceFileId], references: [id], onDelete: SetNull)
+  recordedByUser User          @relation("ConsentRecordRecordedBy", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([alumniProfileId, createdAt])
+  @@index([madrasaId, createdAt])
+  @@map("alumni_consent_records")
+}
+
+/// Cross-tenant academic verification requests between institutions
+model AlumniVerificationRequest {
+  id                  String                   @id @default(cuid())
+  alumniProfileId     String
+  targetMadrasaId     String
+  requestingMadrasaId String
+  requestedByUserId   String
+
+  purpose             String                   @db.VarChar(255)
+  specificInquiry     String?                  @db.Text
+  includeCharacter    Boolean                  @default(false)
+
+  status              AlumniVerificationStatus @default(PENDING)
+  responseNotes       String?                  @db.Text
+  respondedByUserId   String?
+  respondedAt         DateTime?
+
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  alumniProfile     AlumniProfile @relation(fields: [alumniProfileId], references: [id], onDelete: Cascade)
+  targetMadrasa     Madrasa       @relation("AlumniTargetMadrasa", fields: [targetMadrasaId], references: [id], onDelete: Restrict)
+  requestingMadrasa Madrasa       @relation("AlumniRequestingMadrasa", fields: [requestingMadrasaId], references: [id], onDelete: Restrict)
+  requestedByUser   User          @relation("AlumniRequestedByUser", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  respondedByUser   User?         @relation("AlumniRespondedByUser", fields: [respondedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([targetMadrasaId, status])
+  @@index([requestingMadrasaId, status])
+  @@index([alumniProfileId])
+  @@map("alumni_verification_requests")
+}
+
+/// Multi-instance database rate limit fallback using an atomic fixed-window counter
+model RateLimitBucket {
+  key       String   @id @db.VarChar(191)
+  points    Int      @default(0)
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
+  @@map("rate_limit_buckets")
+}
+
+// ==========================================
+// ADMISSIONS INTERVIEW MANAGEMENT MODELS
+// ==========================================
+
+model InterviewSchedule {
+  id                  String                    @id @default(cuid())
+  madrasaId           String
+  madrasa             Madrasa                   @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  admissionPeriodId   String
+  admissionPeriod     AdmissionPeriod           @relation(fields: [admissionPeriodId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  interviewRound      InterviewRound            @default(FIRST)
+  schedulingMethod    InterviewSchedulingMethod
+  title               String                    @db.VarChar(191)
+  interviewDate       DateTime                  @db.Date
+  venue               String                    @db.VarChar(255)
+  defaultStartTime    String?                   @db.VarChar(10)
+  defaultEndTime      String?                   @db.VarChar(10)
+  slotDurationMinutes Int?
+  instructions        String?                   @db.Text
+  requiredDocuments   Json?
+  createdByUserId     String
+  createdByUser       User                      @relation("ScheduleCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
+
+  appointments        InterviewAppointment[]
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, admissionPeriodId, interviewRound], map: "idx_schedules_period_round")
+  @@index([madrasaId, interviewDate], map: "idx_schedules_madrasa_date")
+  @@map("interview_schedules")
+}
+
+model InterviewAppointment {
+  id                  String                     @id @default(cuid())
+  madrasaId           String
+  madrasa             Madrasa                    @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  scheduleId          String
+  schedule            InterviewSchedule          @relation(fields: [scheduleId, madrasaId], references: [id, madrasaId], onDelete: Cascade)
+  applicationId       String
+  application         StudentApplication         @relation(fields: [applicationId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  interviewRound      InterviewRound             @default(FIRST)
+  invitationReference String                     @unique @db.VarChar(64)
+  interviewDate       DateTime                   @db.Date
+  startTime           String                     @db.VarChar(10)
+  endTime             String                     @db.VarChar(10)
+  venue               String                     @db.VarChar(255)
+  status              InterviewAppointmentStatus @default(SCHEDULED)
+  rescheduledFromId   String?
+  rescheduledFrom     InterviewAppointment?      @relation("RescheduledHistory", fields: [rescheduledFromId], references: [id], onDelete: SetNull)
+  rescheduledTo       InterviewAppointment[]     @relation("RescheduledHistory")
+  cancellationReason  String?                    @db.Text
+  rescheduleReason    String?                    @db.Text
+  fileObjectId        String?
+  fileObject          FileObject?                @relation("AppointmentInvitationFile", fields: [fileObjectId], references: [id], onDelete: SetNull)
+  pdfVersion          Int                        @default(1)
+  createdByUserId     String
+  createdByUser       User                       @relation("AppointmentCreatedBy", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+
+  evaluation          InterviewEvaluation?
+  notifications       InterviewNotification[]
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, scheduleId], map: "idx_appointments_schedule")
+  @@index([madrasaId, applicationId, interviewRound], map: "idx_appointments_app_round")
+  @@index([madrasaId, interviewDate, status], map: "idx_appointments_date_status")
+  @@map("interview_appointments")
+}
+
+model InterviewEvaluation {
+  id                    String               @id @default(cuid())
+  madrasaId             String
+  madrasa               Madrasa              @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  appointmentId         String               @unique
+  appointment           InterviewAppointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  attendance            InterviewAttendance?
+  quranRecitationScore  Decimal?             @db.Decimal(5, 2)
+  islamicKnowledgeScore Decimal?             @db.Decimal(5, 2)
+  academicScore         Decimal?             @db.Decimal(5, 2)
+  conductScore          Decimal?             @db.Decimal(5, 2)
+  totalScore            Decimal?             @db.Decimal(5, 2)
+  interviewerNotes      String?              @db.Text
+  recommendationNotes   String?              @db.Text
+  result                InterviewResult      @default(PENDING)
+  evaluatedByUserId     String
+  evaluatedByUser       User                 @relation("EvaluationEvaluatedBy", fields: [evaluatedByUserId], references: [id], onDelete: Restrict)
+  evaluatedAt           DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, result], map: "idx_evaluations_madrasa_result")
+  @@index([madrasaId, attendance], map: "idx_evaluations_madrasa_attendance")
+  @@map("interview_evaluations")
+}
+
+model InterviewNotification {
+  id                String               @id @default(cuid())
+  madrasaId         String
+  madrasa           Madrasa              @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  appointmentId     String
+  appointment       InterviewAppointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  recipientEmail    String               @db.VarChar(255)
+  recipientName     String               @db.VarChar(191)
+  pdfVersion        Int                  @default(1)
+  fileObjectId      String?
+  fileObject        FileObject?          @relation("NotificationAttachmentFile", fields: [fileObjectId], references: [id], onDelete: SetNull)
+  status            InterviewEmailStatus @default(PENDING)
+  claimedAt         DateTime?
+  leaseExpiresAt    DateTime?
+  smtpMessageId     String?              @db.VarChar(255)
+  sentAt            DateTime?
+  errorDetails      String?              @db.Text
+  uncertainDelivery Boolean              @default(false)
+  retryCount        Int                  @default(0)
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId, appointmentId], map: "idx_notifications_madrasa_app")
+  @@index([madrasaId, status, leaseExpiresAt], map: "idx_notifications_status_lease")
+  @@map("interview_notifications")
+}
+
+/// Granular Feature Entitlement per Subscription Plan
+model PlanFeature {
+  id         String   @id @default(cuid())
+  planId     String
+  featureKey String   @db.VarChar(100)
+  isEnabled  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  plan Plan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, featureKey])
+  @@index([planId])
+  @@index([featureKey])
+  @@map("plan_features")
+}
+
+/// Individual Madrasa Feature Grant or Deny Override
+model MadrasaFeatureOverride {
+  id              String       @id @default(cuid())
+  madrasaId       String
+  featureKey      String       @db.VarChar(100)
+  overrideType    OverrideType @default(GRANT)
+  reason          String       @db.Text
+  startsAt        DateTime     @default(now())
+  expiresAt       DateTime?
+  createdByUserId String?
+  updatedByUserId String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  madrasa       Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  createdByUser User?   @relation("OverrideCreatedBy", fields: [createdByUserId], references: [id], onDelete: SetNull)
+  updatedByUser User?   @relation("OverrideUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([madrasaId, featureKey])
+  @@index([madrasaId])
+  @@index([featureKey])
+  @@index([expiresAt])
+  @@map("madrasa_feature_overrides")
+}
+
+enum OverrideType {
+  GRANT
+  DENY
+}

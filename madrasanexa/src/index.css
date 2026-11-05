@@ -1,0 +1,375 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-app-bg: #F5F5F1;
+  --color-card-bg: #FFFFFF;
+  --color-navy: #0F172A;
+  --color-mint: #85845C;
+  --color-mint-hover: #6B6A45;
+  --color-gold: #A5A477;
+  --color-secondary-text: #666666;
+  --color-app-border: #E5E5DF;
+
+  /* ACJU Olive & White Institutional Palette */
+  --color-olive-primary: #A5A477;
+  --color-olive-dark: #85845C;
+  --color-olive-deep: #504F34;
+  --color-soft-ivory: #F5F5F1;
+  --color-terracotta: #E56A45;
+  --color-charcoal: #252525;
+  --color-muted-text: #666666;
+  --color-soft-border: #E5E5DF;
+
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", serif;
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  --bg-app: #F5F5F1;
+  --bg-card: #FFFFFF;
+  --text-navy: #252525;
+  --brand-olive: #A5A477;
+  --brand-olive-dark: #85845C;
+  --brand-olive-deep: #504F34;
+  --brand-ivory: #F5F5F1;
+  --brand-terracotta: #E56A45;
+  --brand-charcoal: #252525;
+  --text-secondary: #666666;
+  --border-subtle: #E5E5DF;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #FFFFFF;
+  color: var(--brand-charcoal);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* Dedicated Print Styles for Single-Page Official A4 Documents */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm 14mm;
+  }
+
+  html, body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When printing an admission confirmation receipt, hide website navigation and background sections */
+  body.has-admission-receipt header,
+  body.has-admission-receipt section.admissions-hero-banner,
+  body.has-admission-receipt main,
+  body.has-admission-receipt footer,
+  .screen-only-controls,
+  .print-hidden {
+    display: none !important;
+  }
+
+  /* Neutralize modal overlays for seamless A4 print flow */
+  .print-receipt-overlay {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+  }
+
+  .print-receipt-modal {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-receipt-document {
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+    padding: 24px 28px !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}
+
+/* ========================================================
+   MADRASA PUBLIC CMS: ACJU OLIVE & WHITE DESIGN SYSTEM
+   ======================================================== */
+
+.acju-card,
+.public-card {
+  position: relative;
+  background-color: #ffffff;
+  border: 1px solid #E5E5DF;
+  border-radius: 1rem;
+  box-shadow: 0 4px 18px -2px rgba(37, 37, 37, 0.06);
+  overflow: hidden;
+  isolation: isolate;
+  transition: box-shadow 350ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hover reveal starting from bottom-left corner */
+.acju-card::before,
+.public-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #A5A477;
+  transform-origin: bottom left;
+  transform: scale(0);
+  transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Ensure ALL card contents stay in a layer above the animated background */
+.acju-card > *,
+.public-card > *,
+.acju-hover-br > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Smooth color transitions for all text and icons inside cards */
+.acju-card,
+.acju-card *,
+.public-card,
+.public-card *,
+.acju-hover-br,
+.acju-hover-br * {
+  transition-property: color, border-color, opacity;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .acju-card:hover::before,
+  .public-card:hover::before {
+    transform: scale(1);
+  }
+
+  .acju-card:hover,
+  .public-card:hover {
+    border-color: #A5A477 !important;
+    box-shadow: 0 10px 28px -4px rgba(133, 132, 92, 0.22);
+  }
+
+  .acju-card:hover .acju-card-content {
+    background-color: transparent !important;
+  }
+
+  /* ON HOVER: ALL card text clearly becomes white (headings, descriptions, paragraphs, read more, labels, metadata, nested elements) */
+  .acju-card:hover *:not(.acju-icon-badge):not(.acju-icon-badge *),
+  .public-card:hover *:not(.acju-icon-badge):not(.acju-icon-badge *),
+  .group:hover .acju-hover-br *:not(.acju-icon-badge):not(.acju-icon-badge *),
+  .acju-hover-br:hover *:not(.acju-icon-badge):not(.acju-icon-badge *) {
+    color: #ffffff !important;
+  }
+
+  /* Ensure text SVGs (arrows, checkmarks, etc.) outside the icon badge become white */
+  .acju-card:hover svg:not(.acju-icon-badge svg):not(.acju-icon-badge *),
+  .public-card:hover svg:not(.acju-icon-badge svg):not(.acju-icon-badge *),
+  .group:hover .acju-hover-br svg:not(.acju-icon-badge svg):not(.acju-icon-badge *),
+  .acju-hover-br:hover svg:not(.acju-icon-badge svg):not(.acju-icon-badge *) {
+    color: #ffffff !important;
+    stroke: currentColor !important;
+  }
+
+  /* Soften card internal dividers on hover */
+  .acju-card:hover .border-t,
+  .public-card:hover .border-t,
+  .group:hover .acju-hover-br .border-t {
+    border-color: rgba(255, 255, 255, 0.25) !important;
+  }
+
+  /* PRESERVE the white circular icon badge and its Dark Olive (#85845C) icon */
+  .acju-icon-badge,
+  .acju-card:hover .acju-icon-badge,
+  .public-card:hover .acju-icon-badge,
+  .group:hover .acju-icon-badge,
+  .group:hover .acju-hover-br .acju-icon-badge,
+  .acju-hover-br:hover .acju-icon-badge {
+    background-color: #ffffff !important;
+    color: #85845C !important;
+    border-color: #E5E5DF !important;
+  }
+
+  .acju-icon-badge svg,
+  .acju-card:hover .acju-icon-badge svg,
+  .public-card:hover .acju-icon-badge svg,
+  .group:hover .acju-icon-badge svg,
+  .group:hover .acju-hover-br .acju-icon-badge svg,
+  .acju-hover-br:hover .acju-icon-badge svg {
+    color: #85845C !important;
+    stroke: #85845C !important;
+  }
+}
+
+.acju-badge-icon {
+  background-color: #ffffff;
+  color: #85845C;
+  box-shadow: 0 2px 8px rgba(37, 37, 37, 0.08);
+}
+
+.btn-olive-primary {
+  background-color: #85845C;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: background-color 200ms ease, box-shadow 200ms ease, transform 150ms ease;
+  box-shadow: 0 2px 6px rgba(133, 132, 92, 0.2);
+}
+
+.btn-olive-primary:hover {
+  background-color: #6B6A45;
+  box-shadow: 0 4px 14px rgba(133, 132, 92, 0.3);
+}
+
+.btn-olive-secondary {
+  background-color: #ffffff;
+  color: #85845C;
+  border: 1px solid #A5A477;
+  font-weight: 600;
+  border-radius: 0.75rem;
+  transition: all 200ms ease;
+}
+
+.btn-olive-secondary:hover {
+  background-color: #85845C;
+  color: #ffffff;
+  border-color: #85845C;
+}
+
+.acju-read-more {
+  color: #E56A45;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: color 250ms ease;
+}
+
+/* Standalone bottom-left hover animation utility for compound split cards */
+.acju-hover-br {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.acju-hover-br::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: #A5A477;
+  transform-origin: bottom left;
+  transform: scale(0);
+  transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .group:hover .acju-hover-br::before,
+  .acju-hover-br:hover::before {
+    transform: scale(1);
+  }
+}
+
+.public-btn-primary {
+  background-color: #85845C;
+  color: #ffffff;
+  transition: background-color 200ms ease, box-shadow 200ms ease, transform 150ms ease;
+}
+
+.public-btn-primary:hover {
+  background-color: #6B6A45;
+  box-shadow: 0 4px 14px rgba(133, 132, 92, 0.25);
+}
+
+.public-btn-primary:active {
+  transform: translateY(0);
+}
+
+.public-img-zoom {
+  overflow: hidden;
+}
+
+.public-img-zoom img {
+  transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.public-img-zoom:hover img {
+  transform: scale(1.03);
+}
+
+@keyframes publicSectionEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.public-section-enter {
+  animation: publicSectionEnter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acju-card,
+  .acju-card:hover,
+  .acju-card::before,
+  .acju-card:hover::before,
+  .public-card,
+  .public-card:hover,
+  .public-card::before,
+  .public-card:hover::before,
+  .acju-hover-br,
+  .acju-hover-br::before,
+  .acju-hover-br:hover::before,
+  .group:hover .acju-hover-br::before,
+  .public-btn-primary,
+  .public-btn-primary:hover,
+  .public-img-zoom img,
+  .public-img-zoom:hover img {
+    transform: none !important;
+    transition: none !important;
+  }
+  .public-section-enter {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

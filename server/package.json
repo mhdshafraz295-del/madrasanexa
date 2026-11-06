@@ -45,7 +45,8 @@
     "test:admissions": "node --import ./tests/setup-test-env.js tests/admissions.test.js",
     "test:admission-email": "node --import ./tests/setup-test-env.js tests/admission-email.test.js",
     "test:theme": "node --import ./tests/setup-test-env.js tests/theme-customization.test.js",
-    "test:alumni-network": "node --import ./tests/setup-test-env.js tests/alumni-network.test.js"
+    "test:alumni-network": "node --import ./tests/setup-test-env.js tests/alumni-network.test.js",
+    "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1130.0",

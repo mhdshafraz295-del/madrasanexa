@@ -63,13 +63,13 @@
     "multer": "^2.5.0",
     "node-cron": "^4.6.0",
     "nodemailer": "^10.3.1",
+    "prisma": "^6.19.3",
     "puppeteer": "^25.16.0",
     "sharp": "^0.35.5",
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14",
-    "prisma": "^6.19.3"
+    "nodemon": "^3.1.14"
   },
   "overrides": {
     "proxy-addr": "^2.0.8",

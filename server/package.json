@@ -46,6 +46,7 @@
     "test:admission-email": "node --import ./tests/setup-test-env.js tests/admission-email.test.js",
     "test:theme": "node --import ./tests/setup-test-env.js tests/theme-customization.test.js",
     "test:alumni-network": "node --import ./tests/setup-test-env.js tests/alumni-network.test.js",
+    "test:seed-super-admin": "node tests/seed-super-admin.test.js",
     "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {

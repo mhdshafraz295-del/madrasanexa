@@ -33,7 +33,7 @@ export function isDatabaseConnectivityError(error) {
 }
 
 /**
- * Non-destructive readiness check against XAMPP MySQL using the canonical Prisma client.
+ * Non-destructive readiness check against database using the canonical Prisma client.
  */
 export async function checkDatabaseReadiness(prismaClient = prisma) {
   try {
@@ -50,7 +50,7 @@ export async function checkDatabaseReadiness(prismaClient = prisma) {
 
 /**
  * Performs the initial subscription synchronization with bounded retry backoff.
- * Ensures the worker never spams stack traces or crashes the process if XAMPP MySQL is not ready.
+ * Ensures the worker never spams stack traces or crashes the process if database is not ready.
  */
 export async function performInitialSyncWithRetry({
   delaysMs = DEFAULT_RETRY_DELAYS_MS,
@@ -73,20 +73,20 @@ export async function performInitialSyncWithRetry({
       const waitMs = delaysMs[attempt];
       attempt++;
       console.warn(
-        `[Database] XAMPP MySQL not ready at 127.0.0.1:3306. Retrying in ${waitMs / 1000}s (Attempt ${attempt}/${maxAttempts})...`
+        `[Database] Database service not ready. Retrying in ${waitMs / 1000}s (Attempt ${attempt}/${maxAttempts})...`
       );
       await new Promise((resolve) => setTimeout(resolve, waitMs));
       readiness = await checkDatabaseReadiness(prismaClient);
     }
 
     if (!readiness.ready) {
-      console.warn('[Database] XAMPP MySQL unavailable at 127.0.0.1:3306.');
+      console.warn('[Database] Database service unavailable.');
       console.warn('[Subscription Job] Initial sync skipped; next retry will occur safely on scheduled hourly run.');
       return { success: false, attempts: attempt, skipped: true };
     }
 
-    // Database is ready — proceed with initial synchronization
-    console.log('[Database] Connected to XAMPP MySQL at 127.0.0.1:3306.');
+    // Database is ready Ã¢â‚¬â€ proceed with initial synchronization
+    console.log('[Database] Database connection established.');
     const result = await syncFn(new Date());
     console.log(
       `[Subscription Job] Initial status synchronization complete: ` +
@@ -96,7 +96,7 @@ export async function performInitialSyncWithRetry({
   } catch (error) {
     if (isDatabaseConnectivityError(error)) {
       console.warn(
-        '[Subscription Job] Initial synchronization skipped: XAMPP MySQL is temporarily unavailable at 127.0.0.1:3306.'
+        '[Subscription Job] Initial synchronization skipped: database is temporarily unavailable.'
       );
     } else {
       // Non-connectivity errors (real application bugs) should not be silently swallowed
@@ -150,7 +150,7 @@ export function initSubscriptionStatusJob({
     } catch (error) {
       if (isDatabaseConnectivityError(error)) {
         console.warn(
-          '[Subscription Job] Hourly synchronization skipped: XAMPP MySQL is temporarily unavailable at 127.0.0.1:3306.'
+          '[Subscription Job] Hourly synchronization skipped: database is temporarily unavailable.'
         );
       } else {
         console.error('[Subscription Job] Hourly synchronization error:', error.message);
@@ -158,7 +158,7 @@ export function initSubscriptionStatusJob({
     }
   });
 
-  console.log('⏰ Subscription status synchronization worker scheduled (hourly: 0 * * * *).');
+  console.log('Ã¢ÂÂ° Subscription status synchronization worker scheduled (hourly: 0 * * * *).');
   return cronTask;
 }
 

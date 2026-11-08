@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `interview_appointments` (
   `createdByUserId` VARCHAR(191) NOT NULL,
   `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-  `active_slot_key` VARCHAR(191) AS (CASE WHEN `status` = 'SCHEDULED' THEN CONCAT(`madrasaId`, ':', `applicationId`, ':', `interviewRound`) ELSE NULL END) STORED,
+  `active_slot_key` VARCHAR(191) AS (CASE WHEN `status` = 'SCHEDULED' THEN CONCAT(`madrasaId`, ':', `applicationId`, ':', `interviewRound`) ELSE NULL END) VIRTUAL,
   PRIMARY KEY (`id`),
   UNIQUE INDEX `interview_appointments_id_madrasaId_key` (`id`, `madrasaId`),
   UNIQUE INDEX `interview_appointments_invitationReference_key` (`invitationReference`),

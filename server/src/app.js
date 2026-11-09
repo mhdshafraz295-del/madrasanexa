@@ -6,6 +6,7 @@ import { env } from './config/env.js';
 import { apiRateLimiter } from './middleware/rateLimiter.js';
 import { notFoundHandler } from './middleware/notFoundHandler.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { sanitizeLogUrl } from './utils/log-sanitizer.js';
 import apiRoutes from './routes/index.js';
 
 const app = express();
@@ -57,6 +58,17 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
+
+// Register custom Morgan tokens to redact sensitive query parameters (token, setup tokens, secrets)
+morgan.token('url', (req) => {
+  const original = req.originalUrl || req.url || '';
+  return sanitizeLogUrl(original);
+});
+
+morgan.token('referrer', (req) => {
+  const ref = req.headers['referer'] || req.headers['referrer'] || '';
+  return sanitizeLogUrl(ref);
+});
 
 // HTTP request logger
 app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'combined'));

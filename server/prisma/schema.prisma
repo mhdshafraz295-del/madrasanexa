@@ -283,6 +283,7 @@ model User {
   recordedInterviewEvaluations  InterviewEvaluation[]           @relation("EvaluationEvaluatedBy")
   createdFeatureOverrides       MadrasaFeatureOverride[]        @relation("OverrideCreatedBy")
   updatedFeatureOverrides       MadrasaFeatureOverride[]        @relation("OverrideUpdatedBy")
+  passwordSetupTokens           PasswordSetupToken[]
 
   @@index([madrasaId])
   @@index([role])
@@ -2465,4 +2466,20 @@ model MadrasaFeatureOverride {
 enum OverrideType {
   GRANT
   DENY
+}
+
+/// Cryptographically secure one-time password setup tokens for onboarding & credential resets
+model PasswordSetupToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("password_setup_tokens")
 }

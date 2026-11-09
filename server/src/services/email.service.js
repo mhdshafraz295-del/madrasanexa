@@ -30,6 +30,17 @@ export function getLoginUrl() {
 }
 
 /**
+ * Constructs the secure one-time password setup URL from the FRONTEND_URL environment variable.
+ *
+ * @param {string} token Cryptographic setup token
+ * @returns {string} Fully qualified setup URL
+ */
+export function getSetupPasswordUrl(token) {
+  const base = (env.FRONTEND_URL || 'http://localhost:5173').trim().replace(/\/+$/, '');
+  return `${base}/setup-password?token=${encodeURIComponent(token)}`;
+}
+
+/**
  * In-memory test mailbox for automated test assertions.
  */
 let testEmails = [];
@@ -173,9 +184,9 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
       } : undefined,
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      connectionTimeout: 7000,
+      greetingTimeout: 7000,
+      socketTimeout: 9000,
     });
   }
 
@@ -191,7 +202,7 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
 
   try {
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Email provider connection timed out.')), 20000)
+      setTimeout(() => reject(new Error('Email provider connection timed out.')), 10000)
     );
 
     const info = await Promise.race([
@@ -235,12 +246,14 @@ export function buildApprovalEmailTemplate({
   adminEmail,
   loginUrl,
   temporaryPassword = null,
+  setupUrl = null,
 }) {
   const safeApplicant = escapeHtml(applicantName);
   const safeMadrasa = escapeHtml(madrasaName);
   const safePlan = escapeHtml(planName || 'Plan Selection Pending');
   const safeAdminEmail = escapeHtml(adminEmail);
   const safeLoginUrl = escapeHtml(loginUrl);
+  const safeSetupUrl = setupUrl ? escapeHtml(setupUrl) : null;
   const safeStart = escapeHtml(subscriptionStart);
   const safeEnd = escapeHtml(subscriptionEnd);
   const safePassword = temporaryPassword ? escapeHtml(temporaryPassword) : null;
@@ -257,9 +270,11 @@ export function buildApprovalEmailTemplate({
     subscriptionStart && subscriptionEnd ? `Subscription Term: ${subscriptionStart} – ${subscriptionEnd}` : '',
     `Administrator Login Email: ${adminEmail}`,
     temporaryPassword ? `Temporary Password: ${temporaryPassword}` : '',
-    `Login Portal: ${loginUrl}`,
+    setupUrl ? `Password Setup Link: ${setupUrl}` : `Login Portal: ${loginUrl}`,
     '',
-    temporaryPassword
+    setupUrl
+      ? `IMPORTANT: Please use the single-use setup link above to configure your administrator password. This link will expire in 24 hours.`
+      : temporaryPassword
       ? `IMPORTANT: For security purposes, you will be prompted to create a new, permanent password upon your first sign-in.`
       : `Your MadrasaNexa workspace is now provisioned. Please sign in with your administrator email.`,
     '',
@@ -268,6 +283,9 @@ export function buildApprovalEmailTemplate({
   ];
 
   const text = textLines.filter(Boolean).join('\n');
+
+  const actionUrl = safeSetupUrl || safeLoginUrl;
+  const actionButtonText = safeSetupUrl ? 'Set Up Administrator Password' : 'Sign In to MadrasaNexa';
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -289,6 +307,7 @@ export function buildApprovalEmailTemplate({
     .info-label { color: #64748B; font-weight: 500; }
     .info-value { color: #0F172A; font-weight: 600; text-align: right; }
     .password-card { background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+    .setup-card { background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
     .btn-container { text-align: center; margin: 32px 0; }
     .btn { display: inline-block; background-color: #0F172A; color: #FFFFFF !important; text-decoration: none; padding: 12px 28px; font-size: 13px; font-weight: 700; border-radius: 10px; }
     .footer { padding: 24px 32px; background: #F8FAFC; border-top: 1px solid #E7E9EE; font-size: 11px; color: #94A3B8; text-align: center; }
@@ -332,6 +351,13 @@ export function buildApprovalEmailTemplate({
         ` : ''}
       </div>
 
+      ${safeSetupUrl ? `
+      <div class="setup-card">
+        <strong style="color: #065F46;">Password Setup Required:</strong>
+        <p style="margin: 4px 0 0 0; font-size: 12px; color: #047857;">Please click the button below to set up your administrator password. This secure single-use link will expire in 24 hours.</p>
+      </div>
+      ` : ''}
+
       ${safePassword ? `
       <div class="password-card">
         <strong style="color: #B45309;">Mandatory Security Notice:</strong>
@@ -340,7 +366,7 @@ export function buildApprovalEmailTemplate({
       ` : ''}
 
       <div class="btn-container">
-        <a href="${safeLoginUrl}" class="btn" target="_blank" rel="noopener noreferrer">Sign In to MadrasaNexa</a>
+        <a href="${actionUrl}" class="btn" target="_blank" rel="noopener noreferrer">${actionButtonText}</a>
       </div>
     </div>
     <div class="footer">
@@ -366,6 +392,7 @@ export async function sendApprovalEmail({
   subscriptionEnd,
   adminEmail,
   temporaryPassword = null,
+  setupUrl = null,
 }) {
   const loginUrl = getLoginUrl();
 
@@ -378,6 +405,7 @@ export async function sendApprovalEmail({
     adminEmail,
     loginUrl,
     temporaryPassword,
+    setupUrl,
   });
 
   return dispatchEmail({ to, subject, html, text });

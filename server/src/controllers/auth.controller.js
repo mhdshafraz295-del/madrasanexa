@@ -1,5 +1,11 @@
 import { loginSchema } from '../validators/auth.validator.js';
-import { loginUser, getMe, changeUserPassword } from '../services/auth.service.js';
+import {
+  loginUser,
+  getMe,
+  changeUserPassword,
+  verifyPasswordSetupToken,
+  setupPasswordWithToken,
+} from '../services/auth.service.js';
 import { z } from 'zod';
 
 const changePasswordSchema = z.object({
@@ -72,6 +78,51 @@ export const handleChangePassword = async (req, res, next) => {
         message: error.issues?.[0]?.message || error.errors?.[0]?.message || 'Validation error',
       });
     }
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+export const handleVerifySetupToken = async (req, res, next) => {
+  try {
+    const { token } = req.query;
+    const result = await verifyPasswordSetupToken(token);
+    return res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+      });
+    }
+    next(error);
+  }
+};
+
+export const handleSetupPassword = async (req, res, next) => {
+  try {
+    const { token, password, newPassword } = req.body || {};
+    const chosenPassword = newPassword || password;
+    const ip = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('user-agent');
+
+    const result = await setupPasswordWithToken({
+      rawToken: token,
+      newPassword: chosenPassword,
+      ip,
+      userAgent,
+    });
+
+    return res.status(200).json(result);
+  } catch (error) {
     if (error.statusCode) {
       return res.status(error.statusCode).json({
         success: false,

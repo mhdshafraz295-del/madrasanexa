@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { prisma } from '../lib/prisma.js';
 import { comparePassword } from '../utils/password.js';
 import { signAccessToken } from '../utils/jwt.js';
@@ -293,5 +294,198 @@ export const changeUserPassword = async (userId, currentPassword, newPassword, i
   return {
     success: true,
     message: 'Password changed successfully.',
+  };
+};
+
+/**
+ * Verifies validity of a one-time password setup token.
+ * Validates expiration, single-use state, and associated user/tenant state.
+ * Never leaks token hash, passwords, or session tokens.
+ */
+export const verifyPasswordSetupToken = async (rawToken) => {
+  if (!rawToken || typeof rawToken !== 'string') {
+    const error = new Error('Setup token is required.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  const tokenRecord = await prisma.passwordSetupToken.findUnique({
+    where: { tokenHash },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          isActive: true,
+          role: true,
+          madrasaId: true,
+          madrasa: {
+            select: {
+              id: true,
+              name: true,
+              status: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!tokenRecord) {
+    const error = new Error('Invalid or unrecognized setup token.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (tokenRecord.usedAt) {
+    const error = new Error('This setup link has already been used.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (new Date() > new Date(tokenRecord.expiresAt)) {
+    const error = new Error('This setup link has expired. Please contact your platform administrator for a new link.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const user = tokenRecord.user;
+  if (!user || !user.isActive) {
+    const error = new Error('The account associated with this setup link is disabled.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (user.role === 'MADRASA_ADMIN' && user.madrasa && user.madrasa.status !== 'ACTIVE') {
+    const error = new Error(`Madrasa workspace is ${user.madrasa.status.toLowerCase()}.`);
+    error.statusCode = 403;
+    throw error;
+  }
+
+  return {
+    valid: true,
+    email: user.email,
+    name: user.name,
+    madrasaName: user.madrasa?.name || null,
+  };
+};
+
+/**
+ * Sets new password using a verified single-use setup token.
+ * Enforces single-use token consumption, clears mustChangePassword,
+ * increments tokenVersion to revoke stale JWTs, and records non-sensitive ActivityLog.
+ */
+export const setupPasswordWithToken = async ({ rawToken, newPassword, ip = null, userAgent = null }) => {
+  const { hashPassword, validatePasswordStrength } = await import('../utils/password.js');
+
+  if (!rawToken || typeof rawToken !== 'string') {
+    const error = new Error('Setup token is required.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  // Validate new password strength
+  const strength = validatePasswordStrength(newPassword);
+  if (!strength.valid) {
+    const error = new Error(strength.message || 'Password does not meet security requirements.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+  const tokenRecord = await prisma.passwordSetupToken.findUnique({
+    where: { tokenHash },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          isActive: true,
+          role: true,
+          madrasaId: true,
+          madrasa: {
+            select: {
+              id: true,
+              status: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!tokenRecord) {
+    const error = new Error('Invalid or unrecognized setup token.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (tokenRecord.usedAt) {
+    const error = new Error('This setup link has already been used.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (new Date() > new Date(tokenRecord.expiresAt)) {
+    const error = new Error('This setup link has expired. Please contact your platform administrator for a new link.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const user = tokenRecord.user;
+  if (!user || !user.isActive) {
+    const error = new Error('The account associated with this setup link is disabled.');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (user.role === 'MADRASA_ADMIN' && user.madrasa && user.madrasa.status !== 'ACTIVE') {
+    const error = new Error(`Madrasa workspace is ${user.madrasa.status.toLowerCase()}.`);
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const newPasswordHash = await hashPassword(newPassword);
+  const now = new Date();
+
+  // Atomically update user, mark token used, invalidate prior setup tokens, and log activity
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash: newPasswordHash,
+        mustChangePassword: false,
+        tokenVersion: { increment: 1 },
+      },
+    }),
+    prisma.passwordSetupToken.update({
+      where: { id: tokenRecord.id },
+      data: { usedAt: now },
+    }),
+    prisma.passwordSetupToken.updateMany({
+      where: { userId: user.id, usedAt: null },
+      data: { usedAt: now },
+    }),
+    prisma.activityLog.create({
+      data: {
+        action: 'PASSWORD_SETUP_COMPLETED',
+        userId: user.id,
+        madrasaId: user.madrasaId || null,
+        metadata: {
+          email: user.email,
+        },
+        ipAddress: ip ? String(ip).slice(0, 45) : null,
+        userAgent: userAgent ? String(userAgent).slice(0, 500) : null,
+      },
+    }),
+  ]);
+
+  return {
+    success: true,
+    message: 'Password set up successfully. You may now sign in with your administrator email.',
   };
 };

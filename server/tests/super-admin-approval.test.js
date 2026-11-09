@@ -1,4 +1,5 @@
 import './setup-test-env.js';
+import crypto from 'crypto';
 import { prisma, getPrismaDatasourceUrl } from '../src/lib/prisma.js';
 import { hashPassword } from '../src/utils/password.js';
 import { signAccessToken } from '../src/utils/jwt.js';
@@ -11,6 +12,7 @@ import {
   enableTestMode,
   escapeHtml,
   getLoginUrl,
+  getSetupPasswordUrl,
   isTestRecipient,
 } from '../src/services/email.service.js';
 import { envSchema } from '../src/config/env.js';
@@ -206,6 +208,12 @@ async function teardown() {
             { code: { contains: TEST_PREFIX.slice(-6).toUpperCase() } },
           ],
         },
+      },
+    });
+
+    await prisma.passwordSetupToken.deleteMany({
+      where: {
+        user: { email: { contains: TEST_PREFIX } },
       },
     });
 
@@ -851,6 +859,256 @@ async function runTests() {
   assert(isTestRecipient('sheikh@example.com') === true, '26G. isTestRecipient identifies example.com test domain');
   assert(isTestRecipient('user@test.com') === false, '26G. user@test.com is NOT flagged as RFC reserved test recipient');
   assert(isTestRecipient('realuser@gmail.com') === false, '26G. realuser@gmail.com is NOT flagged as test recipient');
+
+  // -------------------------------------------------------------
+  // GROUP 15: Password Safety, Setup Token Lifecycle & SMTP Timeout Handling
+  // -------------------------------------------------------------
+  console.log('\n[GROUP 15] Password Safety, Setup Token Lifecycle & SMTP Timeout Handling');
+
+  // Fixture: create dedicated onboarding request, madrasa, and admin user
+  const g15Code = `${TEST_PREFIX.slice(-5).toUpperCase()}G15`;
+  const g15Slug = `${SLUG_BASE}-g15`;
+  const g15AdminEmail = `${TEST_PREFIX}_g15_admin@example.com`;
+  const initialPassword = 'OriginalSuperSecurePassword123!';
+  const initialPasswordHash = await hashPassword(initialPassword);
+
+  const g15Madrasa = await prisma.madrasa.create({
+    data: {
+      name: 'Group 15 Academy',
+      code: g15Code,
+      slug: g15Slug,
+      email: `${TEST_PREFIX}_g15_m@example.com`,
+      status: 'ACTIVE',
+    },
+  });
+
+  const g15AdminUser = await prisma.user.create({
+    data: {
+      name: 'Usthad G15 Admin',
+      email: g15AdminEmail,
+      passwordHash: initialPasswordHash,
+      role: 'MADRASA_ADMIN',
+      madrasaId: g15Madrasa.id,
+      isActive: true,
+      mustChangePassword: false,
+      tokenVersion: 5,
+    },
+  });
+
+  const g15Request = await prisma.madrasaOnboardingRequest.create({
+    data: {
+      madrasaName: 'Group 15 Academy',
+      contactName: 'Usthad G15 Admin',
+      email: g15AdminEmail,
+      phone: '+94 77 555 6677',
+      status: 'APPROVED',
+      approvedMadrasaId: g15Madrasa.id,
+      reviewedByUserId: superAdminUser.id,
+    },
+  });
+
+  await prisma.subscription.create({
+    data: {
+      madrasaId: g15Madrasa.id,
+      planId: activePlan.id,
+      status: 'ACTIVE',
+      startsAt: new Date(),
+      endsAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+      priceAtPurchase: activePlan.price,
+      durationMonthsAtPurchase: 6,
+    },
+  });
+
+  // Test 15.1: Failed Resend Does NOT Change Password and Does NOT Increment tokenVersion
+  console.log('  Testing 15.1: Failed resend preserves password & tokenVersion...');
+  setTestEmailAdapter(async () => {
+    throw new Error('Email provider connection timed out.');
+  });
+
+  const failedResendRes = await fetch(`${baseUrl}/super-admin/onboarding/${g15Request.id}/resend-email`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${superAdminToken}` },
+  });
+
+  assert(failedResendRes.status === 200, '15.1. Failed resend returns HTTP 200 with delivery failure info');
+  const failedResendJson = await failedResendRes.json();
+  assert(failedResendJson.data?.emailDelivery?.status === 'FAILED', '15.1. Delivery status accurately reports FAILED');
+  assert(failedResendJson.data?.emailDelivery?.error.includes('timed out'), '15.1. Sanitized timeout message returned');
+
+  const adminAfterFailed = await prisma.user.findUnique({
+    where: { id: g15AdminUser.id },
+  });
+  assert(adminAfterFailed.passwordHash === initialPasswordHash, '15.1. Failed resend strictly preserves existing Admin passwordHash');
+  assert(adminAfterFailed.tokenVersion === 5, '15.1. Failed resend does NOT increment tokenVersion (sessions preserved)');
+
+  const activeTokensAfterFail = await prisma.passwordSetupToken.findMany({
+    where: { userId: g15AdminUser.id, usedAt: null },
+  });
+  assert(activeTokensAfterFail.length === 0, '15.1. Undelivered setup tokens invalidated after failure');
+
+  // Verify ActivityLog recorded failure without password exposure
+  const failLogG15 = await prisma.activityLog.findFirst({
+    where: {
+      entityType: 'MadrasaOnboardingRequest',
+      entityId: g15Request.id,
+      action: 'APPROVAL_EMAIL_FAILED',
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+  assert(failLogG15 !== null, '15.1. APPROVAL_EMAIL_FAILED recorded in ActivityLog');
+  assert(!JSON.stringify(failLogG15.metadata).includes('Password'), '15.1. ActivityLog metadata has zero password exposure');
+
+  // Test 15.2: Cooldown Enforcement (HTTP 429)
+  console.log('  Testing 15.2: Cooldown protection immediately after attempt...');
+  const rapidResend = await fetch(`${baseUrl}/super-admin/onboarding/${g15Request.id}/resend-email`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${superAdminToken}` },
+  });
+  assert(rapidResend.status === 429, '15.2. Rapid resend blocked with HTTP 429 cooldown');
+
+  // Test 15.3: Successful Resend Revokes Sessions, Preserves Password, Dispatches Token & Avoids Duplicates
+  console.log('  Testing 15.3: Successful resend credential dispatch...');
+  clearTestEmails(); // Restores normal test delivery
+
+  // Backdate previous log by 35s to clear cooldown
+  await prisma.activityLog.updateMany({
+    where: { entityType: 'MadrasaOnboardingRequest', entityId: g15Request.id },
+    data: { createdAt: new Date(Date.now() - 35000) },
+  });
+
+  const successResendRes = await fetch(`${baseUrl}/super-admin/onboarding/${g15Request.id}/resend-email`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${superAdminToken}` },
+  });
+
+  assert(successResendRes.status === 200, '15.3. Successful resend returns HTTP 200');
+  const successResendJson = await successResendRes.json();
+  assert(successResendJson.data?.emailDelivery?.status === 'SENT', '15.3. Delivery status reports SENT');
+  assert(!successResendJson.data?.credentials?.temporaryPassword, '15.3. No temporary password exposed in resend API response');
+
+  const adminAfterSuccess = await prisma.user.findUnique({
+    where: { id: g15AdminUser.id },
+  });
+  assert(adminAfterSuccess.passwordHash === initialPasswordHash, '15.3. Successful resend does NOT overwrite existing password');
+  assert(adminAfterSuccess.tokenVersion === 6, '15.3. Successful resend increments tokenVersion to revoke old sessions');
+
+  // Verify no duplicate Madrasa or Admin records
+  const madrasaCountG15 = await prisma.madrasa.count({ where: { code: g15Code } });
+  assert(madrasaCountG15 === 1, '15.3. Resend does not duplicate Madrasa record');
+  const adminCountG15 = await prisma.user.count({ where: { email: g15AdminEmail } });
+  assert(adminCountG15 === 1, '15.3. Resend does not duplicate Admin user record');
+
+  // Verify dispatched email contains single-use setup link
+  const dispatchedEmails = getTestEmails();
+  assert(dispatchedEmails.length === 1, '15.3. Approval email captured in test store');
+  const capturedEmail = dispatchedEmails[0];
+  assert(capturedEmail.to === g15AdminEmail, '15.3. Email sent to authoritative Admin email');
+  assert(capturedEmail.html.includes('/setup-password?token='), '15.3. Email contains setup-password link');
+  assert(!capturedEmail.html.includes(initialPassword), '15.3. Password not leaked in email HTML');
+
+  // Extract raw setup token from the email link
+  const tokenMatch = capturedEmail.html.match(/setup-password\?token=([a-f0-9]+)/);
+  assert(Boolean(tokenMatch && tokenMatch[1]), '15.3. Extracted cryptographic setup token from email');
+  const rawToken = tokenMatch[1];
+
+  // Test 15.4: Validate Setup Token via Public Verification Endpoint
+  console.log('  Testing 15.4: Public token verification...');
+  const verifyTokenRes = await fetch(`${baseUrl}/auth/setup-password/verify?token=${rawToken}`);
+  assert(verifyTokenRes.status === 200, '15.4. Valid token verification returns HTTP 200');
+  const verifyTokenJson = await verifyTokenRes.json();
+  assert(verifyTokenJson.data?.valid === true, '15.4. Response indicates valid token');
+  assert(verifyTokenJson.data?.email === g15AdminEmail, '15.4. Verified email matches target Admin user');
+
+  // Test 15.5: Invalid Token Rejection
+  console.log('  Testing 15.5: Invalid token rejection...');
+  const invalidVerifyRes = await fetch(`${baseUrl}/auth/setup-password/verify?token=completely_fabricated_token_12345`);
+  assert(invalidVerifyRes.status === 400, '15.5. Fabricated token rejected with HTTP 400');
+
+  const invalidSetupRes = await fetch(`${baseUrl}/auth/setup-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token: 'completely_fabricated_token_12345',
+      newPassword: 'ValidNewPassword123!',
+    }),
+  });
+  assert(invalidSetupRes.status === 400, '15.5. Password setup with invalid token rejected with HTTP 400');
+
+  // Test 15.6: Expired Token Rejection
+  console.log('  Testing 15.6: Expired token rejection...');
+  const expiredRawToken = crypto.randomBytes(32).toString('hex');
+  const expiredHash = crypto.createHash('sha256').update(expiredRawToken).digest('hex');
+  await prisma.passwordSetupToken.create({
+    data: {
+      userId: g15AdminUser.id,
+      tokenHash: expiredHash,
+      expiresAt: new Date(Date.now() - 3600000), // 1 hour in the past
+    },
+  });
+
+  const expiredVerifyRes = await fetch(`${baseUrl}/auth/setup-password/verify?token=${expiredRawToken}`);
+  assert(expiredVerifyRes.status === 400, '15.6. Expired token verify rejected with HTTP 400');
+  const expiredVerifyJson = await expiredVerifyRes.json();
+  assert(expiredVerifyJson.message.includes('expired'), '15.6. Clear expiration error returned on verify');
+
+  const expiredSetupRes = await fetch(`${baseUrl}/auth/setup-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token: expiredRawToken,
+      newPassword: 'ValidNewPassword123!',
+    }),
+  });
+  assert(expiredSetupRes.status === 400, '15.6. Expired token setup rejected with HTTP 400');
+
+  // Test 15.7: Single-Use Token Enforcement (First Use Succeeds, Second Use Blocked)
+  console.log('  Testing 15.7: Single-use setup token consumption & reuse prevention...');
+  const newSetupPassword = 'VerifiedNewAdminPass123!';
+  const setupSuccessRes = await fetch(`${baseUrl}/auth/setup-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token: rawToken,
+      newPassword: newSetupPassword,
+    }),
+  });
+  assert(setupSuccessRes.status === 200, '15.7. Password setup with valid token succeeds with HTTP 200');
+
+  // Verify user in DB has updated credentials and can log in
+  const userAfterSetup = await prisma.user.findUnique({
+    where: { id: g15AdminUser.id },
+  });
+  assert(userAfterSetup.passwordHash !== initialPasswordHash, '15.7. Password hash updated in DB');
+  assert(userAfterSetup.mustChangePassword === false, '15.7. mustChangePassword set to false');
+  assert(userAfterSetup.tokenVersion === 7, '15.7. tokenVersion incremented to 7');
+
+  // Test that new password logs in successfully
+  const newLoginRes = await fetch(`${baseUrl}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: g15AdminEmail,
+      password: newSetupPassword,
+    }),
+  });
+  assert(newLoginRes.status === 200, '15.7. Admin can successfully log in with newly configured password');
+
+  // Attempt to REUSE the single-use token -> MUST FAIL (HTTP 400)
+  const reuseTokenRes = await fetch(`${baseUrl}/auth/setup-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      token: rawToken,
+      newPassword: 'AnotherPasswordAttempt123!',
+    }),
+  });
+  assert(reuseTokenRes.status === 400, '15.7. Reused setup token rejected with HTTP 400');
+  const reuseJson = await reuseTokenRes.json();
+  assert(reuseJson.message.includes('already been used'), '15.7. Clear "already been used" error message returned');
+
+  // Also check verification of used token
+  const usedVerifyRes = await fetch(`${baseUrl}/auth/setup-password/verify?token=${rawToken}`);
+  assert(usedVerifyRes.status === 400, '15.7. Verification of consumed token rejected with HTTP 400');
 }
 
 async function main() {

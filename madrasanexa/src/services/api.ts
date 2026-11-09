@@ -384,7 +384,37 @@ export const apiResendApprovalEmail = async (
     };
   };
 }> => {
-  const response = await apiClient.post<ApiResponse<any>>(`/super-admin/onboarding/${id}/resend-email`);
+  const response = await apiClient.post<ApiResponse<any>>(
+    `/super-admin/onboarding/${id}/resend-email`,
+    {},
+    { timeout: 20000 }
+  );
+  return response.data as any;
+};
+
+export interface SetupTokenVerificationData {
+  valid: boolean;
+  email: string;
+  name: string;
+  madrasaName?: string | null;
+}
+
+export const apiVerifySetupToken = async (
+  token: string
+): Promise<SetupTokenVerificationData> => {
+  const response = await apiClient.get<ApiResponse<SetupTokenVerificationData>>(
+    `/auth/setup-password/verify`,
+    { params: { token } }
+  );
+  return response.data.data;
+};
+
+export const apiSetupPassword = async (data: {
+  token: string;
+  password?: string;
+  newPassword?: string;
+}): Promise<{ success: boolean; message: string }> => {
+  const response = await apiClient.post<ApiResponse<any>>(`/auth/setup-password`, data);
   return response.data as any;
 };
 

@@ -6,6 +6,7 @@ import SubscriptionRoute from './components/common/SubscriptionRoute';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ChangePasswordPage from './pages/auth/ChangePasswordPage';
+import SetupPasswordPage from './pages/auth/SetupPasswordPage';
 
 // Super Admin Platform Components
 import SuperAdminLayout from './layouts/SuperAdminLayout';
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/setup-password" element={<SetupPasswordPage />} />
           <Route path="/pricing" element={<PricingPage />} />
           <Route path="/about-us" element={<AboutUsPage />} />
           <Route path="/about" element={<Navigate to="/about-us" replace />} />

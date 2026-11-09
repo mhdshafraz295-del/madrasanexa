@@ -6,7 +6,7 @@ import { hashPassword, validatePasswordStrength } from '../utils/password.js';
 import { normalizeEmail } from '../utils/email-normalization.js';
 import { addCalendarMonthsUtc, isExpiringSoonPrecise, getSubscriptionDaysRemaining } from '../utils/subscription-date.js';
 import { createSubscriptionRenewal, evaluateEffectiveSubscription } from './subscription.service.js';
-import { sendApprovalEmail } from './email.service.js';
+import { sendApprovalEmail, getSetupPasswordUrl } from './email.service.js';
 import { getMadrasaBranding, generateInitials } from './branding.service.js';
 import { resolveObjectAccessUrl } from './r2.service.js';
 import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors.js';
@@ -1048,30 +1048,48 @@ export async function resendApprovalEmail({
     ? new Date(subscription.endsAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
     : '';
 
-  // 4. Generate new temporary password & atomically update user (Mandatory Correction 3)
-  const rawTemporaryPassword = crypto.randomBytes(6).toString('hex') + '!Aa1';
-  const passwordHash = await hashPassword(rawTemporaryPassword);
+  // 4. Generate cryptographically secure one-time setup token (stored only as SHA-256 hash)
+  const rawSetupToken = crypto.randomBytes(32).toString('hex');
+  const setupTokenHash = crypto.createHash('sha256').update(rawSetupToken).digest('hex');
+  const setupExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24-hour expiration
 
-  await prisma.user.update({
-    where: { id: adminUser.id },
+  // Invalidate any existing unused setup tokens for this user before issuing a new one
+  await prisma.passwordSetupToken.updateMany({
+    where: { userId: adminUser.id, usedAt: null },
+    data: { usedAt: new Date() },
+  });
+
+  const setupTokenRecord = await prisma.passwordSetupToken.create({
     data: {
-      passwordHash,
-      mustChangePassword: true,
-      tokenVersion: { increment: 1 },
+      userId: adminUser.id,
+      tokenHash: setupTokenHash,
+      expiresAt: setupExpiresAt,
     },
   });
 
-  // 5. Dispatch Email with new temporary password
-  const emailRes = await sendApprovalEmail({
-    to: adminUser.email,
-    applicantName: adminUser.name,
-    madrasaName: request.approvedMadrasa.name,
-    planName: subscription?.plan?.name || null,
-    subscriptionStart: formattedStart,
-    subscriptionEnd: formattedEnd,
-    adminEmail: adminUser.email,
-    temporaryPassword: null,
-  });
+  const setupUrl = getSetupPasswordUrl(rawSetupToken);
+
+  // 5. Dispatch Email with setup link (NEVER mutates user.passwordHash before or during email dispatch)
+  let emailRes;
+  try {
+    emailRes = await sendApprovalEmail({
+      to: adminUser.email,
+      applicantName: adminUser.name,
+      madrasaName: request.approvedMadrasa.name,
+      planName: subscription?.plan?.name || null,
+      subscriptionStart: formattedStart,
+      subscriptionEnd: formattedEnd,
+      adminEmail: adminUser.email,
+      temporaryPassword: null,
+      setupUrl,
+    });
+  } catch (err) {
+    emailRes = {
+      success: false,
+      status: 'FAILED',
+      error: String(err.message || 'Unknown email error').slice(0, 200),
+    };
+  }
 
   const emailDelivery = {
     status: emailRes.status,
@@ -1079,8 +1097,16 @@ export async function resendApprovalEmail({
     sentAt: emailRes.success ? new Date().toISOString() : null,
   };
 
-  // 6. Log Activity (Correction 11 & 12)
+  // 6. Log Activity & Session Handling
   if (emailRes.success) {
+    // Only increment tokenVersion on successful dispatch to revoke previous sessions upon credential setup issuance
+    await prisma.user.update({
+      where: { id: adminUser.id },
+      data: {
+        tokenVersion: { increment: 1 },
+      },
+    });
+
     await prisma.activityLog.create({
       data: {
         action: 'APPROVAL_EMAIL_RESENT',
@@ -1099,6 +1125,13 @@ export async function resendApprovalEmail({
       },
     });
   } else {
+    // Delivery failed: Delete/invalidate the un-dispatched setup token so it cannot be used
+    await prisma.passwordSetupToken.update({
+      where: { id: setupTokenRecord.id },
+      data: { usedAt: new Date() },
+    }).catch(() => {});
+
+    // Existing user.passwordHash and user.tokenVersion are strictly preserved!
     await prisma.activityLog.create({
       data: {
         action: 'APPROVAL_EMAIL_FAILED',
@@ -1125,7 +1158,6 @@ export async function resendApprovalEmail({
     emailDelivery,
     credentials: {
       email: adminUser.email,
-      temporaryPassword: rawTemporaryPassword,
     },
   };
 }

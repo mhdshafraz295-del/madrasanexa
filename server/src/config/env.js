@@ -3,16 +3,27 @@ import { z } from 'zod';
 
 dotenv.config();
 
+export const isRailwayDeployment = () => Boolean(
+  process.env.RAILWAY_ENVIRONMENT_NAME ||
+  process.env.RAILWAY_ENVIRONMENT ||
+  process.env.RAILWAY_SERVICE_ID ||
+  process.env.RAILWAY_PROJECT_ID ||
+  process.env.RAILWAY_PUBLIC_DOMAIN ||
+  process.env.RAILWAY_STATIC_URL ||
+  process.env.RAILWAY_DEPLOYMENT_ID
+);
+
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(5000),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 
-  // Configurable Trust Proxy: strictly validated, trust-all ("true") is forbidden
+  // Configurable Trust Proxy: strictly validated, trust-all ("true") is forbidden.
+  // Defaults to '1' on Railway (verified 1-hop Envoy edge proxy topology), or 'false' for direct local dev.
   TRUST_PROXY: z
     .string()
     .optional()
-    .default('false')
+    .default(() => (isRailwayDeployment() ? '1' : 'false'))
     .refine((val) => {
       if (val === 'false') return true;
       if (val === 'true') return false; // Strictly disallow trust-all!

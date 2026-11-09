@@ -11,24 +11,57 @@ import apiRoutes from './routes/index.js';
 
 const app = express();
 
-// Configurable Trust Proxy: strictly validated, trust-all strictly forbidden
-const trustProxyVal = env.TRUST_PROXY || process.env.TRUST_PROXY || 'false';
-if (trustProxyVal === 'true') {
-  throw new Error('Fatal Configuration Error: TRUST_PROXY=true (trust-all) is strictly prohibited. Specify an explicit positive integer hop count or approved subnet list.');
-} else if (trustProxyVal === 'false' || !trustProxyVal) {
-  app.set('trust proxy', false);
-} else if (/^[1-9]\d*$/.test(trustProxyVal)) {
-  app.set('trust proxy', parseInt(trustProxyVal, 10));
-} else {
+/**
+ * Resolves and validates Express 'trust proxy' setting.
+ *
+ * Railway topology: A single edge proxy router (Envoy) sits directly in front of the container.
+ * When running on Railway and TRUST_PROXY is not explicitly set, defaults to 1 hop.
+ * Setting 'trust proxy' to true (trust-all) is strictly prohibited to prevent IP spoofing and rate-limit bypass.
+ *
+ * @param {string} [rawVal] Raw TRUST_PROXY string value
+ * @returns {boolean|number|string} Validated Express trust proxy configuration
+ */
+export function resolveTrustProxySetting(rawVal) {
+  const isRailway = Boolean(
+    process.env.RAILWAY_ENVIRONMENT_NAME ||
+    process.env.RAILWAY_ENVIRONMENT ||
+    process.env.RAILWAY_SERVICE_ID ||
+    process.env.RAILWAY_PROJECT_ID ||
+    process.env.RAILWAY_PUBLIC_DOMAIN ||
+    process.env.RAILWAY_STATIC_URL ||
+    process.env.RAILWAY_DEPLOYMENT_ID
+  );
+
+  const val = (rawVal !== undefined && rawVal !== null && rawVal !== '')
+    ? String(rawVal).trim()
+    : (isRailway ? '1' : 'false');
+
+  if (val === 'true') {
+    throw new Error('Fatal Configuration Error: TRUST_PROXY=true (trust-all) is strictly prohibited. Specify an explicit positive integer hop count or approved subnet list.');
+  }
+
+  if (val === 'false') {
+    return false;
+  }
+
+  if (/^[1-9]\d*$/.test(val)) {
+    return parseInt(val, 10);
+  }
+
   // Validate approved subnet keywords or CIDRs before accepting
   const allowedSubnets = new Set(['loopback', 'linklocal', 'uniquelocal']);
-  const parts = trustProxyVal.split(',').map((s) => s.trim().toLowerCase());
+  const parts = val.split(',').map((s) => s.trim().toLowerCase());
   const isValidSubnet = parts.length > 0 && parts.every((p) => allowedSubnets.has(p) || /^(\d{1,3}\.){3}\d{1,3}(\/\d{1,2})?$/.test(p));
   if (!isValidSubnet) {
-    throw new Error(`Fatal Configuration Error: Invalid TRUST_PROXY value "${trustProxyVal}". Must be "false", a positive integer, or approved subnets.`);
+    throw new Error(`Fatal Configuration Error: Invalid TRUST_PROXY value "${val}". Must be "false", a positive integer, or approved subnets.`);
   }
-  app.set('trust proxy', trustProxyVal);
+
+  return val;
 }
+
+// Configurable Trust Proxy: strictly validated, trust-all strictly forbidden
+const trustProxySetting = resolveTrustProxySetting(env.TRUST_PROXY || process.env.TRUST_PROXY);
+app.set('trust proxy', trustProxySetting);
 
 // Disable x-powered-by header for security
 app.disable('x-powered-by');

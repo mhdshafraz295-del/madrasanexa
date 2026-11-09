@@ -48,6 +48,7 @@
     "test:alumni-network": "node --import ./tests/setup-test-env.js tests/alumni-network.test.js",
     "test:seed-super-admin": "node tests/seed-super-admin.test.js",
     "test:log-sanitization": "node --import ./tests/setup-test-env.js tests/request-logging-sanitization.test.js",
+    "test:trust-proxy": "node --import ./tests/setup-test-env.js tests/trust-proxy-rate-limit.test.js",
     "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {

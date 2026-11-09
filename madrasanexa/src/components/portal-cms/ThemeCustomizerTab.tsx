@@ -272,16 +272,19 @@ export const ThemeCustomizerTab: React.FC<ThemeCustomizerTabProps> = ({
   };
 
   const handleReset = async () => {
-    if (!window.confirm('Reset theme draft to the standard Classic Islamic Green palette?')) return;
+    if (!window.confirm('Reset theme draft to the standard Institutional Olive default palette?')) return;
     try {
       setActionLoading(true);
       setFeedback(null);
       const res = await apiResetTheme();
       setDraftTokens(res.draft);
-      setActivePresetId('classic-green');
+      const match = presets.find(
+        (p) => JSON.stringify(p.tokens) === JSON.stringify(res.draft)
+      );
+      setActivePresetId(match ? match.id : null);
       setFeedback({
         type: 'success',
-        message: 'Theme reset to default Classic Islamic Green draft.',
+        message: 'Theme reset to default Institutional Olive draft.',
       });
     } catch (err: any) {
       setFeedback({
@@ -412,7 +415,7 @@ export const ThemeCustomizerTab: React.FC<ThemeCustomizerTabProps> = ({
               disabled={actionLoading || saving || publishing}
               onClick={handleReset}
               className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors border border-slate-200 disabled:opacity-50"
-              title="Reset draft to standard Classic Islamic Green preset"
+              title="Reset draft to standard Institutional Olive default palette"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset Default</span>

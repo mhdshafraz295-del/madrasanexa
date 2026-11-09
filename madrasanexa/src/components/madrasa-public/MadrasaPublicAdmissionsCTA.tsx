@@ -18,10 +18,14 @@ export const MadrasaPublicAdmissionsCTA: React.FC<MadrasaPublicAdmissionsCTAProp
   activeIntakeName,
   activeAcademicYear,
 }) => {
+  const primaryColor = theme.primaryBtnBg || '#504F34';
+  const ctaBg = theme.footerBg || '#504F34';
+
   return (
     <section
-      className="relative overflow-hidden rounded-3xl bg-[#504F34] p-8 sm:p-12 lg:p-14 text-white shadow-xl border border-white/10 public-section-enter"
+      className="relative overflow-hidden rounded-3xl p-6 sm:p-12 lg:p-14 text-white shadow-xl border border-white/10 public-section-enter"
       style={{
+        backgroundColor: ctaBg,
         borderColor: theme.secondaryBtnBorder || '#E5E5DF',
       }}
     >
@@ -33,18 +37,18 @@ export const MadrasaPublicAdmissionsCTA: React.FC<MadrasaPublicAdmissionsCTAProp
         }}
       />
 
-      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+      <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">
         <div className="max-w-2xl text-center lg:text-left space-y-3">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Admissions & Enrollment</span>
           </div>
 
-          <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-white leading-tight">
+          <h3 className="text-xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-white leading-tight break-words">
             Begin Your Child's Journey in Sacred Knowledge
           </h3>
 
-          <p className="text-[#F5F5F1] text-sm sm:text-base leading-relaxed">
+          <p className="text-[#F5F5F1] text-xs sm:text-base leading-relaxed">
             {hasActiveAdmissions ? (
               <>
                 Applications are actively being received for{' '}
@@ -59,14 +63,14 @@ export const MadrasaPublicAdmissionsCTA: React.FC<MadrasaPublicAdmissionsCTAProp
           </p>
         </div>
 
-        <div className="shrink-0">
+        <div className="shrink-0 w-full sm:w-auto text-center">
           <Link
             to={`/madrasa/${slug}/admissions`}
-            className="inline-flex items-center space-x-2.5 px-8 py-4 rounded-xl font-bold text-sm sm:text-base bg-white text-[#252525] hover:bg-[#F5F5F1] transition-all shadow-md hover:shadow-lg hover:scale-102 active:scale-98 cursor-pointer"
+            className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-bold text-xs sm:text-base bg-white text-[#252525] hover:bg-[#F5F5F1] transition-all shadow-md hover:shadow-lg hover:scale-102 active:scale-98 cursor-pointer w-full sm:w-auto"
           >
-            <GraduationCap className="w-5 h-5 text-[#85845C]" />
+            <GraduationCap className="w-5 h-5 shrink-0" style={{ color: primaryColor }} />
             <span>{hasActiveAdmissions ? 'View Intake & Apply' : 'Admissions Portal'}</span>
-            <ChevronRight className="w-4 h-4 text-[#85845C]" />
+            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: primaryColor }} />
           </Link>
         </div>
       </div>

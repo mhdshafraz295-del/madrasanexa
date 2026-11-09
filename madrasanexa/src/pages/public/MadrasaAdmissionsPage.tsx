@@ -219,7 +219,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4" />
+        <div className="w-12 h-12 border-4 border-t-transparent rounded-full animate-spin mb-4" style={{ borderColor: '#504F34', borderTopColor: 'transparent' }} />
         <p className="text-slate-600 font-medium">Loading admissions portal...</p>
       </div>
     );
@@ -249,6 +249,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
 
   const { madrasa, activeAdmissionPeriods = [], availableClasses = [] } = data;
   const theme = resolvePublicTheme(data.theme);
+  const primaryColor = theme.primaryBtnBg || '#504F34';
 
   return (
     <div
@@ -267,44 +268,48 @@ export const MadrasaAdmissionsPage: React.FC = () => {
           backgroundColor: theme.navbarBg ? `${theme.navbarBg}F2` : '#ffffffF2',
         }}
       >
-        {/* Micro olive accent bar */}
-        <div className="h-0.5 bg-[#85845C]" />
+        {/* Micro theme accent bar */}
+        <div className="h-0.5" style={{ backgroundColor: primaryColor }} />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
           <Link
             to={`/madrasa/${slug}`}
-            className="inline-flex items-center space-x-2.5 text-sm font-bold text-[#252525] hover:text-[#85845C] transition-colors p-2 rounded-xl hover:bg-[#F5F5F1]"
+            className="inline-flex items-center space-x-2 text-xs sm:text-sm font-bold text-[#252525] hover:opacity-80 transition-colors p-1.5 sm:p-2 rounded-xl hover:bg-[#F5F5F1] min-w-0 flex-1 sm:flex-initial"
           >
-            <ArrowLeft className="w-4 h-4 text-[#85845C]" />
-            <span>Return to {madrasa.name}</span>
+            <ArrowLeft className="w-4 h-4 shrink-0" style={{ color: primaryColor }} />
+            <span className="truncate">Return to {madrasa.name}</span>
           </Link>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
             {madrasa.logoUrl ? (
               <img
                 src={madrasa.logoUrl}
                 alt={madrasa.name}
-                className="w-10 h-10 object-contain rounded-xl border border-[#E5E5DF] bg-white p-0.5 hidden sm:block"
+                className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-xl border border-[#E5E5DF] bg-white p-0.5 hidden sm:block shrink-0"
               />
             ) : (
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center font-serif font-bold text-xs shadow-xs hidden sm:flex text-white border border-[#E5E5DF]"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-serif font-bold text-xs shadow-xs hidden sm:flex text-white border border-[#E5E5DF] shrink-0"
                 style={{
-                  backgroundColor: theme.primaryBtnBg || '#85845C',
+                  backgroundColor: primaryColor,
                 }}
               >
                 {madrasa.initials || madrasa.name.slice(0, 2).toUpperCase()}
               </div>
             )}
-            <div className="flex items-center space-x-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full bg-[#F5F5F1] text-[#85845C] border border-[#E5E5DF]">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#85845C]" />
-              <span>Official Admissions Desk</span>
+            <div
+              className="flex items-center space-x-1.5 text-xs font-bold px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#F5F5F1] border border-[#E5E5DF]"
+              style={{ color: primaryColor }}
+            >
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" style={{ color: primaryColor }} />
+              <span className="hidden xs:inline sm:inline">Official Admissions Desk</span>
+              <span className="xs:hidden sm:hidden">Admissions</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Banner with Islamic Pattern & Emerald Scrim */}
+      {/* Hero Banner with Islamic Pattern & Themed Scrim */}
       <section
         className={`relative overflow-hidden text-white py-16 sm:py-22 admissions-hero-banner print:hidden ${
           submissionResult ? 'print:hidden' : ''
@@ -334,13 +339,13 @@ export const MadrasaAdmissionsPage: React.FC = () => {
           </div>
 
           <h1
-            className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold tracking-tight mb-4 drop-shadow-xs"
+            className="text-2xl sm:text-4xl lg:text-5xl font-serif font-bold tracking-tight mb-4 drop-shadow-xs break-words"
             style={{ color: theme.heroTextColor || '#FFFFFF' }}
           >
             Admissions at {madrasa.name}
           </h1>
 
-          <p className="text-[#F5F5F1] text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-8">
+          <p className="text-[#F5F5F1] text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-8 break-words">
             {data.heroSubtitle ||
               'Welcome to our online enrollment portal. Review currently open intake cycles, eligibility standards, and submit your admission application below.'}
           </p>
@@ -350,12 +355,12 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleOpenApplication(activeAdmissionPeriods[0])}
-                className="inline-flex items-center space-x-2.5 px-7 py-3.5 rounded-xl font-bold text-sm sm:text-base text-white transition-all shadow-lg hover:shadow-xl hover:scale-102 active:scale-98 border border-white/20 cursor-pointer"
+                className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base text-white transition-all shadow-lg hover:shadow-xl hover:scale-102 active:scale-98 border border-white/20 cursor-pointer"
                 style={{
-                  backgroundColor: theme.primaryBtnBg || '#85845C',
+                  backgroundColor: primaryColor,
                 }}
               >
-                <GraduationCap className="w-5 h-5 text-white" />
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 <span>Apply for Open Intake</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -369,7 +374,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         {/* Active Intake Cycles */}
         <section className="w-full max-w-xl mx-auto">
           <div className="text-center mb-8">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#85845C] bg-[#F5F5F1] px-3.5 py-1 rounded-full border border-[#E5E5DF]">
+            <span
+              className="text-xs font-bold uppercase tracking-wider bg-[#F5F5F1] px-3.5 py-1 rounded-full border border-[#E5E5DF]"
+              style={{ color: primaryColor }}
+            >
               Open Admissions
             </span>
             <h2
@@ -381,7 +389,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
             <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">
               Currently open admission periods accepting online candidate applications.
             </p>
-            <div className="w-12 h-1 bg-gradient-to-r from-[#85845C] via-[#A5A477] to-[#85845C] mx-auto rounded-full mt-3" />
+            <div
+              className="w-12 h-1 mx-auto rounded-full mt-3"
+              style={{ backgroundColor: primaryColor }}
+            />
           </div>
 
           {activeAdmissionPeriods.length > 0 ? (
@@ -555,7 +566,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
             {!submissionResult ? (
               <div className="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
                 <div>
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  <span
+                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border"
+                    style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
+                  >
                     {selectedPeriod.code} • {selectedPeriod.academicYear}
                   </span>
                   <h3 className="text-lg font-bold text-slate-900 mt-1">
@@ -574,8 +588,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
             ) : (
               <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0 screen-only-controls print:hidden">
                 <div className="flex items-center space-x-2">
-                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span
+                    className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                    style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                     <span>Application Registered</span>
                   </span>
                   <span className="text-xs text-slate-500 font-medium hidden sm:inline">Official Confirmation Receipt Ready</span>
@@ -601,13 +618,13 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-200">
                       <div className="flex items-center gap-3.5">
                         <img
-                          src={madrasa.logoUrl || '/assest/logo/website.logo.png'}
+                          src={madrasa.logoUrl || '/assets/logo/website.logo.png'}
                           alt={madrasa.name}
                           className="h-14 w-auto max-w-[85px] object-contain rounded-lg border border-slate-200/80 bg-white p-0.5 shrink-0"
                           onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             if (!target.src.includes('website.logo.png')) {
-                              target.src = '/assest/logo/website.logo.png';
+                              target.src = '/assets/logo/website.logo.png';
                             }
                           }}
                         />
@@ -615,7 +632,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug">
                             {submissionResult.madrasaName || madrasa.name}
                           </h2>
-                          <div className="text-xs font-bold text-emerald-800 tracking-wider uppercase mt-0.5">
+                          <div
+                            className="text-xs font-bold tracking-wider uppercase mt-0.5"
+                            style={{ color: primaryColor }}
+                          >
                             ONLINE ADMISSION CONFIRMATION
                           </div>
                           <p className="text-[11px] text-slate-500 mt-0.5">
@@ -625,25 +645,28 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 uppercase tracking-wide">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <span
+                          className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wide"
+                          style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
+                        >
+                          <CheckCircle2 className="w-3 h-3" style={{ color: primaryColor }} />
                           <span>Registered</span>
                         </span>
                         <div className="text-[10px] font-mono text-slate-400 mt-1">Official Receipt</div>
                       </div>
                     </div>
 
-                    {/* Islamic Green Accent Divider */}
-                    <div className="h-1 bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-700 rounded-full" />
+                    {/* Accent Divider */}
+                    <div className="h-1 rounded-full" style={{ backgroundColor: primaryColor }} />
 
                     {/* Application Reference Number Card */}
-                    <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="bg-[#F5F5F1] border border-[#E5E5DF] rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                       <div className="space-y-0.5 text-center sm:text-left">
-                        <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
+                        <span className="text-[10px] font-bold uppercase tracking-wider block text-[#666666]">
                           Application Reference Number
                         </span>
                         <div className="flex items-center justify-center sm:justify-start space-x-3">
-                          <span className="text-2xl sm:text-3xl font-mono font-black text-emerald-950 tracking-wider">
+                          <span className="text-2xl sm:text-3xl font-mono font-black text-[#252525] tracking-wider">
                             {submissionResult.applicationNo}
                           </span>
                         </div>
@@ -657,7 +680,8 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleCopyReference}
-                          className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-xs cursor-pointer"
+                          className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-colors shadow-xs cursor-pointer hover:opacity-90"
+                          style={{ backgroundColor: primaryColor }}
                           title="Copy reference number"
                         >
                           <Copy className="w-3.5 h-3.5" />
@@ -728,10 +752,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     </div>
 
                     {/* Strict Email Notice Box */}
-                    <div className="bg-emerald-50/60 border border-emerald-200/70 rounded-xl p-3 flex items-start space-x-2.5 text-xs text-slate-700">
-                      <Mail className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                    <div className="bg-[#F5F5F1] border border-[#E5E5DF] rounded-xl p-3 flex items-start space-x-2.5 text-xs text-slate-700">
+                      <Mail className="w-4 h-4 shrink-0 mt-0.5" style={{ color: primaryColor }} />
                       <div className="space-y-0.5 leading-relaxed">
-                        <p className="font-semibold text-emerald-950">
+                        <p className="font-semibold text-slate-900">
                           Admission decisions and status updates are communicated strictly via email.
                         </p>
                         <p className="text-[11px] text-slate-600">
@@ -767,7 +791,8 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => window.print()}
-                      className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-sm cursor-pointer"
+                      className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white transition-colors shadow-sm cursor-pointer hover:opacity-90"
+                      style={{ backgroundColor: primaryColor }}
                     >
                       <Printer className="w-3.5 h-3.5" />
                       <span>Print Confirmation</span>
@@ -794,7 +819,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   {/* Section 1: Applicant Information */}
                   <div className="space-y-3">
                     <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
-                      <User className="w-3.5 h-3.5 text-emerald-700" />
+                      <User className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Applicant Information</span>
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -808,7 +833,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={applicantName}
                           onChange={(e) => setApplicantName(e.target.value)}
                           placeholder="e.g. Mohammed Ahmed Farhan"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
                         />
                       </div>
 
@@ -821,7 +846,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           required
                           value={dateOfBirth}
                           onChange={(e) => setDateOfBirth(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
                         />
                       </div>
 
@@ -832,7 +857,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                         <select
                           value={gender}
                           onChange={(e) => setGender(e.target.value as 'MALE' | 'FEMALE')}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] bg-white"
                         >
                           <option value="MALE">Male</option>
                           <option value="FEMALE">Female</option>
@@ -841,10 +866,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Section 2: Parent / Guardian Information */}
+                  {/* Section 2: Parent / Legal Guardian Details */}
                   <div className="space-y-3 pt-4 border-t border-slate-100">
                     <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                      <ShieldCheck className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Parent / Legal Guardian Details</span>
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -858,7 +883,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={guardianName}
                           onChange={(e) => setGuardianName(e.target.value)}
                           placeholder="e.g. Ahmed Farhan"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
                         />
                       </div>
 
@@ -869,7 +894,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                         <select
                           value={guardianRelationship}
                           onChange={(e) => setGuardianRelationship(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] bg-white"
                         >
                           <option value="Father">Father</option>
                           <option value="Mother">Mother</option>
@@ -888,7 +913,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={guardianPhone}
                           onChange={(e) => setGuardianPhone(e.target.value)}
                           placeholder="e.g. +94 77 123 4567"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
                         />
                       </div>
 
@@ -902,7 +927,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={guardianEmail}
                           onChange={(e) => setGuardianEmail(e.target.value)}
                           placeholder="e.g. parent@example.com"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
                         />
                         <p className="text-[10px] text-slate-400 mt-1">
                           Important: Application confirmations & status updates are sent strictly by email.
@@ -919,7 +944,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
                           placeholder="Street address, city, postal code"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
                         />
                       </div>
                     </div>
@@ -928,7 +953,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   {/* Section 3: Academic Preference */}
                   <div className="space-y-3 pt-4 border-t border-slate-100">
                     <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
-                      <BookOpen className="w-3.5 h-3.5 text-emerald-700" />
+                      <BookOpen className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Academic Preference</span>
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -939,7 +964,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                         <select
                           value={appliedClassId}
                           onChange={(e) => setAppliedClassId(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-white"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] bg-white"
                         >
                           <option value="">-- Let Institution Determine --</option>
                           {availableClasses.map((cls) => (
@@ -959,7 +984,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={previousSchool}
                           onChange={(e) => setPreviousSchool(e.target.value)}
                           placeholder="e.g. Al-Hikmah Primary School"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
                         />
                       </div>
                     </div>
@@ -969,7 +994,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   <div className="space-y-3 pt-4 border-t border-slate-100">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
-                        <Upload className="w-3.5 h-3.5 text-emerald-700" />
+                        <Upload className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                         <span>Supporting Documents</span>
                       </h4>
                       <span className="text-[11px] text-slate-400">PDF, JPG, PNG (Max 5MB)</span>
@@ -979,9 +1004,9 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                       <div className="flex items-center space-x-3">
                         <label className="cursor-pointer inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 shadow-xs">
                           {uploadingDoc ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: primaryColor }} />
                           ) : (
-                            <Upload className="w-3.5 h-3.5 text-emerald-600" />
+                            <Upload className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                           )}
                           <span>{uploadingDoc ? 'Uploading...' : 'Attach Document'}</span>
                           <input
@@ -1027,7 +1052,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   {/* Section 5: Declaration & Privacy Consent */}
                   <div className="space-y-3 pt-4 border-t border-slate-100">
                     <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                      <ShieldCheck className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Declaration & Privacy Consent</span>
                     </h4>
                     <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
@@ -1037,7 +1062,8 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           required
                           checked={consentAgreed}
                           onChange={(e) => setConsentAgreed(e.target.checked)}
-                          className="mt-0.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 shrink-0"
+                          className="mt-0.5 rounded border-slate-300 w-4 h-4 shrink-0"
+                          style={{ accentColor: primaryColor }}
                         />
                         <span className="text-xs text-slate-700 leading-relaxed">
                           I hereby declare that all information and supporting documents provided in this application are authentic, true, and complete. I authorize <strong>{madrasa.name}</strong> to process these details for admission consideration and agree to receive application notifications and decisions via email.
@@ -1065,7 +1091,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   disabled={submitting || uploadingDoc}
                   className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-colors shadow-sm disabled:opacity-50"
                   style={{
-                    backgroundColor: theme.primaryBtnBg || '#85845C',
+                    backgroundColor: primaryColor,
                     color: theme.primaryBtnText || '#ffffff',
                   }}
                 >

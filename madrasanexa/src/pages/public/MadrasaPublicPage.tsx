@@ -42,6 +42,26 @@ export const MadrasaPublicPage: React.FC = () => {
       });
   }, [slug]);
 
+  // Handle direct hash navigation after profile has loaded and rendered
+  useEffect(() => {
+    if (!loading && profile && window.location.hash) {
+      const hash = window.location.hash;
+      const id = hash.replace('#', '');
+      const timer = setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          const headerOffset = 88;
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          window.scrollTo({
+            top: Math.max(0, elementPosition - headerOffset),
+            behavior: 'smooth',
+          });
+        }
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, profile]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">

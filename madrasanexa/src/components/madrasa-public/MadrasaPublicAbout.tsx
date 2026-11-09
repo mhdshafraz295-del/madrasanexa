@@ -17,21 +17,23 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
   introduction,
   generatedSummary,
   aboutImageUrl,
+  theme,
 }) => {
   const imgSrc = aboutImageUrl || DEFAULT_PORTAL_ABOUT_IMG;
+  const primaryColor = theme.primaryBtnBg || '#504F34';
 
   return (
     <section id="about" className="scroll-mt-28 py-6">
       {/* Centered Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-[#85845C] mb-2 px-3 py-1 rounded-full bg-[#F5F5F1] border border-[#E5E5DF]">
-          <Building2 className="w-3.5 h-3.5 text-[#85845C]" />
+        <div className="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider mb-2 px-3 py-1 rounded-full bg-[#F5F5F1] border border-[#E5E5DF]" style={{ color: primaryColor }}>
+          <Building2 className="w-3.5 h-3.5" style={{ color: primaryColor }} />
           <span>ABOUT OUR MADRASA</span>
         </div>
         <h2 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-[#252525] mb-3">
           About Our Institution
         </h2>
-        <div className="w-16 h-1 bg-[#85845C] mx-auto rounded-full" />
+        <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: primaryColor }} />
       </div>
 
       {/* Cohesive Image & Description Component with ACJU Hover Behavior */}
@@ -84,17 +86,18 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
               )}
             </div>
 
-            {/* Read More Link in Terracotta (Turns White on Hover) */}
+            {/* Read More Link */}
             <div className="mt-6 pt-4 border-t border-[#E5E5DF] group-hover:border-white/20 flex items-center justify-between transition-colors duration-300">
               <a
                 href="#curriculum"
-                className="text-xs sm:text-sm font-bold text-[#E56A45] group-hover:text-white inline-flex items-center gap-1.5 transition-colors duration-300"
+                className="text-xs sm:text-sm font-bold group-hover:text-white inline-flex items-center gap-1.5 transition-colors duration-300"
+                style={{ color: theme.linkColor || primaryColor }}
               >
                 <span>Explore Academic Programs</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </a>
 
-              <span className="text-[11px] font-semibold text-[#85845C] group-hover:text-white/80 transition-colors duration-300">
+              <span className="text-[11px] font-semibold group-hover:text-white/80 transition-colors duration-300" style={{ color: primaryColor }}>
                 Institutional Roster
               </span>
             </div>

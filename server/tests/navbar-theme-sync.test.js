@@ -20,7 +20,7 @@ console.log('\n=== Targeted Test Suite: Public Navbar Theme Synchronization ===\
 // -------------------------------------------------------------
 console.log('Test 1: Verifying default theme background tokens');
 
-assert(DEFAULT_THEME_TOKENS.pageBg === '#fcfbf7', 'DEFAULT_THEME_TOKENS.pageBg is warm off-white (#fcfbf7)');
+assert(DEFAULT_THEME_TOKENS.pageBg === '#ffffff', 'DEFAULT_THEME_TOKENS.pageBg is pure white (#ffffff)');
 assert(DEFAULT_THEME_TOKENS.navbarBg === '#ffffff', 'DEFAULT_THEME_TOKENS.navbarBg is pure white (#ffffff)');
 assert(
   Boolean(DEFAULT_THEME_TOKENS.pageBg && DEFAULT_THEME_TOKENS.navbarBg),

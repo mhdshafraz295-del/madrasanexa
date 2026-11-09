@@ -25,17 +25,19 @@ console.log('\n[TEST 3] WCAG 2.1 AA Contrast Analysis');
 const analysis = analyzeThemeContrast(DEFAULT_THEME_TOKENS);
 assert.equal(analysis.isAccessible, true, 'Default theme is fully accessible');
 assert.equal(analysis.warnings.length, 0, 'Zero contrast warnings for default theme');
-console.log('  ✓ [PASS] Premium Emerald + Gold default tokens pass all WCAG contrast targets');
+console.log('  ✓ [PASS] Official Institutional Olive default tokens pass all WCAG contrast targets');
 
 // TEST 4: Specific Brand Colors Verification
 console.log('\n[TEST 4] Approved Palette Hex Codes');
-assert.equal(DEFAULT_THEME_TOKENS.pageBg, '#fcfbf7', 'pageBg is Warm Off-White');
+assert.equal(DEFAULT_THEME_TOKENS.pageBg, '#ffffff', 'pageBg is Pure White');
 assert.equal(DEFAULT_THEME_TOKENS.navbarBg, '#ffffff', 'navbarBg is Pure White');
-assert.equal(DEFAULT_THEME_TOKENS.heroOverlay, '#064e3b', 'heroOverlay is Deep Islamic Emerald');
-assert.equal(DEFAULT_THEME_TOKENS.footerBg, '#062e24', 'footerBg is Deep Islamic Emerald');
-assert.equal(DEFAULT_THEME_TOKENS.primaryBtnBg, '#047857', 'primaryBtnBg is Classic Islamic Green');
-assert.equal(DEFAULT_THEME_TOKENS.secondaryBtnBorder, '#cbd5e1', 'secondaryBtnBorder is Border Gray');
-assert.equal(DEFAULT_THEME_TOKENS.cardBorderColor, '#e2e8f0', 'cardBorderColor is Soft Border');
+assert.equal(DEFAULT_THEME_TOKENS.heroOverlay, '#504F34', 'heroOverlay is Deep Institutional Olive');
+assert.equal(DEFAULT_THEME_TOKENS.footerBg, '#504F34', 'footerBg is Deep Institutional Olive');
+assert.equal(DEFAULT_THEME_TOKENS.primaryBtnBg, '#504F34', 'primaryBtnBg is Deep Institutional Olive');
+assert.equal(DEFAULT_THEME_TOKENS.headingColor, '#252525', 'headingColor is Charcoal Dark');
+assert.equal(DEFAULT_THEME_TOKENS.linkColor, '#504F34', 'linkColor is Deep Institutional Olive');
+assert.equal(DEFAULT_THEME_TOKENS.secondaryBtnBorder, '#a5a477', 'secondaryBtnBorder is Primary Olive');
+assert.equal(DEFAULT_THEME_TOKENS.cardBorderColor, '#e5e5df', 'cardBorderColor is Soft Border');
 console.log('  ✓ [PASS] Approved brand colors correctly bound to canonical tokens');
 
 console.log('\n=============================================');

@@ -608,7 +608,7 @@ export default function ReportsPage() {
   }, [reportData, activeReport]);
 
   return (
-    <div className="space-y-6 pb-12 font-sans">
+    <div className="space-y-6 pb-12 font-sans print:pb-0">
       {/* 1. PREMIUM PAGE HEADER */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -662,7 +662,7 @@ export default function ReportsPage() {
 
       {/* Global Error Banner */}
       {exportError && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between text-xs text-red-700 shadow-xs">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center justify-between text-xs text-red-700 shadow-xs print:hidden">
           <div className="flex items-center gap-2.5">
             <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
             <span>{exportError}</span>
@@ -680,7 +680,7 @@ export default function ReportsPage() {
       {/* 3. MAIN WORKSPACE CONTAINER: Left Navigator + Main Report Workspace */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         {/* Mobile Report Selector (Dropdown) */}
-        <div className="lg:hidden w-full bg-white border border-[#E7E9EE] rounded-2xl p-3 shadow-xs">
+        <div className="lg:hidden w-full bg-white border border-[#E7E9EE] rounded-2xl p-3 shadow-xs print:hidden">
           <button
             onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}
             className="w-full flex items-center justify-between p-2.5 bg-[#F7F6F1] rounded-xl text-left text-xs font-bold text-[#0F172A]"
@@ -727,7 +727,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Desktop Left-Side Report Navigator (260px) */}
-        <div className="hidden lg:block w-64 shrink-0 bg-white border border-[#E7E9EE] rounded-[22px] p-4 shadow-xs lg:sticky lg:top-4 space-y-6">
+        <div className="hidden lg:block w-64 shrink-0 bg-white border border-[#E7E9EE] rounded-[22px] p-4 shadow-xs lg:sticky lg:top-4 space-y-6 print:hidden">
           <div className="flex items-center gap-2 pb-3 border-b border-[#E7E9EE]">
             <FileBarChart className="w-4 h-4 text-[#37C6A3]" />
             <span className="text-xs font-bold uppercase tracking-wider text-[#0F172A]">Report Catalog</span>
@@ -772,7 +772,7 @@ export default function ReportsPage() {
         </div>
 
         {/* 4. MAIN REPORT WORKSPACE (Fluid remaining width) */}
-        <div className="flex-1 w-full bg-white border border-[#E7E9EE] rounded-[22px] shadow-xs p-5 sm:p-7 space-y-6">
+        <div className="flex-1 min-w-0 w-full bg-white border border-[#E7E9EE] rounded-[22px] shadow-xs p-5 sm:p-7 space-y-6 print:border-0 print:shadow-none print:p-0">
           {/* 5. REPORT-SPECIFIC HEADER WITH EXPORT CONTROLS */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E7E9EE]">
             <div className="flex items-start gap-3.5">
@@ -790,7 +790,7 @@ export default function ReportsPage() {
             </div>
 
             {/* Premium Export Buttons */}
-            <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+            <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0 print:hidden">
               <button
                 onClick={handleExportPdf}
                 disabled={
@@ -830,7 +830,7 @@ export default function ReportsPage() {
           </div>
 
           {/* 6. REPORT FILTERS PANEL */}
-          <div className="bg-[#F7F6F1]/70 border border-[#E7E9EE] rounded-2xl p-4 sm:p-5 space-y-4">
+          <div className="bg-[#F7F6F1]/70 border border-[#E7E9EE] rounded-2xl p-4 sm:p-5 space-y-4 print:hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0F172A]">
                 <Filter className="w-3.5 h-3.5 text-[#37C6A3]" />

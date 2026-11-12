@@ -98,18 +98,18 @@ export default function PaymentDetailPage() {
   const isVoid = payment.status === 'VOID';
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 md:p-8 max-w-5xl mx-auto space-y-6 print:p-0 print:max-w-none">
       {/* Back button & top bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="space-y-1">
           <Link
             to="/madrasa-admin/payments"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5B6B7F] hover:text-[#0F172A] mb-1"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5B6B7F] hover:text-[#0F172A] mb-1 print:hidden"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Payments</span>
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold font-mono text-[#0F172A]">{payment.paymentNo}</h1>
             {isVoid ? (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
@@ -123,7 +123,7 @@ export default function PaymentDetailPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 print:hidden">
           {payment.receipt && (
             <Link
               to={`/madrasa-admin/receipts/${payment.receipt.id}`}
@@ -169,7 +169,7 @@ export default function PaymentDetailPage() {
       {/* Main Grid: Student & Payment Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Student Card */}
-        <div className="bg-white border border-[#E7E9EE] rounded-2xl p-5 shadow-xs space-y-4">
+        <div className="bg-white border border-[#E7E9EE] rounded-2xl p-5 shadow-xs print:shadow-none space-y-4">
           <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-3 text-xs font-bold text-[#7C8A9A] uppercase tracking-wider">
             <User className="w-4 h-4 text-emerald-800" />
             <span>Student Information</span>
@@ -210,7 +210,7 @@ export default function PaymentDetailPage() {
         </div>
 
         {/* Payment Transaction Details Card */}
-        <div className="bg-white border border-[#E7E9EE] rounded-2xl p-5 shadow-xs space-y-4">
+        <div className="bg-white border border-[#E7E9EE] rounded-2xl p-5 shadow-xs print:shadow-none space-y-4">
           <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-3 text-xs font-bold text-[#7C8A9A] uppercase tracking-wider">
             <CreditCard className="w-4 h-4 text-emerald-800" />
             <span>Transaction Details</span>
@@ -255,7 +255,7 @@ export default function PaymentDetailPage() {
       </div>
 
       {/* Allocations Table */}
-      <div className="bg-white border border-[#E7E9EE] rounded-2xl shadow-xs overflow-hidden">
+      <div className="bg-white border border-[#E7E9EE] rounded-2xl shadow-xs print:shadow-none overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-[#E7E9EE] flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold text-[#0F172A]">Invoice Allocations</h3>
@@ -313,7 +313,7 @@ export default function PaymentDetailPage() {
 
       {/* Void Modal */}
       {voidModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4 print:hidden">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-[#E7E9EE]">
             <div className="flex items-center gap-2 text-red-600 font-bold">
               <Ban className="w-5 h-5" />

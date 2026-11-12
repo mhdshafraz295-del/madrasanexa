@@ -716,7 +716,7 @@ export const StudentRecordsPanels: React.FC<StudentRecordsPanelsProps> = ({
       {activeSubTab === 'QUALIFICATIONS' && (
         <div className="space-y-5">
           {/* KPI Summary Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div className="bg-white p-4 rounded-2xl border border-[#E7E9EE] shadow-xs">
               <span className="text-[11px] font-bold text-[#7C8A9A] uppercase">Total Records</span>
               <div className="text-xl font-black text-[#0F172A] mt-1">{qualSummary.total}</div>
@@ -894,7 +894,7 @@ export const StudentRecordsPanels: React.FC<StudentRecordsPanelsProps> = ({
       {activeSubTab === 'DISCIPLINE' && (
         <div className="space-y-5">
           {/* KPI Summary Cards separating Unconfirmed, Confirmed, and Dismissed */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div className="bg-white p-4 rounded-2xl border border-[#E7E9EE] shadow-xs">
               <span className="text-[11px] font-bold text-[#7C8A9A] uppercase">Total Logged</span>
               <div className="text-xl font-black text-[#0F172A] mt-1">{incidentSummary.total}</div>
@@ -1580,8 +1580,8 @@ export const StudentRecordsPanels: React.FC<StudentRecordsPanelsProps> = ({
                   </button>
 
                   {qualFile && (
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#F8F9FA] border border-[#E7E9EE] rounded-xl text-xs">
-                      <span className="font-mono text-[#0F172A] max-w-xs truncate" title={qualFile.name}>
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#F8F9FA] border border-[#E7E9EE] rounded-xl text-xs max-w-full">
+                      <span className="font-mono text-[#0F172A] max-w-[180px] sm:max-w-xs truncate" title={qualFile.name}>
                         {qualFile.name}
                       </span>
                       <button
@@ -1628,7 +1628,7 @@ export const StudentRecordsPanels: React.FC<StudentRecordsPanelsProps> = ({
       ===================================================================== */}
       {reviewingQual && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xl w-full max-w-md p-5 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3">
               <h3 className="text-sm font-bold text-[#0F172A]">Verify or Reject Certificate</h3>
               <button onClick={() => setReviewingQual(null)} className="text-[#7C8A9A] hover:text-[#0F172A]">
@@ -1887,8 +1887,8 @@ export const StudentRecordsPanels: React.FC<StudentRecordsPanelsProps> = ({
                   </button>
 
                   {incidentFile && (
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#F8F9FA] border border-[#E7E9EE] rounded-xl text-xs">
-                      <span className="font-mono text-[#0F172A] max-w-xs truncate" title={incidentFile.name}>
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#F8F9FA] border border-[#E7E9EE] rounded-xl text-xs max-w-full">
+                      <span className="font-mono text-[#0F172A] max-w-[180px] sm:max-w-xs truncate" title={incidentFile.name}>
                         {incidentFile.name}
                       </span>
                       <button

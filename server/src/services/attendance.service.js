@@ -7,7 +7,7 @@ import {
   calculateMonthlyClassAttendanceRate,
   calculateAverageDailyAttendanceRate,
 } from './attendance-calculation.service.js';
-import { renderRawHtmlToPdf } from './pdf-report.service.js';
+import { renderRawHtmlToPdf, embeddedFontsCss } from './pdf-report.service.js';
 import { resolveLogoDataUri } from './branding.service.js';
 import { generateCsvString } from './csv-report.service.js';
 
@@ -686,6 +686,7 @@ export async function generateDailyAttendancePdf(madrasaId, params) {
         <meta charset="utf-8" />
         <title>Daily Attendance - ${escapeHtml(data.className)} - ${escapeHtml(data.date)}</title>
         <style>
+          ${embeddedFontsCss}
           @page {
             size: A4 portrait;
             margin: 15mm 12mm;
@@ -696,7 +697,7 @@ export async function generateDailyAttendancePdf(madrasaId, params) {
           body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Noto Sans Local', 'Noto Sans Tamil Local', 'Noto Sans Sinhala Local', 'Noto Sans Arabic Local', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: #0F172A;
             background: #FFFFFF;
             -webkit-print-color-adjust: exact;
@@ -822,6 +823,7 @@ export async function generateMonthlyAttendancePdf(madrasaId, params) {
         <meta charset="utf-8" />
         <title>Monthly Attendance - ${escapeHtml(data.className)} - ${escapeHtml(data.month)}</title>
         <style>
+          ${embeddedFontsCss}
           @page {
             size: A4 portrait;
             margin: 15mm 12mm;
@@ -832,7 +834,7 @@ export async function generateMonthlyAttendancePdf(madrasaId, params) {
           body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Noto Sans Local', 'Noto Sans Tamil Local', 'Noto Sans Sinhala Local', 'Noto Sans Arabic Local', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: #0F172A;
             background: #FFFFFF;
             -webkit-print-color-adjust: exact;

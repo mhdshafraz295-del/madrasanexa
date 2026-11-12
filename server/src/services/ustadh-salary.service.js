@@ -4,7 +4,7 @@ import { logTenantActivity } from './tenant.service.js';
 import { parseDateOnly, formatDateOnly } from './ustadh.service.js';
 import { getMonthlyAttendanceSummary } from './ustadh-attendance.service.js';
 import { sendUstadhSalaryPaidEmail, sendUstadhDirectEmail } from './email.service.js';
-import { renderRawHtmlToPdf, formatPaymentMethodLabel } from './pdf-report.service.js';
+import { renderRawHtmlToPdf, formatPaymentMethodLabel, embeddedFontsCss } from './pdf-report.service.js';
 import { resolveLogoDataUri } from './branding.service.js';
 import { Prisma } from '@prisma/client';
 import { maskRecipientAddress } from './notification.service.js';
@@ -602,12 +602,13 @@ export async function generateSalarySlipPdf(madrasaId, salaryId) {
     <meta charset="utf-8" />
     <title>Salary Slip - ${ustadhCode} - ${monthStr}</title>
     <style>
+      ${embeddedFontsCss}
       @page {
         size: A4 portrait;
         margin: 15mm 15mm;
       }
       body {
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        font-family: 'Noto Sans Local', 'Noto Sans Tamil Local', 'Noto Sans Sinhala Local', 'Noto Sans Arabic Local', 'Helvetica Neue', Helvetica, Arial, sans-serif;
         color: #0F172A;
         background-color: #FFFFFF;
         margin: 0;

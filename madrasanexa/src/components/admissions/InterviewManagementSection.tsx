@@ -852,7 +852,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
         </div>
 
         {/* Filter Dropdowns */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2 pt-2 border-t border-slate-100">
           <div>
             <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Intake Cycle</label>
             <select
@@ -1153,7 +1153,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
         {/* Pagination Bar */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
             <div>
               Showing page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalAppointments} total)
             </div>
@@ -1206,7 +1206,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
             </div>
 
             {/* Stepper Progress */}
-            <div className="px-6 py-2 bg-slate-100 flex items-center space-x-4 text-xs font-semibold">
+            <div className="px-6 py-2 bg-slate-100 flex items-center space-x-4 text-xs font-semibold overflow-x-auto whitespace-nowrap shrink-0">
               <div className={`flex items-center space-x-1.5 ${wizardStep >= 1 ? 'text-emerald-700' : 'text-slate-400'}`}>
                 <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${wizardStep >= 1 ? 'bg-emerald-700 text-white' : 'bg-slate-300'}`}>1</span>
                 <span>Candidates</span>
@@ -1437,7 +1437,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
                   {/* Method-Specific Inputs */}
                   {scheduleMethod === 'SAME_TIME' ? (
-                    <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">Start Time (24h)</label>
                         <input
@@ -1458,7 +1458,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">First Candidate Start Time</label>
                         <input
@@ -1571,12 +1571,12 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                         {customSlots.map((slot, idx) => {
                           const app = eligibleApplicants.find((a) => a.id === slot.applicationId);
                           return (
-                            <div key={slot.applicationId} className="p-3 flex items-center justify-between text-xs hover:bg-slate-50">
-                              <div>
-                                <span className="font-bold text-slate-900">#{idx + 1} {app?.applicantName}</span>
+                            <div key={slot.applicationId} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs hover:bg-slate-50">
+                              <div className="min-w-0">
+                                <span className="font-bold text-slate-900 break-words">#{idx + 1} {app?.applicantName}</span>
                                 <span className="text-[11px] text-slate-500 ml-2 font-mono">({app?.applicationNo})</span>
                               </div>
-                              <div className="flex items-center space-x-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <input
                                   type="time"
                                   value={slot.startTime}
@@ -1618,7 +1618,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-200 flex items-center justify-between bg-slate-50/50">
+            <div className="p-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/50 shrink-0">
               {wizardStep > 1 ? (
                 <button
                   type="button"
@@ -1628,10 +1628,10 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                   Back
                 </button>
               ) : (
-                <div />
+                <div className="hidden sm:block" />
               )}
 
-              <div className="flex items-center space-x-2">
+              <div className="flex flex-wrap items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowWizardModal(false)}
@@ -1721,7 +1721,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
               {/* Attendance Selection */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-2">Candidate Attendance</label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setEvalAttendance('PRESENT')}
@@ -1771,7 +1771,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     <span className="text-xs font-black text-emerald-700">Total: {calculatedTotalScore}%</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 mb-1">Quran Recitation & Tajweed</label>
                       <input
@@ -1927,8 +1927,8 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
       {/* MODAL 3: Reschedule Dialog                                   */}
       {/* ============================================================= */}
       {showRescheduleModal && selectedAppointment && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
             <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
               <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
                 <RotateCcw className="w-5 h-5 text-purple-700" />
@@ -1959,7 +1959,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Start Time</label>
                   <input
@@ -2028,8 +2028,8 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
       {/* MODAL 4: Cancellation Dialog                                 */}
       {/* ============================================================= */}
       {showCancelModal && selectedAppointment && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
             <div className="p-5 border-b border-slate-200 bg-rose-50/50 flex items-center justify-between">
               <h3 className="text-base font-bold text-rose-900 flex items-center space-x-2">
                 <XCircle className="w-5 h-5 text-rose-600" />

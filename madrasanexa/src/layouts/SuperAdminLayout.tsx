@@ -47,7 +47,7 @@ export default function SuperAdminLayout() {
   return (
     <div className="min-h-screen bg-[#F7F6F1] flex flex-col md:flex-row text-[#0F172A]">
       {/* Mobile Top Header */}
-      <header className="md:hidden bg-white border-b border-[#E7E9EE] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+      <header className="md:hidden bg-white border-b border-[#E7E9EE] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-sm print:hidden">
         <div className="flex items-center gap-2.5">
           <img src={logoUrl} alt="MadrasaNexa" className="h-8 w-auto object-contain" />
           <span className="text-xs font-bold uppercase tracking-wider bg-[#0F172A] text-white px-2 py-0.5 rounded">
@@ -64,11 +64,11 @@ export default function SuperAdminLayout() {
 
       {/* Sidebar for Desktop & Mobile Drawer */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-[#E7E9EE] flex flex-col justify-between z-40 transition-transform duration-200 ease-in-out md:translate-x-0 ${
+        className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-[#E7E9EE] flex flex-col justify-between z-40 transition-transform duration-200 ease-in-out md:translate-x-0 print:hidden ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="p-5">
+        <div className="p-5 flex-1 min-h-0 overflow-y-auto">
           {/* Logo Brand */}
           <div className="flex items-center gap-3 pb-6 border-b border-[#E7E9EE]">
             <img src={logoUrl} alt="MadrasaNexa" className="h-10 w-auto object-contain" />
@@ -139,10 +139,10 @@ export default function SuperAdminLayout() {
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 flex flex-col min-h-screen">
-        <div className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto">
+        <div className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto print:p-0 print:max-w-none">
           <Outlet />
         </div>
-        <footer className="py-4 px-6 border-t border-[#E7E9EE] bg-white text-center text-xs text-[#7C8A9A]">
+        <footer className="py-4 px-6 border-t border-[#E7E9EE] bg-white text-center text-xs text-[#7C8A9A] print:hidden">
           MadrasaNexa &copy; {new Date().getFullYear()} &bull; Multi-Tenant Platform Administration
         </footer>
       </main>

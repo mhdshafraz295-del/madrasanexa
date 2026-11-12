@@ -440,7 +440,7 @@ export default function AnnouncementsPage() {
 
       {/* Filters Bar */}
       <div className="bg-white p-4 rounded-2xl border border-[#E7E9EE] shadow-xs space-y-3">
-        <div className="flex flex-col md:flex-row gap-3">
+        <div className="flex flex-col md:flex-row md:flex-wrap gap-3">
           {/* Search */}
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-[#7C8A9A] absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -674,7 +674,7 @@ export default function AnnouncementsPage() {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs">
+          <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="text-[#7C8A9A]">
               Showing page <span className="font-bold text-[#0F172A]">{pagination.page}</span> of{' '}
               <span className="font-bold text-[#0F172A]">{pagination.totalPages}</span> ({pagination.total} total)
@@ -801,7 +801,7 @@ export default function AnnouncementsPage() {
               {/* Audience Choice */}
               <div>
                 <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Target Audience</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setFormAudience('ALL_MADRASAS')}
@@ -938,7 +938,7 @@ export default function AnnouncementsPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="pt-4 border-t border-[#E7E9EE] flex items-center justify-between shrink-0">
+              <div className="pt-4 border-t border-[#E7E9EE] flex flex-wrap items-center justify-between gap-2 shrink-0">
                 <button
                   type="button"
                   onClick={handlePreviewFromForm}
@@ -976,7 +976,7 @@ export default function AnnouncementsPage() {
           ======================================================== */}
       {isPublishModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-2xl max-w-md w-full p-5 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-5 space-y-4">
             <div className="flex items-center gap-2.5">
               <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
                 <Send className="w-5 h-5" />
@@ -1041,7 +1041,7 @@ export default function AnnouncementsPage() {
           ======================================================== */}
       {isPreviewOpen && previewData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/50 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-2xl max-w-xl w-full p-6 space-y-4">
+          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3">
               <span className="text-[11px] font-mono uppercase tracking-wider text-[#7C8A9A]">
                 Tenant View Simulation
@@ -1052,7 +1052,7 @@ export default function AnnouncementsPage() {
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {renderPriorityBadge(previewData.priority)}
                 <span className="text-[10px] font-mono px-2 py-0.5 bg-slate-100 text-slate-600 rounded">
                   {previewData.category}

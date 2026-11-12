@@ -59,7 +59,7 @@ export const BankDetailsCard: React.FC<BankDetailsCardProps> = ({
         </div>
 
         {/* Selected Plan Payable Context Box */}
-        <div className="p-3.5 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE] flex items-center gap-4 shrink-0">
+        <div className="p-3.5 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE] flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4 min-w-0">
           <div>
             <div className="text-[10px] font-bold uppercase tracking-wider text-[#7C8A9A]">
               Payable Amount
@@ -110,7 +110,7 @@ export const BankDetailsCard: React.FC<BankDetailsCardProps> = ({
             </div>
 
             {/* Account Name */}
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <span className="text-[11px] font-semibold text-[#7C8A9A] uppercase tracking-wider">
                 Account Name
               </span>
@@ -137,7 +137,7 @@ export const BankDetailsCard: React.FC<BankDetailsCardProps> = ({
             </div>
 
             {/* Account Number */}
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0">
               <span className="text-[11px] font-semibold text-[#7C8A9A] uppercase tracking-wider">
                 Account Number
               </span>

@@ -160,9 +160,9 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
 
       {/* Warning banner if unmarked students exist */}
       {unmarkedCount > 0 && (
-        <div className="bg-amber-50/80 border-b border-amber-200/80 px-4 py-2.5 flex items-center justify-between text-xs text-amber-800">
-          <div className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+        <div className="bg-amber-50/80 border-b border-amber-200/80 px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-amber-800">
+          <div className="flex items-start sm:items-center gap-2 min-w-0">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5 sm:mt-0" />
             <span>
               <strong>{unmarkedCount}</strong> student{unmarkedCount > 1 ? 's are' : ' is'} currently unmarked. Every eligible student must be marked <strong>Present</strong> or <strong>Absent</strong> before saving.
             </span>
@@ -170,7 +170,7 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
           <button
             type="button"
             onClick={() => setStatusFilter('UNMARKED')}
-            className="text-amber-900 font-semibold underline hover:text-amber-700 ml-2 shrink-0"
+            className="text-amber-900 font-semibold underline hover:text-amber-700 sm:ml-2 shrink-0 self-start sm:self-auto"
           >
             View Unmarked
           </button>
@@ -274,17 +274,17 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
 
                     {/* Student Name & Profile Link */}
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
                         {onViewStudentProfile ? (
                           <button
                             type="button"
                             onClick={() => onViewStudentProfile(st.studentId)}
-                            className="font-semibold text-stone-900 hover:text-emerald-700 hover:underline text-left transition-colors"
+                            className="font-semibold text-stone-900 hover:text-emerald-700 hover:underline text-left transition-colors break-words"
                           >
                             {st.fullName}
                           </button>
                         ) : (
-                          <span className="font-semibold text-stone-900">{st.fullName}</span>
+                          <span className="font-semibold text-stone-900 break-words">{st.fullName}</span>
                         )}
                         {isUnmarked && (
                           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">

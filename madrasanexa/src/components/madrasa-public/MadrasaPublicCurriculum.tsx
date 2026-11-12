@@ -310,10 +310,10 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
               {/* Active Level's Subjects & Multi-Book Grid */}
               {activeLevel && (
                 <div className="space-y-4 pt-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <GraduationCap className="w-4 h-4 text-[#85845C]" />
-                      <h4 className="text-sm font-bold text-[#252525]">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2 min-w-0">
+                      <GraduationCap className="w-4 h-4 shrink-0 text-[#85845C]" />
+                      <h4 className="text-sm font-bold text-[#252525] break-words">
                         {activeLevel.levelLabel} {activeLevel.streamName ? `(${activeLevel.streamName})` : ''} Subjects
                       </h4>
                     </div>
@@ -379,8 +379,8 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                                       key={bk.id}
                                       className="bg-[#F5F5F1] rounded-xl p-2.5 border border-[#E5E5DF] text-xs shadow-2xs"
                                     >
-                                      <div className="flex items-center justify-between">
-                                        <span className="font-bold text-[#252525]">
+                                      <div className="flex flex-wrap items-center justify-between gap-2">
+                                        <span className="font-bold text-[#252525] min-w-0 break-words">
                                           {bk.title}
                                         </span>
                                         {bk.completionNotes && (

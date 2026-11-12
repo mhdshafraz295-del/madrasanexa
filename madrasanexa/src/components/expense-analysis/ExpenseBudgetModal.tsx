@@ -122,7 +122,7 @@ export const ExpenseBudgetModal: React.FC<ExpenseBudgetModalProps> = ({
                   <div className="text-[10px] text-[#7C8A9A] truncate">{cat.description || 'No description'}</div>
                 </div>
 
-                <div className="w-36 flex items-center gap-1.5">
+                <div className="w-28 sm:w-36 shrink-0 flex items-center gap-1.5">
                   <span className="text-xs font-bold text-[#7C8A9A]">{currency}</span>
                   <input
                     type="text"
@@ -137,7 +137,7 @@ export const ExpenseBudgetModal: React.FC<ExpenseBudgetModalProps> = ({
           )}
         </form>
 
-        <div className="pt-4 border-t border-[#E7E9EE] flex items-center justify-between">
+        <div className="pt-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <span className="text-[10px] text-[#7C8A9A] uppercase font-bold tracking-wider block">
               Total Monthly Budget
@@ -147,7 +147,7 @@ export const ExpenseBudgetModal: React.FC<ExpenseBudgetModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}

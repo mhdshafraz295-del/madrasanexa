@@ -249,7 +249,7 @@ export const ManagePlanFeaturesModal: React.FC<ManagePlanFeaturesModalProps> = (
         </div>
 
         {/* 6. Modal Footer */}
-        <div className="flex items-center justify-between pt-3 border-t border-[#E7E9EE] shrink-0 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[#E7E9EE] shrink-0 text-xs">
           <button
             type="button"
             onClick={handleResetToCurrent}

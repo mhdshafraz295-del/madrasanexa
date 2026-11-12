@@ -304,7 +304,7 @@ export const MonthlySalaryTab: React.FC<MonthlySalaryTabProps> = ({
       <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-700">
-            <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">
+            <thead className="bg-slate-50 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200 whitespace-nowrap">
               <tr>
                 <th className="py-3.5 px-4">Staff Member</th>
                 <th className="py-3.5 px-4">Base Salary</th>

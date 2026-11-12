@@ -110,7 +110,7 @@ export default function AboutSection({ aboutUs }: AboutSectionProps) {
               </div>
 
               {/* Terracotta Read More link (Turns white on hover) */}
-              <div className="mt-6 pt-4 border-t border-[#E5E5DF] group-hover:border-white/20 flex items-center justify-between transition-colors duration-300">
+              <div className="mt-6 pt-4 border-t border-[#E5E5DF] group-hover:border-white/20 flex flex-wrap items-center justify-between gap-2 transition-colors duration-300">
                 <Link
                   to="/about-us"
                   className="text-xs sm:text-sm font-bold text-[#E56A45] group-hover:text-white inline-flex items-center gap-1.5 transition-colors duration-300"

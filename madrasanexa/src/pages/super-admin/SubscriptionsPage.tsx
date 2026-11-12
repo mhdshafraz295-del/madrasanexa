@@ -142,34 +142,36 @@ export default function SubscriptionsPage() {
                       <td className="px-5 py-3 font-mono">
                         {sub ? `$${Number(sub.priceAtPurchase || 0).toFixed(2)}` : '-'}
                       </td>
-                      <td className="px-5 py-3 text-right space-x-2">
-                        {sub && sub.status === 'ACTIVE' && (
-                          <button
-                            onClick={() => handleSuspendSub(sub.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-[11px] font-semibold transition cursor-pointer"
-                            title="Suspend Term"
+                      <td className="px-5 py-3 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center justify-end gap-2">
+                          {sub && sub.status === 'ACTIVE' && (
+                            <button
+                              onClick={() => handleSuspendSub(sub.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-[11px] font-semibold transition cursor-pointer"
+                              title="Suspend Term"
+                            >
+                              <PauseCircle className="w-3 h-3" />
+                              <span>Suspend</span>
+                            </button>
+                          )}
+                          {sub && sub.status !== 'CANCELLED' && (
+                            <button
+                              onClick={() => handleCancelSub(sub.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-[11px] font-semibold transition cursor-pointer"
+                              title="Cancel Term"
+                            >
+                              <XCircle className="w-3 h-3" />
+                              <span>Cancel</span>
+                            </button>
+                          )}
+                          <Link
+                            to={`/super-admin/madrasas/${m.id}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F7F6F1] hover:bg-[#E7E9EE] text-[#0F172A] rounded-lg text-[11px] font-semibold transition cursor-pointer"
                           >
-                            <PauseCircle className="w-3 h-3" />
-                            <span>Suspend</span>
-                          </button>
-                        )}
-                        {sub && sub.status !== 'CANCELLED' && (
-                          <button
-                            onClick={() => handleCancelSub(sub.id)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-[11px] font-semibold transition cursor-pointer"
-                            title="Cancel Term"
-                          >
-                            <XCircle className="w-3 h-3" />
-                            <span>Cancel</span>
-                          </button>
-                        )}
-                        <Link
-                          to={`/super-admin/madrasas/${m.id}`}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F7F6F1] hover:bg-[#E7E9EE] text-[#0F172A] rounded-lg text-[11px] font-semibold transition cursor-pointer"
-                        >
-                          <span>Manage</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </Link>
+                            <span>Manage</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </Link>
+                        </div>
                       </td>
                     </tr>
                   );

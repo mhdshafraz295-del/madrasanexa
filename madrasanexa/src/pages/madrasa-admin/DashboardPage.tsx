@@ -143,7 +143,7 @@ export default function DashboardPage() {
   ].filter((d) => d.value > 0);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-10rem)] md:h-[calc(100dvh-11.5rem)] min-h-[520px] overflow-hidden">
+    <div className="flex flex-col md:h-[calc(100dvh-11.5rem)] md:min-h-[520px] md:overflow-hidden">
       {/* Fixed Top Section: Dashboard Header & Live Clock */}
       <div className="shrink-0 space-y-4 pb-4 bg-[#F7F6F1] z-20">
         {/* Top Header & Range Controls */}
@@ -154,8 +154,8 @@ export default function DashboardPage() {
               Real-time fee collection performance, student capacity, and subscription status.
             </p>
           </div>
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center bg-white border border-[#E7E9EE] rounded-xl p-1 shadow-xs">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex flex-wrap items-center bg-white border border-[#E7E9EE] rounded-xl p-1 shadow-xs">
               {[
                 { id: 'current_month', label: 'This Month' },
                 { id: '3m', label: '3M' },
@@ -192,15 +192,15 @@ export default function DashboardPage() {
       </div>
 
       {/* Scrollable Analytics / Charts Section */}
-      <div className="flex-1 overflow-y-auto space-y-6 pr-1 sm:pr-2 pb-6">
+      <div className="md:flex-1 md:overflow-y-auto space-y-6 md:pr-2 pb-6">
         {/* Expiring Soon Banner */}
       {subscription.isExpiringSoon && (
-        <div className="bg-[#FFD978]/25 border border-[#FFD978]/80 rounded-2xl p-4 sm:p-5 flex items-start gap-4 shadow-xs">
+        <div className="bg-[#FFD978]/25 border border-[#FFD978]/80 rounded-2xl p-4 sm:p-5 flex flex-wrap items-start gap-4 shadow-xs">
           <div className="p-2.5 rounded-xl bg-[#FFD978]/60 text-amber-950 shrink-0 mt-0.5">
             <Clock className="w-5 h-5 text-amber-900" />
           </div>
-          <div className="flex-1 space-y-1">
-            <div className="flex items-center gap-2">
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-sm font-bold text-[#0F172A]">
                 Subscription Expiring Soon
               </h3>
@@ -214,7 +214,7 @@ export default function DashboardPage() {
           </div>
           <Link
             to="/madrasa-admin/subscription"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#0F172A] text-white rounded-xl text-xs font-semibold shrink-0 hover:bg-[#0F172A]/90 transition"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#0F172A] text-white rounded-xl text-xs font-semibold shrink-0 hover:bg-[#0F172A]/90 transition"
           >
             <span>View Subscription</span>
             <ArrowRight className="w-3 h-3" />
@@ -225,11 +225,11 @@ export default function DashboardPage() {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Students */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between">
-          <div>
+        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-[#7C8A9A]">Total Students</p>
-            <h3 className="text-2xl font-bold text-[#0F172A] mt-1">{kpis.totalStudents}</h3>
-            <div className="flex items-center gap-2 mt-2 text-[11px]">
+            <h3 className="text-2xl font-bold text-[#0F172A] mt-1 break-words">{kpis.totalStudents}</h3>
+            <div className="flex flex-wrap items-center gap-2 mt-2 text-[11px]">
               <span className="text-emerald-700 font-medium">{kpis.activeStudents} Active</span>
               <span className="text-[#7C8A9A]">&bull;</span>
               <span className="text-[#7C8A9A]">{kpis.activeClasses} Active Classes</span>
@@ -241,10 +241,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Current Month Expected Fees */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between">
-          <div>
+        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-[#7C8A9A]">This Month Expected</p>
-            <h3 className="text-xl font-bold text-[#0F172A] mt-1">{formatLKR(kpis.currentMonthExpectedFees)}</h3>
+            <h3 className="text-xl font-bold text-[#0F172A] mt-1 break-words">{formatLKR(kpis.currentMonthExpectedFees)}</h3>
             <p className="text-[11px] text-[#7C8A9A] mt-2">Billed institutional invoices</p>
           </div>
           <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
@@ -253,13 +253,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Current Month Collected Fees */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between">
-          <div>
+        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-[#7C8A9A]">This Month Collected</p>
-            <h3 className="text-xl font-bold text-emerald-700 mt-1">{formatLKR(kpis.currentMonthCollectedFees)}</h3>
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-amber-800 font-medium">
+            <h3 className="text-xl font-bold text-emerald-700 mt-1 break-words">{formatLKR(kpis.currentMonthCollectedFees)}</h3>
+            <div className="flex flex-wrap items-center gap-1.5 mt-2 text-[11px] text-amber-800 font-medium">
               <span>Pending:</span>
-              <span className="font-semibold">{formatLKR(kpis.currentMonthPendingFees)}</span>
+              <span className="font-semibold break-words">{formatLKR(kpis.currentMonthPendingFees)}</span>
             </div>
           </div>
           <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
@@ -268,10 +268,10 @@ export default function DashboardPage() {
         </div>
 
         {/* Outstanding Balance & Subscription */}
-        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between">
-          <div>
+        <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between gap-3">
+          <div className="min-w-0">
             <p className="text-xs font-medium text-[#7C8A9A]">Total Outstanding</p>
-            <h3 className="text-xl font-bold text-[#0F172A] mt-1">{formatLKR(kpis.totalOutstandingBalance)}</h3>
+            <h3 className="text-xl font-bold text-[#0F172A] mt-1 break-words">{formatLKR(kpis.totalOutstandingBalance)}</h3>
             <div className="flex items-center gap-2 mt-2 text-[11px]">
               <span className="px-2 py-0.5 rounded font-bold bg-[#37C6A3]/15 text-[#0F172A]">
                 {subscription.subscription?.plan?.name || 'Active Plan'}

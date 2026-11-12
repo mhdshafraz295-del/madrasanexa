@@ -215,11 +215,11 @@ export const SubjectManagerModal: React.FC<SubjectManagerModalProps> = ({
                 {existingSubjects.map((as) => (
                   <div
                     key={as.id}
-                    className="p-3 bg-white hover:bg-stone-50/60 flex items-center justify-between transition-colors"
+                    className="p-3 bg-white hover:bg-stone-50/60 flex items-center justify-between gap-2 transition-colors"
                   >
-                    <div>
-                      <div className="text-sm font-medium text-stone-900 flex items-center gap-2">
-                        <span>{as.subject?.name}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium text-stone-900 flex flex-wrap items-center gap-2">
+                        <span className="truncate max-w-full" title={as.subject?.name}>{as.subject?.name}</span>
                         {as.subject?.code && (
                           <span className="text-[11px] px-1.5 py-0.5 rounded-md bg-stone-100 text-stone-600 font-mono">
                             {as.subject.code}

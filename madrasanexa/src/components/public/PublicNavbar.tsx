@@ -82,7 +82,7 @@ export default function PublicNavbar({ contactEnabled = true }: PublicNavbarProp
                 <span className="font-serif font-bold text-lg sm:text-xl tracking-tight text-[#252525]">
                   MadrasaNexa
                 </span>
-                <span className="text-[10px] uppercase tracking-widest text-[#666666] font-semibold -mt-1 hidden sm:block">
+                <span className="text-[10px] uppercase tracking-widest text-[#666666] font-semibold -mt-1 hidden xl:block">
                   Islamic Institutional Platform
                 </span>
               </div>
@@ -99,10 +99,10 @@ export default function PublicNavbar({ contactEnabled = true }: PublicNavbarProp
                   <Tag
                     key={item.label}
                     {...linkProps as any}
-                    className="relative inline-flex items-center px-3.5 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap text-[#252525] hover:text-[#85845C] transition-colors duration-200 group"
+                    className="relative inline-flex items-center px-2 xl:px-3.5 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap text-[#252525] hover:text-[#85845C] transition-colors duration-200 group"
                   >
                     <span>{item.label}</span>
-                    <span className="absolute bottom-1 left-3.5 right-3.5 h-0.5 bg-[#85845C] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center" />
+                    <span className="absolute bottom-1 left-2 right-2 xl:left-3.5 xl:right-3.5 h-0.5 bg-[#85845C] scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center" />
                   </Tag>
                 );
               })}
@@ -114,7 +114,7 @@ export default function PublicNavbar({ contactEnabled = true }: PublicNavbarProp
                   onClick={() => setQuickLinksOpen(!quickLinksOpen)}
                   onMouseEnter={() => setQuickLinksOpen(true)}
                   aria-expanded={quickLinksOpen}
-                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap transition-colors duration-200 cursor-pointer ${
+                  className={`inline-flex items-center gap-1.5 px-2 xl:px-3.5 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap transition-colors duration-200 cursor-pointer ${
                     quickLinksOpen ? 'text-[#85845C] bg-[#F5F5F1]' : 'text-[#252525] hover:text-[#85845C]'
                   }`}
                 >
@@ -167,16 +167,16 @@ export default function PublicNavbar({ contactEnabled = true }: PublicNavbarProp
             </div>
 
             {/* Desktop CTAs: Clean Dark Olive Action Button */}
-            <div className="hidden lg:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-2 xl:gap-3 shrink-0">
               <Link
                 to="/login"
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-[#252525] hover:text-[#85845C] hover:bg-[#F5F5F1] transition duration-150"
+                className="px-3 xl:px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap text-[#252525] hover:text-[#85845C] hover:bg-[#F5F5F1] transition duration-150"
               >
                 Portal Login
               </Link>
               <Link
                 to="/register"
-                className="btn-olive-primary inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-semibold"
+                className="btn-olive-primary inline-flex items-center gap-1.5 px-4 xl:px-5 py-2.5 text-xs font-semibold whitespace-nowrap"
               >
                 <span>Get Started</span>
                 <ArrowRight className="w-3.5 h-3.5 text-white" />

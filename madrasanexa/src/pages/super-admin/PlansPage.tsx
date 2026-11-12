@@ -365,7 +365,7 @@ export default function PlansPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="space-y-6">
       {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -380,7 +380,7 @@ export default function PlansPage() {
             setCreateError(null);
             setCodeManuallyEdited(false);
           }}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FFD978] hover:bg-[#ffe18f] text-[#0F172A] rounded-xl text-xs font-semibold transition cursor-pointer shadow-xs min-h-[44px]"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#FFD978] hover:bg-[#ffe18f] text-[#0F172A] rounded-xl text-xs font-semibold transition cursor-pointer shadow-xs min-h-[44px] w-full sm:w-auto shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Create Plan</span>
@@ -388,7 +388,7 @@ export default function PlansPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-2">
+      <div className="flex flex-wrap items-center gap-2 border-b border-[#E7E9EE] pb-2">
         <button
           type="button"
           onClick={() => setActiveTab('plans')}
@@ -546,7 +546,7 @@ export default function PlansPage() {
         </div>
 
         {/* Status Filters */}
-        <div className="flex items-center gap-2 w-full md:w-auto justify-start md:justify-end">
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-between md:justify-end">
           <div className="flex items-center bg-[#F7F6F1] p-1 rounded-xl border border-[#E7E9EE]">
             {(['ALL', 'ACTIVE', 'INACTIVE'] as const).map((status) => (
               <button
@@ -782,7 +782,7 @@ export default function PlansPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-4 gap-1.5 pt-2 border-t border-[#E7E9EE]">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-[#E7E9EE]">
                     <button
                       onClick={() => setFeatureModalState({ isOpen: true, plan })}
                       className="py-2 px-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-[11px] font-semibold transition cursor-pointer flex items-center justify-center gap-1 min-h-[44px]"
@@ -1094,7 +1094,7 @@ export default function PlansPage() {
                 <label className="block font-semibold text-[#0F172A] mb-1">
                   Duration (Months) <span className="text-red-500">*</span>
                 </label>
-                <div className="grid grid-cols-4 gap-2 mb-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
                   {DURATION_PRESETS.map((p) => (
                     <button
                       key={p}
@@ -1265,7 +1265,7 @@ export default function PlansPage() {
                   <label className="block font-semibold text-[#0F172A] mb-1">
                     Duration (Months) <span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-4 gap-2 mb-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
                     {DURATION_PRESETS.map((p) => (
                       <button
                         key={p}
@@ -1361,7 +1361,7 @@ export default function PlansPage() {
       {/* 8. Deactivate / Reactivate Confirmation Modal */}
       {confirmModal.isOpen && confirmModal.plan && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
               <h3 className="font-bold text-base text-[#0F172A]">
                 {confirmModal.action === 'deactivate' ? 'Deactivate Plan' : 'Reactivate Plan'}

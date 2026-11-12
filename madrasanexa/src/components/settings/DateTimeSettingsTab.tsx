@@ -222,7 +222,7 @@ export default function DateTimeSettingsTab({
           </div>
 
           {/* Clock Display Card */}
-          <div className="flex flex-col items-center justify-center rounded-xl bg-white/10 backdrop-blur-md p-4 ring-1 ring-white/20 min-w-[240px] text-center shadow-inner">
+          <div className="flex flex-col items-center justify-center rounded-xl bg-white/10 backdrop-blur-md p-4 ring-1 ring-white/20 w-full md:w-auto md:min-w-[240px] text-center shadow-inner">
             <span className="text-3xl font-mono font-extrabold tracking-wider text-amber-300">
               {liveClock.timeString}
             </span>
@@ -569,7 +569,7 @@ export default function DateTimeSettingsTab({
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
           <button
             type="button"
             onClick={handleReset}

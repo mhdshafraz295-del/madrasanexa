@@ -189,7 +189,7 @@ export const PlanComparisonMatrix: React.FC<PlanComparisonMatrixProps> = ({
               <thead className="sticky top-0 z-30 bg-white shadow-2xs">
                 <tr className="border-b border-[#E7E9EE]">
                   {/* Sticky Feature Column Header */}
-                  <th className="sticky left-0 z-40 bg-white p-4 min-w-[300px] sm:min-w-[340px] border-r border-[#E7E9EE] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                  <th className="sticky left-0 z-40 bg-white p-3 sm:p-4 min-w-[160px] sm:min-w-[260px] md:min-w-[340px] border-r border-[#E7E9EE] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                     <div className="font-bold text-sm text-[#0F172A]">Feature Capabilities</div>
                     <div className="text-[11px] text-[#7C8A9A] font-normal mt-0.5">
                       Canonical Platform Catalogue (91 features)

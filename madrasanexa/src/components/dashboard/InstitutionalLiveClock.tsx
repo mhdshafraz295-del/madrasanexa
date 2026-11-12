@@ -59,8 +59,8 @@ export default function InstitutionalLiveClock() {
 
       <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         {/* Left: Institutional Clock Status & Date */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
+        <div className="space-y-1.5 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>

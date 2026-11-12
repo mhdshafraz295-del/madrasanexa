@@ -63,7 +63,7 @@ export default function MadrasaAdminAboutUsPage() {
       {/* Top Banner & Header */}
       <div className="bg-white rounded-2xl p-6 border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl font-bold text-[#0F172A]">About MadrasaNexa</h1>
             <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#37C6A3]/10 text-[#0F766E] border border-[#37C6A3]/20 uppercase tracking-wider">
               Global Platform

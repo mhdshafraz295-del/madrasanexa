@@ -408,7 +408,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   }}
                 >
                   <div>
-                    <div className="flex items-center justify-between mb-3.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
                       <span className="text-xs font-mono font-bold px-2.5 py-1 bg-[#F5F5F1] text-[#252525] rounded-md border border-[#E5E5DF]">
                         {period.code}
                       </span>
@@ -429,7 +429,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     </p>
 
                     <div className="space-y-2 text-xs text-[#252525] mb-5 bg-[#F5F5F1] p-4 rounded-xl border border-[#E5E5DF]">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-1">
                         <span className="text-[#666666]">Application Window:</span>
                         <span className="font-bold text-[#252525]">
                           {new Date(period.startDate).toLocaleDateString()} – {new Date(period.endDate).toLocaleDateString()}
@@ -540,10 +540,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
             {madrasa.contactEmail && (
               <a
                 href={`mailto:${madrasa.contactEmail}`}
-                className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#F5F5F1] border border-[#E5E5DF] text-[#85845C] hover:bg-white shadow-xs transition-colors"
+                className="inline-flex items-center space-x-2 max-w-full px-4 py-2.5 rounded-xl text-xs font-bold bg-[#F5F5F1] border border-[#E5E5DF] text-[#85845C] hover:bg-white shadow-xs transition-colors"
               >
-                <Mail className="w-3.5 h-3.5 text-[#85845C]" />
-                <span>{madrasa.contactEmail}</span>
+                <Mail className="w-3.5 h-3.5 shrink-0 text-[#85845C]" />
+                <span className="break-all">{madrasa.contactEmail}</span>
               </a>
             )}
           </div>
@@ -615,8 +615,8 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                 <div className="space-y-4">
                   <div className="print-receipt-document bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 space-y-4 text-left text-slate-800 shadow-xs">
                     {/* Header: Institutional Logo, Name, and Title */}
-                    <div className="flex items-start justify-between gap-4 pb-4 border-b border-slate-200">
-                      <div className="flex items-center gap-3.5">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 pb-4 border-b border-slate-200">
+                      <div className="flex items-center gap-3.5 min-w-0">
                         <img
                           src={madrasa.logoUrl || '/assets/logo/website.logo.png'}
                           alt={madrasa.name}
@@ -644,7 +644,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="text-right shrink-0">
+                      <div className="sm:text-right shrink-0">
                         <span
                           className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wide"
                           style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
@@ -699,21 +699,21 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           <User className="w-3 h-3 text-slate-400" />
                         </div>
                         <div className="space-y-1.5 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Applicant Name:</span>
-                            <span className="font-bold text-slate-900 text-right">{submissionResult.applicantName}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Applicant Name:</span>
+                            <span className="font-bold text-slate-900 text-right min-w-0 break-words">{submissionResult.applicantName}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Requested Class:</span>
-                            <span className="font-semibold text-slate-800 text-right">{submissionResult.appliedClassName || 'General Admission / Baseline'}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Requested Class:</span>
+                            <span className="font-semibold text-slate-800 text-right min-w-0 break-words">{submissionResult.appliedClassName || 'General Admission / Baseline'}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Intake Cycle:</span>
-                            <span className="font-medium text-slate-800 text-right">{submissionResult.intakeName}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Intake Cycle:</span>
+                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{submissionResult.intakeName}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Academic Year:</span>
-                            <span className="font-medium text-slate-800 text-right">{submissionResult.academicYear}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Academic Year:</span>
+                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{submissionResult.academicYear}</span>
                           </div>
                         </div>
                       </div>
@@ -725,20 +725,20 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           <ShieldCheck className="w-3 h-3 text-slate-400" />
                         </div>
                         <div className="space-y-1.5 text-xs">
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Parent / Guardian:</span>
-                            <span className="font-medium text-slate-800 text-right">{guardianName || '—'}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Parent / Guardian:</span>
+                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{guardianName || '—'}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Contact Phone:</span>
-                            <span className="font-medium text-slate-800 text-right">{guardianPhone || '—'}</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Contact Phone:</span>
+                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{guardianPhone || '—'}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Registered Email:</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Registered Email:</span>
                             <span className="font-medium text-slate-800 text-right truncate max-w-[160px]">{guardianEmail || '—'}</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-slate-500">Submitted On:</span>
+                          <div className="flex justify-between gap-2">
+                            <span className="text-slate-500 shrink-0">Submitted On:</span>
                             <span className="font-medium text-slate-800 text-right">
                               {new Date(submissionResult.submittedAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
@@ -754,12 +754,12 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     {/* Strict Email Notice Box */}
                     <div className="bg-[#F5F5F1] border border-[#E5E5DF] rounded-xl p-3 flex items-start space-x-2.5 text-xs text-slate-700">
                       <Mail className="w-4 h-4 shrink-0 mt-0.5" style={{ color: primaryColor }} />
-                      <div className="space-y-0.5 leading-relaxed">
+                      <div className="space-y-0.5 leading-relaxed min-w-0">
                         <p className="font-semibold text-slate-900">
                           Admission decisions and status updates are communicated strictly via email.
                         </p>
                         <p className="text-[11px] text-slate-600">
-                          An official acknowledgment has been dispatched to <strong>{guardianEmail}</strong>. Please check your inbox and spam folder for interview schedules and admission decisions. Present this confirmation receipt during document verification.
+                          An official acknowledgment has been dispatched to <strong className="break-all">{guardianEmail}</strong>. Please check your inbox and spam folder for interview schedules and admission decisions. Present this confirmation receipt during document verification.
                         </p>
                       </div>
                     </div>
@@ -787,7 +787,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   </div>
 
                   {/* Actions (Screen Only) */}
-                  <div className="flex items-center justify-center space-x-3 pt-2 screen-only-controls print:hidden shrink-0">
+                  <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-2 screen-only-controls print:hidden shrink-0">
                     <button
                       type="button"
                       onClick={() => window.print()}
@@ -992,7 +992,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
 
                   {/* Section 4: Supporting Documents Upload */}
                   <div className="space-y-3 pt-4 border-t border-slate-100">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-1">
                       <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
                         <Upload className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                         <span>Supporting Documents</span>
@@ -1031,14 +1031,14 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                               key={doc.fileId || idx}
                               className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700"
                             >
-                              <div className="flex items-center space-x-2 truncate max-w-xs sm:max-w-md">
+                              <div className="flex items-center space-x-2 min-w-0 flex-1">
                                 <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                 <span className="truncate font-medium">{doc.name}</span>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveDoc(idx)}
-                                className="text-slate-400 hover:text-rose-600 p-1"
+                                className="text-slate-400 hover:text-rose-600 p-1 shrink-0"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>

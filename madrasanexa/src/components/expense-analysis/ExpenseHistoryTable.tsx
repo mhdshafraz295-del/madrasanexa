@@ -131,14 +131,14 @@ export const ExpenseHistoryTable: React.FC<ExpenseHistoryTableProps> = ({
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="bg-[#F7F6F1] border-b border-[#E7E9EE] text-[#7C8A9A] uppercase tracking-wider text-[10px] font-bold">
-              <th className="py-3 px-4">Date</th>
-              <th className="py-3 px-4">Category</th>
-              <th className="py-3 px-4">Description</th>
-              <th className="py-3 px-4 text-right">Amount ({currency})</th>
-              <th className="py-3 px-4">Supplier</th>
-              <th className="py-3 px-4">Reason / Notes</th>
-              <th className="py-3 px-4 text-center">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+              <th className="py-3 px-4 whitespace-nowrap">Date</th>
+              <th className="py-3 px-4 whitespace-nowrap">Category</th>
+              <th className="py-3 px-4 whitespace-nowrap">Description</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Amount ({currency})</th>
+              <th className="py-3 px-4 whitespace-nowrap">Supplier</th>
+              <th className="py-3 px-4 whitespace-nowrap">Reason / Notes</th>
+              <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E7E9EE]">
@@ -239,7 +239,7 @@ export const ExpenseHistoryTable: React.FC<ExpenseHistoryTableProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-[#7C8A9A]">
+        <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#7C8A9A]">
           <span>
             Showing page {page} of {totalPages} ({total} total records)
           </span>
@@ -265,7 +265,7 @@ export const ExpenseHistoryTable: React.FC<ExpenseHistoryTableProps> = ({
       {/* Void Confirmation Modal */}
       {voidModalExpense && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE]">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE]">
             <div className="flex items-center gap-3 text-rose-600 mb-3">
               <div className="w-10 h-10 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
                 <AlertTriangle className="w-5 h-5" />

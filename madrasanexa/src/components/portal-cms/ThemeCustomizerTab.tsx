@@ -378,7 +378,7 @@ export const ThemeCustomizerTab: React.FC<ThemeCustomizerTabProps> = ({
                 <Palette className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight flex flex-wrap items-center gap-2">
                   <span>Theme & Appearance Customizer</span>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
@@ -794,9 +794,9 @@ export const ThemeCustomizerTab: React.FC<ThemeCustomizerTabProps> = ({
             </div>
 
             {/* Simulated Device Frame */}
-            <div className="bg-slate-100/80 p-3 sm:p-4 rounded-xl flex justify-center overflow-x-auto">
+            <div className="bg-slate-100/80 p-3 sm:p-4 rounded-xl overflow-x-auto">
               <div
-                className="transition-all duration-300 rounded-xl shadow-md border border-slate-300/80 overflow-hidden flex flex-col"
+                className="mx-auto transition-all duration-300 rounded-xl shadow-md border border-slate-300/80 overflow-hidden flex flex-col"
                 style={{
                   width:
                     previewDevice === 'mobile'

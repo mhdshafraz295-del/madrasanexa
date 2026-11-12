@@ -494,7 +494,7 @@ export default function SubscriptionPaymentsPage() {
 
         {/* Pagination Controls */}
         {pagination.totalPages > 1 && (
-          <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between bg-[#FAFAF8] text-xs">
+          <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FAFAF8] text-xs">
             <span className="text-[#7C8A9A]">
               Showing page <span className="font-semibold text-[#0F172A]">{pagination.page}</span> of{' '}
               <span className="font-semibold text-[#0F172A]">{pagination.totalPages}</span> ({pagination.total} total items)
@@ -588,15 +588,15 @@ export default function SubscriptionPaymentsPage() {
               )}
             </div>
 
-            <div className="p-4 border-t border-[#E7E9EE] bg-white flex items-center justify-between text-xs">
-              <div className="text-[#7C8A9A] space-x-2">
+            <div className="p-4 border-t border-[#E7E9EE] bg-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="text-[#7C8A9A] min-w-0 flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span>Ref: <strong className="text-[#0F172A]">{activeReceipt.sub.reference || 'N/A'}</strong></span>
                 <span>&bull;</span>
-                <span>File: {activeReceipt.secureData.originalName}</span>
+                <span className="truncate max-w-full">File: {activeReceipt.secureData.originalName}</span>
               </div>
               <button
                 onClick={() => setActiveReceipt(null)}
-                className="px-4 py-2 bg-[#F7F6F1] text-[#0F172A] hover:bg-[#E7E9EE] rounded-xl font-semibold cursor-pointer"
+                className="px-4 py-2 bg-[#F7F6F1] text-[#0F172A] hover:bg-[#E7E9EE] rounded-xl font-semibold cursor-pointer shrink-0 self-end sm:self-auto"
               >
                 Close Preview
               </button>
@@ -608,7 +608,7 @@ export default function SubscriptionPaymentsPage() {
       {/* Approval Confirmation Modal */}
       {approveItem && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-6 h-6" />
             </div>
@@ -664,7 +664,7 @@ export default function SubscriptionPaymentsPage() {
       {/* Rejection Modal */}
       {rejectItem && (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="w-12 h-12 rounded-2xl bg-red-100 text-red-700 flex items-center justify-center mx-auto">
               <XCircle className="w-6 h-6" />
             </div>

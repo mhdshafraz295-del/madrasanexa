@@ -229,7 +229,7 @@ export const SalaryEmailModal: React.FC<SalaryEmailModalProps> = ({
       aria-modal="true"
       aria-labelledby="salary-email-modal-title"
     >
-      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6 space-y-5 my-8 border border-slate-100 transition-all">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-5 my-4 sm:my-8 border border-slate-100 transition-all">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">

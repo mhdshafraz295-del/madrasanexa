@@ -405,7 +405,7 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
 
         {/* Pagination Bar */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
             <div>
               Showing {items.length} of {total} Ustadh records
             </div>

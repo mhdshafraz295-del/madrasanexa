@@ -898,10 +898,10 @@ export default function FeePOSPage() {
                   <button
                     key={student.id}
                     onClick={() => handleSelectStudent(student)}
-                    className="w-full text-left p-4 hover:bg-emerald-50/50 transition flex items-center justify-between gap-4 group"
+                    className="w-full text-left p-4 hover:bg-emerald-50/50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 group"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
                         <span className="font-bold text-[#0F172A] group-hover:text-[#08483A]">{student.fullName}</span>
                         <span className="px-2 py-0.5 text-xs font-mono font-bold bg-gray-100 text-[#5B6B7F] rounded">
                           {student.admissionNo}
@@ -955,8 +955,8 @@ export default function FeePOSPage() {
                 <div className="w-12 h-12 rounded-xl bg-[#08483A]/10 text-[#08483A] flex items-center justify-center shrink-0">
                   <User className="w-6 h-6" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-lg font-bold text-[#0F172A]">{selectedStudent.fullName}</h2>
                     <span className="font-mono text-xs px-2 py-0.5 bg-gray-100 text-gray-700 font-bold rounded">
                       {selectedStudent.admissionNo}
@@ -1040,7 +1040,7 @@ export default function FeePOSPage() {
                   <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead>
-                        <tr className="border-b border-[#E7E9EE] text-xs font-bold text-[#7C8A9A] uppercase tracking-wider">
+                        <tr className="border-b border-[#E7E9EE] text-xs font-bold text-[#7C8A9A] uppercase tracking-wider whitespace-nowrap">
                           <th className="py-2.5 px-2">Pay</th>
                           <th className="py-2.5 px-2">Month / Invoice</th>
                           <th className="py-2.5 px-2">Due Date</th>
@@ -1246,7 +1246,7 @@ export default function FeePOSPage() {
       {/* Confirmation Modal */}
       {confirmModalOpen && selectedStudent && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-[#E7E9EE]">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-xl border border-[#E7E9EE]">
             <h3 className="text-lg font-bold text-[#0F172A]">Confirm Payment Receipt</h3>
             <p className="text-sm text-[#5B6B7F]">
               You are recording a payment for <span className="font-bold text-[#0F172A]">{selectedStudent.fullName}</span>.

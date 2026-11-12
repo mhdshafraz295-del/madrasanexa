@@ -503,7 +503,7 @@ export default function EmailSenderSettingsTab() {
           {/* Provider Guidance Banner */}
           {providerPreset === 'GMAIL' && (
             <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs space-y-3">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-3">
                 <div className="flex items-center gap-2 font-medium">
                   <Info className="w-4 h-4 text-blue-600 shrink-0" />
                   <span>Use a <strong>Google App Password</strong> instead of your normal Google account password.</span>

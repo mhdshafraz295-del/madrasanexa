@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client';
 import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors.js';
 import { logTenantActivity } from './tenant.service.js';
 import { resolveLogoDataUri } from './branding.service.js';
-import { renderRawHtmlToPdf } from './pdf-report.service.js';
+import { renderRawHtmlToPdf, embeddedFontsCss } from './pdf-report.service.js';
 import { generateCsvString } from './csv-report.service.js';
 
 const MONTH_NAMES = [
@@ -1033,8 +1033,9 @@ export async function exportMonthlyPdf(madrasaId, year, month) {
   <meta charset="utf-8">
   <title>Monthly Expense Analysis - ${escapeHtml(monthLabel)}</title>
   <style>
+    ${embeddedFontsCss}
     body {
-      font-family: 'Noto Sans Local', sans-serif;
+      font-family: 'Noto Sans Local', 'Noto Sans Tamil Local', 'Noto Sans Sinhala Local', 'Noto Sans Arabic Local', sans-serif;
       margin: 0;
       padding: 0;
       color: #1a1a1a;

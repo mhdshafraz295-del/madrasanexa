@@ -541,11 +541,11 @@ export default function AboutUsCMSPage() {
   const currentForm = forms[activeTab];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 text-[#0F172A]">
+    <div className="space-y-8 text-[#0F172A]">
       {/* Top Header & Publication Action Bar */}
       <div className="bg-white border border-[#E7E9EE] rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-extrabold tracking-tight text-[#0F172A]">
               About Us Management
             </h1>
@@ -615,7 +615,7 @@ export default function AboutUsCMSPage() {
 
       {/* Language Navigation Tabs */}
       <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-2">
-        <div className="flex items-center gap-2" role="tablist">
+        <div className="flex flex-wrap items-center gap-2" role="tablist">
           <button
             type="button"
             role="tab"
@@ -739,7 +739,7 @@ export default function AboutUsCMSPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
                     CTA Button Label
@@ -820,7 +820,7 @@ export default function AboutUsCMSPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 {activeTab === 'en' && (
                   <>
                     <input
@@ -948,7 +948,7 @@ export default function AboutUsCMSPage() {
                 )}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 {activeTab === 'en' && (
                   <>
                     <input
@@ -1034,7 +1034,7 @@ export default function AboutUsCMSPage() {
 
         {/* Section 4: Highlights / Quantitative Metrics */}
         <div className="bg-white border border-[#E7E9EE] rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="border-b border-[#E7E9EE] pb-4 flex items-center justify-between">
+          <div className="border-b border-[#E7E9EE] pb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[#37C6A3]" />
@@ -1155,7 +1155,7 @@ export default function AboutUsCMSPage() {
 
         {/* Section 5: Core Values */}
         <div className="bg-white border border-[#E7E9EE] rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="border-b border-[#E7E9EE] pb-4 flex items-center justify-between">
+          <div className="border-b border-[#E7E9EE] pb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
                 <Layers className="w-4 h-4 text-[#37C6A3]" />

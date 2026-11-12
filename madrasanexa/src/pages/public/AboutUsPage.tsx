@@ -67,7 +67,7 @@ export default function AboutUsPage() {
 
       {/* Language Selector Bar (Page Local) */}
       <div className="bg-white border-b border-[#E5E5DF] pt-24 pb-3 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-2 text-xs text-[#666666] font-semibold">
             <Globe2 className="w-4 h-4 text-[#85845C]" />
             <span>Content Language:</span>
@@ -123,7 +123,7 @@ export default function AboutUsPage() {
             <p className="text-xs font-semibold text-[#666666]">Loading About Us...</p>
           </div>
         ) : error ? (
-          <div className="max-w-lg mx-auto my-20 p-8 rounded-2xl bg-white border border-[#E5E5DF] text-center space-y-4 shadow-sm">
+          <div className="max-w-lg mx-4 sm:mx-auto my-20 p-8 rounded-2xl bg-white border border-[#E5E5DF] text-center space-y-4 shadow-sm">
             <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
             <h2 className="font-serif text-lg font-bold text-[#252525]">Unable to Load Page</h2>
             <p className="text-xs text-[#666666]">{error}</p>
@@ -135,7 +135,7 @@ export default function AboutUsPage() {
             </button>
           </div>
         ) : !data?.isPublished || !data?.content ? (
-          <div className="max-w-lg mx-auto my-24 p-8 rounded-2xl bg-white border border-[#E5E5DF] text-center space-y-6 shadow-sm">
+          <div className="max-w-lg mx-4 sm:mx-auto my-24 p-8 rounded-2xl bg-white border border-[#E5E5DF] text-center space-y-6 shadow-sm">
             <div className="w-14 h-14 rounded-2xl bg-[#F5F5F1] flex items-center justify-center mx-auto text-[#85845C]">
               <Globe2 className="w-8 h-8 text-[#85845C]" />
             </div>

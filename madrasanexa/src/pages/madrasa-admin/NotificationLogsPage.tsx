@@ -454,10 +454,10 @@ export default function NotificationLogsPage() {
 
       {/* Job Detail Modal */}
       {selectedJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-2xl border border-[#E7E9EE] max-w-xl w-full p-6 shadow-xl space-y-5 flex flex-col max-h-[90vh]">
-            <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4">
-              <div className="flex items-center gap-2.5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-2xl border border-[#E7E9EE] max-w-xl w-full p-4 sm:p-6 shadow-xl space-y-4 sm:space-y-5 flex flex-col max-h-[90vh] overflow-hidden">
+            <div className="flex items-start justify-between gap-3 border-b border-[#E7E9EE] pb-3.5 sm:pb-4 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                     selectedJob.channel === 'SMS'
@@ -471,43 +471,44 @@ export default function NotificationLogsPage() {
                     <Mail className="w-4 h-4" />
                   )}
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-bold text-[#0F172A]">Notification Job Details</h3>
-                  <span className="text-[10px] font-mono text-[#7C8A9A]">ID: {selectedJob.id}</span>
+                  <span className="text-[10px] font-mono text-[#7C8A9A] break-all block">ID: {selectedJob.id}</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedJob(null)}
-                className="p-1 rounded-lg text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1] transition cursor-pointer"
+                aria-label="Close modal"
+                className="p-1.5 rounded-lg text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1] transition cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-4 overflow-y-auto pr-1 flex-1 text-xs">
+            <div className="space-y-4 overflow-y-auto overflow-x-hidden pr-1 flex-1 min-h-0 text-xs">
               {/* Metadata Grid */}
-              <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE]">
-                <div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE]">
+                <div className="min-w-0">
                   <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block">Status</span>
                   <div className="mt-1">{getStatusBadge(selectedJob.status)}</div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block">Channel & Event</span>
-                  <span className="font-bold text-[#0F172A] block mt-1">
+                  <span className="font-bold text-[#0F172A] block mt-1 break-words">
                     {selectedJob.channel} &bull; {formatEventType(selectedJob.eventType)}
                   </span>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block">Recipient</span>
-                  <span className="font-semibold text-[#0F172A] block mt-0.5">
+                  <span className="font-semibold text-[#0F172A] block mt-0.5 break-words">
                     {selectedJob.recipientName || 'N/A'} ({selectedJob.recipientType})
                   </span>
-                  <span className="font-mono text-[11px] text-[#7C8A9A]">
+                  <span className="font-mono text-[11px] text-[#7C8A9A] break-all block">
                     {selectedJob.recipientAddress || 'No Address'}
                   </span>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block">Attempts</span>
                   <span className="font-mono font-bold text-[#0F172A] block mt-0.5">
                     {selectedJob.attemptCount} of {selectedJob.maxAttempts}
@@ -516,7 +517,7 @@ export default function NotificationLogsPage() {
               </div>
 
               {/* Dedupe Key */}
-              <div>
+              <div className="min-w-0">
                 <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block mb-1">
                   Deterministic Deduplication Key
                 </span>
@@ -527,11 +528,11 @@ export default function NotificationLogsPage() {
 
               {/* Subject if applicable */}
               {selectedJob.subject && (
-                <div>
+                <div className="min-w-0">
                   <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block mb-1">
                     Message Subject
                   </span>
-                  <div className="p-2.5 bg-[#F7F6F1] rounded-lg border border-[#E7E9EE] font-semibold text-[#0F172A]">
+                  <div className="p-2.5 bg-[#F7F6F1] rounded-lg border border-[#E7E9EE] font-semibold text-[#0F172A] break-words">
                     {selectedJob.subject}
                   </div>
                 </div>
@@ -539,7 +540,7 @@ export default function NotificationLogsPage() {
 
               {/* Sanitized Last Error */}
               {selectedJob.lastError && (
-                <div>
+                <div className="min-w-0">
                   <span className="text-[10px] text-rose-600 uppercase tracking-wider block mb-1 font-bold">
                     Last Sanitized Error
                   </span>
@@ -550,30 +551,30 @@ export default function NotificationLogsPage() {
               )}
 
               {/* Message Content Preview */}
-              <div>
+              <div className="min-w-0">
                 <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block mb-1">
                   Dispatched Message Payload
                 </span>
-                <div className="p-3 bg-[#F7F6F1] rounded-xl border border-[#E7E9EE] max-h-48 overflow-y-auto">
-                  {selectedJob.channel === 'EMAIL' && selectedJob.message.includes('<') ? (
-                    <div className="space-y-1">
-                      <span className="text-[10px] text-gray-400 font-mono block">HTML Message Preview:</span>
-                      <iframe
-                        srcDoc={selectedJob.message}
-                        title="Email Preview"
-                        className="w-full h-40 bg-white border border-gray-200 rounded"
-                      />
-                    </div>
-                  ) : (
-                    <p className="whitespace-pre-wrap font-sans text-gray-800 leading-relaxed">
+                {selectedJob.channel === 'EMAIL' && selectedJob.message.includes('<') ? (
+                  <div className="p-2 sm:p-3 bg-[#F7F6F1] rounded-xl border border-[#E7E9EE] space-y-1.5">
+                    <span className="text-[10px] text-gray-500 font-mono block">HTML Message Preview:</span>
+                    <iframe
+                      srcDoc={selectedJob.message}
+                      title="Email Preview"
+                      className="w-full h-64 sm:h-72 bg-white border border-gray-200 rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="p-3 bg-[#F7F6F1] rounded-xl border border-[#E7E9EE] max-h-48 overflow-y-auto">
+                    <p className="whitespace-pre-wrap break-words font-sans text-gray-800 leading-relaxed">
                       {selectedJob.message}
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="flex items-center justify-between border-t border-[#E7E9EE] pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[#E7E9EE] pt-3 shrink-0">
               <span className="text-[10px] text-[#7C8A9A]">
                 Created: {new Date(selectedJob.createdAt).toLocaleString()}
               </span>

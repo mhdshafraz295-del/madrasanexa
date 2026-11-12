@@ -140,18 +140,18 @@ export default function InvoiceDetailPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-6 print:p-0 print:max-w-none">
       {/* Top Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
             to="/madrasa-admin/invoices"
-            className="p-2 text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white rounded-xl border border-[#E7E9EE] bg-[#F7F6F1] transition-colors"
+            className="p-2 text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white rounded-xl border border-[#E7E9EE] bg-[#F7F6F1] transition-colors print:hidden"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-bold font-mono text-[#0F172A]">{invoice.invoiceNo}</h1>
               {renderStatusBadge(invoice.displayStatus)}
             </div>
@@ -162,7 +162,7 @@ export default function InvoiceDetailPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 print:hidden">
           {invoice.status !== 'VOID' && Number(invoice.paidAmount) === 0 && (
             <button
               onClick={() => {
@@ -306,34 +306,36 @@ export default function InvoiceDetailPage() {
           </span>
         </div>
 
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="bg-[#F7F6F1]/50 border-b border-[#E7E9EE] text-[#7C8A9A] font-semibold">
-              <th className="py-3 px-4">Item Description</th>
-              <th className="py-3 px-4 text-center">Qty</th>
-              <th className="py-3 px-4 text-right">Unit Price</th>
-              <th className="py-3 px-4 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#E7E9EE]">
-            {invoice.items.map((item) => (
-              <tr key={item.id}>
-                <td className="py-3 px-4 font-medium text-[#0F172A]">{item.description}</td>
-                <td className="py-3 px-4 text-center text-[#7C8A9A]">{item.quantity}</td>
-                <td className="py-3 px-4 text-right font-mono text-[#0F172A]">
-                  LKR {item.unitAmount}
-                </td>
-                <td className="py-3 px-4 text-right font-mono font-semibold text-[#0F172A]">
-                  LKR {item.totalAmount}
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs min-w-[460px]">
+            <thead>
+              <tr className="bg-[#F7F6F1]/50 border-b border-[#E7E9EE] text-[#7C8A9A] font-semibold">
+                <th className="py-3 px-4">Item Description</th>
+                <th className="py-3 px-4 text-center">Qty</th>
+                <th className="py-3 px-4 text-right">Unit Price</th>
+                <th className="py-3 px-4 text-right">Total</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#E7E9EE]">
+              {invoice.items.map((item) => (
+                <tr key={item.id}>
+                  <td className="py-3 px-4 font-medium text-[#0F172A]">{item.description}</td>
+                  <td className="py-3 px-4 text-center text-[#7C8A9A]">{item.quantity}</td>
+                  <td className="py-3 px-4 text-right font-mono text-[#0F172A] whitespace-nowrap">
+                    LKR {item.unitAmount}
+                  </td>
+                  <td className="py-3 px-4 text-right font-mono font-semibold text-[#0F172A] whitespace-nowrap">
+                    LKR {item.totalAmount}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {/* Financial Calculation Summary */}
         <div className="p-4 bg-[#F7F6F1]/40 border-t border-[#E7E9EE] flex justify-end">
-          <div className="w-64 space-y-2 text-xs">
+          <div className="w-full sm:w-64 space-y-2 text-xs">
             <div className="flex justify-between text-[#7C8A9A]">
               <span>Subtotal:</span>
               <span className="font-mono text-[#0F172A]">LKR {invoice.subtotal}</span>
@@ -369,7 +371,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* Payment History & Allocations (Read-Only) */}
-      <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs p-5 space-y-4 print:shadow-none">
         <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
           <h3 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-[#37C6A3]" />
@@ -407,7 +409,7 @@ export default function InvoiceDetailPage() {
 
       {/* Void Modal */}
       {voidModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50 print:hidden">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center gap-3 text-red-600">
               <div className="p-2.5 bg-red-50 rounded-xl">

@@ -72,10 +72,17 @@ export default function ReceiptDetailPage() {
     currency: (receipt as any).institution?.currency || 'LKR',
   };
 
+  const formatReceiptAmount = (value: unknown) => {
+    if (value === null || value === undefined || value === '') return '—';
+    const num = Number(value);
+    if (!Number.isFinite(num)) return '—';
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2 });
+  };
+
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none print:space-y-0">
       {/* Top Bar (Hidden in Print) */}
-      <div className="flex items-center justify-between print:hidden">
+      <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
         <Link
           to={`/madrasa-admin/payments/${payment.id}`}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-[#5B6B7F] hover:text-[#0F172A]"
@@ -106,7 +113,7 @@ export default function ReceiptDetailPage() {
       </div>
 
       {/* Printable Receipt Card */}
-      <div className="relative bg-white border border-[#E7E9EE] rounded-2xl p-6 sm:p-10 shadow-sm print:border-none print:shadow-none print:p-0 print:m-0 overflow-hidden">
+      <div className="relative bg-white border border-[#E7E9EE] rounded-2xl p-4 sm:p-8 md:p-10 shadow-sm print:border print:border-slate-300 print:rounded-xl print:shadow-none print:p-6 print:m-0 overflow-hidden">
         {/* Watermark for VOID receipts */}
         {isVoid && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center select-none z-10 opacity-15">
@@ -124,7 +131,7 @@ export default function ReceiptDetailPage() {
         )}
 
         {/* Receipt Header */}
-        <div className="border-b border-[#E7E9EE] pb-6 space-y-4">
+        <div className="border-b border-[#E7E9EE] pb-6 space-y-4 print:break-inside-avoid">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex items-start gap-3.5">
               {logoUrl && (
@@ -161,7 +168,7 @@ export default function ReceiptDetailPage() {
         </div>
 
         {/* Student & Payment Summary Info */}
-        <div className="py-6 border-b border-[#E7E9EE] grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+        <div className="py-6 border-b border-[#E7E9EE] grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm print:break-inside-avoid">
           {/* Student Dossier */}
           <div className="space-y-1.5">
             <span className="text-xs font-bold text-[#7C8A9A] uppercase tracking-wider block">Student Details</span>
@@ -198,44 +205,46 @@ export default function ReceiptDetailPage() {
         </div>
 
         {/* Allocations Table */}
-        <div className="py-6 space-y-3">
+        <div className="py-5 sm:py-6 space-y-3">
           <div className="text-xs font-bold text-[#7C8A9A] uppercase tracking-wider">Fee Allocations</div>
-          <table className="w-full text-left border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-[#E7E9EE] text-xs font-bold text-[#7C8A9A]">
-                <th className="py-2">Description / Month</th>
-                <th className="py-2">Invoice #</th>
-                <th className="py-2 text-right">Amount Paid ({branding.currency || 'LKR'})</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#E7E9EE]">
-              {allocations.map((a) => (
-                <tr key={a.id}>
-                  <td className="py-3 font-semibold text-[#0F172A]">
-                    Tuition Fee — {a.monthName} {a.billingYear}
+          <div className="overflow-x-auto print:overflow-visible">
+            <table className="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-[#E7E9EE] text-xs font-bold text-[#7C8A9A]">
+                  <th className="py-2 pr-3">Description / Month</th>
+                  <th className="py-2 px-2">Invoice #</th>
+                  <th className="py-2 pl-3 text-right whitespace-nowrap">Amount Paid ({branding.currency || 'LKR'})</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E7E9EE]">
+                {allocations.map((a) => (
+                  <tr key={a.id}>
+                    <td className="py-3 pr-3 font-semibold text-[#0F172A]">
+                      Tuition Fee — {a.monthName} {a.billingYear}
+                    </td>
+                    <td className="py-3 px-2 font-mono text-xs text-[#5B6B7F] whitespace-nowrap">{a.invoiceNo}</td>
+                    <td className="py-3 pl-3 text-right font-bold text-[#0F172A] whitespace-nowrap">
+                      {formatReceiptAmount(a.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-[#0F172A] text-sm sm:text-base font-bold">
+                  <td colSpan={2} className="py-3 pr-3 text-right text-[#0F172A]">
+                    Total Amount Received:
                   </td>
-                  <td className="py-3 font-mono text-xs text-[#5B6B7F]">{a.invoiceNo}</td>
-                  <td className="py-3 text-right font-bold text-[#0F172A]">
-                    {Number(a.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  <td className="py-3 pl-3 text-right text-emerald-800 font-black whitespace-nowrap">
+                    {branding.currency || 'LKR'} {formatReceiptAmount(payment.amount)}
                   </td>
                 </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr className="border-t-2 border-[#0F172A] text-base font-bold">
-                <td colSpan={2} className="py-3 text-right text-[#0F172A]">
-                  Total Amount Received:
-                </td>
-                <td className="py-3 text-right text-emerald-800 font-black">
-                  {branding.currency || 'LKR'} {Number(payment.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+              </tfoot>
+            </table>
+          </div>
         </div>
 
         {/* Receipt Footer */}
-        <div className="pt-6 border-t border-[#E7E9EE] text-center space-y-2">
+        <div className="pt-6 border-t border-[#E7E9EE] text-center space-y-2 print:break-inside-avoid">
           {branding.receiptFooter ? (
             <p className="text-xs text-[#5B6B7F] italic whitespace-pre-line">{branding.receiptFooter}</p>
           ) : (

@@ -833,10 +833,10 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
     <div className="space-y-6 max-w-6xl mx-auto pb-16 font-sans">
       {/* Top Banner / Status Header */}
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center space-x-2">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
-              <Globe className="w-6 h-6 text-emerald-700" />
+              <Globe className="w-6 h-6 shrink-0 text-emerald-700" />
               <span>Public Madrasa Homepage & Portal</span>
             </h1>
             <span
@@ -851,7 +851,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
             Configure your institutional public website at{' '}
-            <span className="font-mono text-emerald-800 font-semibold">{publicUrl}</span>
+            <span className="font-mono text-emerald-800 font-semibold break-all">{publicUrl}</span>
           </p>
         </div>
 
@@ -1554,7 +1554,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
       {/* Tab 5: Public Notices & Guardian Broadcast */}
       {activeTab === 'notices' && (
         <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-bold text-slate-900 tracking-tight">Public Notices & Guardian Broadcast</h2>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -1564,7 +1564,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
             <button
               type="button"
               onClick={handleOpenAddNotice}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors shadow-sm"
+              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors shadow-sm shrink-0 self-start sm:self-auto"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Create Notice</span>
@@ -1604,7 +1604,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-2 shrink-0">
+                  <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto shrink-0">
                     <button
                       type="button"
                       disabled={broadcastingId === nt.id}

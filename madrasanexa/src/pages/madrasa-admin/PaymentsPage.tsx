@@ -146,8 +146,8 @@ export default function PaymentsPage() {
 
       {/* KPI Cards (Mandatory Correction 16: Completed only, void separate) */}
       {summary && (
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
-          <div className="bg-white border border-[#E7E9EE] rounded-2xl p-4 shadow-xs col-span-2 sm:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="bg-white border border-[#E7E9EE] rounded-2xl p-4 shadow-xs">
             <div className="flex items-center gap-2 text-xs font-bold text-[#5B6B7F]">
               <Coins className="w-4 h-4 text-emerald-700" />
               <span>Total Collected</span>
@@ -318,7 +318,7 @@ export default function PaymentsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#E7E9EE] bg-[#F8F9FA] text-xs font-bold text-[#7C8A9A] uppercase tracking-wider">
+                <tr className="border-b border-[#E7E9EE] bg-[#F8F9FA] text-xs font-bold text-[#7C8A9A] uppercase tracking-wider whitespace-nowrap">
                   <th className="py-3 px-4">Payment #</th>
                   <th className="py-3 px-4">Student</th>
                   <th className="py-3 px-4">Receipt #</th>
@@ -418,7 +418,7 @@ export default function PaymentsPage() {
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-[#5B6B7F]">
+          <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#5B6B7F]">
             <div>
               Showing page <span className="font-bold text-[#0F172A]">{page}</span> of{' '}
               <span className="font-bold text-[#0F172A]">{totalPages}</span> ({totalCount} total)
@@ -446,7 +446,7 @@ export default function PaymentsPage() {
       {/* Void Modal */}
       {voidModalPayment && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-[#E7E9EE]">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-xl border border-[#E7E9EE]">
             <div className="flex items-center gap-2 text-red-600 font-bold">
               <Ban className="w-5 h-5" />
               <h3 className="text-lg">Void Payment {voidModalPayment.paymentNo}</h3>

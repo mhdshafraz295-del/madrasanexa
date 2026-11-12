@@ -8,7 +8,7 @@ import {
   calculateStudentResults,
   calculateClassAnalytics,
 } from './marking-calculation.service.js';
-import { renderRawHtmlToPdf, escapeHtml } from './pdf-report.service.js';
+import { renderRawHtmlToPdf, escapeHtml, embeddedFontsCss } from './pdf-report.service.js';
 import { resolveLogoDataUri } from './branding.service.js';
 import { generateCsvString } from './csv-report.service.js';
 import dayjs from 'dayjs';
@@ -827,6 +827,7 @@ export async function generateAllStudentsPdf(madrasaId, assessmentId) {
         <meta charset="utf-8" />
         <title>${escapeHtml(assessmentName)} - All Student Reports</title>
         <style>
+          ${embeddedFontsCss}
           @page {
             size: A4 portrait;
             margin: 12mm 12mm 16mm 12mm;
@@ -837,6 +838,7 @@ export async function generateAllStudentsPdf(madrasaId, assessmentId) {
           body {
             margin: 0;
             padding: 0;
+            font-family: 'Noto Sans Local', 'Noto Sans Tamil Local', 'Noto Sans Sinhala Local', 'Noto Sans Arabic Local', sans-serif;
             background: #FFFFFF;
             color: #0F172A;
             -webkit-print-color-adjust: exact;

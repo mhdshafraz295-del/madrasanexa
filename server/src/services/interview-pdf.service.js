@@ -106,7 +106,7 @@ export function buildInterviewInvitationHtml({
 
     @page {
       size: A4 portrait;
-      margin: 12mm 14mm 14mm 14mm;
+      margin: 12mm 14mm 16mm 14mm;
     }
 
     * {
@@ -116,7 +116,7 @@ export function buildInterviewInvitationHtml({
     }
 
     body {
-      font-family: 'Noto Sans Local', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Noto Sans Local', 'Noto Sans Arabic Local', 'Noto Sans Tamil Local', 'Noto Sans Sinhala Local', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       font-size: 11pt;
       line-height: 1.5;
       color: #1E293B;
@@ -265,6 +265,9 @@ export function buildInterviewInvitationHtml({
       font-size: 10pt;
       color: #0F172A;
       font-weight: 500;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      unicode-bidi: plaintext;
     }
 
     .highlight-box {
@@ -273,6 +276,8 @@ export function buildInterviewInvitationHtml({
       border-radius: 6px;
       padding: 12px 16px;
       margin-bottom: 16px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .highlight-box-title {
@@ -305,6 +310,9 @@ export function buildInterviewInvitationHtml({
       font-size: 11pt;
       font-weight: 700;
       color: #0F172A;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      unicode-bidi: plaintext;
     }
 
     /* Section Headings */
@@ -353,6 +361,9 @@ export function buildInterviewInvitationHtml({
       color: #334155;
       line-height: 1.45;
       margin-bottom: 8px;
+      word-break: break-word;
+      overflow-wrap: anywhere;
+      unicode-bidi: plaintext;
     }
 
     /* Sign-off */
@@ -360,6 +371,8 @@ export function buildInterviewInvitationHtml({
       width: 100%;
       border-collapse: collapse;
       margin-top: 26px;
+      page-break-inside: avoid;
+      break-inside: avoid;
     }
 
     .signature-cell {

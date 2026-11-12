@@ -115,7 +115,7 @@ export const AttendanceHistoryTab: React.FC<AttendanceHistoryTabProps> = ({
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-stone-50/80 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider">
+            <tr className="bg-stone-50/80 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider whitespace-nowrap">
               <th className="py-3 px-4">Date</th>
               <th className="py-3 px-4">Academic Year</th>
               <th className="py-3 px-4 text-center">Total Students</th>
@@ -187,7 +187,7 @@ export const AttendanceHistoryTab: React.FC<AttendanceHistoryTabProps> = ({
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="p-4 border-t border-stone-200/80 bg-stone-50/50 flex items-center justify-between text-xs text-stone-500">
+        <div className="p-4 border-t border-stone-200/80 bg-stone-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-stone-500">
           <div>
             Total {totalItems} recorded session{totalItems > 1 ? 's' : ''}
           </div>

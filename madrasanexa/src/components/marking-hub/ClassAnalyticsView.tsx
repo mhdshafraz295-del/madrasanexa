@@ -162,7 +162,7 @@ export const ClassAnalyticsView: React.FC<ClassAnalyticsViewProps> = ({ analytic
           <span className="text-xs text-stone-400">{subjectAnalytics.length} subjects</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-xs border-collapse min-w-[650px]">
             <thead>
               <tr className="bg-stone-50 border-b border-stone-200 text-stone-600 font-semibold uppercase tracking-wider">
                 <th className="p-3">Subject</th>
@@ -236,17 +236,17 @@ export const ClassAnalyticsView: React.FC<ClassAnalyticsViewProps> = ({ analytic
           ) : (
             <div className="divide-y divide-stone-100">
               {topStudents.map((st) => (
-                <div key={st.studentId} className="py-2.5 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 h-6 rounded-full bg-stone-100 text-stone-800 font-bold text-xs flex items-center justify-center">
+                <div key={st.studentId} className="py-2.5 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <span className="w-6 h-6 rounded-full bg-stone-100 text-stone-800 font-bold text-xs flex items-center justify-center shrink-0">
                       #{st.position}
                     </span>
-                    <div>
-                      <p className="text-xs font-semibold text-stone-900">{st.fullName}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-stone-900 truncate" title={st.fullName}>{st.fullName}</p>
                       <p className="text-[10px] text-stone-400 font-mono">{st.admissionNo}</p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <p className="text-xs font-bold text-emerald-700">{st.overallPercentage.toFixed(2)}%</p>
                     <p className="text-[10px] text-stone-500">GPA: {st.gpa.toFixed(2)}</p>
                   </div>
@@ -275,12 +275,12 @@ export const ClassAnalyticsView: React.FC<ClassAnalyticsViewProps> = ({ analytic
           ) : (
             <div className="divide-y divide-stone-100">
               {studentsRequiringAttention.map((st) => (
-                <div key={st.studentId} className="py-2.5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-semibold text-stone-900">{st.fullName}</p>
+                <div key={st.studentId} className="py-2.5 flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-stone-900 truncate" title={st.fullName}>{st.fullName}</p>
                     <p className="text-[10px] text-stone-400 font-mono">{st.admissionNo}</p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                       {st.attentionReason}
                     </span>

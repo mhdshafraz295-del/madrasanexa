@@ -33,15 +33,15 @@ export const MonthlyComparisonTable: React.FC<MonthlyComparisonTableProps> = ({
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="bg-[#F7F6F1] border-b border-[#E7E9EE] text-[#7C8A9A] uppercase tracking-wider text-[10px] font-bold">
-              <th className="py-3 px-4">Category</th>
-              <th className="py-3 px-4 text-right">Previous ({previousMonth})</th>
-              <th className="py-3 px-4 text-right">Current ({selectedMonth})</th>
-              <th className="py-3 px-4 text-right">Difference</th>
-              <th className="py-3 px-4 text-right">Change %</th>
-              <th className="py-3 px-4 text-right">Budget</th>
-              <th className="py-3 px-4 text-right">Variance</th>
-              <th className="py-3 px-4 text-center">Status</th>
-              <th className="py-3 px-4 text-right">Management</th>
+              <th className="py-3 px-4 whitespace-nowrap">Category</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Previous ({previousMonth})</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Current ({selectedMonth})</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Difference</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Change %</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Budget</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Variance</th>
+              <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Management</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E7E9EE]">
@@ -178,8 +178,8 @@ export const MonthlyComparisonTable: React.FC<MonthlyComparisonTableProps> = ({
 
             return (
               <div key={r.categoryId} className="p-4 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-sm text-[#0F172A]">{r.categoryName}</span>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-sm text-[#0F172A] min-w-0 break-words">{r.categoryName}</span>
                   {r.changeLabel === 'NEW_SPEND' ? (
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                       New Spend

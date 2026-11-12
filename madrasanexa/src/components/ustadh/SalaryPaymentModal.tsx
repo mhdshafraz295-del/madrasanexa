@@ -62,7 +62,7 @@ export const SalaryPaymentModal: React.FC<SalaryPaymentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full border border-stone-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-stone-200 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
         <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -93,7 +93,7 @@ export const SalaryPaymentModal: React.FC<SalaryPaymentModalProps> = ({
           )}
 
           {/* Amount Box */}
-          <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/80 flex items-center justify-between">
+          <div className="p-4 bg-emerald-50/60 rounded-xl border border-emerald-200/80 flex flex-col sm:flex-row sm:items-center items-start justify-between gap-2">
             <div>
               <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider block">
                 Total Payable Amount
@@ -102,7 +102,7 @@ export const SalaryPaymentModal: React.FC<SalaryPaymentModalProps> = ({
                 LKR {salary.payableAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="text-right text-[11px] text-stone-500">
+            <div className="sm:text-right text-[11px] text-stone-500">
               Base: LKR {salary.baseSalarySnapshot.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </div>
           </div>

@@ -166,11 +166,11 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
               </span>
               <div className="flex items-center space-x-2 mt-0.5 hidden sm:flex">
                 <span
-                  className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider flex items-center gap-1 whitespace-nowrap"
+                  className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider flex items-center gap-1 min-w-0"
                   style={{ color: primaryColor }}
                 >
                   <Sparkles className="w-3 h-3 shrink-0" />
-                  <span>Official Institutional Portal</span>
+                  <span className="truncate">Official Institutional Portal</span>
                 </span>
               </div>
             </div>
@@ -183,11 +183,11 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                className="inline-flex items-center px-3 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap text-[#252525] hover:opacity-80 hover:bg-[#F5F5F1]/60 transition-colors relative group focus:outline-hidden focus:ring-2"
+                className="inline-flex items-center px-2 xl:px-3 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap text-[#252525] hover:opacity-80 hover:bg-[#F5F5F1]/60 transition-colors relative group focus:outline-hidden focus:ring-2"
               >
                 <span>{item.label}</span>
                 <span
-                  className="absolute bottom-1.5 left-3 right-3 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center"
+                  className="absolute bottom-1.5 left-2 right-2 xl:left-3 xl:right-3 h-0.5 scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-center"
                   style={{ backgroundColor: primaryColor }}
                 />
               </a>
@@ -199,7 +199,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
                 type="button"
                 onClick={() => setQuickLinksOpen(!quickLinksOpen)}
                 onMouseEnter={() => setQuickLinksOpen(true)}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-2 xl:px-3 py-2 rounded-lg text-xs xl:text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
                   quickLinksOpen ? 'bg-[#F5F5F1]' : 'text-[#252525] hover:bg-[#F5F5F1]/60'
                 }`}
                 style={quickLinksOpen ? { color: primaryColor } : undefined}
@@ -300,7 +300,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
 
       {/* Mobile navigation panel - absolute to prevent layout shift of main document flow */}
       {mobileMenuOpen && (
-        <div className="lg:hidden absolute top-full inset-x-0 bg-white border-b border-[#E5E5DF] px-4 py-5 shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
+        <div className="lg:hidden absolute top-full inset-x-0 max-h-[calc(100dvh-5rem)] overflow-y-auto bg-white border-b border-[#E5E5DF] px-4 py-5 shadow-xl space-y-4 animate-in fade-in slide-in-from-top-2 duration-200 z-50">
           <div className="space-y-1">
             {navLinks.map((item) => (
               <a

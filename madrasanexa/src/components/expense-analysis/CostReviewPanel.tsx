@@ -27,13 +27,13 @@ export const CostReviewPanel: React.FC<CostReviewPanelProps> = ({ costReview, cu
               {costReview.topIncreases.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 bg-rose-50/40 rounded-2xl border border-rose-100/60"
+                  className="flex flex-wrap items-center justify-between gap-2 p-3 bg-rose-50/40 rounded-2xl border border-rose-100/60"
                 >
-                  <div>
-                    <span className="font-bold text-xs text-[#0F172A] block">{item.categoryName}</span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-[#0F172A] block break-words">{item.categoryName}</span>
                     <span className="text-[11px] text-[#7C8A9A]">Change: {item.changeLabel}</span>
                   </div>
-                  <div className="font-mono font-extrabold text-xs text-rose-600">
+                  <div className="font-mono font-extrabold text-xs text-rose-600 shrink-0">
                     +{currency} {Number(item.difference).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
@@ -55,13 +55,13 @@ export const CostReviewPanel: React.FC<CostReviewPanelProps> = ({ costReview, cu
               {costReview.topDecreases.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 bg-emerald-50/40 rounded-2xl border border-emerald-100/60"
+                  className="flex flex-wrap items-center justify-between gap-2 p-3 bg-emerald-50/40 rounded-2xl border border-emerald-100/60"
                 >
-                  <div>
-                    <span className="font-bold text-xs text-[#0F172A] block">{item.categoryName}</span>
+                  <div className="min-w-0">
+                    <span className="font-bold text-xs text-[#0F172A] block break-words">{item.categoryName}</span>
                     <span className="text-[11px] text-[#7C8A9A]">Reduction: {item.changeLabel}</span>
                   </div>
-                  <div className="font-mono font-extrabold text-xs text-emerald-600">
+                  <div className="font-mono font-extrabold text-xs text-emerald-600 shrink-0">
                     {currency} {Number(item.difference).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
@@ -81,9 +81,9 @@ export const CostReviewPanel: React.FC<CostReviewPanelProps> = ({ costReview, cu
         <div className="space-y-6">
           {costReview.categories.map((c) => (
             <div key={c.categoryId} className="p-5 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] space-y-4">
-              <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3">
-                <div>
-                  <h4 className="font-extrabold text-sm text-[#0F172A]">{c.categoryName}</h4>
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E7E9EE] pb-3">
+                <div className="min-w-0">
+                  <h4 className="font-extrabold text-sm text-[#0F172A] break-words">{c.categoryName}</h4>
                   <span className="text-[11px] text-[#7C8A9A]">
                     Spend: {currency} {Number(c.currentTotal).toLocaleString('en-US', { minimumFractionDigits: 2 })} &bull;
                     Diff: {Number(c.difference) >= 0 ? '+' : ''}{Number(c.difference).toLocaleString('en-US', { minimumFractionDigits: 2 })} ({c.changeLabel})

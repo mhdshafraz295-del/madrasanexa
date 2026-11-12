@@ -361,11 +361,11 @@ export const AdmissionsManagementPage: React.FC = () => {
       )}
 
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 space-x-4">
+      <div className="flex border-b border-slate-200 space-x-4 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab('applications')}
-          className={`pb-3 text-sm font-semibold transition-colors flex items-center space-x-2 border-b-2 ${
+          className={`pb-3 text-sm font-semibold transition-colors flex items-center space-x-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'applications'
               ? 'border-emerald-700 text-emerald-800'
               : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -381,7 +381,7 @@ export const AdmissionsManagementPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab('periods')}
-          className={`pb-3 text-sm font-semibold transition-colors flex items-center space-x-2 border-b-2 ${
+          className={`pb-3 text-sm font-semibold transition-colors flex items-center space-x-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'periods'
               ? 'border-emerald-700 text-emerald-800'
               : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -400,7 +400,7 @@ export const AdmissionsManagementPage: React.FC = () => {
             setInterviewPreSelectedAppId(null);
             setActiveTab('interviews');
           }}
-          className={`pb-3 text-sm font-semibold transition-colors flex items-center space-x-2 border-b-2 ${
+          className={`pb-3 text-sm font-semibold transition-colors flex items-center space-x-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'interviews'
               ? 'border-emerald-700 text-emerald-800'
               : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -536,7 +536,7 @@ export const AdmissionsManagementPage: React.FC = () => {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="p-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+              <div className="p-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500">
                 <span>
                   Page {page} of {totalPages}
                 </span>
@@ -723,7 +723,7 @@ export const AdmissionsManagementPage: React.FC = () => {
                     <User className="w-4 h-4 text-emerald-700" />
                     <span>Applicant Details</span>
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-100 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-100 text-xs">
                     <div>
                       <span className="text-slate-400 block">Full Name:</span>
                       <span className="font-bold text-slate-900">{selectedApp.applicantName}</span>
@@ -759,7 +759,7 @@ export const AdmissionsManagementPage: React.FC = () => {
                     <ShieldCheck className="w-4 h-4 text-emerald-700" />
                     <span>Parent / Guardian & Contact</span>
                   </h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-100 text-xs">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-3.5 rounded-xl border border-slate-100 text-xs">
                     <div>
                       <span className="text-slate-400 block">Guardian:</span>
                       <span className="font-bold text-slate-900">{selectedApp.guardianName}</span>
@@ -891,7 +891,7 @@ export const AdmissionsManagementPage: React.FC = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 flex items-center justify-between">
+                    <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center space-x-2">
                         <GraduationCap className="w-5 h-5 text-purple-700 shrink-0" />
                         <div>
@@ -922,8 +922,8 @@ export const AdmissionsManagementPage: React.FC = () => {
 
       {/* Convert to Enrolled Student Modal */}
       {showConvertModal && selectedApp && (
-        <div className="fixed inset-0 z-60 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl border border-slate-200">
+        <div className="fixed inset-0 z-60 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 space-y-4 shadow-xl border border-slate-200">
             <div className="flex items-center space-x-3 text-purple-700">
               <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
                 <UserCheck className="w-5 h-5" />
@@ -984,8 +984,8 @@ export const AdmissionsManagementPage: React.FC = () => {
 
       {/* Create Intake Cycle Modal */}
       {showCreatePeriodModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 space-y-4 shadow-xl border border-slate-200">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8 space-y-4 shadow-xl border border-slate-200">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="font-bold text-slate-900 text-base">Create New Intake Cycle</h3>
               <button
@@ -998,7 +998,7 @@ export const AdmissionsManagementPage: React.FC = () => {
             </div>
 
             <form onSubmit={handleCreatePeriod} className="space-y-3.5">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
                     Period Code *
@@ -1040,7 +1040,7 @@ export const AdmissionsManagementPage: React.FC = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
                     Start Date *

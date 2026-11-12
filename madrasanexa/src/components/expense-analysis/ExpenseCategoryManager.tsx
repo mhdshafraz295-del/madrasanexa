@@ -75,7 +75,7 @@ export const ExpenseCategoryManager: React.FC<ExpenseCategoryManagerProps> = ({
 
   return (
     <div className="bg-white rounded-3xl border border-[#E7E9EE] shadow-xs overflow-hidden">
-      <div className="p-5 border-b border-[#E7E9EE] flex items-center justify-between">
+      <div className="p-5 border-b border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-[#0F172A]">Operating Expense Categories</h3>
           <p className="text-xs text-[#7C8A9A] mt-0.5">
@@ -84,7 +84,7 @@ export const ExpenseCategoryManager: React.FC<ExpenseCategoryManagerProps> = ({
         </div>
         <button
           onClick={openAddModal}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs font-bold transition shadow-xs cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs font-bold transition shadow-xs cursor-pointer shrink-0 self-start sm:self-auto"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>New Category</span>
@@ -95,10 +95,10 @@ export const ExpenseCategoryManager: React.FC<ExpenseCategoryManagerProps> = ({
         <table className="w-full text-left text-xs">
           <thead>
             <tr className="bg-[#F7F6F1] border-b border-[#E7E9EE] text-[#7C8A9A] uppercase tracking-wider text-[10px] font-bold">
-              <th className="py-3 px-4">Category Name</th>
-              <th className="py-3 px-4">Description</th>
-              <th className="py-3 px-4 text-center">Status</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+              <th className="py-3 px-4 whitespace-nowrap">Category Name</th>
+              <th className="py-3 px-4 whitespace-nowrap">Description</th>
+              <th className="py-3 px-4 text-center whitespace-nowrap">Status</th>
+              <th className="py-3 px-4 text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#E7E9EE]">
@@ -160,7 +160,7 @@ export const ExpenseCategoryManager: React.FC<ExpenseCategoryManagerProps> = ({
       {/* Add / Edit Category Modal */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-[#E7E9EE]">
+          <div className="bg-white rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE]">
             <h3 className="text-sm font-bold text-[#0F172A] mb-3">
               {editingCategory ? 'Edit Category' : 'Create Operating Expense Category'}
             </h3>

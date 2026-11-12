@@ -56,7 +56,7 @@ export default function SuperAdminWorkspace() {
             </div>
             <div className="p-4 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE]">
               <div className="text-[11px] font-medium text-[#7C8A9A] uppercase tracking-wider">Email Address</div>
-              <div className="text-sm font-semibold text-[#0F172A] mt-1 font-mono">{user?.email}</div>
+              <div className="text-sm font-semibold text-[#0F172A] mt-1 font-mono break-all">{user?.email}</div>
             </div>
             <div className="p-4 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE]">
               <div className="text-[11px] font-medium text-[#7C8A9A] uppercase tracking-wider">Tenant Scope</div>

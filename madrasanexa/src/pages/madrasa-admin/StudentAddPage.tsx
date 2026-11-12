@@ -304,7 +304,7 @@ export default function StudentAddPage() {
             </div>
 
             {selectedClass && (
-              <div className="sm:col-span-2 p-3 bg-[#F7F6F1] rounded-xl border border-[#E7E9EE] flex items-center justify-between">
+              <div className="sm:col-span-2 p-3 bg-[#F7F6F1] rounded-xl border border-[#E7E9EE] flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <span className="text-[10px] text-[#7C8A9A] block font-medium">Selected Class Default Fee</span>
                   <span className="font-bold text-xs text-[#0F172A] font-mono">
@@ -557,17 +557,17 @@ export default function StudentAddPage() {
         </div>
 
         {/* Actions Bar */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 pt-2">
           <Link
             to="/madrasa-admin/students"
-            className="px-5 py-2.5 text-xs font-semibold text-[#7C8A9A] hover:text-[#0F172A] rounded-xl hover:bg-white transition"
+            className="px-5 py-2.5 text-xs font-semibold text-[#7C8A9A] hover:text-[#0F172A] rounded-xl hover:bg-white transition text-center"
           >
             Cancel
           </Link>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#37C6A3] hover:bg-[#30b594] text-white text-xs font-semibold rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-[#37C6A3] hover:bg-[#30b594] text-white text-xs font-semibold rounded-xl shadow-xs transition disabled:opacity-50 cursor-pointer"
           >
             {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
             <span>Complete Student Registration</span>

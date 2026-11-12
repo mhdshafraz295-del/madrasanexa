@@ -61,15 +61,15 @@ export const SalaryAdjustmentModal: React.FC<SalaryAdjustmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full border border-stone-200 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto border border-stone-200 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between gap-2 bg-stone-50/50">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
               <DollarSign className="w-5 h-5" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <h3 className="text-base font-bold text-stone-900">Adjust Payable Salary</h3>
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-stone-500 truncate" title={`${salary.ustadh.fullName} (${salary.salaryMonth})`}>
                 {salary.ustadh.fullName} ({salary.salaryMonth})
               </p>
             </div>

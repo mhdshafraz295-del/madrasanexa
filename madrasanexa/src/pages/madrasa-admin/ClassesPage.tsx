@@ -391,10 +391,10 @@ export default function ClassesPage() {
       </div>
 
       {/* Main Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-px">
+      <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('CLASSES')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 cursor-pointer ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'CLASSES'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -406,7 +406,7 @@ export default function ClassesPage() {
 
         <button
           onClick={() => setActiveTab('SECTIONS')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 cursor-pointer ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'SECTIONS'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -690,7 +690,7 @@ export default function ClassesPage() {
 
               {/* Pagination */}
               {classTotalPages > 1 && (
-                <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-[#7C8A9A]">
+                <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#7C8A9A]">
                   <div>
                     Showing <span className="font-semibold text-[#0F172A]">{(classPage - 1) * classPageSize + 1}</span> to{' '}
                     <span className="font-semibold text-[#0F172A]">
@@ -959,7 +959,7 @@ export default function ClassesPage() {
 
               {/* Pagination */}
               {sectionTotalPages > 1 && (
-                <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-[#7C8A9A]">
+                <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#7C8A9A]">
                   <div>
                     Showing <span className="font-semibold text-[#0F172A]">{(sectionPage - 1) * sectionPageSize + 1}</span> to{' '}
                     <span className="font-semibold text-[#0F172A]">
@@ -997,9 +997,9 @@ export default function ClassesPage() {
       {/* MODAL: CREATE / EDIT CLASS */}
       {/* ========================================================================= */}
       {isClassModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-5 py-4 border-b border-[#E7E9EE] flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 border-b border-[#E7E9EE] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-[#37C6A3]" />
                 <h3 className="text-sm font-bold text-[#0F172A]">
@@ -1014,7 +1014,7 @@ export default function ClassesPage() {
               </button>
             </div>
 
-            <form onSubmit={handleClassModalSubmit} className="p-5 space-y-4">
+            <form onSubmit={handleClassModalSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
               {classModalError && (
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -1152,9 +1152,9 @@ export default function ClassesPage() {
       {/* MODAL: CREATE / EDIT ACADEMIC SECTION */}
       {/* ========================================================================= */}
       {isSectionModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-5 py-4 border-b border-[#E7E9EE] flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xl w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-5 py-4 border-b border-[#E7E9EE] flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <Layers className="w-4 h-4 text-[#08483A]" />
                 <h3 className="text-sm font-bold text-[#0F172A]">
@@ -1169,7 +1169,7 @@ export default function ClassesPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSectionModalSubmit} className="p-5 space-y-4">
+            <form onSubmit={handleSectionModalSubmit} className="p-5 space-y-4 overflow-y-auto flex-1">
               {sectionModalError && (
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

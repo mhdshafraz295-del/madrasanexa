@@ -16,43 +16,29 @@ const fontsDir = path.resolve(__dirname, '../assets/fonts');
 
 export let embeddedFontsCss = '';
 try {
-  const fontArabicPath = path.join(fontsDir, 'NotoSansArabic-Regular.ttf');
-  const fontTamilPath = path.join(fontsDir, 'NotoSansTamil-Regular.ttf');
-  const fontSinhalaPath = path.join(fontsDir, 'NotoSansSinhala-Regular.ttf');
-  const fontLatinPath = path.join(fontsDir, 'NotoSans-Regular.ttf');
+  const fontDefs = [
+    { family: 'Noto Sans Local', file: 'NotoSans-Regular.ttf' },
+    { family: 'Noto Sans Arabic Local', file: 'NotoSansArabic-Regular.ttf' },
+    { family: 'Noto Sans Tamil Local', file: 'NotoSansTamil-Regular.ttf' },
+    { family: 'Noto Sans Sinhala Local', file: 'NotoSansSinhala-Regular.ttf' },
+  ];
 
-  if (fs.existsSync(fontLatinPath) && fs.existsSync(fontArabicPath) && fs.existsSync(fontTamilPath) && fs.existsSync(fontSinhalaPath)) {
-    const fontArabic = fs.readFileSync(fontArabicPath).toString('base64');
-    const fontTamil = fs.readFileSync(fontTamilPath).toString('base64');
-    const fontSinhala = fs.readFileSync(fontSinhalaPath).toString('base64');
-    const fontLatin = fs.readFileSync(fontLatinPath).toString('base64');
-
-    embeddedFontsCss = `
+  const loadedFaces = [];
+  for (const def of fontDefs) {
+    const fontPath = path.join(fontsDir, def.file);
+    if (fs.existsSync(fontPath)) {
+      const b64 = fs.readFileSync(fontPath).toString('base64');
+      loadedFaces.push(`
       @font-face {
-        font-family: 'Noto Sans Local';
-        src: url('data:font/truetype;charset=utf-8;base64,${fontLatin}') format('truetype');
+        font-family: '${def.family}';
+        src: url('data:font/truetype;charset=utf-8;base64,${b64}') format('truetype');
         font-weight: normal;
         font-style: normal;
-      }
-      @font-face {
-        font-family: 'Noto Sans Arabic Local';
-        src: url('data:font/truetype;charset=utf-8;base64,${fontArabic}') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-      }
-      @font-face {
-        font-family: 'Noto Sans Tamil Local';
-        src: url('data:font/truetype;charset=utf-8;base64,${fontTamil}') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-      }
-      @font-face {
-        font-family: 'Noto Sans Sinhala Local';
-        src: url('data:font/truetype;charset=utf-8;base64,${fontSinhala}') format('truetype');
-        font-weight: normal;
-        font-style: normal;
-      }
-    `;
+      }`);
+    }
+  }
+  if (loadedFaces.length > 0) {
+    embeddedFontsCss = loadedFaces.join('\n');
   }
 } catch (err) {
   console.warn('[PDF] Could not pre-load embedded fonts:', err.message);
@@ -288,7 +274,7 @@ export async function renderRawHtmlToPdf({ html, landscape = false }) {
       printBackground: true,
       margin: {
         top: '12mm',
-        bottom: '12mm',
+        bottom: '16mm',
         left: '12mm',
         right: '12mm',
       },
@@ -468,6 +454,7 @@ export function buildReportHtmlDocument(reportData) {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 16px;
+      table-layout: fixed;
     }
     thead {
       display: table-header-group;
@@ -485,6 +472,8 @@ export function buildReportHtmlDocument(reportData) {
       text-align: left;
       border-top: 1px solid #0F172A;
       border-bottom: 1px solid #0F172A;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     td {
       padding: 5px 8px;
@@ -492,6 +481,8 @@ export function buildReportHtmlDocument(reportData) {
       border-bottom: 1px solid #E7E9EE;
       color: #0F172A;
       vertical-align: middle;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     tr:nth-child(even) td {
       background-color: #FAFAFA;
@@ -532,6 +523,8 @@ export function buildReportHtmlDocument(reportData) {
       color: #0F172A;
       border-bottom: 1px solid #E7E9EE;
       padding-bottom: 3px;
+      page-break-after: avoid;
+      break-after: avoid;
     }
   </style>
 </head>
@@ -630,7 +623,7 @@ function buildStandardReportTableHtml(reportType, records) {
                 <td class="text-right">${escapeHtml(r.expectedAmount)}</td>
                 <td class="text-right" style="font-weight: 700; color: #9B1C1C;">${escapeHtml(r.balanceAmount)}</td>
                 <td>${escapeHtml(r.dueDate)}</td>
-                <td class="text-center"><span class="badge badge-${r.status.toLowerCase()}">${escapeHtml(r.status)}</span></td>
+                <td class="text-center"><span class="badge badge-${(r.status || 'PENDING').toLowerCase()}">${escapeHtml(r.status || 'PENDING')}</span></td>
               </tr>
             `).join('')}
           </tbody>
@@ -730,7 +723,7 @@ function buildStandardReportTableHtml(reportType, records) {
                 <td class="text-right">${escapeHtml(r.expectedAmount)}</td>
                 <td class="text-right">${escapeHtml(r.paidAmount)}</td>
                 <td class="text-right" style="font-weight: 700;">${escapeHtml(r.balanceAmount)}</td>
-                <td class="text-center"><span class="badge badge-${r.status.toLowerCase()}">${escapeHtml(r.status)}</span></td>
+                <td class="text-center"><span class="badge badge-${(r.status || 'PENDING').toLowerCase()}">${escapeHtml(r.status || 'PENDING')}</span></td>
               </tr>
             `).join('')}
           </tbody>
@@ -874,7 +867,7 @@ function buildStandardReportTableHtml(reportType, records) {
                 <td>${escapeHtml(formatPaymentMethodLabel(r.paymentMethod))}</td>
                 <td class="text-right" style="font-weight: 700;">${escapeHtml(r.amount)}</td>
                 <td class="text-center">
-                  <span class="badge badge-${r.status.toLowerCase()}">${escapeHtml(r.status)}</span>
+                  <span class="badge badge-${(r.status || 'PENDING').toLowerCase()}">${escapeHtml(r.status || 'PENDING')}</span>
                 </td>
                 <td style="font-size: 7.5px;">${escapeHtml(r.allocatedPeriods)}</td>
               </tr>
@@ -963,7 +956,7 @@ function buildStudentStatementHtml(reportData) {
             <td class="text-right">${escapeHtml(inv.expectedAmount || inv.totalAmount)}</td>
             <td class="text-right">${escapeHtml(inv.paidAmount)}</td>
             <td class="text-right" style="font-weight: 700;">${escapeHtml(inv.balanceAmount)}</td>
-            <td class="text-center"><span class="badge badge-${inv.status.toLowerCase()}">${escapeHtml(inv.status)}</span></td>
+            <td class="text-center"><span class="badge badge-${(inv.status || 'PENDING').toLowerCase()}">${escapeHtml(inv.status || 'PENDING')}</span></td>
           </tr>
         `).join('')}
       </tbody>
@@ -991,7 +984,7 @@ function buildStudentStatementHtml(reportData) {
             <td>${escapeHtml(p.receiptNo)}</td>
             <td>${escapeHtml(formatPaymentMethodLabel(p.paymentMethod))}</td>
             <td class="text-right" style="font-weight: 700;">${escapeHtml(p.amount)}</td>
-            <td class="text-center"><span class="badge badge-${p.status.toLowerCase()}">${escapeHtml(p.status)}</span></td>
+            <td class="text-center"><span class="badge badge-${(p.status || 'PENDING').toLowerCase()}">${escapeHtml(p.status || 'PENDING')}</span></td>
             <td style="font-size: 7.5px;">${escapeHtml(p.allocatedPeriods)}</td>
           </tr>
         `).join('')}

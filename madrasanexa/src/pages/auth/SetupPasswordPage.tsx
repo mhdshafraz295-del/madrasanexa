@@ -156,14 +156,14 @@ export default function SetupPasswordPage() {
           <>
             {tokenData && (
               <div className="mb-5 p-3.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs">
-                <div className="flex justify-between py-0.5">
-                  <span className="text-[#64748B]">Administrator:</span>
-                  <span className="font-semibold text-[#0F172A]">{tokenData.email}</span>
+                <div className="flex justify-between gap-2 py-0.5">
+                  <span className="text-[#64748B] shrink-0">Administrator:</span>
+                  <span className="font-semibold text-[#0F172A] min-w-0 text-right break-all">{tokenData.email}</span>
                 </div>
                 {tokenData.madrasaName && (
-                  <div className="flex justify-between py-0.5 border-t border-dashed border-[#E2E8F0] mt-1 pt-1">
-                    <span className="text-[#64748B]">Institution:</span>
-                    <span className="font-semibold text-[#0F172A]">{tokenData.madrasaName}</span>
+                  <div className="flex justify-between gap-2 py-0.5 border-t border-dashed border-[#E2E8F0] mt-1 pt-1">
+                    <span className="text-[#64748B] shrink-0">Institution:</span>
+                    <span className="font-semibold text-[#0F172A] min-w-0 text-right break-words">{tokenData.madrasaName}</span>
                   </div>
                 )}
               </div>

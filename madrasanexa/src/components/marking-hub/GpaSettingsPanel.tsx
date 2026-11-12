@@ -144,7 +144,7 @@ export const GpaSettingsPanel: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={handleResetDefault}
@@ -193,8 +193,8 @@ export const GpaSettingsPanel: React.FC = () => {
       )}
 
       {/* GPA Bands Table */}
-      <div className="border border-stone-200 rounded-xl overflow-hidden">
-        <table className="w-full text-left text-xs">
+      <div className="border border-stone-200 rounded-xl overflow-x-auto">
+        <table className="w-full text-left text-xs min-w-[420px]">
           <thead>
             <tr className="bg-stone-50 border-b border-stone-200 text-stone-600 font-semibold uppercase tracking-wider">
               <th className="p-3 text-center w-12">#</th>
@@ -261,7 +261,7 @@ export const GpaSettingsPanel: React.FC = () => {
         </table>
       </div>
 
-      <div className="flex justify-between items-center pt-2">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-2">
         <button
           type="button"
           onClick={handleAddBand}

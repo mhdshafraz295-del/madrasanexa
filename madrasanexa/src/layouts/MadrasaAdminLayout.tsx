@@ -88,8 +88,8 @@ export default function MadrasaAdminLayout() {
   return (
     <div className="min-h-screen bg-[#F7F6F1] flex flex-col md:flex-row text-[#0F172A]">
       {/* Mobile Header */}
-      <header className="md:hidden bg-white border-b border-[#E7E9EE] px-4 py-3 flex items-center justify-between sticky top-0 z-30 shadow-xs">
-        <div className="flex items-center gap-2.5">
+      <header className="md:hidden bg-white border-b border-[#E7E9EE] px-4 py-3 flex items-center justify-between gap-2 sticky top-0 z-30 shadow-xs print:hidden">
+        <div className="flex items-center gap-2.5 min-w-0">
           {customLogoUrl && !logoError ? (
             <img
               src={customLogoUrl}
@@ -102,16 +102,16 @@ export default function MadrasaAdminLayout() {
               {madrasaInitials}
             </div>
           )}
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-[#0F172A] leading-tight line-clamp-1">
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-bold text-[#0F172A] leading-tight truncate">
               {madrasaName}
             </span>
-            <span className="text-[10px] text-[#7C8A9A] font-mono">
+            <span className="text-[10px] text-[#7C8A9A] font-mono truncate">
               {user?.madrasa?.code || 'TENANT'}
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <AnnouncementBell />
           {isExpiringSoon && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
@@ -131,7 +131,7 @@ export default function MadrasaAdminLayout() {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-[#E7E9EE] flex flex-col justify-between z-40 transition-transform duration-200 ease-in-out md:translate-x-0 ${
+        className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-[#E7E9EE] flex flex-col justify-between z-40 transition-transform duration-200 ease-in-out md:translate-x-0 print:hidden ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -303,10 +303,18 @@ export default function MadrasaAdminLayout() {
         </div>
       </aside>
 
+      {/* Mobile Drawer Backdrop */}
+      {mobileMenuOpen && (
+        <div
+          onClick={() => setMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/30 z-30 md:hidden backdrop-blur-xs print:hidden"
+        />
+      )}
+
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Desktop Top Header Bar */}
-        <header className="hidden md:flex items-center justify-between bg-white border-b border-[#E7E9EE] px-8 py-3.5 sticky top-0 z-30 shadow-xs">
+        <header className="hidden md:flex items-center justify-between bg-white border-b border-[#E7E9EE] px-8 py-3.5 sticky top-0 z-30 shadow-xs print:hidden">
           <div>
             <h2 className="text-xs font-semibold text-[#7C8A9A] uppercase tracking-wider">
               {user?.madrasa?.name || 'Institution Workspace'}
@@ -328,11 +336,11 @@ export default function MadrasaAdminLayout() {
         </header>
 
         {/* Page Content Outlet */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto w-full print:p-0 print:max-w-none">
           <Outlet />
         </main>
 
-        <footer className="p-4 sm:p-6 text-center text-xs text-[#7C8A9A] border-t border-[#E7E9EE] bg-white">
+        <footer className="p-4 sm:p-6 text-center text-xs text-[#7C8A9A] border-t border-[#E7E9EE] bg-white print:hidden">
           MadrasaNexa &copy; 2026 &bull; Production SaaS Platform for Islamic Educational Institutions
         </footer>
       </div>

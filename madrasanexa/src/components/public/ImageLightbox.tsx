@@ -119,17 +119,17 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
           type="button"
           onClick={onClose}
           aria-label="Close image viewer"
-          className="absolute -top-12 right-0 md:top-2 md:right-2 z-10 p-2.5 rounded-full bg-slate-900/80 text-white hover:bg-slate-800 hover:text-emerald-400 transition-colors shadow-lg border border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
+          className="absolute top-2 right-2 z-10 p-2.5 rounded-full bg-slate-900/80 text-white hover:bg-slate-800 hover:text-emerald-400 transition-colors shadow-lg border border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
         >
           <X className="w-6 h-6" />
         </button>
 
         {/* High-Resolution Expanded Image */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl bg-slate-950/80">
+        <div className="relative max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 shadow-2xl bg-slate-950/80">
           <img
             src={imageUrl}
             alt={altText || 'Expanded preview'}
-            className="max-h-[80vh] max-w-full object-contain select-none"
+            className="max-h-[70vh] sm:max-h-[78vh] max-w-full object-contain select-none"
           />
 
           {/* Caption / Alt overlay */}

@@ -86,7 +86,7 @@ export const StaffTimetableView: React.FC<StaffTimetableViewProps> = ({
     <div className="space-y-6">
       {/* Filters & Actions Bar */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
               Staff Type

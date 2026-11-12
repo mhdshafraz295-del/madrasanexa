@@ -311,6 +311,15 @@ export function buildApprovalEmailTemplate({
     .btn-container { text-align: center; margin: 32px 0; }
     .btn { display: inline-block; background-color: #0F172A; color: #FFFFFF !important; text-decoration: none; padding: 12px 28px; font-size: 13px; font-weight: 700; border-radius: 10px; }
     .footer { padding: 24px 32px; background: #F8FAFC; border-top: 1px solid #E7E9EE; font-size: 11px; color: #94A3B8; text-align: center; }
+    @media only screen and (max-width: 520px) {
+      .container { margin: 12px !important; border-radius: 12px !important; }
+      .header { padding: 20px 18px !important; }
+      .body { padding: 20px 18px !important; }
+      .info-row { flex-direction: column !important; gap: 2px !important; }
+      .info-value { text-align: left !important; word-break: break-word !important; }
+      .btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .footer { padding: 18px !important; }
+    }
   </style>
 </head>
 <body>
@@ -426,7 +435,11 @@ export async function sendPaymentPendingEmail({
   const safeMadrasa = escapeHtml(madrasaName);
   const safePlan = escapeHtml(planName);
   const safeRef = escapeHtml(reference || 'N/A');
-  const formattedAmount = Number(amount).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const hasValidAmount =
+    amount !== null && amount !== undefined && amount !== '' && Number.isFinite(Number(amount));
+  const formattedAmount = hasValidAmount
+    ? Number(amount).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '—';
 
   const subject = `Payment Submission Received — ${madrasaName}`;
 
@@ -450,6 +463,7 @@ export async function sendPaymentPendingEmail({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(subject)}</title>
   <style>
     body { margin: 0; padding: 0; background-color: #F7F6F1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A; }
@@ -464,6 +478,15 @@ export async function sendPaymentPendingEmail({
     .info-label { color: #64748B; font-weight: 500; }
     .info-value { color: #0F172A; font-weight: 600; text-align: right; }
     .footer { padding: 24px 32px; background: #F8FAFC; border-top: 1px solid #E7E9EE; font-size: 11px; color: #94A3B8; text-align: center; }
+    @media only screen and (max-width: 520px) {
+      .container { margin: 12px !important; border-radius: 12px !important; }
+      .header { padding: 20px 18px !important; }
+      .body { padding: 20px 18px !important; }
+      .info-row { flex-direction: column !important; gap: 2px !important; }
+      .info-value { text-align: left !important; word-break: break-word !important; }
+      .btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .footer { padding: 18px !important; }
+    }
   </style>
 </head>
 <body>
@@ -545,6 +568,7 @@ export async function sendPaymentApprovedEmail({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(subject)}</title>
   <style>
     body { margin: 0; padding: 0; background-color: #F7F6F1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A; }
@@ -561,6 +585,15 @@ export async function sendPaymentApprovedEmail({
     .btn-container { text-align: center; margin: 32px 0; }
     .btn { display: inline-block; background-color: #0F172A; color: #FFFFFF !important; text-decoration: none; padding: 12px 28px; font-size: 13px; font-weight: 700; border-radius: 10px; }
     .footer { padding: 24px 32px; background: #F8FAFC; border-top: 1px solid #E7E9EE; font-size: 11px; color: #94A3B8; text-align: center; }
+    @media only screen and (max-width: 520px) {
+      .container { margin: 12px !important; border-radius: 12px !important; }
+      .header { padding: 20px 18px !important; }
+      .body { padding: 20px 18px !important; }
+      .info-row { flex-direction: column !important; gap: 2px !important; }
+      .info-value { text-align: left !important; word-break: break-word !important; }
+      .btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .footer { padding: 18px !important; }
+    }
   </style>
 </head>
 <body>
@@ -638,6 +671,7 @@ export async function sendPaymentRejectedEmail({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(subject)}</title>
   <style>
     body { margin: 0; padding: 0; background-color: #F7F6F1; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0F172A; }
@@ -646,10 +680,19 @@ export async function sendPaymentRejectedEmail({
     .header h1 { margin: 0; color: #FFFFFF; font-size: 20px; font-weight: 700; }
     .header .subtitle { color: #EF4444; font-size: 12px; font-weight: 600; margin-top: 4px; text-transform: uppercase; }
     .body { padding: 32px; font-size: 14px; line-height: 1.6; color: #334155; }
-    .reason-box { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 16px; margin: 20px 0; color: #991B1B; font-size: 13px; line-height: 1.5; }
+    .reason-box { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 16px; margin: 20px 0; color: #991B1B; font-size: 13px; line-height: 1.5; word-break: break-word; overflow-wrap: anywhere; }
     .btn-container { text-align: center; margin: 32px 0; }
     .btn { display: inline-block; background-color: #0F172A; color: #FFFFFF !important; text-decoration: none; padding: 12px 28px; font-size: 13px; font-weight: 700; border-radius: 10px; }
     .footer { padding: 24px 32px; background: #F8FAFC; border-top: 1px solid #E7E9EE; font-size: 11px; color: #94A3B8; text-align: center; }
+    @media only screen and (max-width: 520px) {
+      .container { margin: 12px !important; border-radius: 12px !important; }
+      .header { padding: 20px 18px !important; }
+      .body { padding: 20px 18px !important; }
+      .info-row { flex-direction: column !important; gap: 2px !important; }
+      .info-value { text-align: left !important; word-break: break-word !important; }
+      .btn { display: block !important; width: 100% !important; box-sizing: border-box !important; }
+      .footer { padding: 18px !important; }
+    }
   </style>
 </head>
 <body>
@@ -764,9 +807,10 @@ export async function sendUstadhSalaryPaidEmail({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${safeMonth} Salary Payment</title>
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F7F6F1; margin: 0; padding: 24px; color: #0F172A; }
+    body { font-family: 'Noto Sans Tamil', 'Noto Sans', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F7F6F1; margin: 0; padding: 24px; color: #0F172A; }
     .card { max-width: 540px; margin: 0 auto; background: #ffffff; border-radius: 16px; border: 1px solid #E7E9EE; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .header { background: #0F172A; color: #ffffff; padding: 24px; text-align: center; }
     .header h1 { margin: 0; font-size: 20px; font-weight: 700; color: #ffffff; }
@@ -780,6 +824,12 @@ export async function sendUstadhSalaryPaidEmail({
     .info-value { color: #0F172A; font-weight: 700; }
     .badge-paid { display: inline-block; background-color: #DEF7EC; color: #03543F; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; }
     .footer { text-align: center; padding: 18px; font-size: 11px; color: #7C8A9A; background: #FAFAFA; border-top: 1px solid #E7E9EE; }
+    @media only screen and (max-width: 520px) {
+      body { padding: 12px !important; }
+      .body { padding: 20px 16px !important; }
+      .info-row { flex-direction: column !important; gap: 2px !important; }
+      .info-value { text-align: left !important; word-break: break-word !important; }
+    }
   </style>
 </head>
 <body>
@@ -858,6 +908,7 @@ export async function sendUstadhDirectEmail({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(subject)}</title>
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #F7F6F1; margin: 0; padding: 24px; color: #0F172A; }
@@ -927,6 +978,7 @@ export async function sendStaffTimetableEmail({
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(subject)}</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F8FAFC; margin: 0; padding: 24px; color: #0F172A; }

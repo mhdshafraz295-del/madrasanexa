@@ -35,14 +35,14 @@ export default function ActivityLogsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight">Platform Activity Audit</h1>
           <p className="text-xs text-[#7C8A9A] mt-1">
             Immutable audit trail of all platform-level administrative, security, and onboarding events.
           </p>
         </div>
-        <span className="px-3 py-1 bg-white border border-[#E7E9EE] text-xs font-semibold text-[#0F172A] rounded-xl shadow-xs">
+        <span className="px-3 py-1 bg-white border border-[#E7E9EE] text-xs font-semibold text-[#0F172A] rounded-xl shadow-xs shrink-0 w-fit">
           {total} events recorded
         </span>
       </div>

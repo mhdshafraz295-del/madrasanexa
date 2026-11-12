@@ -167,8 +167,8 @@ export function buildAdmissionEmailTemplate({
   if (safeAdmissionNo) {
     detailRowsHtml.push(`
       <tr>
-        <td style="padding: 9px 12px; font-size: 13px; color: #047857; font-weight: 600; border-bottom: 1px solid #f1f5f9;">Official Admission No.</td>
-        <td style="padding: 9px 12px; font-size: 14px; color: #047857; font-weight: 800; font-family: 'Courier New', monospace; border-bottom: 1px solid #f1f5f9; text-align: right;">${safeAdmissionNo}</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #047857; font-weight: 600; border-bottom: 1px solid #f1f5f9; vertical-align: top; width: 42%;">Official Admission No.</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #047857; font-weight: 800; font-family: 'Courier New', monospace; border-bottom: 1px solid #f1f5f9; text-align: right; vertical-align: top; word-break: break-word;">${safeAdmissionNo}</td>
       </tr>
     `);
     detailRowsText.push(`- Official Admission Number: ${admissionNo}`);
@@ -176,8 +176,8 @@ export function buildAdmissionEmailTemplate({
 
   detailRowsHtml.push(`
     <tr>
-      <td style="padding: 9px 12px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9;">Application Reference</td>
-      <td style="padding: 9px 12px; font-size: 13px; color: #064e3b; font-weight: 700; font-family: 'Courier New', monospace; border-bottom: 1px solid #f1f5f9; text-align: right;">${safeApplicationNo}</td>
+      <td style="padding: 9px 10px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9; vertical-align: top; width: 42%;">Application Reference</td>
+      <td style="padding: 9px 10px; font-size: 13px; color: #064e3b; font-weight: 700; font-family: 'Courier New', monospace; border-bottom: 1px solid #f1f5f9; text-align: right; vertical-align: top; word-break: break-word;">${safeApplicationNo}</td>
     </tr>
   `);
   detailRowsText.push(`- Application Reference: ${applicationNo}`);
@@ -185,8 +185,8 @@ export function buildAdmissionEmailTemplate({
   if (safeClassName) {
     detailRowsHtml.push(`
       <tr>
-        <td style="padding: 9px 12px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9;">Class / Level</td>
-        <td style="padding: 9px 12px; font-size: 13px; color: #0f172a; font-weight: 600; border-bottom: 1px solid #f1f5f9; text-align: right;">${safeClassName}</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9; vertical-align: top; width: 42%;">Class / Level</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #0f172a; font-weight: 600; border-bottom: 1px solid #f1f5f9; text-align: right; vertical-align: top; word-break: break-word;">${safeClassName}</td>
       </tr>
     `);
     detailRowsText.push(`- Class: ${className}`);
@@ -198,8 +198,8 @@ export function buildAdmissionEmailTemplate({
       : safeIntakeName || safeAcademicYear;
     detailRowsHtml.push(`
       <tr>
-        <td style="padding: 9px 12px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9;">Intake Cycle</td>
-        <td style="padding: 9px 12px; font-size: 13px; color: #0f172a; font-weight: 600; border-bottom: 1px solid #f1f5f9; text-align: right;">${intakeLabel}</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9; vertical-align: top; width: 42%;">Intake Cycle</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #0f172a; font-weight: 600; border-bottom: 1px solid #f1f5f9; text-align: right; vertical-align: top; word-break: break-word;">${intakeLabel}</td>
       </tr>
     `);
     detailRowsText.push(`- Intake Cycle: ${intakeLabel}`);
@@ -208,8 +208,8 @@ export function buildAdmissionEmailTemplate({
   if (formattedDate) {
     detailRowsHtml.push(`
       <tr>
-        <td style="padding: 9px 12px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9;">Submission Date</td>
-        <td style="padding: 9px 12px; font-size: 13px; color: #0f172a; font-weight: 500; border-bottom: 1px solid #f1f5f9; text-align: right;">${escapeHtml(formattedDate)}</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9; vertical-align: top; width: 42%;">Submission Date</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #0f172a; font-weight: 500; border-bottom: 1px solid #f1f5f9; text-align: right; vertical-align: top; word-break: break-word;">${escapeHtml(formattedDate)}</td>
       </tr>
     `);
     detailRowsText.push(`- Submission Date: ${formattedDate}`);
@@ -218,8 +218,8 @@ export function buildAdmissionEmailTemplate({
   if (safeRemarks) {
     detailRowsHtml.push(`
       <tr>
-        <td style="padding: 9px 12px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9;">Review Remarks</td>
-        <td style="padding: 9px 12px; font-size: 13px; color: #334155; font-style: italic; border-bottom: 1px solid #f1f5f9; text-align: right;">${safeRemarks}</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #64748b; font-weight: 500; border-bottom: 1px solid #f1f5f9; vertical-align: top; width: 42%;">Review Remarks</td>
+        <td style="padding: 9px 10px; font-size: 13px; color: #334155; font-style: italic; border-bottom: 1px solid #f1f5f9; text-align: right; vertical-align: top; word-break: break-word;">${safeRemarks}</td>
       </tr>
     `);
     detailRowsText.push(`- Review Remarks: ${remarks}`);
@@ -366,7 +366,7 @@ Official Electronic Communication • MadrasaNexa Online Admissions System
                     <div style="font-size: 11px; font-weight: 700; color: #065f46; text-transform: uppercase; letter-spacing: 0.06em;">
                       Application Reference Number
                     </div>
-                    <div style="font-size: 26px; font-weight: 900; font-family: 'Courier New', Courier, monospace; color: #064e3b; letter-spacing: 0.08em; margin: 6px 0;">
+                    <div style="font-size: 22px; font-weight: 900; font-family: 'Courier New', Courier, monospace; color: #064e3b; letter-spacing: 0.06em; margin: 6px 0; word-break: break-all;">
                       ${safeApplicationNo}
                     </div>
                     ${safeAdmissionNo ? `

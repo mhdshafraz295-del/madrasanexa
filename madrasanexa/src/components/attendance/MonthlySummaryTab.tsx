@@ -188,7 +188,7 @@ export const MonthlySummaryTab: React.FC<MonthlySummaryTabProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-stone-50/80 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider">
+              <tr className="bg-stone-50/80 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider whitespace-nowrap">
                 <th className="py-3 px-4 w-12 text-center">#</th>
                 <th className="py-3 px-4 w-32">Admission No</th>
                 <th className="py-3 px-4">Student Name</th>

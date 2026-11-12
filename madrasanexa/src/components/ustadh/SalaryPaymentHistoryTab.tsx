@@ -115,15 +115,15 @@ export const SalaryPaymentHistoryTab: React.FC<SalaryPaymentHistoryTabProps> = (
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-medium text-slate-600">Staff:</span>
+          <div className="flex items-center gap-2 text-xs min-w-0">
+            <span className="font-medium text-slate-600 shrink-0">Staff:</span>
             <select
               value={selectedUstadhId}
               onChange={(e) => {
                 setSelectedUstadhId(e.target.value);
                 setPage(1);
               }}
-              className="px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full sm:w-auto sm:max-w-xs min-w-0 px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="">All Staff</option>
               {ustadhsList.map((u) => (
@@ -299,7 +299,7 @@ export const SalaryPaymentHistoryTab: React.FC<SalaryPaymentHistoryTabProps> = (
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
             <div>
               Showing {items.length} of {total} records
             </div>

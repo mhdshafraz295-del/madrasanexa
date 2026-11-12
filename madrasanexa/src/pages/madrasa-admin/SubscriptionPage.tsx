@@ -500,7 +500,7 @@ export default function SubscriptionPage() {
         {submissions.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#F7F6F1] text-[#7C8A9A] font-semibold uppercase tracking-wider border-b border-[#E7E9EE]">
+              <thead className="bg-[#F7F6F1] text-[#7C8A9A] font-semibold uppercase tracking-wider border-b border-[#E7E9EE] whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-3">Plan</th>
                   <th className="px-6 py-3">Amount</th>
@@ -542,7 +542,7 @@ export default function SubscriptionPage() {
                         <button
                           onClick={() => handleOpenReceipt(sub.id)}
                           disabled={openingReceiptId === sub.id}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F7F6F1] hover:bg-[#E7E9EE] border border-[#E7E9EE] text-[11px] font-semibold text-[#0F172A] transition cursor-pointer disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[#F7F6F1] hover:bg-[#E7E9EE] border border-[#E7E9EE] text-[11px] font-semibold text-[#0F172A] transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           {openingReceiptId === sub.id ? (
                             <Loader2 className="w-3 h-3 animate-spin text-[#37C6A3]" />
@@ -588,7 +588,7 @@ export default function SubscriptionPage() {
         {terms && terms.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#F7F6F1] text-[#7C8A9A] font-semibold uppercase tracking-wider border-b border-[#E7E9EE]">
+              <thead className="bg-[#F7F6F1] text-[#7C8A9A] font-semibold uppercase tracking-wider border-b border-[#E7E9EE] whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-3">Plan Name</th>
                   <th className="px-6 py-3">Status</th>
@@ -632,7 +632,7 @@ export default function SubscriptionPage() {
         {payments && payments.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-[#F7F6F1] text-[#7C8A9A] font-semibold uppercase tracking-wider border-b border-[#E7E9EE]">
+              <thead className="bg-[#F7F6F1] text-[#7C8A9A] font-semibold uppercase tracking-wider border-b border-[#E7E9EE] whitespace-nowrap">
                 <tr>
                   <th className="px-6 py-3">Paid Date</th>
                   <th className="px-6 py-3">Amount</th>

@@ -78,15 +78,15 @@ export const StudentAttendanceTab: React.FC<StudentAttendanceTabProps> = ({
 
         {/* Student Dropdown Switcher */}
         {availableStudents.length > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-stone-500">Switch Student:</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs font-semibold text-stone-500 shrink-0">Switch Student:</span>
             <select
               value={selectedStudentId}
               onChange={(e) => {
                 setSelectedStudentId(e.target.value);
                 if (onSelectAnotherStudent) onSelectAnotherStudent(e.target.value);
               }}
-              className="h-10 px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-medium"
+              className="h-10 w-full sm:w-auto sm:max-w-xs px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-xl text-xs text-stone-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500/20 font-medium"
             >
               <option value="">-- Select Student --</option>
               {availableStudents.map((s) => (

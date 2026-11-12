@@ -363,7 +363,7 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                 >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#E3E8E3]">
                     {/* Identity & Basic Info */}
-                    <div className="flex items-center space-x-3.5">
+                    <div className="flex items-center space-x-3.5 min-w-0">
                       {/* Photo Preview Thumbnail */}
                       <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#F7F6F0] border border-[#E3E8E3] shrink-0 flex items-center justify-center">
                         {item.photoUrl ? (
@@ -379,8 +379,8 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                         )}
                       </div>
 
-                      <div>
-                        <div className="flex items-center space-x-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                           <span className="text-sm font-extrabold text-[#0B3028]">
                             {ustadh.fullName}
                           </span>

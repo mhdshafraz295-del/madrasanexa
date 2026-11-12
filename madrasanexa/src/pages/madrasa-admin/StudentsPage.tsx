@@ -158,8 +158,8 @@ export default function StudentsPage() {
         {/* Filters Group */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Academic Section Filter Dropdown */}
-          <div className="flex items-center gap-1.5 w-full sm:w-auto">
-            <Layers className="w-3.5 h-3.5 text-[#7C8A9A]" />
+          <div className="flex items-center gap-1.5 w-full sm:w-auto min-w-0">
+            <Layers className="w-3.5 h-3.5 text-[#7C8A9A] shrink-0" />
             <select
               value={sectionFilter}
               onChange={(e) => {
@@ -167,7 +167,7 @@ export default function StudentsPage() {
                 setClassFilter('ALL');
                 setPage(1);
               }}
-              className="px-3 py-1.5 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl text-[#0F172A] font-medium focus:outline-none focus:ring-2 focus:ring-[#37C6A3]"
+              className="w-full flex-1 sm:w-auto min-w-0 px-3 py-1.5 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl text-[#0F172A] font-medium focus:outline-none focus:ring-2 focus:ring-[#37C6A3]"
             >
               <option value="ALL">All Sections</option>
               {academicSections.map((s) => (
@@ -180,15 +180,15 @@ export default function StudentsPage() {
           </div>
 
           {/* Class Filter Dropdown */}
-          <div className="flex items-center gap-1.5 w-full sm:w-auto">
-            <Filter className="w-3.5 h-3.5 text-[#7C8A9A]" />
+          <div className="flex items-center gap-1.5 w-full sm:w-auto min-w-0">
+            <Filter className="w-3.5 h-3.5 text-[#7C8A9A] shrink-0" />
             <select
               value={classFilter}
               onChange={(e) => {
                 setClassFilter(e.target.value);
                 setPage(1);
               }}
-              className="px-3 py-1.5 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl text-[#0F172A] font-medium focus:outline-none focus:ring-2 focus:ring-[#37C6A3]"
+              className="w-full flex-1 sm:w-auto min-w-0 px-3 py-1.5 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl text-[#0F172A] font-medium focus:outline-none focus:ring-2 focus:ring-[#37C6A3]"
             >
               <option value="ALL">All Classes</option>
               {classes
@@ -533,12 +533,12 @@ export default function StudentsPage() {
                 </div>
 
                 {/* 5. Guardian */}
-                <div className="flex items-center justify-between text-[11px] pt-1 border-t border-[#E7E9EE]/60">
-                  <div className="text-[#7C8A9A]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] pt-2 border-t border-[#E7E9EE]/60">
+                  <div className="text-[#7C8A9A] min-w-0 break-words">
                     Guardian: <span className="font-semibold text-[#0F172A]">{st.guardianName}</span> (
                     {st.guardianPhone || 'N/A'})
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {st.status === 'ACTIVE' && (
                       <>
                         <button
@@ -579,7 +579,7 @@ export default function StudentsPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-[#7C8A9A]">
+            <div className="p-4 border-t border-[#E7E9EE] flex flex-wrap items-center justify-between gap-3 text-xs text-[#7C8A9A]">
               <div>
                 Showing <span className="font-semibold text-[#0F172A]">{(page - 1) * pageSize + 1}</span> to{' '}
                 <span className="font-semibold text-[#0F172A]">

@@ -626,7 +626,7 @@ export default function WebsiteContentPage() {
   ];
 
   return (
-    <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6">
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-[#E7E9EE] shadow-xs">
         <div>
@@ -999,7 +999,7 @@ export default function WebsiteContentPage() {
         {activeTab === 'heroMedia' && (
           <div className="space-y-6 max-w-4xl">
             <div className="border-b border-[#E7E9EE] pb-4">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h3 className="text-base font-bold text-[#0F172A]">Hero Media Slider & Images</h3>
                   <p className="text-xs text-[#7C8A9A]">
@@ -1290,7 +1290,7 @@ export default function WebsiteContentPage() {
         {/* =================================================================== */}
         {activeTab === 'features' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E7E9EE] pb-4">
               <div>
                 <h3 className="text-base font-bold text-[#0F172A]">Platform Features (Bento Cards)</h3>
                 <p className="text-xs text-[#7C8A9A]">Add, reorder, or edit capabilities highlighted in the bento layout.</p>
@@ -1459,7 +1459,7 @@ export default function WebsiteContentPage() {
         {/* =================================================================== */}
         {activeTab === 'howItWorks' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E7E9EE] pb-4">
               <div>
                 <h3 className="text-base font-bold text-[#0F172A]">How It Works Process Steps</h3>
                 <p className="text-xs text-[#7C8A9A]">Guide prospective Madrasas through the onboarding and verification journey.</p>
@@ -1526,7 +1526,7 @@ export default function WebsiteContentPage() {
 
               <div className="space-y-2">
                 {(draft.trustStrip || []).map((item, idx) => (
-                  <div key={item.id} className="flex items-center gap-3 p-3 bg-[#F7F6F1]/50 rounded-xl border border-[#E7E9EE]">
+                  <div key={item.id} className="flex flex-wrap sm:flex-nowrap items-center gap-3 p-3 bg-[#F7F6F1]/50 rounded-xl border border-[#E7E9EE]">
                     <span className="text-xs font-bold text-[#7C8A9A]">0{idx + 1}</span>
                     <input
                       type="text"
@@ -1703,7 +1703,7 @@ export default function WebsiteContentPage() {
 
             {/* WhatsApp Integration Section */}
             <div className="pt-6 border-t border-[#E7E9EE] space-y-4">
-              <div className="border-b border-[#E7E9EE] pb-3 flex items-center justify-between">
+              <div className="border-b border-[#E7E9EE] pb-3 flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
                     <MessageCircle className="w-4 h-4 text-[#25D366]" />

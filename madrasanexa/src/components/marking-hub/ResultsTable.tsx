@@ -175,7 +175,7 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ data }) => {
       {/* Results Table */}
       <div className="bg-white rounded-2xl border border-stone-200/80 overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-xs border-collapse min-w-[750px]">
             <thead>
               <tr className="bg-stone-50 border-b border-stone-200 text-stone-600 font-semibold uppercase tracking-wider">
                 <th className="p-3 text-center w-14">Rank</th>
@@ -369,8 +369,8 @@ export const ResultsTable: React.FC<ResultsTableProps> = ({ data }) => {
                 <h4 className="text-xs font-semibold text-stone-600 uppercase tracking-wider mb-2.5">
                   Subject Breakdown
                 </h4>
-                <div className="border border-stone-200 rounded-xl overflow-hidden">
-                  <table className="w-full text-left text-xs">
+                <div className="border border-stone-200 rounded-xl overflow-x-auto">
+                  <table className="w-full text-left text-xs min-w-[460px]">
                     <thead>
                       <tr className="bg-stone-50 border-b border-stone-200 text-stone-500 font-medium">
                         <th className="p-2.5">Subject</th>

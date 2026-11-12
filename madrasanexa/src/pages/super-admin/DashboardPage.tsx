@@ -145,7 +145,7 @@ export default function DashboardPage() {
             Global multi-tenant overview, subscriptions, and tenant onboarding pipeline.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Period Selector Toggle */}
           <div className="inline-flex p-1 bg-white border border-[#E7E9EE] rounded-xl shadow-xs text-xs font-semibold">
             <button
@@ -510,7 +510,7 @@ export default function DashboardPage() {
       {/* Pending Onboarding Requests Section */}
       <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs overflow-hidden">
         <div className="p-5 border-b border-[#E7E9EE] flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Clock className="w-4 h-4 text-amber-600" />
             <h2 className="text-sm font-bold text-[#0F172A]">Pending Onboarding Applications</h2>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
@@ -574,7 +574,7 @@ export default function DashboardPage() {
       {/* Recent Madrasas Section */}
       <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs overflow-hidden">
         <div className="p-5 border-b border-[#E7E9EE] flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Building2 className="w-4 h-4 text-[#37C6A3]" />
             <h2 className="text-sm font-bold text-[#0F172A]">Recent Madrasas</h2>
           </div>

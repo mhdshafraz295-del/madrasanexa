@@ -478,13 +478,13 @@ export default function AboutUsContentView({
       {highlights.length > 0 && (
         <section className="bg-white border-y border-[#E7E9EE] py-12 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {highlights.map((item, idx) => {
                 const metaItem = fieldMetadata?.highlights?.find((h) => h.id === item.id);
                 return (
                   <div
                     key={item.id || idx}
-                    className="p-6 rounded-2xl bg-[#F7F6F1] border border-[#E7E9EE] text-center space-y-1.5 transition hover:border-[#85845C]"
+                    className="p-4 sm:p-6 rounded-2xl bg-[#F7F6F1] border border-[#E7E9EE] text-center space-y-1.5 transition hover:border-[#85845C]"
                   >
                     <div dir="ltr" className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#0F172A] tracking-tight">
                       {item.metric}

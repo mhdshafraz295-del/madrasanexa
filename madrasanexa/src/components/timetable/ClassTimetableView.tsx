@@ -131,7 +131,7 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 pt-2 lg:pt-5">
+          <div className="flex flex-wrap items-center gap-3 pt-2 lg:pt-5">
             <button
               type="button"
               onClick={onOpenAddBreak}
@@ -167,7 +167,7 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
               <span>Effective Date: <strong>{referenceDate}</strong></span>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               <span className="inline-flex items-center gap-1.5 text-emerald-700 font-medium">
                 <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 {totalTeaching} Teaching Period{totalTeaching === 1 ? '' : 's'}
@@ -240,7 +240,7 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
            ======================================================= */
         <div className="bg-white rounded-2xl border border-slate-300 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-slate-100 border-b border-slate-300 text-xs font-bold uppercase tracking-wider text-slate-800">
                   <th className="py-3 px-4 w-44 text-center border-r border-slate-300">TIME</th>

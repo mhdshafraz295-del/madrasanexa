@@ -65,7 +65,7 @@ export const MonthlyInsightModal: React.FC<MonthlyInsightModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE]">
+      <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE]">
         <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
           <div>
             <h3 className="text-sm font-bold text-[#0F172A]">Management Analysis Note</h3>

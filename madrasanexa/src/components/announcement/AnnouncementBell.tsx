@@ -99,10 +99,10 @@ export default function AnnouncementBell() {
 
       {/* Popover Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white border border-[#E7E9EE] shadow-2xl z-50 overflow-hidden">
-          <div className="p-4 border-b border-[#E7E9EE] flex items-center justify-between bg-[#F7F6F1]/50">
+        <div className="fixed inset-x-3 top-16 sm:inset-x-auto sm:top-auto sm:absolute sm:right-0 sm:mt-2 sm:w-96 max-h-[calc(100vh-5rem)] flex flex-col rounded-2xl bg-white border border-[#E7E9EE] shadow-2xl z-50 overflow-hidden">
+          <div className="p-4 border-b border-[#E7E9EE] flex flex-wrap items-center justify-between gap-2 bg-[#F7F6F1]/50 shrink-0">
             <div className="flex items-center gap-2">
-              <Megaphone className="w-4 h-4 text-[#37C6A3]" />
+              <Megaphone className="w-4 h-4 text-[#37C6A3] shrink-0" />
               <span className="text-xs font-bold text-[#0F172A]">Platform Announcements</span>
             </div>
             {unreadCount > 0 && (
@@ -121,7 +121,7 @@ export default function AnnouncementBell() {
             )}
           </div>
 
-          <div className="max-h-72 overflow-y-auto divide-y divide-[#E7E9EE]">
+          <div className="flex-1 min-h-0 max-h-80 overflow-y-auto divide-y divide-[#E7E9EE]">
             {latestAnnouncements.length === 0 ? (
               <div className="p-6 text-center text-xs text-[#7C8A9A]">
                 No announcements at this time.
@@ -137,20 +137,20 @@ export default function AnnouncementBell() {
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
                       {!item.isRead && (
                         <span className="w-2 h-2 rounded-full bg-[#37C6A3] shrink-0" />
                       )}
-                      <span className="text-[9px] font-mono px-1.5 py-0.2 bg-slate-100 text-slate-700 rounded font-semibold">
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-semibold truncate">
                         {item.category}
                       </span>
                     </div>
-                    <span className="text-[10px] text-[#7C8A9A]">
+                    <span className="text-[10px] text-[#7C8A9A] shrink-0">
                       {formatDateOnly(item.publishedAt || item.createdAt)}
                     </span>
                   </div>
-                  <div className="text-xs font-bold text-[#0F172A] line-clamp-1">{item.title}</div>
-                  <div className="text-[11px] text-[#7C8A9A] line-clamp-1 mt-0.5">{item.message}</div>
+                  <div className="text-xs font-bold text-[#0F172A] line-clamp-2 break-words">{item.title}</div>
+                  <div className="text-[11px] text-[#7C8A9A] line-clamp-2 break-words mt-0.5">{item.message}</div>
                 </Link>
               ))
             )}

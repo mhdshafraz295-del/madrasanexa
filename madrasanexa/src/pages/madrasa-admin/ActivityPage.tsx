@@ -177,7 +177,7 @@ export default function ActivityPage() {
 
         {/* Pagination Footer */}
         {totalPages > 1 && (
-          <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-[#7C8A9A]">
+          <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#7C8A9A]">
             <span>
               Showing {logs.length} of {total} events (Page {page} of {totalPages})
             </span>

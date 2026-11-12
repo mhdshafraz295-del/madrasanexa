@@ -123,7 +123,7 @@ export default function TimetableFinalizeModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white rounded-2xl border border-[#E7E9EE] max-w-lg w-full p-6 shadow-xl space-y-5 overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl border border-[#E7E9EE] max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-5 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4">
           <div className="flex items-center gap-2.5">

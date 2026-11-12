@@ -665,7 +665,7 @@ export default function SettingsPage() {
               />
             </div>
 
-            <div className="sm:col-span-2 p-4 bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl flex items-center justify-between">
+            <div className="sm:col-span-2 p-4 bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <div className="text-xs font-bold text-[#0F172A]">Password Security</div>
                 <div className="text-[11px] text-[#7C8A9A] mt-0.5">
@@ -674,7 +674,7 @@ export default function SettingsPage() {
               </div>
               <Link
                 to="/change-password"
-                className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#E7E9EE] hover:bg-[#F7F6F1] text-[#0F172A] font-semibold text-xs rounded-xl transition shadow-xs"
+                className="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-[#E7E9EE] hover:bg-[#F7F6F1] text-[#0F172A] font-semibold text-xs rounded-xl transition shadow-xs shrink-0 w-fit"
               >
                 <KeyRound className="w-3.5 h-3.5 text-[#7C8A9A]" />
                 <span>Change Password</span>

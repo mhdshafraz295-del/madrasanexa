@@ -574,10 +574,10 @@ export default function AlumniManagementPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-2 mt-6 pt-6 border-t border-emerald-700/50">
+        <div className="flex items-center gap-2 mt-6 pt-6 border-t border-emerald-700/50 overflow-x-auto">
           <button
             onClick={() => setActiveTab('roster')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               activeTab === 'roster'
                 ? 'bg-white text-[#0B3028] shadow-md'
                 : 'text-emerald-100/80 hover:text-white hover:bg-emerald-800/40'
@@ -596,7 +596,7 @@ export default function AlumniManagementPage() {
 
           <button
             onClick={() => setActiveTab('directory')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               activeTab === 'directory'
                 ? 'bg-white text-[#0B3028] shadow-md'
                 : 'text-emerald-100/80 hover:text-white hover:bg-emerald-800/40'
@@ -608,7 +608,7 @@ export default function AlumniManagementPage() {
 
           <button
             onClick={() => setActiveTab('verifications')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition whitespace-nowrap shrink-0 ${
               activeTab === 'verifications'
                 ? 'bg-white text-[#0B3028] shadow-md'
                 : 'text-emerald-100/80 hover:text-white hover:bg-emerald-800/40'
@@ -847,7 +847,7 @@ export default function AlumniManagementPage() {
             </div>
 
             {alumniTotal > 15 && (
-              <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-gray-500">
+              <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-gray-500">
                 <span>
                   Showing page {rosterPage} of {Math.ceil(alumniTotal / 15)}
                 </span>
@@ -1471,7 +1471,7 @@ export default function AlumniManagementPage() {
 
             <form onSubmit={handleRecordConsent} className="space-y-4 text-xs">
               <div className="p-3 bg-emerald-50/60 rounded-xl border border-emerald-200">
-                <div className="text-[11px] font-semibold text-emerald-900">
+                <div className="text-[11px] font-semibold text-emerald-900 break-words">
                   Target: {showConsentModal.student.fullName} ({showConsentModal.alumniIndexNumber})
                 </div>
                 <p className="text-[10px] text-emerald-700 mt-0.5">
@@ -1530,9 +1530,9 @@ export default function AlumniManagementPage() {
                     onChange={(e) => setConsentFile(e.target.files?.[0] || null)}
                     className="hidden"
                   />
-                  <label htmlFor="consentFileUpload" className="cursor-pointer">
+                  <label htmlFor="consentFileUpload" className="cursor-pointer block">
                     <FileUp className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-                    <span className="text-xs font-semibold text-[#075E46]">
+                    <span className="text-xs font-semibold text-[#075E46] truncate block max-w-full">
                       {consentFile ? consentFile.name : 'Click to upload signed document'}
                     </span>
                     <p className="text-[10px] text-gray-400 mt-0.5">PDF or image up to 5 MB</p>
@@ -1577,8 +1577,8 @@ export default function AlumniManagementPage() {
       {/* MODAL: WITHDRAW CONSENT                                                   */}
       {/* ========================================================================= */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2 text-rose-600">
               <ShieldAlert className="w-5 h-5" />
               <h3 className="font-serif font-bold text-gray-900 text-lg">Withdraw Student Consent</h3>
@@ -1625,8 +1625,8 @@ export default function AlumniManagementPage() {
       {/* MODAL: REVOKE PUBLICATION                                                 */}
       {/* ========================================================================= */}
       {showRevokeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2 text-rose-600">
               <ShieldAlert className="w-5 h-5" />
               <h3 className="font-serif font-bold text-gray-900 text-lg">Revoke Alumni Publication</h3>
@@ -1677,7 +1677,7 @@ export default function AlumniManagementPage() {
           <div className="bg-white rounded-2xl max-w-3xl w-full p-6 sm:p-7 shadow-2xl space-y-6 my-8 max-h-[90vh] overflow-y-auto">
             {/* Header: Photo, Name, Index Number & Badges */}
             <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-5">
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-4 min-w-0 flex-1">
                 {/* Profile Photo or Fallback Avatar */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border border-[#E7E9EE] bg-emerald-900/5 shadow-xs flex items-center justify-center">
                   {selectedGlobalProfile.photoUrl ? (
@@ -1706,7 +1706,7 @@ export default function AlumniManagementPage() {
                   )}
                 </div>
 
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2 mb-1.5">
                     <span className="font-mono text-xs font-bold text-[#0B3028] bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
                       {selectedGlobalProfile.alumniIndexNumber}
@@ -1716,7 +1716,7 @@ export default function AlumniManagementPage() {
                       <span>Verified Alumni</span>
                     </span>
                   </div>
-                  <h2 className="font-serif font-bold text-2xl text-gray-900">
+                  <h2 className="font-serif font-bold text-xl sm:text-2xl text-gray-900 break-words">
                     {selectedGlobalProfile.fullName}
                   </h2>
                   <div className="flex items-center gap-2 text-xs text-gray-600 mt-1">
@@ -1795,7 +1795,7 @@ export default function AlumniManagementPage() {
                 <GraduationCap className="w-3.5 h-3.5 text-[#075E46]" />
                 <span>Academic History & Tenure</span>
               </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 bg-gray-50 rounded-xl">
                   <div className="text-[10px] text-gray-400 font-semibold uppercase">Admission Date</div>
                   <div className="font-semibold text-gray-900 mt-0.5">
@@ -1992,8 +1992,8 @@ export default function AlumniManagementPage() {
       {/* MODAL: SUBMIT ACADEMIC VERIFICATION INQUIRY                               */}
       {/* ========================================================================= */}
       {showInquireModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div className="flex items-center gap-2">
                 <Send className="w-4 h-4 text-[#075E46]" />
@@ -2060,8 +2060,8 @@ export default function AlumniManagementPage() {
       {/* MODAL: RESPOND TO VERIFICATION INQUIRY                                    */}
       {/* ========================================================================= */}
       {showRespondModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-gray-100 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-600" />
@@ -2072,7 +2072,7 @@ export default function AlumniManagementPage() {
               </button>
             </div>
 
-            <div className="text-xs text-gray-600 space-y-1 bg-gray-50 p-3 rounded-xl">
+            <div className="text-xs text-gray-600 space-y-1 bg-gray-50 p-3 rounded-xl break-words">
               <div>
                 <strong>Requesting Madrasa:</strong> {showRespondModal.requestingMadrasa?.name}
               </div>
@@ -2088,7 +2088,7 @@ export default function AlumniManagementPage() {
             <form onSubmit={handleRespondToRequest} className="space-y-3 text-xs">
               <div>
                 <label className="block font-semibold text-gray-700 mb-1">Decision *</label>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                   <label className="inline-flex items-center gap-1.5 cursor-pointer font-medium text-emerald-800">
                     <input
                       type="radio"
@@ -2178,7 +2178,7 @@ export default function AlumniManagementPage() {
               </div>
 
               {/* Student Bio */}
-              <div className="space-y-2 text-xs bg-gray-50 p-4 rounded-xl">
+              <div className="space-y-2 text-xs bg-gray-50 p-4 rounded-xl break-words">
                 <div className="font-serif font-bold text-base text-gray-900">
                   {showAuditDrawer.student.fullName}
                 </div>

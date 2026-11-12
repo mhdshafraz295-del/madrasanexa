@@ -263,7 +263,7 @@ export const PlanFeatureSelector: React.FC<PlanFeatureSelectorProps> = ({
       </div>
 
       {/* 2. Selection Stats Banner */}
-      <div className="flex items-center justify-between px-3 py-2 bg-emerald-50/60 border border-emerald-200/80 rounded-xl text-emerald-900">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-emerald-50/60 border border-emerald-200/80 rounded-xl text-emerald-900">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-[#059669]" />
           <span className="font-semibold text-xs">

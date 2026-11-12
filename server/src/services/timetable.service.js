@@ -8,7 +8,7 @@ import {
   doTimesOverlap,
   formatMinutesToDisplayTime,
 } from './ustadh-schedule.service.js';
-import { renderRawHtmlToPdf } from './pdf-report.service.js';
+import { renderRawHtmlToPdf, embeddedFontsCss } from './pdf-report.service.js';
 import { resolveLogoDataUri } from './branding.service.js';
 
 export const WEEKDAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
@@ -744,6 +744,7 @@ export async function exportClassTimetablePdf(madrasaId, query = {}) {
       <meta charset="UTF-8">
       <title>Class Timetable - ${className}</title>
       <style>
+        ${embeddedFontsCss}
         @page {
           size: A4 landscape;
           margin: 10mm 12mm 8mm 12mm;
@@ -950,6 +951,7 @@ export async function exportStaffTimetablePdf(madrasaId, query = {}) {
       <meta charset="UTF-8">
       <title>Staff Timetable - ${staffName}</title>
       <style>
+        ${embeddedFontsCss}
         @page {
           size: A4 portrait;
           margin: 12mm;
@@ -1130,6 +1132,7 @@ export async function exportFullTimetablePdf(madrasaId, query = {}) {
       <meta charset="UTF-8">
       <title>Full Weekly Timetable</title>
       <style>
+        ${embeddedFontsCss}
         @page {
           size: A4 landscape;
           margin: 10mm 12mm 8mm 12mm;
@@ -1323,6 +1326,7 @@ export async function exportStaffTimetableSnapshotPdf(madrasaId, { staffName, st
       <meta charset="UTF-8">
       <title>Staff Timetable - ${safeStaffName}</title>
       <style>
+        ${embeddedFontsCss}
         @page {
           size: A4 portrait;
           margin: 12mm;

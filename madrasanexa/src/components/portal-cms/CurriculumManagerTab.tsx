@@ -795,12 +795,12 @@ export const CurriculumManagerTab: React.FC<CurriculumManagerTabProps> = ({
                     >
                       {/* Level Header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
-                        <div className="flex items-center space-x-3">
+                        <div className="flex flex-wrap items-center gap-2 min-w-0">
                           <input
                             type="text"
                             value={lvl.levelLabel}
                             onChange={(e) => handleUpdateLevel(lvl.id, { levelLabel: e.target.value })}
-                            className="text-xs font-bold text-slate-900 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                            className="text-xs font-bold text-slate-900 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 min-w-0 flex-1 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                             placeholder="Level label (e.g. Grade 10 O/L)"
                           />
 
@@ -809,7 +809,7 @@ export const CurriculumManagerTab: React.FC<CurriculumManagerTabProps> = ({
                               type="text"
                               value={lvl.streamName || ''}
                               onChange={(e) => handleUpdateLevel(lvl.id, { streamName: e.target.value })}
-                              className="text-xs text-slate-700 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                              className="text-xs text-slate-700 bg-white border border-slate-200 rounded-lg px-2.5 py-1.5 min-w-0 flex-1 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                               placeholder="Stream (e.g. Physical Science)"
                             />
                           )}
@@ -853,14 +853,14 @@ export const CurriculumManagerTab: React.FC<CurriculumManagerTabProps> = ({
                               className="bg-white border border-slate-200 rounded-xl p-4 shadow-2xs space-y-3"
                             >
                               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                <div className="flex items-center space-x-2 flex-1">
+                                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
                                   <input
                                     type="text"
                                     value={sub.name}
                                     onChange={(e) =>
                                       handleUpdateSubject(lvl.id, sub.id, { name: e.target.value })
                                     }
-                                    className="text-xs font-semibold text-slate-900 border border-slate-200 rounded-lg px-2 py-1 flex-1 max-w-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                    className="text-xs font-semibold text-slate-900 border border-slate-200 rounded-lg px-2 py-1 flex-1 min-w-[140px] max-w-xs focus:outline-none focus:ring-1 focus:ring-emerald-500"
                                     placeholder="Subject Name"
                                   />
 
@@ -991,7 +991,7 @@ export const CurriculumManagerTab: React.FC<CurriculumManagerTabProps> = ({
       {/* Programme Modal */}
       {showProgrammeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-xl">
             <h3 className="text-sm font-bold text-slate-900">
               {editingProgId ? 'Edit Programme' : 'Create New Programme'}
             </h3>
@@ -1008,7 +1008,7 @@ export const CurriculumManagerTab: React.FC<CurriculumManagerTabProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">Education Category</label>
                   <select
@@ -1084,7 +1084,7 @@ export const CurriculumManagerTab: React.FC<CurriculumManagerTabProps> = ({
       {/* Category Modal */}
       {showCategoryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-xl">
+          <div className="bg-white rounded-2xl max-w-sm w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-xl">
             <h3 className="text-sm font-bold text-slate-900">Add Custom Education Category</h3>
 
             <div className="space-y-3">

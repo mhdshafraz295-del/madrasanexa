@@ -345,7 +345,7 @@ export default function InvoiceGenerationPage() {
 
           {/* Table of Candidate Students */}
           <div className="border border-[#E7E9EE] rounded-xl overflow-hidden">
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead className="sticky top-0 bg-[#F7F6F1] border-b border-[#E7E9EE] text-[#7C8A9A] font-semibold">
                   <tr>

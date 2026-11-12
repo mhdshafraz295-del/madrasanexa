@@ -481,7 +481,7 @@ export default function MadrasaDetailPage() {
 
       {/* SECTIONS A & B: INSTITUTION IDENTITY & CONTACT DETAILS */}
       <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E7E9EE] pb-3">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-[#37C6A3]" />
             <h2 className="font-bold text-sm text-[#0F172A]">Institution Profile & Identity</h2>
@@ -525,7 +525,7 @@ export default function MadrasaDetailPage() {
 
       {/* SECTION C: TENANT ADMINISTRATORS */}
       <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-[#E7E9EE] flex items-center justify-between">
+        <div className="p-5 border-b border-[#E7E9EE] flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-blue-600" />
             <h2 className="font-bold text-sm text-[#0F172A]">Tenant Administrators</h2>
@@ -603,7 +603,7 @@ export default function MadrasaDetailPage() {
 
       {/* SECTION D: SUBSCRIPTION HISTORY & TERMS */}
       <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs overflow-hidden">
-        <div className="p-5 border-b border-[#E7E9EE] flex items-center justify-between">
+        <div className="p-5 border-b border-[#E7E9EE] flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-emerald-600" />
             <h2 className="font-bold text-sm text-[#0F172A]">Subscription History & Terms</h2>
@@ -676,7 +676,7 @@ export default function MadrasaDetailPage() {
 
       {/* SECTION F: DYNAMIC BRANDING */}
       <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E7E9EE] pb-3">
           <div className="flex items-center gap-2">
             <ImageIcon className="w-4 h-4 text-[#37C6A3]" />
             <h2 className="font-bold text-sm text-[#0F172A]">Institution Branding & Visual Identity</h2>
@@ -715,7 +715,7 @@ export default function MadrasaDetailPage() {
 
       {/* SECTION G: ACTIVITY TIMELINE */}
       <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xs p-6 space-y-4">
-        <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E7E9EE] pb-3">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-purple-600" />
             <h2 className="font-bold text-sm text-[#0F172A]">Institutional Activity Timeline</h2>
@@ -759,7 +759,7 @@ export default function MadrasaDetailPage() {
       {/* MODAL: CONFIRM LIFECYCLE ACTION */}
       {pendingLifecycleAction && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center gap-3">
               <div
                 className={`p-3 rounded-2xl ${
@@ -857,7 +857,7 @@ export default function MadrasaDetailPage() {
       {/* MODAL 1: EDIT PROFILE */}
       {isEditOpen && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
               <h3 className="font-bold text-base text-[#0F172A]">Edit Madrasa Profile</h3>
               <button
@@ -931,7 +931,7 @@ export default function MadrasaDetailPage() {
       {/* MODAL 2: RESET ADMIN PASSWORD */}
       {resetAdminUser && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
               <div>
                 <h3 className="font-bold text-base text-[#0F172A]">Reset Administrator Password</h3>
@@ -996,7 +996,7 @@ export default function MadrasaDetailPage() {
       {/* MODAL 3: ONE-TIME RESET CREDENTIAL DISPLAY */}
       {resetCredentialResult && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
             <div className="text-center space-y-1">
               <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
                 <Key className="w-6 h-6" />
@@ -1006,13 +1006,13 @@ export default function MadrasaDetailPage() {
             </div>
 
             <div className="p-4 rounded-2xl bg-[#0F172A] text-white space-y-2 font-mono text-xs">
-              <div className="flex justify-between">
+              <div className="flex flex-wrap justify-between gap-2">
                 <span className="text-slate-400">Admin Email:</span>
-                <span className="text-white">{resetCredentialResult.email}</span>
+                <span className="text-white break-all">{resetCredentialResult.email}</span>
               </div>
-              <div className="flex justify-between items-center pt-2 border-t border-white/10">
+              <div className="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-white/10">
                 <span className="text-[#FFD978] font-bold">Temporary Password:</span>
-                <span className="font-bold text-sm text-[#FFD978] bg-white/10 px-2 py-0.5 rounded">
+                <span className="font-bold text-sm text-[#FFD978] bg-white/10 px-2 py-0.5 rounded break-all">
                   {resetCredentialResult.temporaryPassword}
                 </span>
               </div>
@@ -1026,7 +1026,7 @@ export default function MadrasaDetailPage() {
               </span>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
               <button
                 onClick={copyResetCredentials}
                 className="flex-1 h-11 inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold bg-[#FFD978] text-[#0F172A] hover:bg-[#ffe18f] transition cursor-pointer shadow-xs"
@@ -1048,7 +1048,7 @@ export default function MadrasaDetailPage() {
       {/* MODAL 4: RENEW SUBSCRIPTION */}
       {isRenewOpen && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
               <div>
                 <h3 className="font-bold text-base text-[#0F172A]">Renew Subscription</h3>
@@ -1085,7 +1085,7 @@ export default function MadrasaDetailPage() {
                 </select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-[#0F172A] mb-1">Payment Method</label>
                   <select

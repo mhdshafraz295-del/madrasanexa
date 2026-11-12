@@ -177,7 +177,7 @@ export const FullTimetableView: React.FC<FullTimetableViewProps> = ({
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[650px]">
               <thead>
                 <tr className="bg-slate-50/80 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
                   <th className="py-3 px-4">Day</th>
@@ -225,8 +225,13 @@ export const FullTimetableView: React.FC<FullTimetableViewProps> = ({
                         {session.subject?.name || 'Subject'}
                       </td>
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-slate-800">{session.staff?.fullName || 'Staff'}</span>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span
+                            className="font-medium text-slate-800 truncate max-w-[180px]"
+                            title={session.staff?.fullName || 'Staff'}
+                          >
+                            {session.staff?.fullName || 'Staff'}
+                          </span>
                           <span
                             className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
                               isTeacher

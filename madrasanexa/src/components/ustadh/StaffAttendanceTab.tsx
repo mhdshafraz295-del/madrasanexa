@@ -211,12 +211,12 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Sub-tab Navigation */}
-      <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-1 overflow-x-auto max-w-full">
           <button
             type="button"
             onClick={() => setSubTab('daily')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
               subTab === 'daily'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'text-slate-600 hover:bg-slate-100'
@@ -228,7 +228,7 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
           <button
             type="button"
             onClick={() => setSubTab('history')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
               subTab === 'history'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'text-slate-600 hover:bg-slate-100'
@@ -240,7 +240,7 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
           <button
             type="button"
             onClick={() => setSubTab('monthly')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap shrink-0 ${
               subTab === 'monthly'
                 ? 'bg-emerald-600 text-white shadow-sm'
                 : 'text-slate-600 hover:bg-slate-100'
@@ -617,7 +617,7 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
             </div>
 
             {historyTotalPages > 1 && (
-              <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600">
                 <div>
                   Showing {historyItems.length} of {historyTotal} records
                 </div>
@@ -672,12 +672,12 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
                 className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
               />
             </div>
-            <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-slate-700">Teacher / Ustadh:</label>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto min-w-0">
+              <label className="text-xs font-semibold text-slate-700 shrink-0">Teacher / Ustadh:</label>
               <select
                 value={monthlyUstadhId}
                 onChange={(e) => setMonthlyUstadhId(e.target.value)}
-                className="px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
+                className="w-full sm:w-auto sm:max-w-xs min-w-0 px-3 py-1.5 border border-slate-300 rounded-lg text-sm bg-white"
               >
                 <option value="">All Staff</option>
                 {ustadhsList.map((u) => (

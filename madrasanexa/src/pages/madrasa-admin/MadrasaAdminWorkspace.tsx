@@ -48,7 +48,7 @@ export default function MadrasaAdminWorkspace() {
               <Clock className="w-5 h-5" />
             </div>
             <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <h4 className="text-sm font-bold text-[#0F172A]">
                   Subscription Expiring Soon
                 </h4>
@@ -88,7 +88,7 @@ export default function MadrasaAdminWorkspace() {
             </div>
             <div className="p-4 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE]">
               <div className="text-[11px] font-medium text-[#7C8A9A] uppercase tracking-wider">Email Address</div>
-              <div className="text-sm font-semibold text-[#0F172A] mt-1 font-mono">{user?.email}</div>
+              <div className="text-sm font-semibold text-[#0F172A] mt-1 font-mono break-all">{user?.email}</div>
             </div>
             <div className="p-4 rounded-xl bg-[#F7F6F1] border border-[#E7E9EE]">
               <div className="text-[11px] font-medium text-[#7C8A9A] uppercase tracking-wider">Assigned Madrasa</div>

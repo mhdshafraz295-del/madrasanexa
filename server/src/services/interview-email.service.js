@@ -158,8 +158,17 @@ export function buildInterviewEmailTemplate({
     .schedule-val {
       font-weight: 600;
       color: #0F172A;
+      word-break: break-word;
       width: 65%;
       text-align: right;
+    }
+    @media only screen and (max-width: 520px) {
+      .wrapper { margin: 10px !important; }
+      .header { padding: 18px 16px !important; }
+      .content { padding: 18px 16px !important; }
+      .schedule-row { flex-direction: column !important; gap: 2px !important; }
+      .schedule-label { width: 100% !important; }
+      .schedule-val { width: 100% !important; text-align: left !important; }
     }
     .attachment-notice {
       background: #EFF6FF;

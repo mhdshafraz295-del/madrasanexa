@@ -341,15 +341,15 @@ export default function StudentDetailPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6 pb-12">
       {/* Top Bar Navigation */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <Link
             to="/madrasa-admin/students"
-            className="p-2 text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white rounded-xl border border-[#E7E9EE] transition shadow-xs"
+            className="p-2 text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white rounded-xl border border-[#E7E9EE] transition shadow-xs shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 min-w-0">
             <span className="font-mono text-xs font-bold bg-[#E7E9EE] text-[#0F172A] px-2 py-0.5 rounded">
               {student.admissionNo}
             </span>
@@ -357,7 +357,7 @@ export default function StudentDetailPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             to={`/madrasa-admin/students/${student.id}/edit`}
             className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-[#E7E9EE] hover:bg-[#F7F6F1] text-[#0F172A] text-xs font-semibold rounded-xl shadow-xs transition"
@@ -487,7 +487,7 @@ export default function StudentDetailPage() {
       <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-px overflow-x-auto">
         <button
           onClick={() => setActiveTab('LEDGER')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
             activeTab === 'LEDGER'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -499,7 +499,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('INVOICES')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
             activeTab === 'INVOICES'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -511,7 +511,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('PAYMENTS')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
             activeTab === 'PAYMENTS'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -817,7 +817,7 @@ export default function StudentDetailPage() {
       {/* TAB 2: INVOICES DIRECTORY */}
       {activeTab === 'INVOICES' && (
         <div className="bg-white p-6 rounded-2xl border border-[#E7E9EE] shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E7E9EE]">
             <div className="flex items-center gap-2">
               <Receipt className="w-4 h-4 text-[#37C6A3]" />
               <h2 className="text-sm font-bold text-[#0F172A]">Invoices & Billing History</h2>
@@ -954,7 +954,7 @@ export default function StudentDetailPage() {
       {/* TAB 3: PAYMENTS HISTORY */}
       {activeTab === 'PAYMENTS' && (
         <div className="bg-white p-6 rounded-2xl border border-[#E7E9EE] shadow-xs space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E7E9EE]">
             <div className="flex items-center gap-2">
               <Banknote className="w-4 h-4 text-emerald-700" />
               <h2 className="text-sm font-bold text-[#0F172A]">Payment History & Receipts</h2>
@@ -1093,12 +1093,12 @@ export default function StudentDetailPage() {
           <div className="lg:col-span-2 space-y-6">
             {/* Effective Monthly Fee Card */}
             <div className="bg-white p-6 rounded-2xl border border-[#E7E9EE] shadow-xs space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#E7E9EE]">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4 text-[#37C6A3]" />
                   <h2 className="text-sm font-bold text-[#0F172A]">Tuition Fee Arrangement</h2>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {student.feeSource === 'STUDENT_OVERRIDE' && (
                     <button
                       onClick={() => setIsRevertModalOpen(true)}
@@ -1268,7 +1268,7 @@ export default function StudentDetailPage() {
 
                 <div className="pt-2 border-t border-[#E7E9EE]">
                   <span className="text-[10px] text-[#7C8A9A] uppercase tracking-wider block">Guardian Email</span>
-                  <span className="font-mono text-xs text-[#0F172A]">{student.guardianEmail || 'Not provided'}</span>
+                  <span className="font-mono text-xs text-[#0F172A] break-all block">{student.guardianEmail || 'Not provided'}</span>
                 </div>
 
                 <div>

@@ -407,7 +407,7 @@ export default function InvoicesPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="border-b border-[#E7E9EE] bg-[#F7F6F1]/50 text-xs font-semibold text-[#7C8A9A]">
+                  <tr className="border-b border-[#E7E9EE] bg-[#F7F6F1]/50 text-xs font-semibold text-[#7C8A9A] whitespace-nowrap">
                     <th className="py-3.5 px-4">Invoice #</th>
                     <th className="py-3.5 px-4">Student</th>
                     <th className="py-3.5 px-4">Current Class</th>
@@ -503,7 +503,7 @@ export default function InvoicesPage() {
                       {inv.student.currentClass?.name || 'Unassigned'}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-[#E7E9EE]/60">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-[#E7E9EE]/60">
                     <span className="text-[#7C8A9A]">
                       {inv.monthName} {inv.billingYear} • Due {new Date(inv.dueDate).toLocaleDateString()}
                     </span>
@@ -534,7 +534,7 @@ export default function InvoicesPage() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="p-4 border-t border-[#E7E9EE] flex items-center justify-between text-xs text-[#7C8A9A]">
+              <div className="p-4 border-t border-[#E7E9EE] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#7C8A9A]">
                 <span>
                   Showing {(page - 1) * pageSize + 1} to {Math.min(page * pageSize, total)} of {total} invoices
                 </span>
@@ -566,7 +566,7 @@ export default function InvoicesPage() {
       {/* Void Invoice Confirmation Modal */}
       {voidModalInvoice && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center gap-3 text-red-600">
               <div className="p-2.5 bg-red-50 rounded-xl">
                 <Ban className="w-6 h-6" />

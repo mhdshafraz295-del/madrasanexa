@@ -212,7 +212,7 @@ export const ExpenseEntryModal: React.FC<ExpenseEntryModalProps> = ({
             <span className="text-[11px] font-bold text-[#7C8A9A] uppercase tracking-wider block">
               Optional Analysis Metadata (For Unit Cost Review)
             </span>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label className="block text-[11px] font-semibold text-[#0F172A] mb-1">Quantity</label>
                 <input

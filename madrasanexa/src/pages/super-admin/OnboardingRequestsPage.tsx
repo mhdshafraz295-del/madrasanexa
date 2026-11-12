@@ -373,7 +373,7 @@ export default function OnboardingRequestsPage() {
       )}
 
       {/* Dynamic KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex items-center justify-between">
           <div>
             <span className="text-xs font-medium text-[#7C8A9A]">Pending Requests</span>
@@ -640,9 +640,9 @@ export default function OnboardingRequestsPage() {
                   </div>
 
                   <div className="text-xs text-[#7C8A9A] space-y-1 bg-[#F7F6F1] p-3 rounded-xl">
-                    <div className="flex justify-between">
+                    <div className="flex justify-between gap-2">
                       <span>Email:</span>
-                      <span className="font-mono text-[#0F172A] font-medium">{req.email}</span>
+                      <span className="font-mono text-[#0F172A] font-medium min-w-0 break-all text-right">{req.email}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Phone:</span>
@@ -661,7 +661,7 @@ export default function OnboardingRequestsPage() {
                   </div>
 
                   {/* Mobile Actions */}
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
                     <button
                       onClick={() => handleOpenDetail(req.id)}
                       className="flex-1 py-2 bg-[#F7F6F1] hover:bg-[#E7E9EE] text-[#0F172A] rounded-xl text-xs font-semibold transition cursor-pointer text-center"
@@ -952,7 +952,7 @@ export default function OnboardingRequestsPage() {
             )}
 
             <form onSubmit={handleApproveSubmit} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-[#0F172A] block mb-1">
                     Madrasa Code <span className="text-red-500">*</span>
@@ -1006,7 +1006,7 @@ export default function OnboardingRequestsPage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-[#0F172A] block mb-1">Admin Full Name</label>
                   <input
@@ -1040,7 +1040,7 @@ export default function OnboardingRequestsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-[#0F172A] block mb-1">Initial Payment Method</label>
                   <select
@@ -1104,7 +1104,7 @@ export default function OnboardingRequestsPage() {
       {/* MODAL: ONE-TIME PROVISIONED CREDENTIALS DISPLAY */}
       {provisionedResult && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#E7E9EE] space-y-5">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-[#E7E9EE] space-y-5">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-7 h-7" />
@@ -1138,19 +1138,19 @@ export default function OnboardingRequestsPage() {
               </div>
 
               <div className="space-y-2 text-xs font-mono">
-                <div className="flex justify-between">
+                <div className="flex flex-wrap justify-between gap-2">
                   <span className="text-slate-400">Institution:</span>
-                  <span className="font-semibold text-white">
+                  <span className="font-semibold text-white break-words">
                     {provisionedResult.madrasa.name} ({provisionedResult.madrasa.code})
                   </span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex flex-wrap justify-between gap-2">
                   <span className="text-slate-400">Admin Email:</span>
-                  <span className="font-semibold text-white">{provisionedResult.adminUser.email}</span>
+                  <span className="font-semibold text-white break-all">{provisionedResult.adminUser.email}</span>
                 </div>
-                <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                <div className="flex flex-wrap justify-between items-center gap-2 pt-2 border-t border-white/10">
                   <span className="text-[#FFD978] font-bold">Temporary Password:</span>
-                  <span className="font-mono text-sm font-bold text-[#FFD978] bg-white/10 px-2.5 py-1 rounded">
+                  <span className="font-mono text-sm font-bold text-[#FFD978] bg-white/10 px-2.5 py-1 rounded break-all">
                     {provisionedResult.adminUser.temporaryPassword}
                   </span>
                 </div>
@@ -1188,7 +1188,7 @@ export default function OnboardingRequestsPage() {
       {/* MODAL: REJECT ONBOARDING */}
       {rejectRequest && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-[#E7E9EE] space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-[#E7E9EE]">
               <div>
                 <h3 className="font-bold text-base text-red-700">Reject Registration Request</h3>

@@ -203,7 +203,7 @@ export const MarkEntryGrid: React.FC<MarkEntryGridProps> = ({
       {/* Top Banner / Toolbar */}
       <div className="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Left: Info & Status */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {isFinalized ? (
             <div className="px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold flex items-center gap-1.5">
               <Lock className="w-3.5 h-3.5" />
@@ -236,7 +236,7 @@ export const MarkEntryGrid: React.FC<MarkEntryGridProps> = ({
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
             onClick={onOpenSubjectManager}
@@ -287,13 +287,13 @@ export const MarkEntryGrid: React.FC<MarkEntryGridProps> = ({
             <thead>
               {/* Header Row 1: Student info + Subjects + Summary */}
               <tr className="bg-stone-50 border-b border-stone-200 text-stone-600 font-semibold uppercase tracking-wider">
-                <th className="p-3 sticky left-0 z-20 bg-stone-50 min-w-[60px] border-r border-stone-200">
+                <th className="p-3 md:sticky md:left-0 md:z-20 bg-stone-50 min-w-[60px] border-r border-stone-200">
                   Pos
                 </th>
-                <th className="p-3 sticky left-[60px] z-20 bg-stone-50 min-w-[100px] border-r border-stone-200">
+                <th className="p-3 md:sticky md:left-[60px] md:z-20 bg-stone-50 min-w-[100px] border-r border-stone-200">
                   Admission
                 </th>
-                <th className="p-3 sticky left-[160px] z-20 bg-stone-50 min-w-[180px] border-r border-stone-200 shadow-xs">
+                <th className="p-3 md:sticky md:left-[160px] md:z-20 bg-stone-50 min-w-[180px] border-r border-stone-200 shadow-xs">
                   Student Name
                 </th>
 
@@ -333,7 +333,7 @@ export const MarkEntryGrid: React.FC<MarkEntryGridProps> = ({
                     }`}
                   >
                     {/* Position */}
-                    <td className="p-3 sticky left-0 z-10 bg-inherit font-semibold text-stone-700 border-r border-stone-100 text-center">
+                    <td className="p-3 md:sticky md:left-0 md:z-10 bg-inherit font-semibold text-stone-700 border-r border-stone-100 text-center">
                       {calculated?.position ? (
                         <span className="inline-block px-1.5 py-0.5 rounded-md bg-stone-100 text-stone-800 text-[11px] font-bold">
                           #{calculated.position}
@@ -344,12 +344,12 @@ export const MarkEntryGrid: React.FC<MarkEntryGridProps> = ({
                     </td>
 
                     {/* Admission No */}
-                    <td className="p-3 sticky left-[60px] z-10 bg-inherit font-mono text-stone-600 border-r border-stone-100 text-xs">
+                    <td className="p-3 md:sticky md:left-[60px] md:z-10 bg-inherit font-mono text-stone-600 border-r border-stone-100 text-xs">
                       {st.admissionNo}
                     </td>
 
                     {/* Student Name */}
-                    <td className="p-3 sticky left-[160px] z-10 bg-inherit font-medium text-stone-900 border-r border-stone-100 shadow-xs truncate max-w-[200px]">
+                    <td className="p-3 md:sticky md:left-[160px] md:z-10 bg-inherit font-medium text-stone-900 border-r border-stone-100 shadow-xs truncate max-w-[200px]">
                       {st.fullName}
                     </td>
 
@@ -446,7 +446,7 @@ export const MarkEntryGrid: React.FC<MarkEntryGridProps> = ({
 
         {/* Helper Footer */}
         <div className="p-3 bg-stone-50 border-t border-stone-200 text-stone-500 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Pass Mark Achieved
             </span>

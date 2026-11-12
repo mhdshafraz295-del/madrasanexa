@@ -699,6 +699,9 @@ export interface ComparisonPlanItem {
   description: string | null;
   durationMonths: number;
   price: string;
+  originalPrice?: string | null;
+  isSpecialOffer?: boolean;
+  specialOfferLabel?: string | null;
   currency: string;
   isActive: boolean;
   activeSubscriptionsCount: number;
@@ -738,6 +741,9 @@ export interface PlanItem {
   description?: string | null;
   durationMonths: number;
   price: string | number;
+  originalPrice?: string | number | null;
+  isSpecialOffer?: boolean;
+  specialOfferLabel?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt?: string;
@@ -835,6 +841,9 @@ export const apiCreatePlan = async (payload: {
   description?: string | null;
   durationMonths: number;
   price: number | string;
+  originalPrice?: number | string | null;
+  isSpecialOffer?: boolean;
+  specialOfferLabel?: string | null;
   isActive?: boolean;
   featureKeys?: string[];
 }): Promise<PlanItem> => {
@@ -849,6 +858,9 @@ export const apiUpdatePlan = async (
     description?: string | null;
     durationMonths?: number;
     price?: number | string;
+    originalPrice?: number | string | null;
+    isSpecialOffer?: boolean;
+    specialOfferLabel?: string | null;
     isActive?: boolean;
   }
 ): Promise<PlanItem> => {
@@ -1190,6 +1202,9 @@ export interface MadrasaSubscriptionPlan {
   description: string | null;
   durationMonths: number;
   price: number;
+  originalPrice?: number | null;
+  isSpecialOffer?: boolean;
+  specialOfferLabel?: string | null;
   isActive: boolean;
 }
 

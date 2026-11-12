@@ -64,6 +64,18 @@ const planPriceSchema = z.union([z.number(), z.string()])
   }, { message: 'Price must be a valid non-negative number with at most 2 decimal places' })
   .transform((val) => String(val).trim());
 
+const planOriginalPriceSchema = z.union([z.number(), z.string(), z.null()])
+  .optional()
+  .nullable()
+  .refine((val) => {
+    if (val === undefined || val === null || val === '') return true;
+    const s = String(val).trim();
+    if (!/^\d+(\.\d{1,2})?$/.test(s)) return false;
+    const n = Number(s);
+    return !isNaN(n) && n >= 0 && Number.isFinite(n);
+  }, { message: 'Original price must be a valid non-negative number with at most 2 decimal places' })
+  .transform((val) => (val === undefined || val === null || String(val).trim() === '' ? null : String(val).trim()));
+
 const featureKeysSchema = z
   .array(z.string().trim())
   .superRefine((keys, ctx) => {
@@ -129,9 +141,32 @@ export const createPlanSchema = z.object({
   description: z.string().trim().max(500, 'Description cannot exceed 500 characters').optional().nullable(),
   durationMonths: planDurationSchema,
   price: planPriceSchema,
+  originalPrice: planOriginalPriceSchema,
+  isSpecialOffer: z.boolean().optional().default(false),
+  specialOfferLabel: z.string().trim().max(100, 'Special offer label cannot exceed 100 characters').optional().nullable(),
   isActive: z.boolean().default(true),
   featureKeys: featureKeysSchema.optional(),
-}).strict();
+}).strict().superRefine((data, ctx) => {
+  if (data.isSpecialOffer) {
+    if (!data.originalPrice) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Original price is required when special offer is enabled',
+        path: ['originalPrice'],
+      });
+    } else {
+      const orig = Number(data.originalPrice);
+      const curr = Number(data.price);
+      if (orig <= curr) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Original price must be strictly greater than the payable price when special offer is enabled',
+          path: ['originalPrice'],
+        });
+      }
+    }
+  }
+});
 
 export const updatePlanFeaturesSchema = z.object({
   featureKeys: featureKeysSchema,
@@ -142,8 +177,25 @@ export const updatePlanSchema = z.object({
   description: z.string().trim().max(500, 'Description cannot exceed 500 characters').optional().nullable(),
   durationMonths: planDurationSchema.optional(),
   price: planPriceSchema.optional(),
+  originalPrice: planOriginalPriceSchema,
+  isSpecialOffer: z.boolean().optional(),
+  specialOfferLabel: z.string().trim().max(100, 'Special offer label cannot exceed 100 characters').optional().nullable(),
   isActive: z.boolean().optional(),
-}).strict();
+}).strict().superRefine((data, ctx) => {
+  if (data.isSpecialOffer === true) {
+    if (data.originalPrice && data.price) {
+      const orig = Number(data.originalPrice);
+      const curr = Number(data.price);
+      if (orig <= curr) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Original price must be strictly greater than the payable price when special offer is enabled',
+          path: ['originalPrice'],
+        });
+      }
+    }
+  }
+});
 
 export const listPlansQuerySchema = z.object({
   search: z.string().trim().optional(),

@@ -414,6 +414,9 @@ export default function SubscriptionPage() {
                 durationMonths: plan.durationMonths,
                 isActive: plan.isActive,
                 isRecommended,
+                originalPrice: plan.originalPrice ?? null,
+                isSpecialOffer: Boolean(plan.isSpecialOffer),
+                specialOfferLabel: plan.specialOfferLabel ?? null,
               };
 
               return (

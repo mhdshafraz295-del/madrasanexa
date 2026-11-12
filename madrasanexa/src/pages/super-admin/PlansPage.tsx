@@ -92,6 +92,9 @@ export default function PlansPage() {
     description: '',
     durationMonths: 1,
     price: '',
+    originalPrice: '',
+    isSpecialOffer: false,
+    specialOfferLabel: '',
     isActive: true,
   });
   const [codeManuallyEdited, setCodeManuallyEdited] = useState(false);
@@ -105,6 +108,9 @@ export default function PlansPage() {
     description: '',
     durationMonths: 1,
     price: '',
+    originalPrice: '',
+    isSpecialOffer: false,
+    specialOfferLabel: '',
     isActive: true,
   });
   const [isLoadingEdit, setIsLoadingEdit] = useState(false);
@@ -217,6 +223,18 @@ export default function PlansPage() {
       return;
     }
 
+    if (createForm.isSpecialOffer) {
+      const origPriceStr = String(createForm.originalPrice).trim();
+      if (!/^\d+(\.\d{1,2})?$/.test(origPriceStr) || Number(origPriceStr) <= 0) {
+        setCreateError('Original price must be a valid positive number with at most 2 decimal places.');
+        return;
+      }
+      if (Number(origPriceStr) <= Number(priceStr)) {
+        setCreateError('Original price must be strictly greater than payable price when special offer is enabled.');
+        return;
+      }
+    }
+
     try {
       setIsCreating(true);
       await apiCreatePlan({
@@ -225,6 +243,9 @@ export default function PlansPage() {
         description: createForm.description.trim() || null,
         durationMonths: duration,
         price: priceStr,
+        originalPrice: createForm.isSpecialOffer && createForm.originalPrice.trim() ? createForm.originalPrice.trim() : null,
+        isSpecialOffer: createForm.isSpecialOffer,
+        specialOfferLabel: createForm.isSpecialOffer && createForm.specialOfferLabel.trim() ? createForm.specialOfferLabel.trim() : null,
         isActive: createForm.isActive,
       });
 
@@ -235,6 +256,9 @@ export default function PlansPage() {
         description: '',
         durationMonths: 1,
         price: '',
+        originalPrice: '',
+        isSpecialOffer: false,
+        specialOfferLabel: '',
         isActive: true,
       });
       setCodeManuallyEdited(false);
@@ -260,15 +284,21 @@ export default function PlansPage() {
         description: freshPlan.description || '',
         durationMonths: freshPlan.durationMonths,
         price: String(freshPlan.price),
+        originalPrice: freshPlan.originalPrice ? String(freshPlan.originalPrice) : '',
+        isSpecialOffer: Boolean(freshPlan.isSpecialOffer),
+        specialOfferLabel: freshPlan.specialOfferLabel || '',
         isActive: freshPlan.isActive,
       });
-    } catch (err: any) {
+    } catch {
       // Fallback to table item if single-fetch fails
       setEditForm({
         name: plan.name,
         description: plan.description || '',
         durationMonths: plan.durationMonths,
         price: String(plan.price),
+        originalPrice: plan.originalPrice ? String(plan.originalPrice) : '',
+        isSpecialOffer: Boolean(plan.isSpecialOffer),
+        specialOfferLabel: plan.specialOfferLabel || '',
         isActive: plan.isActive,
       });
     } finally {
@@ -298,6 +328,18 @@ export default function PlansPage() {
       return;
     }
 
+    if (editForm.isSpecialOffer) {
+      const origPriceStr = String(editForm.originalPrice).trim();
+      if (!/^\d+(\.\d{1,2})?$/.test(origPriceStr) || Number(origPriceStr) <= 0) {
+        setUpdateError('Original price must be a valid positive number with at most 2 decimal places.');
+        return;
+      }
+      if (Number(origPriceStr) <= Number(priceStr)) {
+        setUpdateError('Original price must be strictly greater than payable price when special offer is enabled.');
+        return;
+      }
+    }
+
     try {
       setIsUpdating(true);
       await apiUpdatePlan(editingPlan.id, {
@@ -305,6 +347,9 @@ export default function PlansPage() {
         description: editForm.description.trim() || null,
         durationMonths: duration,
         price: priceStr,
+        originalPrice: editForm.isSpecialOffer && editForm.originalPrice.trim() ? editForm.originalPrice.trim() : null,
+        isSpecialOffer: editForm.isSpecialOffer,
+        specialOfferLabel: editForm.isSpecialOffer && editForm.specialOfferLabel.trim() ? editForm.specialOfferLabel.trim() : null,
         isActive: editForm.isActive,
       });
 
@@ -605,7 +650,20 @@ export default function PlansPage() {
                 <tbody className="divide-y divide-[#E7E9EE] text-xs text-[#0F172A]">
                   {plans.map((plan) => {
                     const priceNum = Number(plan.price);
-                    const formattedPrice = isNaN(priceNum) ? '$0.00' : `$${priceNum.toFixed(2)}`;
+                    const formattedPrice = isNaN(priceNum)
+                      ? 'LKR 0.00'
+                      : `LKR ${priceNum.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+                    const origNum = plan.originalPrice ? Number(plan.originalPrice) : null;
+                    const hasSpecialOffer =
+                      Boolean(plan.isSpecialOffer) &&
+                      origNum !== null &&
+                      !isNaN(origNum) &&
+                      origNum > priceNum;
+
+                    const formattedOriginal = hasSpecialOffer
+                      ? `LKR ${origNum.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      : null;
 
                     return (
                       <tr key={plan.id} className="hover:bg-[#F7F6F1]/40 transition">
@@ -623,6 +681,16 @@ export default function PlansPage() {
                           )}
                         </td>
                         <td className="py-4 px-4">
+                          {hasSpecialOffer && formattedOriginal && (
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="text-[11px] font-semibold text-[#7C8A9A] line-through">
+                                {formattedOriginal}
+                              </span>
+                              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#FFD978]/40 text-amber-900 border border-[#FFD978]">
+                                {plan.specialOfferLabel || 'OFFER'}
+                              </span>
+                            </div>
+                          )}
                           <div className="font-bold text-sm text-[#0F172A]">{formattedPrice}</div>
                           <div className="text-[11px] text-[#7C8A9A]">
                             / {plan.durationMonths} {plan.durationMonths === 1 ? 'month' : 'months'}
@@ -723,7 +791,20 @@ export default function PlansPage() {
           <div className="block md:hidden space-y-3">
             {plans.map((plan) => {
               const priceNum = Number(plan.price);
-              const formattedPrice = isNaN(priceNum) ? '$0.00' : `$${priceNum.toFixed(2)}`;
+              const formattedPrice = isNaN(priceNum)
+                ? 'LKR 0.00'
+                : `LKR ${priceNum.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+              const origNum = plan.originalPrice ? Number(plan.originalPrice) : null;
+              const hasSpecialOffer =
+                Boolean(plan.isSpecialOffer) &&
+                origNum !== null &&
+                !isNaN(origNum) &&
+                origNum > priceNum;
+
+              const formattedOriginal = hasSpecialOffer
+                ? `LKR ${origNum.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                : null;
 
               return (
                 <div
@@ -754,11 +835,23 @@ export default function PlansPage() {
                     <p className="text-xs text-[#7C8A9A] line-clamp-2">{plan.description}</p>
                   )}
 
-                  <div className="flex items-baseline gap-1 pt-2 border-t border-[#E7E9EE]">
-                    <span className="text-xl font-bold text-[#0F172A]">{formattedPrice}</span>
-                    <span className="text-xs text-[#7C8A9A]">
-                      / {plan.durationMonths} {plan.durationMonths === 1 ? 'month' : 'months'}
-                    </span>
+                  <div className="pt-2 border-t border-[#E7E9EE]">
+                    {hasSpecialOffer && formattedOriginal && (
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-xs font-semibold text-[#7C8A9A] line-through">
+                          {formattedOriginal}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FFD978]/40 text-amber-900 border border-[#FFD978]">
+                          {plan.specialOfferLabel || 'Special Offer'}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-xl font-bold text-[#0F172A]">{formattedPrice}</span>
+                      <span className="text-xs text-[#7C8A9A]">
+                        / {plan.durationMonths} {plan.durationMonths === 1 ? 'month' : 'months'}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 bg-[#F7F6F1] p-2.5 rounded-xl text-center">
@@ -889,10 +982,10 @@ export default function PlansPage() {
                     <div className="grid grid-cols-2 gap-3">
                       <div className="p-3 bg-white border border-[#E7E9EE] rounded-xl">
                         <div className="text-[11px] text-[#7C8A9A] flex items-center gap-1">
-                          <DollarSign className="w-3.5 h-3.5" /> Price
+                          <DollarSign className="w-3.5 h-3.5" /> Payable Price
                         </div>
                         <div className="text-sm font-bold text-[#0F172A] mt-1">
-                          ${Number(selectedPlanDetail.price).toFixed(2)}
+                          LKR {Number(selectedPlanDetail.price).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </div>
                       <div className="p-3 bg-white border border-[#E7E9EE] rounded-xl">
@@ -905,6 +998,30 @@ export default function PlansPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Special Offer Snapshot in Drawer if active */}
+                    {selectedPlanDetail.isSpecialOffer && selectedPlanDetail.originalPrice && (
+                      <div className="mt-2.5 p-3 bg-amber-50/60 border border-amber-200/80 rounded-xl space-y-1">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-amber-950">
+                            {selectedPlanDetail.specialOfferLabel || 'Special Offer Active'}
+                          </span>
+                          <span className="font-semibold text-amber-800 line-through">
+                            LKR {Number(selectedPlanDetail.originalPrice).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                        {Number(selectedPlanDetail.originalPrice) > Number(selectedPlanDetail.price) && (
+                          <div className="text-[11px] font-semibold text-emerald-800 flex items-center justify-between pt-0.5">
+                            <span>
+                              Savings: LKR {(Number(selectedPlanDetail.originalPrice) - Number(selectedPlanDetail.price)).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
+                            <span className="font-bold">
+                              {Math.round(((Number(selectedPlanDetail.originalPrice) - Number(selectedPlanDetail.price)) / Number(selectedPlanDetail.originalPrice)) * 100)}% OFF
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Usage & Adoption Stats */}
@@ -1127,19 +1244,113 @@ export default function PlansPage() {
               {/* Price */}
               <div>
                 <label className="block font-semibold text-[#0F172A] mb-1">
-                  Price ($) <span className="text-red-500">*</span>{' '}
+                  Payable Price (LKR) <span className="text-red-500">*</span>{' '}
                   <span className="text-[10px] font-normal text-[#7C8A9A]">
-                    (decimal-safe non-negative; 0 for free tiers)
+                    {createForm.isSpecialOffer
+                      ? '(discounted payable price charged to tenant)'
+                      : '(decimal-safe non-negative; 0 for free tiers)'}
                   </span>
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. 5000.00 or 0"
+                  placeholder="e.g. 50000.00 or 0"
                   value={createForm.price}
                   onChange={(e) => setCreateForm({ ...createForm, price: e.target.value })}
                   className="w-full px-3 py-2 border border-[#E7E9EE] rounded-xl focus:border-[#37C6A3] focus:outline-none"
                 />
+              </div>
+
+              {/* Special Offer Section */}
+              <div className="p-3.5 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="create-isSpecialOffer"
+                      checked={createForm.isSpecialOffer}
+                      onChange={(e) =>
+                        setCreateForm({
+                          ...createForm,
+                          isSpecialOffer: e.target.checked,
+                          ...(e.target.checked ? {} : { originalPrice: '', specialOfferLabel: '' }),
+                        })
+                      }
+                      className="rounded border-[#E7E9EE] text-[#37C6A3] focus:ring-[#37C6A3] cursor-pointer"
+                    />
+                    <label htmlFor="create-isSpecialOffer" className="font-bold text-[#0F172A] cursor-pointer">
+                      Enable Special Offer / Discount Pricing
+                    </label>
+                  </div>
+                  {createForm.isSpecialOffer && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFD978]/40 text-amber-900 border border-[#FFD978]">
+                      OFFER ACTIVE
+                    </span>
+                  )}
+                </div>
+
+                {createForm.isSpecialOffer && (
+                  <div className="space-y-3 pt-2 border-t border-[#E7E9EE]">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-semibold text-[#0F172A] mb-1">
+                          Original / Previous Price (LKR) <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required={createForm.isSpecialOffer}
+                          placeholder="e.g. 75000.00"
+                          value={createForm.originalPrice}
+                          onChange={(e) => setCreateForm({ ...createForm, originalPrice: e.target.value })}
+                          className="w-full px-3 py-2 border border-[#E7E9EE] rounded-xl focus:border-[#37C6A3] focus:outline-none bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-[#0F172A] mb-1">
+                          Ribbon Tag Label <span className="text-[10px] font-normal text-[#7C8A9A]">(optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={100}
+                          placeholder="e.g. Special Offer or Ramadan Deal"
+                          value={createForm.specialOfferLabel}
+                          onChange={(e) => setCreateForm({ ...createForm, specialOfferLabel: e.target.value })}
+                          className="w-full px-3 py-2 border border-[#E7E9EE] rounded-xl focus:border-[#37C6A3] focus:outline-none bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Live Savings Calculation and Validation Widget */}
+                    {(() => {
+                      const origNum = Number(createForm.originalPrice);
+                      const currNum = Number(createForm.price);
+                      if (!isNaN(origNum) && !isNaN(currNum) && origNum > 0 && currNum > 0) {
+                        if (origNum > currNum) {
+                          const savings = origNum - currNum;
+                          const pct = Math.round((savings / origNum) * 100);
+                          return (
+                            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-xs">
+                              <span className="font-semibold">
+                                Savings: LKR {savings.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </span>
+                              <span className="font-bold px-2 py-0.5 rounded-full bg-emerald-200/70 text-emerald-950">
+                                {pct}% OFF
+                              </span>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-1.5 font-medium">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+                              <span>Original price must be strictly greater than payable price (LKR {createForm.price || '0'}).</span>
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
+                  </div>
+                )}
               </div>
 
               {/* Description */}
@@ -1297,7 +1508,12 @@ export default function PlansPage() {
                 {/* Price */}
                 <div>
                   <label className="block font-semibold text-[#0F172A] mb-1">
-                    Price ($) <span className="text-red-500">*</span>
+                    Payable Price (LKR) <span className="text-red-500">*</span>{' '}
+                    <span className="text-[10px] font-normal text-[#7C8A9A]">
+                      {editForm.isSpecialOffer
+                        ? '(discounted payable price charged to tenant)'
+                        : '(decimal-safe non-negative; 0 for free tiers)'}
+                    </span>
                   </label>
                   <input
                     type="text"
@@ -1306,6 +1522,98 @@ export default function PlansPage() {
                     onChange={(e) => setEditForm({ ...editForm, price: e.target.value })}
                     className="w-full px-3 py-2 border border-[#E7E9EE] rounded-xl focus:border-[#37C6A3] focus:outline-none"
                   />
+                </div>
+
+                {/* Special Offer Section */}
+                <div className="p-3.5 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="edit-isSpecialOffer"
+                        checked={editForm.isSpecialOffer}
+                        onChange={(e) =>
+                          setEditForm({
+                            ...editForm,
+                            isSpecialOffer: e.target.checked,
+                            ...(e.target.checked ? {} : { originalPrice: '', specialOfferLabel: '' }),
+                          })
+                        }
+                        className="rounded border-[#E7E9EE] text-[#37C6A3] focus:ring-[#37C6A3] cursor-pointer"
+                      />
+                      <label htmlFor="edit-isSpecialOffer" className="font-bold text-[#0F172A] cursor-pointer">
+                        Enable Special Offer / Discount Pricing
+                      </label>
+                    </div>
+                    {editForm.isSpecialOffer && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FFD978]/40 text-amber-900 border border-[#FFD978]">
+                        OFFER ACTIVE
+                      </span>
+                    )}
+                  </div>
+
+                  {editForm.isSpecialOffer && (
+                    <div className="space-y-3 pt-2 border-t border-[#E7E9EE]">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block font-semibold text-[#0F172A] mb-1">
+                            Original / Previous Price (LKR) <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required={editForm.isSpecialOffer}
+                            placeholder="e.g. 75000.00"
+                            value={editForm.originalPrice}
+                            onChange={(e) => setEditForm({ ...editForm, originalPrice: e.target.value })}
+                            className="w-full px-3 py-2 border border-[#E7E9EE] rounded-xl focus:border-[#37C6A3] focus:outline-none bg-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block font-semibold text-[#0F172A] mb-1">
+                            Ribbon Tag Label <span className="text-[10px] font-normal text-[#7C8A9A]">(optional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            maxLength={100}
+                            placeholder="e.g. Special Offer or Ramadan Deal"
+                            value={editForm.specialOfferLabel}
+                            onChange={(e) => setEditForm({ ...editForm, specialOfferLabel: e.target.value })}
+                            className="w-full px-3 py-2 border border-[#E7E9EE] rounded-xl focus:border-[#37C6A3] focus:outline-none bg-white"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Live Savings Calculation and Validation Widget */}
+                      {(() => {
+                        const origNum = Number(editForm.originalPrice);
+                        const currNum = Number(editForm.price);
+                        if (!isNaN(origNum) && !isNaN(currNum) && origNum > 0 && currNum > 0) {
+                          if (origNum > currNum) {
+                            const savings = origNum - currNum;
+                            const pct = Math.round((savings / origNum) * 100);
+                            return (
+                              <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-between text-xs">
+                                <span className="font-semibold">
+                                  Savings: LKR {savings.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                                <span className="font-bold px-2 py-0.5 rounded-full bg-emerald-200/70 text-emerald-950">
+                                  {pct}% OFF
+                                </span>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div className="p-2.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-1.5 font-medium">
+                                <AlertCircle className="w-3.5 h-3.5 shrink-0 text-red-600" />
+                                <span>Original price must be strictly greater than payable price (LKR {editForm.price || '0'}).</span>
+                              </div>
+                            );
+                          }
+                        }
+                        return null;
+                      })()}
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}

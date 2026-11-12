@@ -6,6 +6,9 @@ export interface PlanData {
   code: string;
   description?: string | null;
   price: number | string;
+  originalPrice?: number | string | null;
+  isSpecialOffer?: boolean;
+  specialOfferLabel?: string | null;
   durationMonths: number;
   isActive: boolean;
 }

@@ -12,8 +12,21 @@ interface PricingSectionProps {
 export default function PricingSection({ plans }: PricingSectionProps) {
   const [selectedDrawerPlan, setSelectedDrawerPlan] = useState<PlanCardData | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [durationFilter, setDurationFilter] = useState<'ALL' | 'ANNUAL' | 'MONTHLY'>('ALL');
 
   const activePlans = (plans || []).filter((p) => p.isActive);
+
+  // Check if genuine multiple duration variants exist in actual data
+  const hasMonthly = activePlans.some((p) => p.durationMonths === 1);
+  const hasAnnual = activePlans.some((p) => p.durationMonths >= 12);
+  const hasMultipleDurations = hasMonthly && hasAnnual;
+
+  const displayedPlans = activePlans.filter((p) => {
+    if (!hasMultipleDurations || durationFilter === 'ALL') return true;
+    if (durationFilter === 'MONTHLY') return p.durationMonths === 1;
+    if (durationFilter === 'ANNUAL') return p.durationMonths >= 12;
+    return true;
+  });
 
   const handleOpenFeatures = (plan: PlanCardData) => {
     setSelectedDrawerPlan(plan);
@@ -29,7 +42,7 @@ export default function PricingSection({ plans }: PricingSectionProps) {
     <section id="pricing" className="py-20 sm:py-28 bg-[#F7F6F1] relative scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-14 sm:mb-20">
+        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white text-[#89865D] text-xs font-bold tracking-wider uppercase mb-3 border border-[#E7E9EE] shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-[#FFD978]" />
             <span>Institutional Subscriptions</span>
@@ -41,20 +54,61 @@ export default function PricingSection({ plans }: PricingSectionProps) {
           <p className="text-base sm:text-lg text-[#7C8A9A] leading-relaxed">
             Official subscription tiers authorized for registered Islamic institutions. Zero hidden maintenance charges.
           </p>
+
+          {/* Genuine Duration Filter (Rendered only if multiple durations exist in database) */}
+          {hasMultipleDurations && (
+            <div className="flex items-center justify-center mt-8">
+              <div className="inline-flex items-center p-1 rounded-2xl bg-white border border-[#E7E9EE] shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setDurationFilter('ALL')}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    durationFilter === 'ALL'
+                      ? 'bg-[#0F172A] text-white shadow-xs'
+                      : 'text-[#7C8A9A] hover:text-[#0F172A]'
+                  }`}
+                >
+                  All Plans
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDurationFilter('ANNUAL')}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    durationFilter === 'ANNUAL'
+                      ? 'bg-[#0F172A] text-white shadow-xs'
+                      : 'text-[#7C8A9A] hover:text-[#0F172A]'
+                  }`}
+                >
+                  Annual
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDurationFilter('MONTHLY')}
+                  className={`px-4 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    durationFilter === 'MONTHLY'
+                      ? 'bg-[#0F172A] text-white shadow-xs'
+                      : 'text-[#7C8A9A] hover:text-[#0F172A]'
+                  }`}
+                >
+                  Monthly
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Plans Container */}
-        {activePlans.length > 0 ? (
+        {displayedPlans.length > 0 ? (
           <div
             className={`grid grid-cols-1 ${
-              activePlans.length === 1
+              displayedPlans.length === 1
                 ? 'max-w-md mx-auto'
-                : activePlans.length === 2
+                : displayedPlans.length === 2
                 ? 'max-w-4xl mx-auto md:grid-cols-2'
                 : 'lg:grid-cols-3'
-            } gap-6 sm:gap-8 items-stretch`}
+            } gap-6 sm:gap-8 items-stretch pt-2`}
           >
-            {activePlans.map((plan) => {
+            {displayedPlans.map((plan) => {
               const code = (plan.code || '').toUpperCase();
               const name = (plan.name || '').toLowerCase();
               // Approved product decision: Dynamic Gold Tier is the designated recommended plan
@@ -72,6 +126,9 @@ export default function PricingSection({ plans }: PricingSectionProps) {
                 durationMonths: plan.durationMonths,
                 isActive: plan.isActive,
                 isRecommended,
+                originalPrice: plan.originalPrice ?? null,
+                isSpecialOffer: Boolean(plan.isSpecialOffer),
+                specialOfferLabel: plan.specialOfferLabel ?? null,
               };
 
               return (

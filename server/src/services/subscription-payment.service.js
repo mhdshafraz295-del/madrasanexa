@@ -230,6 +230,9 @@ export async function getActiveSubscriptionPlans() {
     description: p.description,
     durationMonths: p.durationMonths,
     price: Number(p.price),
+    originalPrice: p.originalPrice ? Number(p.originalPrice) : null,
+    isSpecialOffer: Boolean(p.isSpecialOffer),
+    specialOfferLabel: p.specialOfferLabel || null,
     isActive: p.isActive,
   }));
 }

@@ -2004,6 +2004,9 @@ export async function createPlan(data, performedByUserId, ipAddress = null, user
         description: data.description?.trim() || null,
         durationMonths: data.durationMonths,
         price: new Prisma.Decimal(data.price),
+        originalPrice: data.originalPrice ? new Prisma.Decimal(data.originalPrice) : null,
+        isSpecialOffer: Boolean(data.isSpecialOffer),
+        specialOfferLabel: data.specialOfferLabel?.trim() || null,
         isActive: data.isActive !== undefined ? Boolean(data.isActive) : true,
       },
     });
@@ -2028,6 +2031,9 @@ export async function createPlan(data, performedByUserId, ipAddress = null, user
           name: plan.name,
           code: cleanCode,
           price: String(data.price),
+          originalPrice: data.originalPrice ? String(data.originalPrice) : null,
+          isSpecialOffer: Boolean(data.isSpecialOffer),
+          specialOfferLabel: data.specialOfferLabel?.trim() || null,
           durationMonths: data.durationMonths,
           featuresCount: featureKeys.length,
           assignedFeatureKeys: featureKeys,
@@ -2201,6 +2207,9 @@ export async function getPlanComparison(options = {}) {
       description: p.description,
       durationMonths: p.durationMonths,
       price: String(p.price),
+      originalPrice: p.originalPrice ? String(p.originalPrice) : null,
+      isSpecialOffer: Boolean(p.isSpecialOffer),
+      specialOfferLabel: p.specialOfferLabel || null,
       currency: 'LKR',
       isActive: p.isActive,
       activeSubscriptionsCount: activeSubCountMap.get(p.id) || 0,
@@ -2264,6 +2273,26 @@ export async function updatePlan(id, data, performedByUserId, ipAddress = null, 
   if (data.price !== undefined && String(data.price) !== String(plan.price)) {
     updateData.price = new Prisma.Decimal(data.price);
     changes.price = { from: String(plan.price), to: String(data.price) };
+  }
+  if (data.originalPrice !== undefined) {
+    const orig = data.originalPrice ? new Prisma.Decimal(data.originalPrice) : null;
+    const oldOrigStr = plan.originalPrice ? String(plan.originalPrice) : null;
+    const newOrigStr = data.originalPrice ? String(data.originalPrice) : null;
+    if (newOrigStr !== oldOrigStr) {
+      updateData.originalPrice = orig;
+      changes.originalPrice = { from: oldOrigStr, to: newOrigStr };
+    }
+  }
+  if (data.isSpecialOffer !== undefined && Boolean(data.isSpecialOffer) !== plan.isSpecialOffer) {
+    updateData.isSpecialOffer = Boolean(data.isSpecialOffer);
+    changes.isSpecialOffer = { from: plan.isSpecialOffer, to: Boolean(data.isSpecialOffer) };
+  }
+  if (data.specialOfferLabel !== undefined) {
+    const label = data.specialOfferLabel?.trim() || null;
+    if (label !== plan.specialOfferLabel) {
+      updateData.specialOfferLabel = label;
+      changes.specialOfferLabel = { from: plan.specialOfferLabel, to: label };
+    }
   }
   if (data.isActive !== undefined && Boolean(data.isActive) !== plan.isActive) {
     updateData.isActive = Boolean(data.isActive);

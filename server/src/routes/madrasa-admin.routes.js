@@ -432,6 +432,7 @@ router.post('/classes/:id/deactivate', deactivateClass);
 
 // Phase 8: Student Management & Status Actions
 router.get('/students', listStudents);
+router.get('/students/card-tokens', listCardTokens);
 router.get('/students/:id', getStudent);
 router.post('/students', createStudent);
 router.patch('/students/:id', updateStudent);
@@ -512,7 +513,6 @@ router.get('/attendance/export/daily/csv', exportDailyCsv);
 router.get('/attendance/export/monthly/csv', exportMonthlyCsv);
 
 // Student ID Card & Scan Token Management (Phase 02)
-router.get('/students/card-tokens', listCardTokens);
 router.post('/students/:id/card-tokens/issue', issueCardToken);
 router.post('/students/card-tokens/batch-generate', batchGenerateTokens);
 router.post('/students/:id/card-tokens/print-data', getCardPrintData);

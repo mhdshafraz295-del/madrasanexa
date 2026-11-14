@@ -157,6 +157,9 @@ import {
 import {
   getDailyAttendance,
   saveDailyAttendance,
+  verifyScanToken,
+  ingestScannedAttendance,
+  verifyAdmissionBarcode,
   getAttendanceHistory,
   getMonthlySummary,
   getStudentAttendance,
@@ -165,6 +168,17 @@ import {
   exportDailyCsv,
   exportMonthlyCsv,
 } from '../controllers/attendance.controller.js';
+import {
+  listCardTokens,
+  issueCardToken,
+  batchGenerateTokens,
+  getCardPrintData,
+  getBatchCardPrintData,
+  regenerateCardToken,
+  revokeCardToken,
+  getCardTokenHistory,
+  renderCardSheetPdfEndpoint,
+} from '../controllers/student-token.controller.js';
 import {
   createUstadh,
   listUstadhs,
@@ -486,6 +500,9 @@ router.put('/marking-hub/gpa-settings', updateGpaSettings);
 // Academic Attendance Module
 router.get('/attendance', getDailyAttendance);
 router.put('/attendance', saveDailyAttendance);
+router.post('/attendance/scan-verify', verifyScanToken);
+router.post('/attendance/scan-ingest', ingestScannedAttendance);
+router.post('/attendance/admission-verify', verifyAdmissionBarcode);
 router.get('/attendance/history', getAttendanceHistory);
 router.get('/attendance/monthly-summary', getMonthlySummary);
 router.get('/attendance/students/:studentId', getStudentAttendance);
@@ -493,6 +510,17 @@ router.get('/attendance/export/daily/pdf', exportDailyPdf);
 router.get('/attendance/export/monthly/pdf', exportMonthlyPdf);
 router.get('/attendance/export/daily/csv', exportDailyCsv);
 router.get('/attendance/export/monthly/csv', exportMonthlyCsv);
+
+// Student ID Card & Scan Token Management (Phase 02)
+router.get('/students/card-tokens', listCardTokens);
+router.post('/students/:id/card-tokens/issue', issueCardToken);
+router.post('/students/card-tokens/batch-generate', batchGenerateTokens);
+router.post('/students/:id/card-tokens/print-data', getCardPrintData);
+router.post('/students/card-tokens/batch-print-data', getBatchCardPrintData);
+router.post('/students/:id/card-tokens/regenerate', regenerateCardToken);
+router.post('/students/:id/card-tokens/revoke', revokeCardToken);
+router.get('/students/:id/card-tokens/history', getCardTokenHistory);
+router.post('/students/card-tokens/render-sheet-pdf', renderCardSheetPdfEndpoint);
 
 // Ustadh Management Module
 router.post('/ustadhs', createUstadh);

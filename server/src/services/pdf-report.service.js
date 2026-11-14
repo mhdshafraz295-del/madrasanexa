@@ -302,6 +302,75 @@ export async function renderRawHtmlToPdf({ html, landscape = false }) {
 }
 
 /**
+ * Renders an A4 ID card sheet with zero margins, no headers/footers, and vector precision.
+ * Specifically engineered for 8-up CR80 card batch sheets where exact CSS margins apply.
+ *
+ * Security & Resource Invariants:
+ * - Enforces shared Puppeteer browser singleton.
+ * - Enforces maximum concurrency limits (MAX_CONCURRENT_PDF_JOBS).
+ * - Disables JavaScript on the target page.
+ * - Intercepts requests to block external network requests (SSRF defense), permitting only data: and about: URIs.
+ * - Guarantees page closure and active job counter decrement in finally block.
+ *
+ * @param {{ html: string }} param0
+ * @returns {Promise<Buffer>}
+ */
+export async function renderCardSheetPdf({ html }) {
+  if (activePdfJobs >= MAX_CONCURRENT_PDF_JOBS) {
+    const err = new Error('PDF generation capacity reached. Please try again shortly.');
+    err.status = 503;
+    throw err;
+  }
+
+  activePdfJobs++;
+  let page = null;
+  try {
+    const browser = await getSharedBrowser();
+    page = await browser.newPage();
+
+    await page.setJavaScriptEnabled(false);
+    await page.setRequestInterception(true);
+    page.on('request', (req) => {
+      const url = req.url();
+      if (url.startsWith('data:') || url === 'about:blank') {
+        req.continue();
+      } else {
+        req.abort();
+      }
+    });
+
+    await page.setContent(html, {
+      waitUntil: 'domcontentloaded',
+      timeout: 30000,
+    });
+
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      landscape: false,
+      printBackground: true,
+      margin: {
+        top: '0mm',
+        bottom: '0mm',
+        left: '0mm',
+        right: '0mm',
+      },
+      displayHeaderFooter: false,
+    });
+
+    return Buffer.from(pdfBuffer);
+  } finally {
+    if (page) {
+      try {
+        await page.close();
+      } catch (e) {
+        // Page close fallback
+      }
+    }
+    activePdfJobs--;
+  }
+}
+
+/**
  * Builds the complete sanitized HTML string for a report document.
  */
 export function buildReportHtmlDocument(reportData) {

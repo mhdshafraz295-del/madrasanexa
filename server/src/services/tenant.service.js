@@ -79,7 +79,8 @@ export const logTenantActivity = async ({
   metadata = null,
   ipAddress = null,
   userAgent = null,
-}) => {
+  prismaClient = null,
+}, injectedPrisma = null) => {
   if (!action || typeof action !== 'string') {
     throw new BadRequestError('Activity action is required.');
   }
@@ -87,7 +88,13 @@ export const logTenantActivity = async ({
   // Ensure madrasaId is either null or a non-empty string
   const safeMadrasaId = madrasaId ? String(madrasaId).trim() : null;
 
-  return await prisma.activityLog.create({
+  const client = (injectedPrisma && injectedPrisma.activityLog)
+    ? injectedPrisma
+    : (prismaClient && prismaClient.activityLog)
+    ? prismaClient
+    : prisma;
+
+  return await client.activityLog.create({
     data: {
       madrasaId: safeMadrasaId,
       userId: userId ? String(userId) : null,

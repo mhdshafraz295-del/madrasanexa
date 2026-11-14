@@ -5,6 +5,9 @@ import {
   getAttendanceHistorySchema,
   getMonthlySummarySchema,
   getStudentAttendanceSchema,
+  verifyScanTokenSchema,
+  ingestScannedAttendanceSchema,
+  verifyAdmissionBarcodeSchema,
 } from '../validations/attendance.validation.js';
 import { logTenantActivity } from '../services/tenant.service.js';
 
@@ -28,6 +31,94 @@ export async function saveDailyAttendance(req, res, next) {
     res.json({
       success: true,
       message: 'Attendance saved successfully.',
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function verifyScanToken(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const validated = verifyScanTokenSchema.parse(req.body);
+    const data = await attendanceService.verifyScanTokenForAttendance({
+      madrasaId,
+      token: validated.token,
+      classId: validated.classId,
+      date: validated.date,
+      academicYear: validated.academicYear,
+    });
+
+    // Enforce anti-caching for sensitive token verification responses
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    res.json({
+      success: true,
+      message: 'Student scan verified successfully.',
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function ingestScannedAttendance(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const userId = req.auth?.userId || req.user?.id;
+    const validated = ingestScannedAttendanceSchema.parse(req.body);
+    const data = await attendanceService.ingestScannedAttendanceRecord({
+      madrasaId,
+      userId,
+      token: validated.token,
+      classId: validated.classId,
+      date: validated.date,
+      academicYear: validated.academicYear,
+      status: validated.status,
+      overwrite: validated.overwrite,
+      reason: validated.reason,
+    });
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    res.json({
+      success: true,
+      message: data.message,
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function verifyAdmissionBarcode(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const userId = req.auth?.userId || req.user?.id;
+    const validated = verifyAdmissionBarcodeSchema.parse(req.body);
+    const data = await attendanceService.verifyAdmissionBarcodeForAttendance({
+      madrasaId,
+      userId,
+      admissionNo: validated.admissionNo,
+      classId: validated.classId,
+      date: validated.date,
+      academicYear: validated.academicYear,
+      overwrite: validated.overwrite,
+      reason: validated.reason,
+    });
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    res.json({
+      success: true,
+      message: 'Student barcode verified successfully via 1D fallback.',
       data,
     });
   } catch (error) {

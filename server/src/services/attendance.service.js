@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma.js';
-import { NotFoundError, BadRequestError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors.js';
+import { isValidTokenFormat, hashToken } from '../utils/scan-token-crypto.js';
 import { logTenantActivity } from './tenant.service.js';
 import {
   calculateDailySummary,
@@ -68,8 +69,8 @@ function escapeHtml(str) {
  * @param {{ classId: string, academicYear: string, date: string }} params
  * @returns {Promise<object>}
  */
-export async function getClassDailyAttendance(madrasaId, { classId, academicYear, date: dateStr }) {
-  const targetClass = await prisma.class.findFirst({
+export async function getClassDailyAttendance(madrasaId, { classId, academicYear, date: dateStr }, prismaClient = prisma) {
+  const targetClass = await prismaClient.class.findFirst({
     where: { id: classId, madrasaId },
     select: { id: true, name: true, code: true },
   });
@@ -81,7 +82,7 @@ export async function getClassDailyAttendance(madrasaId, { classId, academicYear
   const attendanceDate = parseDateOnly(dateStr);
 
   // Check if session already exists
-  const existingSession = await prisma.attendanceSession.findUnique({
+  const existingSession = await prismaClient.attendanceSession.findUnique({
     where: {
       madrasaId_classId_attendanceDate: {
         madrasaId,
@@ -108,13 +109,59 @@ export async function getClassDailyAttendance(madrasaId, { classId, academicYear
     },
   });
 
+  // Evaluate date-aware eligible active students as of attendanceDate
+  const endOfDayUtc = new Date(Date.UTC(
+    attendanceDate.getUTCFullYear(),
+    attendanceDate.getUTCMonth(),
+    attendanceDate.getUTCDate(),
+    23, 59, 59, 999
+  ));
+
+  const eligibleStudents = await prismaClient.student.findMany({
+    where: {
+      madrasaId,
+      classId,
+      status: 'ACTIVE',
+      admissionDate: { lte: endOfDayUtc },
+    },
+    orderBy: { admissionNo: 'asc' },
+    select: {
+      id: true,
+      admissionNo: true,
+      fullName: true,
+    },
+  });
+
   if (existingSession) {
-    const records = existingSession.records.map((rec) => ({
-      studentId: rec.studentId,
-      admissionNo: rec.student.admissionNo,
-      fullName: rec.student.fullName,
-      status: rec.status,
-    }));
+    // Build map of studentId -> student record item
+    const recordMap = new Map();
+
+    // 1. Preserve historically recorded students and their saved statuses
+    for (const rec of existingSession.records) {
+      recordMap.set(rec.studentId, {
+        studentId: rec.studentId,
+        admissionNo: rec.student?.admissionNo || '',
+        fullName: rec.student?.fullName || '',
+        status: rec.status,
+      });
+    }
+
+    // 2. Include all eligible active students who do not yet have an AttendanceRecord (status: null)
+    for (const st of eligibleStudents) {
+      if (!recordMap.has(st.id)) {
+        recordMap.set(st.id, {
+          studentId: st.id,
+          admissionNo: st.admissionNo,
+          fullName: st.fullName,
+          status: null, // UI state: NOT_MARKED
+        });
+      }
+    }
+
+    // 3. Preserve student ordering according to existing application behavior (admissionNo asc)
+    const records = Array.from(recordMap.values()).sort((a, b) =>
+      (a.admissionNo || '').localeCompare(b.admissionNo || '')
+    );
 
     const summary = calculateDailySummary(records);
 
@@ -132,28 +179,6 @@ export async function getClassDailyAttendance(madrasaId, { classId, academicYear
   }
 
   // New session: find active students admitted on or before this attendanceDate
-  const endOfDayUtc = new Date(Date.UTC(
-    attendanceDate.getUTCFullYear(),
-    attendanceDate.getUTCMonth(),
-    attendanceDate.getUTCDate(),
-    23, 59, 59, 999
-  ));
-
-  const eligibleStudents = await prisma.student.findMany({
-    where: {
-      madrasaId,
-      classId,
-      status: 'ACTIVE',
-      admissionDate: { lte: endOfDayUtc },
-    },
-    orderBy: { admissionNo: 'asc' },
-    select: {
-      id: true,
-      admissionNo: true,
-      fullName: true,
-    },
-  });
-
   const students = eligibleStudents.map((st) => ({
     studentId: st.id,
     admissionNo: st.admissionNo,
@@ -192,10 +217,10 @@ export async function getClassDailyAttendance(madrasaId, { classId, academicYear
  * @param {{ classId: string, academicYear: string, date: string, records: Array<{ studentId: string, status: 'PRESENT' | 'ABSENT' }> }} payload
  * @returns {Promise<object>}
  */
-export async function saveClassDailyAttendance(madrasaId, userId, payload) {
+export async function saveClassDailyAttendance(madrasaId, userId, payload, prismaClient = prisma) {
   const { classId, academicYear, date: dateStr, records } = payload;
 
-  const targetClass = await prisma.class.findFirst({
+  const targetClass = await prismaClient.class.findFirst({
     where: { id: classId, madrasaId },
     select: { id: true, name: true },
   });
@@ -219,7 +244,7 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload) {
   }
 
   // 2. Determine authoritative eligible students for this date
-  const existingSession = await prisma.attendanceSession.findUnique({
+  const existingSession = await prismaClient.attendanceSession.findUnique({
     where: {
       madrasaId_classId_attendanceDate: {
         madrasaId,
@@ -232,29 +257,29 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload) {
     },
   });
 
-  let eligibleStudentIds = new Set();
-  if (existingSession && existingSession.records.length > 0) {
-    // Existing session preserves historically recorded students
-    eligibleStudentIds = new Set(existingSession.records.map((r) => r.studentId));
-  } else {
-    // New session uses date-aware active students
-    const endOfDayUtc = new Date(Date.UTC(
-      attendanceDate.getUTCFullYear(),
-      attendanceDate.getUTCMonth(),
-      attendanceDate.getUTCDate(),
-      23, 59, 59, 999
-    ));
+  const endOfDayUtc = new Date(Date.UTC(
+    attendanceDate.getUTCFullYear(),
+    attendanceDate.getUTCMonth(),
+    attendanceDate.getUTCDate(),
+    23, 59, 59, 999
+  ));
 
-    const eligible = await prisma.student.findMany({
-      where: {
-        madrasaId,
-        classId,
-        status: 'ACTIVE',
-        admissionDate: { lte: endOfDayUtc },
-      },
-      select: { id: true },
-    });
-    eligibleStudentIds = new Set(eligible.map((s) => s.id));
+  const eligible = await prismaClient.student.findMany({
+    where: {
+      madrasaId,
+      classId,
+      status: 'ACTIVE',
+      admissionDate: { lte: endOfDayUtc },
+    },
+    select: { id: true },
+  });
+
+  const eligibleStudentIds = new Set(eligible.map((s) => s.id));
+  if (existingSession && existingSession.records.length > 0) {
+    // Preserve historically recorded students as eligible for this session
+    for (const r of existingSession.records) {
+      eligibleStudentIds.add(r.studentId);
+    }
   }
 
   // 3. Verify completeness: all eligible students must be present in records
@@ -277,7 +302,7 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload) {
   }
 
   // 4. Atomic transaction upsert
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prismaClient.$transaction(async (tx) => {
     // Upsert session
     const session = await tx.attendanceSession.upsert({
       where: {
@@ -339,9 +364,9 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload) {
       date: dateStr,
       totalStudents: records.length,
     },
-  }).catch(() => {});
+  }, prismaClient).catch(() => {});
 
-  return await getClassDailyAttendance(madrasaId, { classId, academicYear, date: dateStr });
+  return await getClassDailyAttendance(madrasaId, { classId, academicYear, date: dateStr }, prismaClient);
 }
 
 /**
@@ -972,3 +997,626 @@ export async function generateMonthlyAttendanceCsv(madrasaId, params) {
 
   return generateCsvString({ headers, rows });
 }
+
+/**
+ * Phase 02 – Secure Attendance Scan Token Verification
+ *
+ * Verifies student QR/Code128 scan token for the attendance workflow.
+ *
+ * Invariants:
+ * - Strictly validates canonical 37-character token format (`MNX1_<32 hex>`) before DB lookup.
+ * - Enforces tenant isolation (madrasaId).
+ * - Rejects inactive, revoked, or cross-tenant tokens.
+ * - Confirms student active status and date-based admission eligibility.
+ * - Safely updates scan metrics (lastScannedAt, scanCount).
+ * - Detects duplicate scans and existing session attendance records.
+ * - Returns only minimum non-sensitive student metadata (zero raw tokens or cryptographic secrets).
+ *
+ * @param {object} params
+ * @param {string} params.madrasaId - Authenticated tenant madrasa ID
+ * @param {string} params.token - Raw scan token (e.g. from USB scanner or camera)
+ * @param {string} [params.classId] - Optional class ID of current attendance session
+ * @param {string} [params.date] - Optional date of attendance session (YYYY-MM-DD)
+ * @param {string} [params.academicYear] - Optional academic year
+ * @param {object} [params.prismaClient] - Optional injected Prisma client (for isolated unit tests)
+ * @returns {Promise<object>} Minimum student attendance verification payload
+ */
+export async function verifyScanTokenForAttendance({
+  madrasaId,
+  token,
+  classId = null,
+  date = null,
+  academicYear = null,
+  recordScanMetric = true,
+  prismaClient = prisma,
+}) {
+  if (!madrasaId || typeof madrasaId !== 'string') {
+    throw new BadRequestError('Tenant madrasaId is required.');
+  }
+
+  // 1. Pre-lookup format validation: Reject non-canonical formats immediately
+  if (!token || typeof token !== 'string') {
+    throw new BadRequestError('Scan token is required.');
+  }
+
+  const trimmedToken = token.trim();
+  if (!isValidTokenFormat(trimmedToken)) {
+    throw new BadRequestError('Invalid token format. Token must follow the canonical MNX1_ format.');
+  }
+
+  // 2. Cryptographic token hash lookup within tenant boundary
+  const tokenHash = hashToken(trimmedToken);
+
+  const tokenRecord = await prismaClient.studentScanToken.findFirst({
+    where: {
+      tokenHash,
+      madrasaId,
+    },
+    include: {
+      student: {
+        select: {
+          id: true,
+          madrasaId: true,
+          classId: true,
+          admissionNo: true,
+          fullName: true,
+          status: true,
+          admissionDate: true,
+          class: {
+            select: { id: true, name: true, code: true },
+          },
+        },
+      },
+    },
+  });
+
+  // Anti-enumeration: Generic NotFoundError for missing or cross-tenant token
+  if (!tokenRecord) {
+    throw new NotFoundError('Unrecognized or invalid scan token.');
+  }
+
+  // 3. Token state verification
+  if (!tokenRecord.isActive || tokenRecord.revokedAt) {
+    const err = new BadRequestError(
+      `Scan token has been revoked (Reason: ${tokenRecord.revokeReason || 'Revoked by institution'}).`
+    );
+    err.code = 'TOKEN_REVOKED';
+    throw err;
+  }
+
+  // 4. Student eligibility checks
+  const student = tokenRecord.student;
+  if (!student || student.madrasaId !== madrasaId) {
+    throw new NotFoundError('Student not found for this institution.');
+  }
+
+  if (student.status !== 'ACTIVE') {
+    throw new BadRequestError(
+      `Student (${student.admissionNo} - ${student.fullName}) is currently ${student.status} and ineligible for attendance.`
+    );
+  }
+
+  // 5. Class match verification (if classId provided)
+  if (classId && typeof classId === 'string' && classId.trim().length > 0) {
+    if (student.classId !== classId.trim()) {
+      const className = student.class?.name || student.classId;
+      throw new BadRequestError(
+        `Class mismatch: Student (${student.fullName}) belongs to class "${className}", not the selected attendance session.`
+      );
+    }
+  }
+
+  // 6. Admission date eligibility (if date provided)
+  let attendanceDate = null;
+  if (date && typeof date === 'string' && date.trim().length > 0) {
+    attendanceDate = parseDateOnly(date.trim());
+    if (student.admissionDate) {
+      const endOfDayUtc = new Date(Date.UTC(
+        attendanceDate.getUTCFullYear(),
+        attendanceDate.getUTCMonth(),
+        attendanceDate.getUTCDate(),
+        23, 59, 59, 999
+      ));
+      if (new Date(student.admissionDate) > endOfDayUtc) {
+        throw new BadRequestError(
+          `Student (${student.admissionNo}) was admitted on ${formatDateOnly(student.admissionDate)}, after the attendance date.`
+        );
+      }
+    }
+  }
+
+  // 7. Safe scan metrics update
+  const now = new Date();
+  if (recordScanMetric) {
+    await prismaClient.studentScanToken.update({
+      where: { id: tokenRecord.id },
+      data: {
+        lastScannedAt: now,
+        scanCount: { increment: 1 },
+      },
+    });
+  }
+
+  // 8. Attendance Session duplicate check
+  let duplicateScan = false;
+  let alreadyMarked = false;
+  let existingStatus = null;
+
+  if (classId && attendanceDate) {
+    const session = await prismaClient.attendanceSession.findUnique({
+      where: {
+        madrasaId_classId_attendanceDate: {
+          madrasaId,
+          classId: classId.trim(),
+          attendanceDate,
+        },
+      },
+      include: {
+        records: {
+          where: { studentId: student.id },
+          select: { id: true, status: true },
+        },
+      },
+    });
+
+    if (session) {
+      if (academicYear && typeof academicYear === 'string' && academicYear.trim().length > 0) {
+        if (session.academicYear !== academicYear.trim()) {
+          throw new ConflictError(
+            `Academic year mismatch: Existing attendance session for this date belongs to academic year "${session.academicYear}", but request specified "${academicYear.trim()}".`
+          );
+        }
+      }
+
+      if (session.records.length > 0) {
+        alreadyMarked = true;
+        duplicateScan = true;
+        existingStatus = session.records[0].status;
+      }
+    }
+  }
+
+  // 9. Minimum, non-sensitive payload returned (zero cryptographic secrets leaked)
+  return {
+    verified: true,
+    student: {
+      id: student.id,
+      admissionNo: student.admissionNo,
+      fullName: student.fullName,
+      classId: student.classId,
+      className: student.class?.name || null,
+    },
+    tokenHint: tokenRecord.tokenHint,
+    scannedAt: now.toISOString(),
+    scanCount: recordScanMetric ? tokenRecord.scanCount + 1 : tokenRecord.scanCount,
+    duplicateScan,
+    alreadyMarked,
+    existingStatus,
+    suggestedStatus: 'PRESENT',
+    tokenId: tokenRecord.id,
+    lastScannedAt: tokenRecord.lastScannedAt,
+  };
+}
+
+/**
+ * Phase 02 – Ingest Scanned Attendance Record
+ *
+ * Securely ingests an individual scanned attendance record for an open or saved session.
+ * Protects against silent overwriting by requiring explicit overwrite=true to modify an existing status.
+ *
+ * @param {object} params
+ * @param {string} params.madrasaId - Tenant madrasa ID
+ * @param {string} params.userId - Authenticated user ID
+ * @param {string} params.token - Raw scan token
+ * @param {string} params.classId - Class ID
+ * @param {string} params.date - Date in YYYY-MM-DD
+ * @param {string} params.academicYear - Academic Year string
+ * @param {'PRESENT'|'ABSENT'} [params.status='PRESENT'] - Status to record
+ * @param {boolean} [params.overwrite=false] - Whether to overwrite an existing record
+ * @param {object} [params.prismaClient] - Optional injected Prisma client
+ * @returns {Promise<object>}
+ */
+export async function ingestScannedAttendanceRecord({
+  madrasaId,
+  userId,
+  token,
+  classId,
+  date: dateStr,
+  academicYear,
+  status = 'PRESENT',
+  overwrite = false,
+  reason = null,
+  alreadyVerified = false,
+  prismaClient = prisma,
+}) {
+  // AUDIT-02: Mandatory reason check when overwrite is true
+  if (overwrite) {
+    if (!reason || typeof reason !== 'string' || reason.trim().length < 3) {
+      throw new BadRequestError(
+        'A mandatory reason (minimum 3 characters) is required to overwrite an existing attendance record.'
+      );
+    }
+  }
+
+  const attendanceDate = parseDateOnly(dateStr);
+  let verifiedStudent = null;
+
+  try {
+    // Atomic ingestion transaction (AUDIT-03: verification runs inside transaction to eliminate TOCTOU gap)
+    const result = await prismaClient.$transaction(async (tx) => {
+      // 1. Transactional token verification: validates token, student status, admission date, class match
+      const verification = await verifyScanTokenForAttendance({
+        madrasaId,
+        token,
+        classId,
+        date: dateStr,
+        academicYear,
+        recordScanMetric: false, // Metric increment handled transactionally below
+        prismaClient: tx,
+      });
+
+      verifiedStudent = verification.student;
+      const studentId = verification.student.id;
+
+      // 2. AUDIT-04: Prevent double-increment of scanCount when verify is followed by ingestion
+      const now = new Date();
+      const lastScannedTime = verification.lastScannedAt ? new Date(verification.lastScannedAt).getTime() : 0;
+      const wasRecentlyVerified = alreadyVerified === true || (now.getTime() - lastScannedTime < 30_000);
+
+      if (!wasRecentlyVerified && verification.tokenId) {
+        await tx.studentScanToken.update({
+          where: { id: verification.tokenId },
+          data: {
+            lastScannedAt: now,
+            scanCount: { increment: 1 },
+          },
+        });
+      }
+
+      // 3. Upsert / find attendance session (Fix B: Concurrency-safe atomic upsert preserving established fields)
+      const session = await tx.attendanceSession.upsert({
+        where: {
+          madrasaId_classId_attendanceDate: {
+            madrasaId,
+            classId: classId.trim(),
+            attendanceDate,
+          },
+        },
+        update: {}, // Invariant: Do not overwrite an existing session's academic year or other established fields
+        create: {
+          madrasaId,
+          classId: classId.trim(),
+          attendanceDate,
+          academicYear: academicYear ? academicYear.trim() : '2026-2027',
+          createdById: userId || null,
+        },
+      });
+
+      // Validate the returned session's academic year against the request (AUDIT-07 ConflictError)
+      if (academicYear && typeof academicYear === 'string' && session.academicYear !== academicYear.trim()) {
+        throw new ConflictError(
+          `Academic year mismatch: Existing attendance session for this date belongs to academic year "${session.academicYear}", but request specified "${academicYear.trim()}".`
+        );
+      }
+
+      // 4. Check existing record for this student
+      const existingRecord = await tx.attendanceRecord.findUnique({
+        where: {
+          sessionId_studentId: {
+            sessionId: session.id,
+            studentId,
+          },
+        },
+      });
+
+      if (existingRecord) {
+        const previousStatus = existingRecord.status;
+        if (!overwrite) {
+          return {
+            recorded: false,
+            duplicateScan: true,
+            alreadyMarked: true,
+            status: existingRecord.status,
+            message: `Student (${verification.student.admissionNo}) is already marked ${existingRecord.status}. Silent overwrite prohibited.`,
+            student: verification.student,
+          };
+        }
+
+        // Overwrite permitted
+        const updated = await tx.attendanceRecord.update({
+          where: { id: existingRecord.id },
+          data: { status },
+        });
+
+        // AUDIT-02 & Step 0.7 Fix A: Atomically persist ActivityLog inside the active transaction
+        await logTenantActivity(
+          {
+            madrasaId,
+            userId,
+            action: 'ATTENDANCE_RECORD_OVERWRITTEN',
+            entityType: 'AttendanceRecord',
+            entityId: existingRecord.id,
+            metadata: {
+              sessionId: session.id,
+              studentId,
+              admissionNo: verification.student.admissionNo,
+              classId: classId.trim(),
+              date: dateStr,
+              previousStatus,
+              newStatus: updated.status,
+              reason: reason.trim(),
+            },
+          },
+          tx
+        );
+
+        return {
+          recorded: true,
+          overwritten: true,
+          duplicateScan: true,
+          status: updated.status,
+          message: 'Attendance record updated successfully.',
+          student: verification.student,
+        };
+      }
+
+      // 5. Create fresh record
+      const created = await tx.attendanceRecord.create({
+        data: {
+          madrasaId,
+          sessionId: session.id,
+          studentId,
+          status,
+        },
+      });
+
+      return {
+        recorded: true,
+        overwritten: false,
+        duplicateScan: false,
+        status: created.status,
+        message: 'Attendance record ingested successfully.',
+        student: verification.student,
+      };
+    });
+
+    return result;
+  } catch (err) {
+    // AUDIT-05: Handle Prisma P2002 concurrent duplicate attendance inserts gracefully
+    if (err?.code === 'P2002' || err?.message?.includes('P2002') || err?.message?.includes('Unique constraint')) {
+      const session = await prismaClient.attendanceSession.findUnique({
+        where: {
+          madrasaId_classId_attendanceDate: {
+            madrasaId,
+            classId: classId.trim(),
+            attendanceDate,
+          },
+        },
+      });
+
+      if (session && verifiedStudent?.id) {
+        const raceRecord = await prismaClient.attendanceRecord.findUnique({
+          where: {
+            sessionId_studentId: {
+              sessionId: session.id,
+              studentId: verifiedStudent.id,
+            },
+          },
+        });
+
+        if (raceRecord) {
+          return {
+            recorded: false,
+            duplicateScan: true,
+            alreadyMarked: true,
+            status: raceRecord.status,
+            message: `Student (${verifiedStudent.admissionNo}) is already marked ${raceRecord.status}. Concurrent duplicate scan detected.`,
+            student: verifiedStudent,
+          };
+        }
+      }
+    }
+    throw err;
+  }
+}
+
+/**
+ * Verifies a student via Code128 1D admission number barcode (Tier 2 Fallback).
+ *
+ * Mandatory Security & Integrity Invariants:
+ * 1. Lower-security fallback: Never treated as cryptographically verified.
+ * 2. Scoped strictly within tenant boundary (madrasaId + admissionNo).
+ * 3. Requires active student status, class eligibility, and academic year match.
+ * 4. Checks session duplicate status. If duplicate and overwrite is true, requires mandatory reason (>= 3 chars).
+ * 5. Atomically logs the fallback event to ActivityLog inside a Prisma transaction.
+ * 6. CRITICAL: Does NOT create or update AttendanceRecord or AttendanceSession.
+ *    Attendance persistence is performed strictly through the complete-roster PUT attendance flow.
+ *
+ * @param {object} params
+ * @param {string} params.madrasaId - Tenant madrasa ID
+ * @param {string} params.userId - Authenticated operator ID
+ * @param {string} params.admissionNo - Student admission number (from 1D barcode)
+ * @param {string} [params.classId] - Optional class filter
+ * @param {string} [params.date] - Optional attendance date YYYY-MM-DD
+ * @param {string} [params.academicYear] - Optional academic year string
+ * @param {boolean} [params.overwrite] - Whether operator authorized overwriting a duplicate
+ * @param {string} [params.reason] - Mandatory operator reason if overwrite is authorized
+ * @param {object} [params.prismaClient] - Injected Prisma client
+ * @returns {Promise<object>} Verified scan event metadata
+ */
+export async function verifyAdmissionBarcodeForAttendance({
+  madrasaId,
+  userId,
+  admissionNo,
+  classId = null,
+  date = null,
+  academicYear = null,
+  overwrite = false,
+  reason = null,
+  prismaClient = prisma,
+}) {
+  if (!madrasaId || typeof madrasaId !== 'string') {
+    throw new BadRequestError('Tenant madrasaId is required.');
+  }
+  if (!admissionNo || typeof admissionNo !== 'string') {
+    throw new BadRequestError('Admission number is required.');
+  }
+
+  const trimmedAdmissionNo = admissionNo.trim();
+  if (trimmedAdmissionNo.length === 0) {
+    throw new BadRequestError('Admission number cannot be empty.');
+  }
+
+  // 1. Look up student strictly within tenant boundary
+  const student = await prismaClient.student.findFirst({
+    where: {
+      madrasaId,
+      admissionNo: trimmedAdmissionNo,
+    },
+    include: {
+      class: {
+        select: { id: true, name: true, code: true },
+      },
+    },
+  });
+
+  if (!student) {
+    throw new NotFoundError(`Student with admission number "${trimmedAdmissionNo}" not found in this institution.`);
+  }
+
+  // 2. Active status enforcement
+  if (student.status !== 'ACTIVE') {
+    throw new BadRequestError(
+      `Student (${student.admissionNo} - ${student.fullName}) is currently ${student.status} and ineligible for attendance.`
+    );
+  }
+
+  // 3. Class match verification (if classId provided)
+  if (classId && typeof classId === 'string' && classId.trim().length > 0) {
+    if (student.classId !== classId.trim()) {
+      const className = student.class?.name || student.classId;
+      throw new BadRequestError(
+        `Class mismatch: Student (${student.fullName}) belongs to class "${className}", not the selected attendance session.`
+      );
+    }
+  }
+
+  // 4. Admission date eligibility (if date provided)
+  let attendanceDate = null;
+  if (date && typeof date === 'string' && date.trim().length > 0) {
+    attendanceDate = parseDateOnly(date.trim());
+    if (student.admissionDate) {
+      const endOfDayUtc = new Date(Date.UTC(
+        attendanceDate.getUTCFullYear(),
+        attendanceDate.getUTCMonth(),
+        attendanceDate.getUTCDate(),
+        23, 59, 59, 999
+      ));
+      if (new Date(student.admissionDate) > endOfDayUtc) {
+        throw new BadRequestError(
+          `Student (${student.admissionNo}) was admitted on ${formatDateOnly(student.admissionDate)}, after the attendance date.`
+        );
+      }
+    }
+  }
+
+  // 5. Attendance Session duplicate check
+  let duplicateScan = false;
+  let alreadyMarked = false;
+  let existingStatus = null;
+
+  if (classId && attendanceDate) {
+    const session = await prismaClient.attendanceSession.findUnique({
+      where: {
+        madrasaId_classId_attendanceDate: {
+          madrasaId,
+          classId: classId.trim(),
+          attendanceDate,
+        },
+      },
+      include: {
+        records: {
+          where: { studentId: student.id },
+          select: { id: true, status: true },
+        },
+      },
+    });
+
+    if (session) {
+      if (academicYear && typeof academicYear === 'string' && academicYear.trim().length > 0) {
+        if (session.academicYear !== academicYear.trim()) {
+          throw new ConflictError(
+            `Academic year mismatch: Existing attendance session for this date belongs to academic year "${session.academicYear}", but request specified "${academicYear.trim()}".`
+          );
+        }
+      }
+
+      if (session.records.length > 0) {
+        alreadyMarked = true;
+        duplicateScan = true;
+        existingStatus = session.records[0].status;
+      }
+    }
+  }
+
+  // 6. Overwrite authorization check
+  if (alreadyMarked) {
+    if (overwrite) {
+      if (!reason || typeof reason !== 'string' || reason.trim().length < 3) {
+        throw new BadRequestError('A mandatory reason (minimum 3 characters) is required to overwrite an existing attendance record.');
+      }
+    }
+  }
+
+  const now = new Date();
+
+  // 7. Atomic transaction for in-transaction ActivityLog
+  await prismaClient.$transaction(async (tx) => {
+    await tx.activityLog.create({
+      data: {
+        madrasaId,
+        userId: userId || null,
+        action: 'ATTENDANCE_VERIFY_1D_BARCODE_FALLBACK',
+        entityType: 'Student',
+        entityId: student.id,
+        details: {
+          admissionNo: student.admissionNo,
+          studentId: student.id,
+          classId: classId || student.classId,
+          date: date || null,
+          academicYear: academicYear || null,
+          verificationMethod: 'VERIFIED_1D_BARCODE_FALLBACK',
+          duplicateScan,
+          alreadyMarked,
+          existingStatus,
+          overwritten: Boolean(alreadyMarked && overwrite),
+          operatorReason: reason ? reason.trim() : null,
+          securityTier: 'FALLBACK_LOW_TRUST',
+          securityNotice: 'Verified via static 1D barcode identifier (Tier 2)',
+        },
+      },
+    });
+  });
+
+  // 8. Return verified scan event (does NOT mutate attendance session or records)
+  return {
+    verified: true,
+    verificationMethod: 'VERIFIED_1D_BARCODE_FALLBACK',
+    student: {
+      id: student.id,
+      admissionNo: student.admissionNo,
+      fullName: student.fullName,
+      classId: student.classId,
+      className: student.class?.name || null,
+    },
+    scannedAt: now.toISOString(),
+    duplicateScan,
+    alreadyMarked,
+    existingStatus,
+    suggestedStatus: 'PRESENT',
+    securityTier: 'FALLBACK_LOW_TRUST',
+    securityNotice: 'Verified via static 1D barcode identifier (Tier 2)',
+  };
+}
+
+

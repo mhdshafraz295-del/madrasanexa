@@ -16,6 +16,7 @@ export interface IdCardBackProps {
   madrasaAddress?: string | null;
   tokenHint?: string | null;
   rawToken?: string | null;
+  credentialType?: 'both' | 'qr' | 'barcode';
   className?: string;
 }
 
@@ -40,6 +41,7 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
   madrasaAddress: _madrasaAddress,
   tokenHint,
   rawToken,
+  credentialType = 'qr',
   className = '',
 }) => {
   return (
@@ -77,35 +79,83 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
           </span>
         </div>
 
-        {/* Center Section: Dual Credential Zone */}
-        <div className="flex-1 flex items-center justify-between gap-[3mm] py-[1.2mm]">
-          {/* Left: 2D QR Code Container (25mm x 25mm exact optical zone) */}
-          <div
-            className="w-[25.0mm] h-[25.0mm] shrink-0 bg-white border border-stone-200/90 rounded-[1.8mm] flex items-center justify-center p-[0.8mm] relative overflow-hidden shadow-2xs"
-            style={{ boxSizing: 'border-box' }}
-          >
-            <StudentQrCode
-              token={rawToken}
-              tokenHint={tokenHint}
-              sizeMm={23.4}
-            />
-          </div>
-
-          {/* Right: 1D Code128 Barcode Container */}
-          <div className="flex-1 min-w-0 flex flex-col justify-between h-[25.0mm] py-[0.5mm]">
-            <div className="bg-white border border-stone-200/90 rounded-[1.8mm] px-[1mm] py-[0.8mm] flex flex-col items-center justify-center h-[17.5mm] shadow-2xs overflow-hidden">
-              <StudentBarcode
-                admissionNo={student.admissionNo}
-                barWidth={1.3}
-                heightPx={24}
-              />
+        {/* Center Section: Credential Zone */}
+        <div className="flex-1 flex items-center justify-center py-[1.2mm]">
+          {credentialType === 'qr' ? (
+            /* Dedicated QR Code Center View */
+            <div className="flex items-center justify-center gap-[4mm] w-full">
+              <div
+                className="w-[27.0mm] h-[27.0mm] shrink-0 bg-white border border-stone-200/90 rounded-[2.0mm] flex items-center justify-center p-[0.8mm] relative overflow-hidden shadow-2xs"
+                style={{ boxSizing: 'border-box' }}
+              >
+                <StudentQrCode
+                  token={rawToken}
+                  tokenHint={tokenHint}
+                  sizeMm={25.4}
+                />
+              </div>
+              <div className="flex flex-col justify-center gap-[1mm] text-left">
+                <span className="text-[2.0mm] font-bold text-[#0F172A] tracking-tight">
+                  Secure Digital Attendance
+                </span>
+                <span className="text-[1.6mm] text-stone-500 font-mono">
+                  ISO/IEC 18004 • Version 3-M
+                </span>
+                <div className="inline-flex items-center gap-[1mm] bg-stone-50 border border-stone-200/60 rounded px-[1.5mm] py-[0.5mm] mt-[0.5mm]">
+                  <span className="text-[1.5mm] text-stone-500 font-semibold">Token:</span>
+                  <span className="text-[1.5mm] font-mono text-[#0F5A47] font-bold">
+                    {tokenHint || 'MNX1_SECURE'}
+                  </span>
+                </div>
+              </div>
             </div>
-
-            <div className="flex items-center justify-between text-[1.6mm] text-stone-500 pt-[0.8mm]">
-              <span className="truncate">Auth: MadrasaNexa Gate F</span>
-              <span className="font-mono text-[#0F5A47] font-semibold shrink-0">CR80 • ISO-7810</span>
+          ) : credentialType === 'barcode' ? (
+            /* Dedicated Barcode Center View */
+            <div className="flex flex-col items-center justify-center w-full max-w-[70mm] gap-[1.5mm]">
+              <div className="w-full bg-white border border-stone-200/90 rounded-[2.0mm] px-[2mm] py-[1.2mm] flex flex-col items-center justify-center shadow-2xs overflow-hidden">
+                <StudentBarcode
+                  admissionNo={student.admissionNo}
+                  barWidth={1.5}
+                  heightPx={30}
+                />
+              </div>
+              <div className="flex items-center justify-between w-full px-1 text-[1.6mm] text-stone-500">
+                <span className="font-mono text-[#0F5A47] font-semibold">Code128 Standard</span>
+                <span className="truncate">Student ID: {student.admissionNo}</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Dual Mode (Both QR & Barcode) */
+            <div className="flex items-center justify-between gap-[3mm] w-full">
+              {/* Left: 2D QR Code Container */}
+              <div
+                className="w-[25.0mm] h-[25.0mm] shrink-0 bg-white border border-stone-200/90 rounded-[1.8mm] flex items-center justify-center p-[0.8mm] relative overflow-hidden shadow-2xs"
+                style={{ boxSizing: 'border-box' }}
+              >
+                <StudentQrCode
+                  token={rawToken}
+                  tokenHint={tokenHint}
+                  sizeMm={23.4}
+                />
+              </div>
+
+              {/* Right: 1D Code128 Barcode Container */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between h-[25.0mm] py-[0.5mm]">
+                <div className="bg-white border border-stone-200/90 rounded-[1.8mm] px-[1mm] py-[0.8mm] flex flex-col items-center justify-center h-[17.5mm] shadow-2xs overflow-hidden">
+                  <StudentBarcode
+                    admissionNo={student.admissionNo}
+                    barWidth={1.3}
+                    heightPx={24}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between text-[1.6mm] text-stone-500 pt-[0.8mm]">
+                  <span className="truncate">Auth: MadrasaNexa</span>
+                  <span className="font-mono text-[#0F5A47] font-semibold shrink-0">CR80 • ISO-7810</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom Notice & Institutional Contact */}

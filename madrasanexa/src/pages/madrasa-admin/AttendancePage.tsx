@@ -4,6 +4,8 @@ import {
   History,
   TrendingUp,
   User,
+  CreditCard,
+  ScanLine,
   AlertCircle,
   Loader2,
   CheckCircle2,
@@ -22,8 +24,10 @@ import { AttendanceStudentList } from '../../components/attendance/AttendanceStu
 import { AttendanceHistoryTab } from '../../components/attendance/AttendanceHistoryTab';
 import { MonthlySummaryTab } from '../../components/attendance/MonthlySummaryTab';
 import { StudentAttendanceTab } from '../../components/attendance/StudentAttendanceTab';
+import { IdCardStudioTab } from '../../components/id-cards/IdCardStudioTab';
+import { AttendanceScannerTab } from '../../components/attendance/AttendanceScannerTab';
 
-type ActiveTab = 'daily' | 'history' | 'monthly' | 'student';
+type ActiveTab = 'daily' | 'history' | 'monthly' | 'student' | 'id-cards' | 'scanner';
 
 export default function AttendancePage() {
   // Classes
@@ -329,6 +333,32 @@ export default function AttendancePage() {
           <User className="w-4 h-4" />
           Student Profile
         </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('id-cards')}
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'id-cards'
+              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
+              : 'border-transparent text-stone-500 hover:text-stone-800'
+          }`}
+        >
+          <CreditCard className="w-4 h-4" />
+          ID Cards Studio
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('scanner')}
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+            activeTab === 'scanner'
+              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
+              : 'border-transparent text-stone-500 hover:text-stone-800'
+          }`}
+        >
+          <ScanLine className="w-4 h-4" />
+          QR &amp; Barcode Scanner
+        </button>
       </div>
 
       {/* Notifications */}
@@ -417,6 +447,27 @@ export default function AttendancePage() {
             admissionNo: s.admissionNo,
             fullName: s.fullName,
           }))}
+        />
+      )}
+
+      {activeTab === 'id-cards' && (
+        <IdCardStudioTab
+          classes={classes}
+          selectedClassId={selectedClassId}
+          academicYear={selectedAcademicYear}
+        />
+      )}
+
+      {activeTab === 'scanner' && (
+        <AttendanceScannerTab
+          classes={classes}
+          selectedClassId={selectedClassId}
+          onSelectClassId={setSelectedClassId}
+          selectedAcademicYear={selectedAcademicYear}
+          selectedDate={selectedDate}
+          dailyStudents={students}
+          onUpdateDailyStudentStatus={handleSingleStatusChange}
+          onRefreshDailyRoster={loadDaily}
         />
       )}
     </div>

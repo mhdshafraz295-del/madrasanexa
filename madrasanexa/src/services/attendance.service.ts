@@ -1,4 +1,5 @@
-import { apiClient } from './api';
+﻿import { apiClient } from './api';
+import type { ApiResponse } from './api';
 
 export type AttendanceRecordStatus = 'PRESENT' | 'ABSENT' | 'NOT_MARKED';
 
@@ -274,4 +275,117 @@ export async function downloadMonthlyCsv(
   link.click();
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
+}
+
+
+// ==========================================
+// Phase 02: Student QR & Barcode Attendance
+// ==========================================
+
+export interface ScanVerificationResult {
+  verified: boolean;
+  student: {
+    id: string;
+    admissionNo: string;
+    fullName: string;
+    classId: string | null;
+    className: string | null;
+  };
+  tokenHint: string;
+  scannedAt: string;
+  scanCount: number;
+  duplicateScan: boolean;
+  alreadyMarked: boolean;
+  existingStatus: 'PRESENT' | 'ABSENT' | null;
+  suggestedStatus: 'PRESENT' | 'ABSENT';
+  tokenId: string;
+  lastScannedAt: string | null;
+}
+
+export interface ScanIngestionResult {
+  recorded: boolean;
+  status: 'PRESENT' | 'ABSENT';
+  student: {
+    id: string;
+    admissionNo: string;
+    fullName: string;
+  };
+  scannedAt: string;
+  duplicateScan?: boolean;
+  alreadyMarked?: boolean;
+  overwritten?: boolean;
+  message?: string;
+}
+
+export interface BarcodeAdmissionVerificationResult {
+  verified: boolean;
+  verificationMethod: 'VERIFIED_1D_BARCODE_FALLBACK';
+  student: {
+    id: string;
+    admissionNo: string;
+    fullName: string;
+    classId: string | null;
+    className: string | null;
+  };
+  scannedAt: string;
+  duplicateScan: boolean;
+  alreadyMarked: boolean;
+  existingStatus: 'PRESENT' | 'ABSENT' | null;
+  suggestedStatus: 'PRESENT' | 'ABSENT';
+  securityTier: 'FALLBACK_LOW_TRUST';
+  securityNotice: string;
+}
+
+/**
+ * Verifies a 2D QR scan token for attendance eligibility.
+ */
+export async function apiVerifyScanToken(payload: {
+  token: string;
+  classId?: string;
+  date?: string;
+  academicYear?: string;
+}): Promise<ScanVerificationResult> {
+  const response = await apiClient.post<ApiResponse<ScanVerificationResult>>(
+    '/madrasa-admin/attendance/scan-verify',
+    payload
+  );
+  return response.data.data;
+}
+
+/**
+ * Ingests a 2D QR scan token and records attendance.
+ */
+export async function apiIngestScannedAttendance(payload: {
+  token: string;
+  classId: string;
+  date: string;
+  academicYear: string;
+  status?: 'PRESENT' | 'ABSENT';
+  overwrite?: boolean;
+  reason?: string;
+}): Promise<ScanIngestionResult> {
+  const response = await apiClient.post<ApiResponse<ScanIngestionResult>>(
+    '/madrasa-admin/attendance/scan-ingest',
+    payload
+  );
+  return response.data.data;
+}
+
+/**
+ * Verifies a 1D Code128 admission number barcode (Tier 2 Fallback).
+ * Does NOT persist attendance; returns verified scan event for client roster update.
+ */
+export async function apiVerifyAdmissionBarcode(payload: {
+  admissionNo: string;
+  classId?: string;
+  date?: string;
+  academicYear?: string;
+  overwrite?: boolean;
+  reason?: string;
+}): Promise<BarcodeAdmissionVerificationResult> {
+  const response = await apiClient.post<ApiResponse<BarcodeAdmissionVerificationResult>>(
+    '/madrasa-admin/attendance/admission-verify',
+    payload
+  );
+  return response.data.data;
 }

@@ -365,6 +365,7 @@ model Madrasa {
   interviewEvaluations           InterviewEvaluation[]
   interviewNotifications         InterviewNotification[]
   featureOverrides               MadrasaFeatureOverride[]
+  scanTokens                     StudentScanToken[]
 
   @@index([status])
   @@map("madrasas")
@@ -536,6 +537,7 @@ model Student {
   meetings          StudentMeeting[]
   followUps         StudentFollowUp[]
   alumniProfile     AlumniProfile?
+  scanTokens        StudentScanToken[]
 
   // Critical: Admission number unique per Madrasa
   @@unique([madrasaId, admissionNo])
@@ -565,6 +567,40 @@ model StudentFeeSetting {
   @@index([madrasaId, studentId])
   @@index([effectiveFrom])
   @@map("student_fee_settings")
+}
+
+/// Opaque Machine-Readable Scannable Credentials for Students
+/// Stores SHA-256 hashes for fast lookup and AES-256-GCM encrypted tokens for reprintability.
+model StudentScanToken {
+  id              String    @id @default(cuid())
+  madrasaId       String
+  studentId       String
+  tokenHash       String    @unique @db.Char(64)
+  tokenEncrypted  String    @db.Text
+  tokenIv         String    @db.VarChar(32)
+  tokenAuthTag    String    @db.VarChar(32)
+  keyVersion      Int       @default(1)
+  tokenHint       String    @db.VarChar(16)
+  version         Int       @default(1)
+  isActive        Boolean   @default(true)
+  activeStudentId String?   @db.VarChar(191)
+  issuedAt        DateTime  @default(now())
+  issuedById      String?   @db.VarChar(191)
+  revokedAt       DateTime?
+  revokedById     String?   @db.VarChar(191)
+  revokeReason    String?   @db.VarChar(255)
+  lastScannedAt   DateTime?
+  scanCount       Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  madrasa Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student Student @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+
+  @@unique([madrasaId, activeStudentId])
+  @@index([madrasaId, tokenHash])
+  @@index([madrasaId, studentId, isActive])
+  @@map("student_scan_tokens")
 }
 
 /// Tenant Invoices

@@ -66,10 +66,10 @@ const TEST_KEY_HEX = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789
  */
 function createMockPrismaClient() {
   const students = [
-    { id: 'stud_101', madrasaId: 'mda_tenant_A', admissionNo: 'ADM-001', firstName: 'Zayd', lastName: 'Ali', classId: 'cls_1' },
-    { id: 'stud_102', madrasaId: 'mda_tenant_A', admissionNo: 'ADM-002', firstName: 'Bilal', lastName: 'Umar', classId: 'cls_1' },
-    { id: 'stud_103', madrasaId: 'mda_tenant_A', admissionNo: 'ADM-003', firstName: 'Tariq', lastName: 'Hassan', classId: 'cls_2' },
-    { id: 'stud_999', madrasaId: 'mda_tenant_B', admissionNo: 'ADM-B-01', firstName: 'Foreign', lastName: 'Student', classId: 'cls_b' },
+    { id: 'stud_101', madrasaId: 'mda_tenant_A', admissionNo: 'ADM-001', fullName: 'Zayd Ali', classId: 'cls_1' },
+    { id: 'stud_102', madrasaId: 'mda_tenant_A', admissionNo: 'ADM-002', fullName: 'Bilal Umar', classId: 'cls_1' },
+    { id: 'stud_103', madrasaId: 'mda_tenant_A', admissionNo: 'ADM-003', fullName: 'Tariq Hassan', classId: 'cls_2' },
+    { id: 'stud_999', madrasaId: 'mda_tenant_B', admissionNo: 'ADM-B-01', fullName: 'Foreign Student', classId: 'cls_b' },
   ];
 
   let scanTokens = [];

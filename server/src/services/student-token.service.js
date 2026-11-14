@@ -84,7 +84,7 @@ export async function issueStudentToken({
   // 1. Tenant-isolated student lookup (prevents IDOR / cross-tenant issuance)
   const student = await prismaClient.student.findFirst({
     where: { id: studentId, madrasaId },
-    select: { id: true, madrasaId: true, admissionNo: true, firstName: true, lastName: true },
+    select: { id: true, madrasaId: true, admissionNo: true, fullName: true },
   });
 
   if (!student) {
@@ -181,7 +181,7 @@ export async function batchGenerateMissingTokens({
 
   const students = await prismaClient.student.findMany({
     where: studentWhere,
-    select: { id: true, admissionNo: true, firstName: true, lastName: true },
+    select: { id: true, admissionNo: true, fullName: true },
     orderBy: { admissionNo: 'asc' },
   });
 

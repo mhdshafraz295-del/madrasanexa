@@ -3,7 +3,6 @@ import {
   X,
   Printer,
   Download,
-  Sparkles,
   AlertCircle,
   Loader2,
   ChevronLeft,
@@ -52,6 +51,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
   madrasaEmail,
 }) => {
   const [activeSheetMode, setActiveSheetMode] = useState<'both' | 'front' | 'back' | 'calibration'>('both');
+  const [duplexPreviewSide, setDuplexPreviewSide] = useState<'front' | 'back'>('front');
   const [mirrorColumns, setMirrorColumns] = useState(true);
   const [offsetX, setOffsetX] = useState(0);
   const [offsetY, setOffsetY] = useState(0);
@@ -236,22 +236,22 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
           aria-modal="true"
         >
           {/* Header Bar */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-stone-50/80 shrink-0">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 bg-gradient-to-r from-stone-50/90 to-white shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs">
-                <Sparkles className="w-5 h-5 text-emerald-300" />
+              <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs shrink-0">
+                <Printer className="w-5 h-5 text-emerald-200" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base text-stone-900">
+                  <h3 className="font-bold text-sm sm:text-base text-[#0F172A] tracking-tight">
                     A4 Batch ID Card Print Studio
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-[#0F5A47] shrink-0">
                     {cards.length} Cards Selected
                   </span>
                 </div>
-                <p className="text-xs text-stone-500 mt-0.5">
-                  2×4 Grid • 8 Cards/Sheet • Exact CR80 (85.60 × 53.98 mm) • Exterior Crop Marks
+                <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5">
+                  2×4 Grid · 8 Cards/Sheet · Exact CR80 (85.60 × 53.98 mm) · Exterior Crop Marks
                 </p>
               </div>
             </div>
@@ -259,7 +259,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-200/50 rounded-xl transition-colors cursor-pointer"
+              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer"
               aria-label="Close dialog"
             >
               <X className="w-5 h-5" />
@@ -267,13 +267,13 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
           </div>
 
           {/* Subheader Toolbar & Control Bar */}
-          <div className="px-6 py-3 border-b border-stone-200 bg-white flex flex-wrap items-center justify-between gap-4 shrink-0">
+          <div className="px-4 sm:px-6 py-3 border-b border-stone-200 bg-white flex flex-wrap items-center justify-between gap-3 sm:gap-4 shrink-0">
             {/* View Mode Tabs */}
-            <div className="inline-flex rounded-xl bg-stone-100 p-1 border border-stone-200/70 shadow-xs">
+            <div className="flex flex-wrap items-center gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200/80 shadow-xs w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveSheetMode('both')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'both'
                     ? 'bg-white text-emerald-800 shadow-xs'
                     : 'text-stone-500 hover:text-stone-800'
@@ -284,7 +284,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveSheetMode('front')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'front'
                     ? 'bg-white text-emerald-800 shadow-xs'
                     : 'text-stone-500 hover:text-stone-800'
@@ -295,7 +295,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveSheetMode('back')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'back'
                     ? 'bg-white text-emerald-800 shadow-xs'
                     : 'text-stone-500 hover:text-stone-800'
@@ -306,7 +306,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveSheetMode('calibration')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'calibration'
                     ? 'bg-white text-emerald-800 shadow-xs'
                     : 'text-stone-500 hover:text-stone-800'
@@ -317,24 +317,24 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
             </div>
 
             {/* Duplex Mirroring & Calibration Adjustments */}
-            <div className="flex items-center gap-4 text-xs text-stone-600">
+            <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3 sm:gap-4 text-xs text-stone-600 w-full sm:w-auto">
               {activeSheetMode !== 'calibration' && (
-                <label className="flex items-center gap-1.5 cursor-pointer font-medium select-none">
+                <label className="flex items-center gap-1.5 cursor-pointer font-medium select-none text-[11px] sm:text-xs">
                   <input
                     type="checkbox"
                     checked={mirrorColumns}
                     onChange={(e) => setMirrorColumns(e.target.checked)}
                     className="rounded text-[#0F5A47] focus:ring-[#0F5A47]"
                   />
-                  <span>Mirror Back Columns (Flip on Long Edge)</span>
+                  <span>Mirror Back Columns</span>
                 </label>
               )}
 
               {/* Offset Fine-Tuning */}
-              <div className="flex items-center gap-2 border-l border-stone-200 pl-3">
-                <span className="text-stone-400 font-medium">Offsets:</span>
+              <div className="flex items-center gap-2 sm:border-l sm:border-stone-200 sm:pl-3">
+                <span className="text-stone-400 font-medium text-[11px] sm:text-xs">Offsets:</span>
                 <label className="flex items-center gap-1">
-                  <span className="font-mono text-stone-500">X:</span>
+                  <span className="font-mono text-stone-500 text-xs">X:</span>
                   <input
                     type="number"
                     step="0.5"
@@ -342,14 +342,14 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
                     max="5"
                     value={offsetX}
                     onChange={(e) => setOffsetX(parseFloat(e.target.value) || 0)}
-                    className="w-14 px-1.5 py-0.5 rounded border border-stone-300 text-center font-mono text-xs"
+                    className="w-12 sm:w-14 px-1 py-0.5 rounded border border-stone-300 text-center font-mono text-xs"
                     title="Horizontal shift in millimeters"
                   />
                   <span className="text-[10px] text-stone-400">mm</span>
                 </label>
 
                 <label className="flex items-center gap-1">
-                  <span className="font-mono text-stone-500">Y:</span>
+                  <span className="font-mono text-stone-500 text-xs">Y:</span>
                   <input
                     type="number"
                     step="0.5"
@@ -357,7 +357,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
                     max="5"
                     value={offsetY}
                     onChange={(e) => setOffsetY(parseFloat(e.target.value) || 0)}
-                    className="w-14 px-1.5 py-0.5 rounded border border-stone-300 text-center font-mono text-xs"
+                    className="w-12 sm:w-14 px-1 py-0.5 rounded border border-stone-300 text-center font-mono text-xs"
                     title="Vertical shift in millimeters"
                   />
                   <span className="text-[10px] text-stone-400">mm</span>
@@ -368,7 +368,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
 
           {/* Error Notification */}
           {exportError && (
-            <div className="mx-6 mt-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center justify-between">
+            <div className="mx-4 sm:mx-6 mt-3 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                 <span>{exportError}</span>
@@ -376,7 +376,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
               <button
                 type="button"
                 onClick={() => setExportError(null)}
-                className="text-rose-600 hover:text-rose-800 font-bold"
+                className="text-rose-600 hover:text-rose-800 font-bold cursor-pointer"
               >
                 Dismiss
               </button>
@@ -384,15 +384,16 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
           )}
 
           {/* Interactive Screen Preview Viewport */}
-          <div className="flex-1 overflow-auto p-6 bg-stone-100 flex flex-col items-center justify-start min-h-[480px]">
+          <div className="flex-1 overflow-auto p-4 sm:p-6 bg-stone-100 flex flex-col items-center justify-start min-h-[480px]">
             {/* Sheet Page Pagination Controls (When > 1 sheet chunk) */}
             {activeSheetMode !== 'calibration' && totalSheetPages > 1 && (
-              <div className="mb-4 flex items-center gap-3 bg-white px-4 py-1.5 rounded-full shadow-xs border border-stone-200 text-xs">
+              <div className="mb-3 flex items-center gap-3 bg-white px-4 py-1.5 rounded-full shadow-xs border border-stone-200 text-xs">
                 <button
                   type="button"
                   onClick={() => setCurrentPreviewPage((p) => Math.max(1, p - 1))}
                   disabled={currentPreviewPage <= 1}
                   className="p-1 rounded-full hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                  aria-label="Previous sheet page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -404,86 +405,132 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
                   onClick={() => setCurrentPreviewPage((p) => Math.min(totalSheetPages, p + 1))}
                   disabled={currentPreviewPage >= totalSheetPages}
                   className="p-1 rounded-full hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                  aria-label="Next sheet page"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             )}
 
+            {/* Duplex Front / Back Preview Side Switcher */}
+            {activeSheetMode === 'both' && (
+              <div className="mb-3 inline-flex items-center p-1 bg-white border border-stone-200 rounded-full shadow-xs text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={() => setDuplexPreviewSide('front')}
+                  className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    duplexPreviewSide === 'front'
+                      ? 'bg-[#0F5A47] text-white shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  Front Page
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDuplexPreviewSide('back')}
+                  className={`px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    duplexPreviewSide === 'back'
+                      ? 'bg-[#0F5A47] text-white shadow-xs'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  Back Page (Duplex View)
+                </button>
+              </div>
+            )}
+
             {/* Scaled A4 Sheet Screen Preview Container */}
-            <div
-              className="bg-white shadow-2xl border border-stone-300 rounded-sm overflow-hidden"
-              style={{
-                transform: 'scale(0.58)',
-                transformOrigin: 'top center',
-                marginBottom: '-120mm', // Counteract CSS scale gap
-              }}
-            >
-              {activeSheetMode === 'calibration' ? (
-                <A4CalibrationSheet
-                  madrasaName={madrasaName}
-                  offsetX={offsetX}
-                  offsetY={offsetY}
-                />
-              ) : activeSheetMode === 'front' ? (
-                <A4CardSheet
-                  cards={chunks[currentPreviewPage - 1] || []}
-                  sheetType="front"
-                  offsetX={offsetX}
-                  offsetY={offsetY}
-                  pageNumber={currentPreviewPage}
-                  totalPages={totalSheetPages}
-                  madrasaName={madrasaName}
-                  madrasaCode={madrasaCode}
-                  logoUrl={logoUrl}
-                  academicYear={academicYear}
-                />
-              ) : activeSheetMode === 'back' ? (
-                <A4CardSheet
-                  cards={chunks[currentPreviewPage - 1] || []}
-                  sheetType="back"
-                  mirrorColumns={mirrorColumns}
-                  offsetX={offsetX}
-                  offsetY={offsetY}
-                  pageNumber={currentPreviewPage}
-                  totalPages={totalSheetPages}
-                  madrasaName={madrasaName}
-                  madrasaPhone={madrasaPhone}
-                  madrasaEmail={madrasaEmail}
-                  academicYear={academicYear}
-                />
-              ) : (
-                /* Duplex Combined View in Preview (Front sheet) */
-                <A4CardSheet
-                  cards={chunks[currentPreviewPage - 1] || []}
-                  sheetType="front"
-                  offsetX={offsetX}
-                  offsetY={offsetY}
-                  pageNumber={currentPreviewPage}
-                  totalPages={totalSheetPages}
-                  madrasaName={madrasaName}
-                  madrasaCode={madrasaCode}
-                  logoUrl={logoUrl}
-                  academicYear={academicYear}
-                />
-              )}
+            <div className="w-full overflow-x-auto flex flex-col items-center">
+              <div
+                className="bg-white shadow-2xl border border-stone-300 rounded-sm overflow-hidden"
+                style={{
+                  transform: 'scale(0.58)',
+                  transformOrigin: 'top center',
+                  marginBottom: '-120mm', // Counteract CSS scale gap
+                }}
+              >
+                {activeSheetMode === 'calibration' ? (
+                  <A4CalibrationSheet
+                    madrasaName={madrasaName}
+                    offsetX={offsetX}
+                    offsetY={offsetY}
+                  />
+                ) : activeSheetMode === 'front' ? (
+                  <A4CardSheet
+                    cards={chunks[currentPreviewPage - 1] || []}
+                    sheetType="front"
+                    offsetX={offsetX}
+                    offsetY={offsetY}
+                    pageNumber={currentPreviewPage}
+                    totalPages={totalSheetPages}
+                    madrasaName={madrasaName}
+                    madrasaCode={madrasaCode}
+                    logoUrl={logoUrl}
+                    academicYear={academicYear}
+                  />
+                ) : activeSheetMode === 'back' ? (
+                  <A4CardSheet
+                    cards={chunks[currentPreviewPage - 1] || []}
+                    sheetType="back"
+                    mirrorColumns={mirrorColumns}
+                    offsetX={offsetX}
+                    offsetY={offsetY}
+                    pageNumber={currentPreviewPage}
+                    totalPages={totalSheetPages}
+                    madrasaName={madrasaName}
+                    madrasaPhone={madrasaPhone}
+                    madrasaEmail={madrasaEmail}
+                    academicYear={academicYear}
+                  />
+                ) : duplexPreviewSide === 'back' ? (
+                  /* Duplex View: Previewing Back Sheet with Column Mirroring */
+                  <A4CardSheet
+                    cards={chunks[currentPreviewPage - 1] || []}
+                    sheetType="back"
+                    mirrorColumns={mirrorColumns}
+                    offsetX={offsetX}
+                    offsetY={offsetY}
+                    pageNumber={currentPreviewPage}
+                    totalPages={totalSheetPages}
+                    madrasaName={madrasaName}
+                    madrasaPhone={madrasaPhone}
+                    madrasaEmail={madrasaEmail}
+                    academicYear={academicYear}
+                  />
+                ) : (
+                  /* Duplex View: Previewing Front Sheet */
+                  <A4CardSheet
+                    cards={chunks[currentPreviewPage - 1] || []}
+                    sheetType="front"
+                    offsetX={offsetX}
+                    offsetY={offsetY}
+                    pageNumber={currentPreviewPage}
+                    totalPages={totalSheetPages}
+                    madrasaName={madrasaName}
+                    madrasaCode={madrasaCode}
+                    logoUrl={logoUrl}
+                    academicYear={academicYear}
+                  />
+                )}
+              </div>
             </div>
           </div>
 
           {/* Footer Bar with Print & Export Actions */}
-          <div className="px-6 py-4 border-t border-stone-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
-            <div className="flex items-center gap-2 text-xs text-stone-500">
+          <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-t border-stone-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 shrink-0">
+            <div className="flex items-center gap-2 text-[11px] sm:text-xs text-stone-500 w-full sm:w-auto">
               <Info className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>
                 Set printer to <strong>A4 Paper</strong> and <strong>100% Scale</strong> (disable &quot;Fit to Printable Area&quot;).
               </span>
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 sm:flex-initial px-4 py-2 border border-stone-200 text-stone-600 rounded-xl text-xs font-semibold hover:bg-stone-50 transition-colors cursor-pointer"
+                className="flex-1 sm:flex-initial px-3 sm:px-4 py-2 border border-stone-200 text-stone-600 rounded-xl text-xs font-semibold hover:bg-stone-50 transition-colors cursor-pointer"
               >
                 Close
               </button>
@@ -492,23 +539,23 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
                 type="button"
                 onClick={handleDownloadServerPdf}
                 disabled={isExportingPdf}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold transition-all cursor-pointer border border-stone-300 disabled:opacity-50"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold transition-all cursor-pointer border border-stone-300 disabled:opacity-50"
               >
                 {isExportingPdf ? (
                   <Loader2 className="w-4 h-4 animate-spin text-[#0F5A47]" />
                 ) : (
                   <Download className="w-4 h-4 text-stone-600" />
                 )}
-                <span>Download PDF (Puppeteer)</span>
+                <span className="whitespace-nowrap">PDF Export</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleBrowserPrint}
-                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 py-2 bg-[#0F5A47] hover:bg-[#0c4738] text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 bg-[#0F5A47] hover:bg-[#0c4738] text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
               >
                 <Printer className="w-4 h-4" />
-                <span>Print A4 Batch</span>
+                <span className="whitespace-nowrap">Print A4 Batch</span>
               </button>
             </div>
           </div>

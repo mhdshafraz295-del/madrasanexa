@@ -122,7 +122,7 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
 
   // Preview & Pagination States
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoomScale, setZoomScale] = useState(0.55);
+  const [zoomScale, setZoomScale] = useState(() => (typeof window !== 'undefined' && window.innerWidth < 640 ? 0.35 : 0.55));
 
   // PDF Export States
   const [isExportingPdf, setIsExportingPdf] = useState(false);
@@ -296,21 +296,21 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
           {/* ==================================================== */}
           {/* Header Bar */}
           {/* ==================================================== */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 bg-gradient-to-r from-stone-50 to-white shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs shrink-0">
-                <Tags className="w-5 h-5 text-emerald-200" />
+          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-stone-200 bg-gradient-to-r from-stone-50 to-white shrink-0 min-w-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 sm:w-11 h-9 sm:h-11 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs shrink-0">
+                <Tags className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-200" />
               </div>
               <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-bold text-sm sm:text-base text-[#0F172A] tracking-tight truncate">
-                    Student QR & Barcode Label Studio
+                <div className="flex items-center gap-2 min-w-0">
+                  <h3 className="font-bold text-xs sm:text-base text-[#0F172A] tracking-tight truncate">
+                    Student QR &amp; Barcode Label Studio
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-[#0F5A47] shrink-0">
-                    {activeCards.length} Labels Selected
+                  <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-100 text-[#0F5A47] shrink-0">
+                    {activeCards.length} Labels
                   </span>
                 </div>
-                <p className="text-[11px] sm:text-xs text-stone-500 font-medium truncate mt-0.5">
+                <p className="text-[10px] sm:text-xs text-stone-500 font-medium truncate mt-0.5 hidden sm:block">
                   Design, Preview and Print Individual Student Credential Labels · A4 Standard
                 </p>
               </div>
@@ -319,7 +319,7 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="p-1.5 sm:p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer shrink-0"
               aria-label="Close dialog"
             >
               <X className="w-5 h-5" />

@@ -130,6 +130,7 @@ export async function listStudents(madrasaId, query = {}) {
       id: s.id,
       admissionNo: s.admissionNo,
       fullName: s.fullName,
+      category: s.category || null,
       classId: s.classId,
       class: s.class
         ? {
@@ -225,6 +226,7 @@ export async function getStudentById(madrasaId, studentId) {
     id: student.id,
     admissionNo: student.admissionNo,
     fullName: student.fullName,
+    category: student.category || null,
     classId: student.classId,
     class: student.class
       ? {
@@ -348,6 +350,7 @@ export async function createStudent(madrasaId, data, userId) {
           madrasaId,
           admissionNo,
           fullName: data.fullName.trim(),
+          category: (data.category === 'DAY_SCHOLAR' || data.category === 'BOARDING') ? data.category : null,
           classId: data.classId || null,
           guardianName: data.guardianName.trim(),
           guardianPhone: data.guardianPhone || null,
@@ -445,6 +448,7 @@ export async function createStudent(madrasaId, data, userId) {
         id: student.id,
         admissionNo: student.admissionNo,
         fullName: student.fullName,
+        category: student.category || null,
         classId: student.classId,
         class: student.class
           ? {
@@ -581,6 +585,9 @@ export async function updateStudent(madrasaId, studentId, data, userId) {
       const updateData = {};
       if (data.admissionNo !== undefined) updateData.admissionNo = data.admissionNo.trim();
       if (data.fullName !== undefined) updateData.fullName = data.fullName.trim();
+      if (data.category !== undefined && (data.category === 'DAY_SCHOLAR' || data.category === 'BOARDING')) {
+        updateData.category = data.category;
+      }
       if (data.classId !== undefined) updateData.classId = data.classId || null;
       if (data.guardianName !== undefined) updateData.guardianName = data.guardianName.trim();
       if (data.guardianPhone !== undefined) updateData.guardianPhone = data.guardianPhone || null;
@@ -653,6 +660,7 @@ export async function updateStudent(madrasaId, studentId, data, userId) {
         id: updated.id,
         admissionNo: updated.admissionNo,
         fullName: updated.fullName,
+        category: updated.category || null,
         classId: updated.classId,
         class: updated.class
           ? {

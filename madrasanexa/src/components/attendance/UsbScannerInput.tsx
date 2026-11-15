@@ -125,10 +125,10 @@ export const UsbScannerInput: React.FC<UsbScannerInputProps> = ({
   return (
     <div className="bg-white rounded-2xl border border-stone-200/90 shadow-sm p-4 sm:p-5 transition-all">
       {/* Header with Status Indicator & Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 mb-3">
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
           <div
-            className={`w-3 h-3 rounded-full transition-all ${
+            className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full transition-all shrink-0 ${
               disabled
                 ? 'bg-stone-300'
                 : isFocused
@@ -136,12 +136,12 @@ export const UsbScannerInput: React.FC<UsbScannerInputProps> = ({
                 : 'bg-amber-400'
             }`}
           />
-          <h2 className="text-sm font-bold text-stone-800 flex items-center gap-1.5">
+          <h2 className="text-xs sm:text-sm font-bold text-stone-800 flex items-center gap-1.5 shrink-0">
             <ScanLine className="w-4 h-4 text-emerald-600" />
             USB Scanner Input
           </h2>
           <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+            className={`text-[10px] sm:text-xs px-2 py-0.5 rounded-full font-medium ${
               disabled
                 ? 'bg-stone-100 text-stone-400'
                 : isFocused
@@ -157,7 +157,7 @@ export const UsbScannerInput: React.FC<UsbScannerInputProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs">
+        <div className="flex items-center gap-1.5 text-xs self-start sm:self-auto">
           <button
             type="button"
             onClick={() => setManualMode(!manualMode)}
@@ -229,7 +229,7 @@ export const UsbScannerInput: React.FC<UsbScannerInputProps> = ({
               ? 'Type student token or admission number, then press Enter...'
               : 'Scan Student QR Code or 1D Admission Barcode...'
           }
-          className={`w-full py-3 pl-4 pr-24 rounded-xl border font-mono text-sm transition-all outline-none ${
+          className={`w-full py-2.5 sm:py-3 pl-3 sm:pl-4 pr-20 sm:pr-24 rounded-xl border font-mono text-xs sm:text-sm transition-all outline-none ${
             disabled
               ? 'bg-stone-100 border-stone-200 text-stone-400 cursor-not-allowed'
               : isFocused
@@ -242,7 +242,7 @@ export const UsbScannerInput: React.FC<UsbScannerInputProps> = ({
           spellCheck="false"
         />
 
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+        <div className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {inputValue && (
             <button
               type="button"
@@ -250,14 +250,14 @@ export const UsbScannerInput: React.FC<UsbScannerInputProps> = ({
               className="p-1 rounded-md text-stone-400 hover:text-stone-600 transition-colors"
               title="Clear input"
             >
-              <X className="w-4 h-4" />
+              <X className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
             </button>
           )}
 
           <button
             type="submit"
             disabled={disabled || !inputValue.trim()}
-            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-200 text-white disabled:text-stone-400 text-xs font-semibold shadow-xs transition-colors"
+            className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:bg-stone-200 text-white disabled:text-stone-400 text-[11px] sm:text-xs font-semibold shadow-xs transition-colors"
           >
             Verify
           </button>

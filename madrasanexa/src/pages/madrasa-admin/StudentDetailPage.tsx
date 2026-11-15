@@ -484,10 +484,10 @@ export default function StudentDetailPage() {
       </div>
 
       {/* Phase 10 Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-px overflow-x-auto">
+      <div className="flex items-center gap-1.5 sm:gap-2 border-b border-[#E7E9EE] pb-px overflow-x-auto scrollbar-none -mx-3 sm:mx-0 px-3 sm:px-0">
         <button
           onClick={() => setActiveTab('LEDGER')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-3.5 sm:px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'LEDGER'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -499,7 +499,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('INVOICES')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'INVOICES'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -511,7 +511,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('PAYMENTS')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'PAYMENTS'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -523,7 +523,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('PROFILE')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'PROFILE'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -535,7 +535,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('QUALIFICATIONS')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'QUALIFICATIONS'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -547,7 +547,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('DISCIPLINE')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'DISCIPLINE'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -559,7 +559,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('MEETINGS')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'MEETINGS'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -571,7 +571,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('FOLLOW_UPS')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'FOLLOW_UPS'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
@@ -583,7 +583,7 @@ export default function StudentDetailPage() {
 
         <button
           onClick={() => setActiveTab('TIMELINE')}
-          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap ${
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 whitespace-nowrap shrink-0 ${
             activeTab === 'TIMELINE'
               ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
               : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'

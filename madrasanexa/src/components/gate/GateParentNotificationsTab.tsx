@@ -111,7 +111,7 @@ export const GateParentNotificationsTab: React.FC = () => {
       {/* ============================================================== */}
       {/* 2. OUTBOX METRICS CARDS (BATCH AUDIT) */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
         {/* Sent Card */}
         <div className="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-sm">
           <div className="flex items-center justify-between">
@@ -161,7 +161,7 @@ export const GateParentNotificationsTab: React.FC = () => {
         </div>
 
         {/* Failed Deliveries Card */}
-        <div className="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-sm col-span-2 lg:col-span-1">
+        <div className="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-sm col-span-2 sm:col-span-1 lg:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-stone-500">Failed Retries</span>
             <div className="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center">

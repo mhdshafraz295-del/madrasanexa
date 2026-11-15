@@ -139,7 +139,7 @@ export default function SuperAdminLayout() {
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 flex flex-col min-h-screen">
-        <div className="flex-1 p-4 sm:p-6 md:p-8 max-w-7xl w-full mx-auto print:p-0 print:max-w-none">
+        <div className="flex-1 p-3 sm:p-5 md:p-8 max-w-7xl w-full mx-auto min-w-0 print:p-0 print:max-w-none">
           <Outlet />
         </div>
         <footer className="py-4 px-6 border-t border-[#E7E9EE] bg-white text-center text-xs text-[#7C8A9A] print:hidden">

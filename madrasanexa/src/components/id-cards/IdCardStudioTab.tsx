@@ -378,11 +378,11 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
       </div>
 
       {/* Action Toolbar & Filters */}
-      <div className="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-stone-200/80 p-4 shadow-xs flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4">
         {/* Left: Search & Filter Controls */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-1">
           {/* Search Input */}
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
             <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -434,12 +434,12 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
         </div>
 
         {/* Right: Primary Batch Action Buttons */}
-        <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-start sm:justify-end">
           <button
             type="button"
             onClick={loadTokens}
             disabled={isLoading}
-            className="p-2 border border-stone-200 rounded-xl text-stone-600 hover:bg-stone-50 transition-colors cursor-pointer"
+            className="p-2 border border-stone-200 rounded-xl text-stone-600 hover:bg-stone-50 transition-colors cursor-pointer shrink-0"
             title="Refresh directory"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-emerald-600' : ''}`} />
@@ -449,7 +449,7 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
             type="button"
             onClick={() => handleOpenBatchPrint()}
             disabled={isLoadingBatchPrint || selectedStudentIds.length === 0}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-200 shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-40"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-200 shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
             title={selectedStudentIds.length === 0 ? 'Select students to batch print' : 'Print A4 sheets for selected students'}
           >
             {isLoadingBatchPrint ? (
@@ -464,7 +464,7 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
             type="button"
             onClick={() => handleOpenLabelStudio()}
             disabled={isLoadingLabelPrint || selectedStudentIds.length === 0}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-200 shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-40"
+            className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-200 shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-40 whitespace-nowrap"
             title={selectedStudentIds.length === 0 ? 'Select students to print labels' : 'Print individual QR & Barcode labels'}
           >
             {isLoadingLabelPrint ? (
@@ -479,7 +479,7 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
             type="button"
             onClick={handleBatchGenerate}
             disabled={isBatchGenerating}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#0F5A47] hover:bg-[#0c4738] text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+            className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-4 py-2 bg-[#0F5A47] hover:bg-[#0c4738] text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-50 whitespace-nowrap"
           >
             {isBatchGenerating ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -544,7 +544,7 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
       {/* Directory Table */}
       <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[850px] text-left border-collapse">
             <thead>
               <tr className="border-b border-stone-200/80 bg-stone-50/70 text-[11px] font-bold text-stone-500 uppercase tracking-wider">
                 <th className="py-3 px-3 w-10 text-center">
@@ -616,12 +616,12 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
 
                       {/* Student Identity */}
                       <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                           <div className="w-8 h-8 rounded-xl bg-stone-100 text-stone-700 font-bold text-xs flex items-center justify-center shrink-0 border border-stone-200/60">
                             {item.fullName.charAt(0)}
                           </div>
-                          <div>
-                            <span className="font-semibold text-stone-900 block leading-tight">
+                          <div className="min-w-0">
+                            <span className="font-semibold text-stone-900 block leading-tight truncate max-w-[180px] sm:max-w-xs">
                               {item.fullName}
                             </span>
                             <span className="text-[10px] text-stone-400 font-mono block">
@@ -632,12 +632,12 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
                       </td>
 
                       {/* Class */}
-                      <td className="py-3 px-4 text-stone-600 font-medium">
+                      <td className="py-3 px-4 text-stone-600 font-medium whitespace-nowrap">
                         {item.className || 'General'}
                       </td>
 
                       {/* Card Status Badge */}
-                      <td className="py-3 px-4">
+                      <td className="py-3 px-4 whitespace-nowrap">
                         {item.hasActiveToken ? (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
@@ -652,9 +652,9 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
                       </td>
 
                       {/* Credential Hint */}
-                      <td className="py-3 px-4 font-mono text-[11px] text-stone-600">
+                      <td className="py-3 px-4 font-mono text-[11px] text-stone-600 whitespace-nowrap">
                         {item.tokenHint ? (
-                          <span className="bg-stone-100 px-2 py-0.5 rounded border border-stone-200/80">
+                          <span className="bg-stone-100 px-2 py-0.5 rounded border border-stone-200/80 font-mono text-[10px] tracking-tight">
                             {item.tokenHint}
                           </span>
                         ) : (
@@ -663,12 +663,12 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
                       </td>
 
                       {/* Scan Count */}
-                      <td className="py-3 px-4 text-center font-mono font-medium text-stone-700">
+                      <td className="py-3 px-4 text-center font-mono font-medium text-stone-700 whitespace-nowrap">
                         {item.scanCount}
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
                           {item.hasActiveToken ? (
                             <>

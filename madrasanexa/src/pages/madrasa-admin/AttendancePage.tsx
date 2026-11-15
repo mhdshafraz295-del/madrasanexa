@@ -244,7 +244,7 @@ export default function AttendancePage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6 w-full min-w-0">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -281,11 +281,11 @@ export default function AttendancePage() {
       />
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-stone-200 gap-2 sm:gap-4 overflow-x-auto">
+      <div className="flex border-b border-stone-200 gap-1.5 sm:gap-4 overflow-x-auto scrollbar-none -mx-3 sm:mx-0 px-3 sm:px-0">
         <button
           type="button"
           onClick={() => setActiveTab('daily')}
-          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'daily'
               ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
               : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -298,7 +298,7 @@ export default function AttendancePage() {
         <button
           type="button"
           onClick={() => setActiveTab('history')}
-          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'history'
               ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
               : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -311,7 +311,7 @@ export default function AttendancePage() {
         <button
           type="button"
           onClick={() => setActiveTab('monthly')}
-          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'monthly'
               ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
               : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -324,7 +324,7 @@ export default function AttendancePage() {
         <button
           type="button"
           onClick={() => setActiveTab('student')}
-          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'student'
               ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
               : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -337,7 +337,7 @@ export default function AttendancePage() {
         <button
           type="button"
           onClick={() => setActiveTab('id-cards')}
-          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'id-cards'
               ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
               : 'border-transparent text-stone-500 hover:text-stone-800'
@@ -350,7 +350,7 @@ export default function AttendancePage() {
         <button
           type="button"
           onClick={() => setActiveTab('scanner')}
-          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
+          className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'scanner'
               ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
               : 'border-transparent text-stone-500 hover:text-stone-800'

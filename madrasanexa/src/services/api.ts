@@ -1447,10 +1447,13 @@ export interface UpdateClassPayload {
   status?: 'ACTIVE' | 'INACTIVE';
 }
 
+export type StudentCategory = 'DAY_SCHOLAR' | 'BOARDING';
+
 export interface StudentListItem {
   id: string;
   admissionNo: string;
   fullName: string;
+  category?: StudentCategory | null;
   classId: string | null;
   class: {
     id: string;
@@ -1498,6 +1501,7 @@ export interface StudentDetail {
   id: string;
   admissionNo: string;
   fullName: string;
+  category?: StudentCategory | null;
   admissionDate?: string;
   joinedAt?: string;
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
@@ -1540,6 +1544,7 @@ export interface StudentDetail {
 export interface CreateStudentPayload {
   admissionNo: string;
   fullName: string;
+  category?: StudentCategory | null;
   academicSectionId?: string | null;
   admissionDate?: string | null;
   joinedAt?: string | null;
@@ -1561,6 +1566,7 @@ export interface CreateStudentPayload {
 export interface UpdateStudentPayload {
   admissionNo?: string;
   fullName?: string;
+  category?: StudentCategory | null;
   academicSectionId?: string | null;
   admissionDate?: string | null;
   joinedAt?: string | null;

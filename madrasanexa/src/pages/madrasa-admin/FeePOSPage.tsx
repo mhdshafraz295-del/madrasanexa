@@ -769,7 +769,7 @@ export default function FeePOSPage() {
   );
 
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="space-y-6 w-full min-w-0">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -1038,7 +1038,7 @@ export default function FeePOSPage() {
                   {showGenerateBar && renderInvoiceGenerator(true)}
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full min-w-[620px] text-left border-collapse">
                       <thead>
                         <tr className="border-b border-[#E7E9EE] text-xs font-bold text-[#7C8A9A] uppercase tracking-wider whitespace-nowrap">
                           <th className="py-2.5 px-2">Pay</th>

@@ -212,21 +212,21 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
           aria-modal="true"
         >
           {/* Header Bar */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-stone-200 bg-gradient-to-r from-stone-50/90 to-white shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 sm:w-11 h-10 sm:h-11 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs shrink-0">
-                <Printer className="w-5 h-5 text-emerald-200" />
+          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-stone-200 bg-gradient-to-r from-stone-50/90 to-white shrink-0 min-w-0">
+            <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+              <div className="w-9 sm:w-11 h-9 sm:h-11 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs shrink-0">
+                <Printer className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-200" />
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-sm sm:text-base text-[#0F172A] tracking-tight">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                  <h3 className="font-bold text-xs sm:text-base text-[#0F172A] tracking-tight truncate">
                     A4 Batch ID Card Print Studio
                   </h3>
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-[#0F5A47] shrink-0">
-                    {cards.length} Cards Selected
+                  <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-100 text-[#0F5A47] shrink-0">
+                    {cards.length} Cards
                   </span>
                 </div>
-                <p className="text-[11px] sm:text-xs text-stone-500 font-medium mt-0.5">
+                <p className="text-[10px] sm:text-xs text-stone-500 font-medium mt-0.5 truncate hidden sm:block">
                   2×4 Grid · 8 Cards/Sheet · Exact CR80 (85.60 × 53.98 mm) · Exterior Crop Marks
                 </p>
               </div>
@@ -235,7 +235,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer shrink-0"
               aria-label="Close dialog"
             >
               <X className="w-5 h-5" />
@@ -419,12 +419,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
             {/* Scaled A4 Sheet Screen Preview Container */}
             <div className="w-full overflow-x-auto flex flex-col items-center">
               <div
-                className="bg-white shadow-2xl border border-stone-300 rounded-sm overflow-hidden"
-                style={{
-                  transform: 'scale(0.58)',
-                  transformOrigin: 'top center',
-                  marginBottom: '-120mm', // Counteract CSS scale gap
-                }}
+                className="bg-white shadow-2xl border border-stone-300 rounded-sm overflow-hidden scale-[0.36] sm:scale-[0.48] md:scale-[0.58] origin-top -mb-[185mm] sm:-mb-[150mm] md:-mb-[120mm]"
               >
                 {activeSheetMode === 'calibration' ? (
                   <A4CalibrationSheet

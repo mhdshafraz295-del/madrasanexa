@@ -77,14 +77,14 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
   return (
     <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
       {/* Action Header & Bulk Controls */}
-      <div className="p-4 sm:p-5 border-b border-stone-200/80 flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-stone-50/50">
+      <div className="p-3 sm:p-5 border-b border-stone-200/80 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4 bg-stone-50/50">
         <div className="flex flex-wrap items-center gap-2">
           {/* Mark All Present */}
           <button
             type="button"
             onClick={() => onMarkAll('PRESENT')}
             disabled={isSaving || students.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-semibold transition-all shadow-2xs disabled:opacity-50"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 border border-emerald-200/80 rounded-xl text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 whitespace-nowrap"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             Mark All Present
@@ -95,7 +95,7 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
             type="button"
             onClick={() => onMarkAll('ABSENT')}
             disabled={isSaving || students.length === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200/80 rounded-xl text-xs font-semibold transition-all shadow-2xs disabled:opacity-50"
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200/80 rounded-xl text-xs font-semibold transition-all shadow-2xs disabled:opacity-50 whitespace-nowrap"
           >
             <XCircle className="w-4 h-4 text-rose-600" />
             Mark All Absent
@@ -229,7 +229,7 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
 
       {/* Student Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse">
+        <table className="w-full min-w-[540px] text-left text-xs border-collapse">
           <thead>
             <tr className="bg-stone-50/80 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider">
               <th className="py-3 px-4 w-12 text-center">#</th>

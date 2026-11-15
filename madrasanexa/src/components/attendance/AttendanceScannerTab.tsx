@@ -490,11 +490,11 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Smart Gate Scanner & Attendance Scanner Sub-Navigation Bar */}
-      <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-1.5 shadow-2xs flex flex-wrap items-center gap-1.5">
+      <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-1.5 shadow-2xs flex items-center gap-1.5 overflow-x-auto scrollbar-none -mx-1 sm:mx-0 px-2 sm:px-1.5">
         <button
           type="button"
           onClick={() => setScannerSubTab('gate-scanner')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             scannerSubTab === 'gate-scanner'
               ? 'bg-[#0F5A47] text-white shadow-xs'
               : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
@@ -510,7 +510,7 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
         <button
           type="button"
           onClick={() => setScannerSubTab('gate-events')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             scannerSubTab === 'gate-events'
               ? 'bg-[#0F5A47] text-white shadow-xs'
               : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
@@ -523,7 +523,7 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
         <button
           type="button"
           onClick={() => setScannerSubTab('parent-notifications')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             scannerSubTab === 'parent-notifications'
               ? 'bg-[#0F5A47] text-white shadow-xs'
               : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
@@ -536,7 +536,7 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
         <button
           type="button"
           onClick={() => setScannerSubTab('gate-settings')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             scannerSubTab === 'gate-settings'
               ? 'bg-[#0F5A47] text-white shadow-xs'
               : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
@@ -546,12 +546,12 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
           <span>Gate Settings</span>
         </button>
 
-        <div className="h-5 w-px bg-stone-300 mx-1 hidden sm:block" />
+        <div className="h-5 w-px bg-stone-300 mx-1 shrink-0 hidden sm:block" />
 
         <button
           type="button"
           onClick={() => setScannerSubTab('classroom-scanner')}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 whitespace-nowrap ${
             scannerSubTab === 'classroom-scanner'
               ? 'bg-[#0F5A47] text-white shadow-xs'
               : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'

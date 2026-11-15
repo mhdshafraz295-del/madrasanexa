@@ -212,29 +212,29 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
       {/* 1. SCANNER HEADER & LIVE METRICS BAR */}
       {/* ============================================================== */}
       <div className="bg-white rounded-2xl border border-stone-200/80 p-5 shadow-sm">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
                 LIVE GATE WORKSPACE
               </span>
               <span className="text-xs text-stone-500 font-medium">{currentDate}</span>
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 tracking-tight mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-1">
               Smart Gate Scanner
             </h2>
-            <p className="text-sm text-stone-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
               Automated student movement logging, instant attendance reconciliation & parent email alerts.
             </p>
           </div>
 
           {/* Right Status Panel */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 w-full sm:w-auto">
             {/* Live Clock Display */}
-            <div className="bg-stone-50 border border-stone-200 rounded-xl px-3.5 py-2 text-right">
-              <div className="text-xs text-stone-400 font-medium">STATION TIME</div>
-              <div className="text-lg font-mono font-bold text-slate-800 tracking-wider">
+            <div className="bg-stone-50 border border-stone-200 rounded-xl px-3 sm:px-3.5 py-1.5 sm:py-2 text-right flex-1 sm:flex-initial">
+              <div className="text-[10px] sm:text-xs text-stone-400 font-medium">STATION TIME</div>
+              <div className="text-base sm:text-lg font-mono font-bold text-slate-800 tracking-wider">
                 {currentTime || '--:--:--'}
               </div>
             </div>
@@ -243,13 +243,13 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
             <button
               onClick={() => setIsMuted(!isMuted)}
               title={isMuted ? 'Unmute Audio Beeps' : 'Mute Audio Beeps'}
-              className={`p-2.5 rounded-xl border transition-colors ${
+              className={`p-2 sm:p-2.5 rounded-xl border transition-colors shrink-0 ${
                 isMuted
                   ? 'bg-stone-100 border-stone-200 text-stone-400 hover:text-stone-600'
                   : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
               }`}
             >
-              {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+              {isMuted ? <VolumeX className="w-4 sm:w-5 h-4 sm:w-5" /> : <Volume2 className="w-4 sm:w-5 h-4 sm:h-5" />}
             </button>
           </div>
         </div>
@@ -262,11 +262,11 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
         {/* Left Column: Controls & Input Engine (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
           {/* DIRECTION SELECTOR (ENTRY vs EXIT) */}
-          <div className="bg-white rounded-2xl border border-stone-200/80 p-5 shadow-sm">
+          <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-sm">
             <label className="text-xs font-bold uppercase tracking-wider text-stone-500 block mb-3">
               1. Select Movement Direction
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* ENTRY BUTTON */}
               <button
                 type="button"
@@ -322,13 +322,13 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
           </div>
 
           {/* INPUT ENGINE (USB vs CAMERA) */}
-          <div className="bg-white rounded-2xl border border-stone-200/80 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
               <label className="text-xs font-bold uppercase tracking-wider text-stone-500">
                 2. Card Scanner Input Method
               </label>
               {/* Input Mode Selector */}
-              <div className="inline-flex rounded-lg border border-stone-200 bg-stone-100/80 p-0.5">
+              <div className="inline-flex rounded-lg border border-stone-200 bg-stone-100/80 p-0.5 self-start sm:self-auto">
                 <button
                   type="button"
                   onClick={() => setInputMode('usb')}

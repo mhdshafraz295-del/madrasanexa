@@ -6,6 +6,7 @@ import {
   apiCreateStudent,
   type ClassItem,
   type AcademicSectionItem,
+  type StudentCategory,
 } from '../../services/api';
 import {
   ArrowLeft,
@@ -31,6 +32,7 @@ export default function StudentAddPage() {
 
   const [fullName, setFullName] = useState('');
   const [admissionNo, setAdmissionNo] = useState('');
+  const [category, setCategory] = useState<'' | 'DAY_SCHOLAR' | 'BOARDING'>('');
   const [joinedAt, setJoinedAt] = useState(todayStr);
 
   const [classId, setClassId] = useState<string>('');
@@ -111,6 +113,10 @@ export default function StudentAddPage() {
       setError('Admission number is required.');
       return;
     }
+    if (!category) {
+      setError('Student Category is required. Please select Day Scholar or Boarding.');
+      return;
+    }
     if (!guardianName.trim()) {
       setError('Guardian full name is required.');
       return;
@@ -142,6 +148,7 @@ export default function StudentAddPage() {
       const created = await apiCreateStudent({
         admissionNo: admissionNo.trim(),
         fullName: fullName.trim(),
+        category: category as StudentCategory,
         admissionDate: joinedAt,
         joinedAt,
         classId: classId || null,
@@ -243,6 +250,25 @@ export default function StudentAddPage() {
                 onChange={(e) => setJoinedAt(e.target.value)}
                 className="w-full px-3.5 py-2 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white"
               />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold text-[#0F172A] mb-1">
+                Student Category <span className="text-rose-500">*</span>
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as '' | 'DAY_SCHOLAR' | 'BOARDING')}
+                required
+                className="w-full px-3.5 py-2 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white"
+              >
+                <option value="">-- Select Category --</option>
+                <option value="DAY_SCHOLAR">Day Scholar</option>
+                <option value="BOARDING">Boarding</option>
+              </select>
+              <p className="text-[10px] text-[#7C8A9A] mt-1">
+                Required for Smart Gate Scanner access control (Day Scholar vs. Boarding).
+              </p>
             </div>
           </div>
         </div>

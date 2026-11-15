@@ -154,8 +154,8 @@ export default function DashboardPage() {
               Real-time fee collection performance, student capacity, and subscription status.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex flex-wrap items-center bg-white border border-[#E7E9EE] rounded-xl p-1 shadow-xs">
+          <div className="flex items-center gap-2 max-w-full overflow-hidden">
+            <div className="flex items-center bg-white border border-[#E7E9EE] rounded-xl p-1 shadow-xs overflow-x-auto scrollbar-none max-w-[calc(100vw-80px)] sm:max-w-none">
               {[
                 { id: 'current_month', label: 'This Month' },
                 { id: '3m', label: '3M' },
@@ -166,7 +166,7 @@ export default function DashboardPage() {
                 <button
                   key={opt.id}
                   onClick={() => setRange(opt.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 whitespace-nowrap ${
                     range === opt.id
                       ? 'bg-[#0F172A] text-white shadow-xs'
                       : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1]'

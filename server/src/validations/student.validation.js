@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+export const studentCategoryEnum = z.preprocess(
+  (val) => (val === '' || val === null || val === undefined ? undefined : typeof val === 'string' ? val.trim() : val),
+  z.enum(['DAY_SCHOLAR', 'BOARDING'], {
+    errorMap: () => ({ message: 'Student Category must be either Day Scholar (DAY_SCHOLAR) or Boarding (BOARDING).' }),
+  }).optional()
+);
+
 export const createStudentSchema = z
   .object({
     admissionNo: z
@@ -12,6 +19,7 @@ export const createStudentSchema = z
       .trim()
       .min(2, 'Full name must be at least 2 characters.')
       .max(150, 'Full name must not exceed 150 characters.'),
+    category: studentCategoryEnum,
     academicSectionId: z
       .string()
       .trim()
@@ -121,6 +129,7 @@ export const createStudentSchema = z
     return {
       admissionNo: data.admissionNo,
       fullName: data.fullName,
+      category: data.category || null,
       academicSectionId: data.academicSectionId,
       classId: data.classId,
       guardianName: data.guardianName,
@@ -161,6 +170,12 @@ export const updateStudentSchema = z
       .min(2, 'Full name must be at least 2 characters.')
       .max(150, 'Full name must not exceed 150 characters.')
       .optional(),
+    category: z.preprocess(
+      (val) => (val === undefined ? undefined : val === '' || val === null ? null : typeof val === 'string' ? val.trim() : val),
+      z.enum(['DAY_SCHOLAR', 'BOARDING'], {
+        errorMap: () => ({ message: 'Student Category must be either Day Scholar (DAY_SCHOLAR) or Boarding (BOARDING).' }),
+      }).nullable().optional()
+    ),
     academicSectionId: z
       .string()
       .trim()
@@ -260,6 +275,7 @@ export const updateStudentSchema = z
     return {
       admissionNo: data.admissionNo,
       fullName: data.fullName,
+      category: data.category !== undefined ? (data.category || null) : undefined,
       academicSectionId: data.academicSectionId,
       classId: data.classId,
       guardianName: data.guardianName,

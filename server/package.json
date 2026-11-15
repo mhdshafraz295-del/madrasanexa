@@ -49,6 +49,7 @@
     "test:seed-super-admin": "node tests/seed-super-admin.test.js",
     "test:log-sanitization": "node --import ./tests/setup-test-env.js tests/request-logging-sanitization.test.js",
     "test:trust-proxy": "node --import ./tests/setup-test-env.js tests/trust-proxy-rate-limit.test.js",
+    "test:gate": "node --import ./tests/setup-test-env.js tests/gate-scanner-backend.test.js",
     "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {

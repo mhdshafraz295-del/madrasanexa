@@ -14,7 +14,15 @@ import {
   History,
   Check,
   X,
+  DoorOpen,
+  Mail,
+  Settings,
+  QrCode,
 } from 'lucide-react';
+import { GateScannerWorkspace } from '../gate/GateScannerWorkspace';
+import { GateEventsTab } from '../gate/GateEventsTab';
+import { GateParentNotificationsTab } from '../gate/GateParentNotificationsTab';
+import { GateSettingsTab } from '../gate/GateSettingsTab';
 import {
   apiVerifyScanToken,
   apiIngestScannedAttendance,
@@ -67,6 +75,11 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
   onUpdateDailyStudentStatus,
   onRefreshDailyRoster: _onRefreshDailyRoster,
 }) => {
+  // Active sub-tab within QR & Barcode Scanner
+  const [scannerSubTab, setScannerSubTab] = useState<
+    'gate-scanner' | 'gate-events' | 'parent-notifications' | 'gate-settings' | 'classroom-scanner'
+  >('gate-scanner');
+
   // Input mode: 'usb' or 'camera'
   const [inputMode, setInputMode] = useState<'usb' | 'camera'>('usb');
 
@@ -476,8 +489,91 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Control Banner: Class Context, Input Mode & Toggles */}
-      <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+      {/* Smart Gate Scanner & Attendance Scanner Sub-Navigation Bar */}
+      <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-1.5 shadow-2xs flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => setScannerSubTab('gate-scanner')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            scannerSubTab === 'gate-scanner'
+              ? 'bg-[#0F5A47] text-white shadow-xs'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+          }`}
+        >
+          <DoorOpen className="w-4 h-4" />
+          <span>Gate Scanner</span>
+          <span className="bg-emerald-500/20 text-emerald-100 text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ml-1">
+            Live
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setScannerSubTab('gate-events')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            scannerSubTab === 'gate-events'
+              ? 'bg-[#0F5A47] text-white shadow-xs'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+          }`}
+        >
+          <History className="w-4 h-4" />
+          <span>Gate Events</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setScannerSubTab('parent-notifications')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            scannerSubTab === 'parent-notifications'
+              ? 'bg-[#0F5A47] text-white shadow-xs'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+          }`}
+        >
+          <Mail className="w-4 h-4" />
+          <span>Parent Notifications</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setScannerSubTab('gate-settings')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            scannerSubTab === 'gate-settings'
+              ? 'bg-[#0F5A47] text-white shadow-xs'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+          }`}
+        >
+          <Settings className="w-4 h-4" />
+          <span>Gate Settings</span>
+        </button>
+
+        <div className="h-5 w-px bg-stone-300 mx-1 hidden sm:block" />
+
+        <button
+          type="button"
+          onClick={() => setScannerSubTab('classroom-scanner')}
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            scannerSubTab === 'classroom-scanner'
+              ? 'bg-[#0F5A47] text-white shadow-xs'
+              : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
+          }`}
+        >
+          <QrCode className="w-4 h-4" />
+          <span>Classroom Scanner</span>
+          <span className="text-[10px] text-stone-400 font-normal ml-0.5">Roster Ingest</span>
+        </button>
+      </div>
+
+      {/* Sub-tab view router */}
+      {scannerSubTab === 'gate-scanner' && <GateScannerWorkspace />}
+      {scannerSubTab === 'gate-events' && <GateEventsTab />}
+      {scannerSubTab === 'parent-notifications' && <GateParentNotificationsTab />}
+      {scannerSubTab === 'gate-settings' && <GateSettingsTab />}
+
+      {/* Classroom Scanner Sub-tab (Pre-existing functionality 100% preserved) */}
+      {scannerSubTab === 'classroom-scanner' && (
+        <div className="space-y-6">
+          {/* Control Banner: Class Context, Input Mode & Toggles */}
+          <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         {/* Class and Date Context */}
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
           <div className="flex items-center gap-1.5 sm:gap-2">
@@ -861,6 +957,8 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
               </div>
             </form>
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>

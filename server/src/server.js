@@ -3,6 +3,7 @@ import app from './app.js';
 import { env } from './config/env.js';
 import { initSubscriptionStatusJob, stopSubscriptionStatusJob } from './jobs/subscription-status.job.js';
 import { startNotificationWorker, stopNotificationWorker } from './jobs/notification-worker.job.js';
+import { startGateEmailWorker, stopGateEmailWorker } from './jobs/gate-email-worker.job.js';
 
 const PORT = env.PORT || 5000;
 
@@ -19,6 +20,8 @@ const server = app.listen(PORT, () => {
     initSubscriptionStatusJob();
     // Start automatic notification worker
     startNotificationWorker();
+    // Start gate email outbox worker
+    startGateEmailWorker();
   }
 });
 
@@ -27,6 +30,7 @@ const gracefulShutdown = (signal) => {
   console.log(`\nReceived ${signal}. Shutting down gracefully...`);
   stopSubscriptionStatusJob();
   stopNotificationWorker();
+  stopGateEmailWorker();
   server.close(() => {
     console.log('Http server closed.');
     process.exit(0);

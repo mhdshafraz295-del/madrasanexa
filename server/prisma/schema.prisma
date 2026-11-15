@@ -284,6 +284,7 @@ model User {
   createdFeatureOverrides       MadrasaFeatureOverride[]        @relation("OverrideCreatedBy")
   updatedFeatureOverrides       MadrasaFeatureOverride[]        @relation("OverrideUpdatedBy")
   passwordSetupTokens           PasswordSetupToken[]
+  recordedGateEvents            StudentGateEvent[]              @relation("GateEventRecordedBy")
 
   @@index([madrasaId])
   @@index([role])
@@ -366,6 +367,7 @@ model Madrasa {
   interviewNotifications         InterviewNotification[]
   featureOverrides               MadrasaFeatureOverride[]
   scanTokens                     StudentScanToken[]
+  gateEvents                     StudentGateEvent[]
 
   @@index([status])
   @@map("madrasas")
@@ -522,6 +524,7 @@ model Student {
   notes                 String?                @db.Text
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
+  category              StudentCategory?
 
   // Relations
   madrasa           Madrasa                @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
@@ -538,6 +541,7 @@ model Student {
   followUps         StudentFollowUp[]
   alumniProfile     AlumniProfile?
   scanTokens        StudentScanToken[]
+  gateEvents        StudentGateEvent[]
 
   // Critical: Admission number unique per Madrasa
   @@unique([madrasaId, admissionNo])
@@ -545,6 +549,7 @@ model Student {
   @@unique([id, madrasaId])
   @@index([madrasaId, classId])
   @@index([madrasaId, status])
+  @@index([madrasaId, category])
   @@map("students")
 }
 
@@ -845,6 +850,8 @@ model MadrasaSetting {
   attendanceGracePeriodMinutes Int     @default(15)
   autoAttendanceClosing        Boolean @default(false)
   timetableSlotDurationMinutes Int     @default(45)
+  autoGateAttendanceReconciliation    Boolean @default(false)
+  gateParentEmailNotificationsEnabled Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -2521,4 +2528,60 @@ model PasswordSetupToken {
   @@index([userId])
   @@index([expiresAt])
   @@map("password_setup_tokens")
+}
+
+// ==============================================================================
+// NEW ENUMS & MODELS FOR MNX-P02 SMART GATE SCANNER
+// ==============================================================================
+
+enum StudentCategory {
+  DAY_SCHOLAR
+  BOARDING
+}
+
+enum GateEventType {
+  ENTRY
+  EXIT
+}
+
+enum GateEmailStatus {
+  NOT_APPLICABLE
+  QUEUED
+  PROCESSING
+  SENT
+  FAILED
+  SKIPPED_NO_RECIPIENT
+}
+
+model StudentGateEvent {
+  id                  String          @id @default(uuid())
+  madrasaId           String          @db.VarChar(191)
+  studentId           String          @db.VarChar(191)
+  recordedByUserId    String          @db.VarChar(191)
+  eventType           GateEventType
+  category            StudentCategory
+  scannedAt           DateTime        @default(now())
+  idempotencyKey      String?         @db.VarChar(36)
+
+  emailStatus         GateEmailStatus @default(NOT_APPLICABLE)
+  processingStartedAt DateTime?
+  attemptCount        Int             @default(0)
+  nextAttemptAt       DateTime?
+  sentAt              DateTime?
+  emailError          String?         @db.VarChar(500)
+  emailResponse       String?         @db.Text
+  emailSkipReason     String?         @db.VarChar(100)
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  madrasa        Madrasa @relation(fields: [madrasaId], references: [id], onDelete: Restrict)
+  student        Student @relation(fields: [studentId, madrasaId], references: [id, madrasaId], onDelete: Restrict)
+  recordedByUser User    @relation("GateEventRecordedBy", fields: [recordedByUserId], references: [id], onDelete: Restrict)
+
+  @@unique([madrasaId, idempotencyKey])
+  @@index([madrasaId, studentId, createdAt(sort: Desc)])
+  @@index([emailStatus, nextAttemptAt])
+  @@index([emailStatus, processingStartedAt])
+  @@map("student_gate_events")
 }

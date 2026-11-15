@@ -15,6 +15,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Printer,
+  Tags,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
@@ -28,6 +29,7 @@ import {
 } from '../../services/student-token.service';
 import { IdCardPreviewModal } from './IdCardPreviewModal';
 import { BatchPrintStudioModal } from './BatchPrintStudioModal';
+import { LabelPrintStudioModal } from './LabelPrintStudioModal';
 
 export interface IdCardStudioTabProps {
   classes: Array<{ id: string; name: string; code?: string | null }>;
@@ -74,6 +76,11 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
   const [batchPrintCards, setBatchPrintCards] = useState<CardPrintData[]>([]);
   const [isBatchPrintModalOpen, setIsBatchPrintModalOpen] = useState(false);
   const [isLoadingBatchPrint, setIsLoadingBatchPrint] = useState(false);
+
+  // Student QR & Barcode Label Studio States (Ephemeral memory)
+  const [labelCards, setLabelCards] = useState<CardPrintData[]>([]);
+  const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
+  const [isLoadingLabelPrint, setIsLoadingLabelPrint] = useState(false);
 
   // Sync initial class selection
   useEffect(() => {
@@ -222,6 +229,37 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
       setErrorMessage(err.response?.data?.message || 'Failed to load batch card print data.');
     } finally {
       setIsLoadingBatchPrint(false);
+    }
+  };
+
+  // Launch Student QR & Barcode Label Studio
+  const handleOpenLabelStudio = async (studentId?: string) => {
+    const idsToFetch = studentId ? [studentId] : selectedStudentIds;
+    if (idsToFetch.length === 0) {
+      setErrorMessage('Please select at least one student for label printing.');
+      return;
+    }
+
+    try {
+      setIsLoadingLabelPrint(true);
+      setErrorMessage(null);
+
+      const res = await apiGetBatchCardPrintData({
+        studentIds: idsToFetch,
+      });
+
+      if (!res.cards || res.cards.length === 0) {
+        setErrorMessage('None of the selected students have active card credentials issued yet. Generate cards first.');
+        return;
+      }
+
+      setLabelCards(res.cards);
+      setIsLabelModalOpen(true);
+    } catch (err: any) {
+      console.error('Failed to load credential label print data', err);
+      setErrorMessage(err.response?.data?.message || 'Failed to load credential label print data.');
+    } finally {
+      setIsLoadingLabelPrint(false);
     }
   };
 
@@ -424,6 +462,21 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
 
           <button
             type="button"
+            onClick={() => handleOpenLabelStudio()}
+            disabled={isLoadingLabelPrint || selectedStudentIds.length === 0}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold border border-stone-200 shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-40"
+            title={selectedStudentIds.length === 0 ? 'Select students to print labels' : 'Print individual QR & Barcode labels'}
+          >
+            {isLoadingLabelPrint ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-[#0F5A47]" />
+            ) : (
+              <Tags className="w-3.5 h-3.5 text-[#0F5A47]" />
+            )}
+            <span>Print Labels{selectedStudentIds.length > 0 ? ` (${selectedStudentIds.length})` : ''}</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleBatchGenerate}
             disabled={isBatchGenerating}
             className="flex items-center gap-1.5 px-4 py-2 bg-[#0F5A47] hover:bg-[#0c4738] text-white rounded-xl text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 disabled:opacity-50"
@@ -448,13 +501,27 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={handleClearSelection}
               className="px-3 py-1.5 rounded-lg border border-emerald-200 bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-medium cursor-pointer"
             >
               Clear Selection
+            </button>
+
+            <button
+              type="button"
+              onClick={() => handleOpenLabelStudio()}
+              disabled={isLoadingLabelPrint}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-emerald-300 bg-white text-[#0F5A47] hover:bg-emerald-50 font-semibold text-xs shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+            >
+              {isLoadingLabelPrint ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Tags className="w-3.5 h-3.5 text-[#0F5A47]" />
+              )}
+              <span>Print Labels ({selectedStudentIds.length})</span>
             </button>
 
             <button
@@ -604,20 +671,33 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {item.hasActiveToken ? (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenPreview(item)}
-                              disabled={isLoadingPreview}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50/40 text-xs font-semibold shadow-xs transition-all cursor-pointer"
-                              title="View and print individual card"
-                            >
-                              {isLoadingPreview ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                              ) : (
-                                <Eye className="w-3.5 h-3.5 text-[#0F5A47]" />
-                              )}
-                              <span>View / Print</span>
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => handleOpenLabelStudio(item.studentId)}
+                                disabled={isLoadingLabelPrint}
+                                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50/40 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                                title="Print student QR & barcode label"
+                              >
+                                <Tags className="w-3.5 h-3.5 text-[#0F5A47]" />
+                                <span className="hidden sm:inline">Label</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleOpenPreview(item)}
+                                disabled={isLoadingPreview}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 hover:text-emerald-800 hover:border-emerald-300 hover:bg-emerald-50/40 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+                                title="View and print individual card"
+                              >
+                                {isLoadingPreview ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Eye className="w-3.5 h-3.5 text-[#0F5A47]" />
+                                )}
+                                <span>View / Print</span>
+                              </button>
+                            </>
                           ) : (
                             <button
                               type="button"
@@ -707,6 +787,21 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
           academicYear={academicYear}
           madrasaPhone={null}
           madrasaEmail={null}
+        />
+      )}
+
+      {/* Student QR & Barcode Label Studio Modal */}
+      {isLabelModalOpen && (
+        <LabelPrintStudioModal
+          isOpen={isLabelModalOpen}
+          onClose={() => {
+            setIsLabelModalOpen(false);
+            setLabelCards([]); // Ephemeral cleanup of raw tokens!
+          }}
+          cards={labelCards}
+          madrasaName={madrasaName}
+          madrasaCode={madrasaCode}
+          academicYear={academicYear}
         />
       )}
     </div>

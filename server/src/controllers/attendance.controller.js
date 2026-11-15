@@ -8,6 +8,7 @@ import {
   verifyScanTokenSchema,
   ingestScannedAttendanceSchema,
   verifyAdmissionBarcodeSchema,
+  ingestAdmissionBarcodeSchema,
 } from '../validations/attendance.validation.js';
 import { logTenantActivity } from '../services/tenant.service.js';
 
@@ -119,6 +120,37 @@ export async function verifyAdmissionBarcode(req, res, next) {
     res.json({
       success: true,
       message: 'Student barcode verified successfully via 1D fallback.',
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function ingestAdmissionBarcode(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const userId = req.auth?.userId || req.user?.id;
+    const validated = ingestAdmissionBarcodeSchema.parse(req.body);
+    const data = await attendanceService.ingestAdmissionBarcodeAttendanceRecord({
+      madrasaId,
+      userId,
+      admissionNo: validated.admissionNo,
+      classId: validated.classId,
+      date: validated.date,
+      academicYear: validated.academicYear,
+      status: validated.status,
+      overwrite: validated.overwrite,
+      reason: validated.reason,
+    });
+
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    res.json({
+      success: true,
+      message: data.message,
       data,
     });
   } catch (error) {

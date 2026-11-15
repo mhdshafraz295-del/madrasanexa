@@ -34,6 +34,7 @@ import {
 import {
   verifyAdmissionBarcodeForAttendance,
   verifyScanTokenForAttendance,
+  ingestAdmissionBarcodeAttendanceRecord,
 } from '../src/services/attendance.service.js';
 import {
   issueStudentToken,
@@ -326,6 +327,11 @@ function createHermeticPrisma() {
 
     activityLog: {
       create: async ({ data }) => {
+        if (data.details !== undefined) {
+          const err = new Error('Unknown argument `details` on model ActivityLog');
+          err.name = 'PrismaClientValidationError';
+          throw err;
+        }
         const entry = { id: `log_${idCounter++}`, ...data, createdAt: new Date() };
         activityLogs.push(entry);
         return entry;
@@ -359,6 +365,17 @@ function createHermeticPrisma() {
         return attendanceRecords.find(
           (r) => r.sessionId === where.sessionId_studentId.sessionId && r.studentId === where.sessionId_studentId.studentId
         ) || null;
+      },
+      create: async ({ data }) => {
+        const created = { id: `rec_${idCounter++}`, ...data, createdAt: new Date() };
+        attendanceRecords.push(created);
+        return { ...created };
+      },
+      update: async ({ where, data }) => {
+        const idx = attendanceRecords.findIndex((r) => r.id === where.id);
+        if (idx === -1) throw new Error('Record not found');
+        attendanceRecords[idx] = { ...attendanceRecords[idx], ...data, updatedAt: new Date() };
+        return { ...attendanceRecords[idx] };
       },
       upsert: async ({ where, create, update }) => {
         let found = attendanceRecords.find(
@@ -712,8 +729,8 @@ async function runAllTests() {
     assert(log.action === 'ATTENDANCE_VERIFY_1D_BARCODE_FALLBACK', 'Audit log action matches fallback verify');
     assert(log.entityType === 'Student', 'Audit log entityType is Student');
     assert(log.entityId === 'stud_101', 'Audit log entityId is student ID');
-    assert(log.details.admissionNo === 'ADM-001', 'Audit log records admission number');
-    assert(log.details.verificationMethod === 'VERIFIED_1D_BARCODE_FALLBACK', 'Audit log records method');
+    assert(log.metadata.admissionNo === 'ADM-001', 'Audit log records admission number');
+    assert(log.metadata.verificationMethod === 'VERIFIED_1D_BARCODE_FALLBACK', 'Audit log records method');
   }
 
   // --- Suite 9: Duplicate Code128 Verification & Overwrite Protection ---
@@ -888,6 +905,128 @@ async function runAllTests() {
   console.log('\n--- Suite 12: PDF Card Sheet Renderer ---');
   {
     assert(typeof renderCardSheetPdf === 'function', 'renderCardSheetPdf is exported from pdf-report.service.js');
+  }
+
+  // --- Suite 13: 1D Barcode Automatic Attendance Ingestion ---
+  console.log('\n--- Suite 13: 1D Barcode Automatic Attendance Ingestion ---');
+  {
+    const prisma = createHermeticPrisma();
+
+    // 1. Initial 1D barcode auto-ingestion creates session and record
+    const ingestRes = await ingestAdmissionBarcodeAttendanceRecord({
+      madrasaId: 'mda_tenant_A',
+      userId: 'usr_1',
+      admissionNo: 'ADM-001',
+      classId: 'cls_1',
+      date: '2026-11-15',
+      academicYear: '2026-2027',
+      status: 'PRESENT',
+      prismaClient: prisma,
+    });
+
+    assert(ingestRes.recorded === true, '1D barcode ingestion recorded successfully');
+    assert(ingestRes.duplicateScan === false, 'Fresh 1D barcode scan is not flagged duplicate');
+    assert(ingestRes.status === 'PRESENT', 'Status is marked PRESENT');
+    assert(prisma._attendanceSessions.length === 1, 'Exactly one AttendanceSession created');
+    assert(prisma._attendanceRecords.length === 1, 'Exactly one AttendanceRecord created');
+    assert(prisma._attendanceRecords[0].status === 'PRESENT', 'Record status is PRESENT');
+
+    // 2. Duplicate 1D barcode scan without overwrite is rejected
+    const dupRes = await ingestAdmissionBarcodeAttendanceRecord({
+      madrasaId: 'mda_tenant_A',
+      userId: 'usr_1',
+      admissionNo: 'ADM-001',
+      classId: 'cls_1',
+      date: '2026-11-15',
+      academicYear: '2026-2027',
+      status: 'PRESENT',
+      overwrite: false,
+      prismaClient: prisma,
+    });
+
+    assert(dupRes.recorded === false, 'Duplicate 1D barcode scan is NOT recorded');
+    assert(dupRes.duplicateScan === true, 'Duplicate scan flagged');
+    assert(dupRes.alreadyMarked === true, 'Already marked flagged');
+    assert(prisma._attendanceRecords.length === 1, 'Database record count unchanged after duplicate scan');
+
+    // 3. Overwrite with valid reason succeeds
+    const overwriteRes = await ingestAdmissionBarcodeAttendanceRecord({
+      madrasaId: 'mda_tenant_A',
+      userId: 'usr_1',
+      admissionNo: 'ADM-001',
+      classId: 'cls_1',
+      date: '2026-11-15',
+      academicYear: '2026-2027',
+      status: 'ABSENT',
+      overwrite: true,
+      reason: 'Student left early with permission',
+      prismaClient: prisma,
+    });
+
+    assert(overwriteRes.recorded === true, '1D barcode overwrite recorded successfully');
+    assert(overwriteRes.overwritten === true, 'Flagged as overwritten');
+    assert(overwriteRes.status === 'ABSENT', 'Record status updated to ABSENT');
+    assert(prisma._attendanceRecords.length === 1, 'Record count remains 1 after overwrite');
+    assert(prisma._attendanceRecords[0].status === 'ABSENT', 'Database record updated to ABSENT');
+
+    // 4. Overwrite without reason is rejected
+    await assertThrowsAsync(
+      async () => {
+        await ingestAdmissionBarcodeAttendanceRecord({
+          madrasaId: 'mda_tenant_A',
+          userId: 'usr_1',
+          admissionNo: 'ADM-001',
+          classId: 'cls_1',
+          date: '2026-11-15',
+          academicYear: '2026-2027',
+          status: 'PRESENT',
+          overwrite: true,
+          reason: '',
+          prismaClient: prisma,
+        });
+      },
+      BadRequestError,
+      /mandatory reason/,
+      '1D barcode overwrite rejects empty reason'
+    );
+
+    // 5. Inactive student is rejected
+    await assertThrowsAsync(
+      async () => {
+        await ingestAdmissionBarcodeAttendanceRecord({
+          madrasaId: 'mda_tenant_A',
+          userId: 'usr_1',
+          admissionNo: 'ADM-004', // inactive student
+          classId: 'cls_1',
+          date: '2026-11-15',
+          academicYear: '2026-2027',
+          status: 'PRESENT',
+          prismaClient: prisma,
+        });
+      },
+      BadRequestError,
+      /Attendance can only be recorded for ACTIVE students/,
+      '1D barcode ingestion rejects inactive student'
+    );
+
+    // 6. Cross-tenant ingestion is rejected
+    await assertThrowsAsync(
+      async () => {
+        await ingestAdmissionBarcodeAttendanceRecord({
+          madrasaId: 'mda_tenant_A',
+          userId: 'usr_1',
+          admissionNo: 'ADM-B-01', // Tenant B student
+          classId: 'cls_1',
+          date: '2026-11-15',
+          academicYear: '2026-2027',
+          status: 'PRESENT',
+          prismaClient: prisma,
+        });
+      },
+      NotFoundError,
+      /not found/,
+      'Cross-tenant 1D barcode ingestion rejected with NotFoundError'
+    );
   }
 
   console.log('\n================================================================');

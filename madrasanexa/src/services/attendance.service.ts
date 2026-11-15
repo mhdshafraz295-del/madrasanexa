@@ -1,4 +1,4 @@
-﻿import { apiClient } from './api';
+import { apiClient } from './api';
 import type { ApiResponse } from './api';
 
 export type AttendanceRecordStatus = 'PRESENT' | 'ABSENT' | 'NOT_MARKED';
@@ -385,6 +385,25 @@ export async function apiVerifyAdmissionBarcode(payload: {
 }): Promise<BarcodeAdmissionVerificationResult> {
   const response = await apiClient.post<ApiResponse<BarcodeAdmissionVerificationResult>>(
     '/madrasa-admin/attendance/admission-verify',
+    payload
+  );
+  return response.data.data;
+}
+
+/**
+ * Ingests a 1D Code128 admission barcode and records attendance in the database.
+ */
+export async function apiIngestAdmissionBarcodeAttendance(payload: {
+  admissionNo: string;
+  classId: string;
+  date: string;
+  academicYear: string;
+  status?: 'PRESENT' | 'ABSENT';
+  overwrite?: boolean;
+  reason?: string;
+}): Promise<ScanIngestionResult> {
+  const response = await apiClient.post<ApiResponse<ScanIngestionResult>>(
+    '/madrasa-admin/attendance/admission-ingest',
     payload
   );
   return response.data.data;

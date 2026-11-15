@@ -19,6 +19,7 @@ import {
   apiVerifyScanToken,
   apiIngestScannedAttendance,
   apiVerifyAdmissionBarcode,
+  apiIngestAdmissionBarcodeAttendance,
   type ScanVerificationResult,
   type ScanIngestionResult,
   type BarcodeAdmissionVerificationResult,
@@ -229,32 +230,82 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
             academicYear: selectedAcademicYear || undefined,
           });
 
-          playScannerFeedback('warning', !audioFeedback);
+          // Check if student is already marked on this date
+          if (barcodeRes.alreadyMarked) {
+            playScannerFeedback('warning', !audioFeedback);
 
-          setCurrentVerification({
-            classification,
-            barcodeResult: barcodeRes,
-          });
+            setCurrentVerification({
+              classification,
+              barcodeResult: barcodeRes,
+            });
 
-          // Update local daily roster if not duplicate
-          if (!barcodeRes.alreadyMarked) {
-            onUpdateDailyStudentStatus(barcodeRes.student.id, 'PRESENT');
+            // Log duplicate scan
+            const logItem: ScanEventLogItem = {
+              id: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+              timestamp: new Date().toLocaleTimeString(),
+              studentId: barcodeRes.student.id,
+              admissionNo: barcodeRes.student.admissionNo,
+              fullName: barcodeRes.student.fullName,
+              method: 'ADMISSION_BARCODE',
+              securityTier: 'TIER_2_FALLBACK_1D',
+              status: 'DUPLICATE',
+              message: `Already marked ${barcodeRes.existingStatus} for ${selectedDate}`,
+            };
+            setScanLogs((prev) => [logItem, ...prev.slice(0, 49)]);
+
+            // Setup overwrite option
+            setOverwriteTarget({
+              token: classification.cleaned,
+              admissionNo: barcodeRes.student.admissionNo,
+              studentName: barcodeRes.student.fullName,
+              studentId: barcodeRes.student.id,
+              isQr: false,
+            });
+            return;
           }
 
-          const logItem: ScanEventLogItem = {
-            id: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-            timestamp: new Date().toLocaleTimeString(),
-            studentId: barcodeRes.student.id,
-            admissionNo: barcodeRes.student.admissionNo,
-            fullName: barcodeRes.student.fullName,
-            method: 'ADMISSION_BARCODE',
-            securityTier: 'TIER_2_FALLBACK_1D',
-            status: barcodeRes.alreadyMarked ? 'DUPLICATE' : 'PRESENT',
-            message: barcodeRes.alreadyMarked
-              ? `1D Barcode verified (Already marked ${barcodeRes.existingStatus})`
-              : `1D Barcode verified (Tier 2 Fallback - Not persisted to DB)`,
-          };
-          setScanLogs((prev) => [logItem, ...prev.slice(0, 49)]);
+          // If autoIngest is enabled and student is not yet marked, record attendance directly to database
+          if (autoIngest) {
+            const ingestRes = await apiIngestAdmissionBarcodeAttendance({
+              admissionNo: classification.cleaned,
+              classId: selectedClassId,
+              date: selectedDate,
+              academicYear: selectedAcademicYear,
+              status: 'PRESENT',
+            });
+
+            playScannerFeedback('success', !audioFeedback);
+
+            setCurrentVerification({
+              classification,
+              barcodeResult: barcodeRes,
+              ingestionResult: ingestRes,
+            });
+
+            // Update local daily roster
+            onUpdateDailyStudentStatus(barcodeRes.student.id, 'PRESENT');
+
+            // Log successful attendance ingestion
+            const logItem: ScanEventLogItem = {
+              id: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+              timestamp: new Date().toLocaleTimeString(),
+              studentId: barcodeRes.student.id,
+              admissionNo: barcodeRes.student.admissionNo,
+              fullName: barcodeRes.student.fullName,
+              method: 'ADMISSION_BARCODE',
+              securityTier: 'TIER_2_FALLBACK_1D',
+              status: 'PRESENT',
+              message: `Marked PRESENT via 1D Barcode`,
+            };
+            setScanLogs((prev) => [logItem, ...prev.slice(0, 49)]);
+          } else {
+            // Manual confirmation mode
+            playScannerFeedback('warning', !audioFeedback);
+            setCurrentVerification({
+              classification,
+              barcodeResult: barcodeRes,
+            });
+          }
         }
       } catch (err: any) {
         console.error('Scan verification error:', err);
@@ -297,35 +348,47 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
 
   // Manual Attendance Ingest Action (Used when autoIngest is turned off)
   const handleConfirmIngest = async (status: 'PRESENT' | 'ABSENT') => {
-    if (!currentVerification?.verificationResult) return;
-    const token = currentVerification.classification.cleaned;
+    const isBarcode = Boolean(currentVerification?.barcodeResult);
+    const student = currentVerification?.verificationResult?.student || currentVerification?.barcodeResult?.student;
+    if (!student) return;
 
     try {
       setIsProcessing(true);
-      const ingestRes = await apiIngestScannedAttendance({
-        token,
-        classId: selectedClassId,
-        date: selectedDate,
-        academicYear: selectedAcademicYear,
-        status,
-      });
+      let ingestRes: ScanIngestionResult;
+      if (isBarcode) {
+        ingestRes = await apiIngestAdmissionBarcodeAttendance({
+          admissionNo: currentVerification!.classification.cleaned,
+          classId: selectedClassId,
+          date: selectedDate,
+          academicYear: selectedAcademicYear,
+          status,
+        });
+      } else {
+        ingestRes = await apiIngestScannedAttendance({
+          token: currentVerification!.classification.cleaned,
+          classId: selectedClassId,
+          date: selectedDate,
+          academicYear: selectedAcademicYear,
+          status,
+        });
+      }
 
       playScannerFeedback('success', !audioFeedback);
 
       setCurrentVerification((prev) => (prev ? { ...prev, ingestionResult: ingestRes } : null));
-      onUpdateDailyStudentStatus(currentVerification.verificationResult.student.id, status);
+      onUpdateDailyStudentStatus(student.id, status);
 
       const logItem: ScanEventLogItem = {
         id: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         timestamp: new Date().toLocaleTimeString(),
-        studentId: currentVerification.verificationResult.student.id,
-        admissionNo: currentVerification.verificationResult.student.admissionNo,
-        fullName: currentVerification.verificationResult.student.fullName,
-        method: 'QR_TOKEN',
-        securityTier: 'TIER_1_SECURE_QR',
+        studentId: student.id,
+        admissionNo: student.admissionNo,
+        fullName: student.fullName,
+        method: isBarcode ? 'ADMISSION_BARCODE' : 'QR_TOKEN',
+        securityTier: isBarcode ? 'TIER_2_FALLBACK_1D' : 'TIER_1_SECURE_QR',
         status,
-        message: `Manually confirmed as ${status}`,
-        tokenHint: currentVerification.verificationResult.tokenHint,
+        message: `Manually confirmed as ${status} via ${isBarcode ? '1D Barcode' : 'Cryptographic QR'}`,
+        tokenHint: currentVerification?.verificationResult?.tokenHint,
       };
       setScanLogs((prev) => [logItem, ...prev.slice(0, 49)]);
     } catch (err: any) {
@@ -369,7 +432,33 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
           method: 'QR_TOKEN',
           securityTier: 'TIER_1_SECURE_QR',
           status: 'PRESENT',
-          message: `Overwritten to PRESENT (Reason: ${overwriteReason.trim()})`,
+          message: `Overwritten to PRESENT via Cryptographic QR (Reason: ${overwriteReason.trim()})`,
+        };
+        setScanLogs((prev) => [logItem, ...prev.slice(0, 49)]);
+      } else if (!overwriteTarget.isQr && (overwriteTarget.admissionNo || overwriteTarget.token)) {
+        await apiIngestAdmissionBarcodeAttendance({
+          admissionNo: overwriteTarget.admissionNo || overwriteTarget.token || '',
+          classId: selectedClassId,
+          date: selectedDate,
+          academicYear: selectedAcademicYear,
+          status: 'PRESENT',
+          overwrite: true,
+          reason: overwriteReason.trim(),
+        });
+
+        playScannerFeedback('success', !audioFeedback);
+        onUpdateDailyStudentStatus(overwriteTarget.studentId, 'PRESENT');
+
+        const logItem: ScanEventLogItem = {
+          id: `${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+          timestamp: new Date().toLocaleTimeString(),
+          studentId: overwriteTarget.studentId,
+          admissionNo: overwriteTarget.admissionNo || overwriteTarget.token || '',
+          fullName: overwriteTarget.studentName,
+          method: 'ADMISSION_BARCODE',
+          securityTier: 'TIER_2_FALLBACK_1D',
+          status: 'PRESENT',
+          message: `Overwritten to PRESENT via 1D Barcode (Reason: ${overwriteReason.trim()})`,
         };
         setScanLogs((prev) => [logItem, ...prev.slice(0, 49)]);
       }
@@ -388,15 +477,15 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Control Banner: Class Context, Input Mode & Toggles */}
-      <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-3 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
         {/* Class and Date Context */}
-        <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-stone-500 font-medium">Class:</span>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="text-stone-500 font-medium text-xs">Class:</span>
             <select
               value={selectedClassId}
               onChange={(e) => onSelectClassId(e.target.value)}
-              className="bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 text-stone-800 font-semibold shadow-2xs outline-none cursor-pointer"
+              className="bg-white border border-stone-300 rounded-lg px-2 sm:px-2.5 py-1.5 text-stone-800 font-semibold shadow-2xs outline-none cursor-pointer text-xs sm:text-sm max-w-[140px] sm:max-w-none truncate"
             >
               {classes.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -406,76 +495,78 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
             </select>
           </div>
 
-          <div className="flex items-center gap-1.5 text-stone-600 bg-white border border-stone-200 px-2.5 py-1.5 rounded-lg shadow-2xs">
-            <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="font-semibold">{selectedDate}</span>
+          <div className="flex items-center gap-1.5 text-stone-600 bg-white border border-stone-200 px-2 sm:px-2.5 py-1.5 rounded-lg shadow-2xs text-xs">
+            <Calendar className="w-3.5 h-3.5 text-[#0F5A47] shrink-0" />
+            <span className="font-semibold truncate">{selectedDate}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-stone-600 bg-white border border-stone-200 px-2.5 py-1.5 rounded-lg shadow-2xs">
-            <Layers className="w-3.5 h-3.5 text-stone-500" />
-            <span>{selectedAcademicYear}</span>
+          <div className="flex items-center gap-1.5 text-stone-600 bg-white border border-stone-200 px-2 sm:px-2.5 py-1.5 rounded-lg shadow-2xs text-xs">
+            <Layers className="w-3.5 h-3.5 text-stone-500 shrink-0" />
+            <span className="truncate">{selectedAcademicYear}</span>
           </div>
         </div>
 
         {/* Input Mode Selector & Audio Toggle */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-stone-200/60 justify-between sm:justify-start">
           {/* Input Mode Tabs */}
           <div className="flex bg-stone-200/80 p-0.5 rounded-xl text-xs font-semibold">
             <button
               type="button"
               onClick={() => setInputMode('usb')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
                 inputMode === 'usb'
-                  ? 'bg-white text-emerald-800 shadow-xs'
+                  ? 'bg-white text-[#0F5A47] shadow-xs'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               <ScanLine className="w-3.5 h-3.5" />
-              USB Scanner
+              <span>USB</span>
             </button>
 
             <button
               type="button"
               onClick={() => setInputMode('camera')}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
                 inputMode === 'camera'
-                  ? 'bg-white text-emerald-800 shadow-xs'
+                  ? 'bg-white text-[#0F5A47] shadow-xs'
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               <Camera className="w-3.5 h-3.5" />
-              Live Camera
+              <span>Camera</span>
             </button>
           </div>
 
-          {/* Auto-Ingest Toggle */}
-          <button
-            type="button"
-            onClick={() => setAutoIngest(!autoIngest)}
-            className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
-              autoIngest
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-            }`}
-            title="Automatically mark student present upon valid cryptographic QR scan"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Auto-Mark: {autoIngest ? 'ON' : 'OFF'}</span>
-          </button>
+          <div className="flex items-center gap-1.5">
+            {/* Auto-Ingest Toggle */}
+            <button
+              type="button"
+              onClick={() => setAutoIngest(!autoIngest)}
+              className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                autoIngest
+                  ? 'bg-emerald-50 border-emerald-200 text-[#0F5A47]'
+                  : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
+              }`}
+              title="Automatically mark student present upon valid cryptographic QR scan"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Auto: {autoIngest ? 'ON' : 'OFF'}</span>
+            </button>
 
-          {/* Audio Feedback Toggle */}
-          <button
-            type="button"
-            onClick={() => setAudioFeedback(!audioFeedback)}
-            className={`p-1.5 rounded-xl border transition-colors cursor-pointer ${
-              audioFeedback
-                ? 'bg-stone-100 border-stone-300 text-stone-700'
-                : 'bg-stone-50 border-stone-200 text-stone-400'
-            }`}
-            title={audioFeedback ? 'Sound Enabled' : 'Sound Muted'}
-          >
-            {audioFeedback ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-          </button>
+            {/* Audio Feedback Toggle */}
+            <button
+              type="button"
+              onClick={() => setAudioFeedback(!audioFeedback)}
+              className={`p-1.5 rounded-xl border transition-colors cursor-pointer ${
+                audioFeedback
+                  ? 'bg-stone-100 border-stone-300 text-stone-700'
+                  : 'bg-stone-50 border-stone-200 text-stone-400'
+              }`}
+              title={audioFeedback ? 'Sound Enabled' : 'Sound Muted'}
+            >
+              {audioFeedback ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </div>
 

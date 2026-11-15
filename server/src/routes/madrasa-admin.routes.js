@@ -160,6 +160,7 @@ import {
   verifyScanToken,
   ingestScannedAttendance,
   verifyAdmissionBarcode,
+  ingestAdmissionBarcode,
   getAttendanceHistory,
   getMonthlySummary,
   getStudentAttendance,
@@ -504,6 +505,7 @@ router.put('/attendance', saveDailyAttendance);
 router.post('/attendance/scan-verify', verifyScanToken);
 router.post('/attendance/scan-ingest', ingestScannedAttendance);
 router.post('/attendance/admission-verify', verifyAdmissionBarcode);
+router.post('/attendance/admission-ingest', ingestAdmissionBarcode);
 router.get('/attendance/history', getAttendanceHistory);
 router.get('/attendance/monthly-summary', getMonthlySummary);
 router.get('/attendance/students/:studentId', getStudentAttendance);

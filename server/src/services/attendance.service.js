@@ -1579,7 +1579,7 @@ export async function verifyAdmissionBarcodeForAttendance({
         action: 'ATTENDANCE_VERIFY_1D_BARCODE_FALLBACK',
         entityType: 'Student',
         entityId: student.id,
-        details: {
+        metadata: {
           admissionNo: student.admissionNo,
           studentId: student.id,
           classId: classId || student.classId,
@@ -1619,4 +1619,268 @@ export async function verifyAdmissionBarcodeForAttendance({
   };
 }
 
+/**
+ * Ingests a 1D Code128 admission barcode and records attendance atomically.
+ * Resolves tenant, class, student, session, and duplicate checks within a transaction.
+ */
+export async function ingestAdmissionBarcodeAttendanceRecord({
+  madrasaId,
+  userId,
+  admissionNo,
+  classId,
+  date: dateStr,
+  academicYear,
+  status = 'PRESENT',
+  overwrite = false,
+  reason = null,
+  prismaClient = prisma,
+}) {
+  if (overwrite) {
+    if (!reason || typeof reason !== 'string' || reason.trim().length < 3) {
+      throw new BadRequestError(
+        'A mandatory reason (minimum 3 characters) is required to overwrite an existing attendance record.'
+      );
+    }
+  }
 
+  const attendanceDate = parseDateOnly(dateStr);
+  let verifiedStudent = null;
+
+  try {
+    const result = await prismaClient.$transaction(async (tx) => {
+      // 1. Transactional student lookup with tenant isolation
+      const student = await tx.student.findFirst({
+        where: {
+          admissionNo: admissionNo.trim(),
+          madrasaId,
+        },
+        include: {
+          class: { select: { id: true, name: true } },
+        },
+      });
+
+      if (!student) {
+        throw new NotFoundError(`Student with admission number "${admissionNo.trim()}" not found.`);
+      }
+
+      verifiedStudent = student;
+
+      // 2. Active status check
+      if (student.status !== 'ACTIVE') {
+        throw new BadRequestError(
+          `Student (${student.admissionNo}) is ${student.status}. Attendance can only be recorded for ACTIVE students.`
+        );
+      }
+
+      // 3. Class match verification
+      if (classId && student.classId !== classId.trim()) {
+        throw new BadRequestError(
+          `Class mismatch: Student (${student.admissionNo}) belongs to class "${student.class?.name || student.classId}", not the selected class.`
+        );
+      }
+
+      // 4. Admission date eligibility
+      if (student.admissionDate) {
+        const endOfDayUtc = new Date(Date.UTC(
+          attendanceDate.getUTCFullYear(),
+          attendanceDate.getUTCMonth(),
+          attendanceDate.getUTCDate(),
+          23, 59, 59, 999
+        ));
+        if (new Date(student.admissionDate) > endOfDayUtc) {
+          throw new BadRequestError(
+            `Student (${student.admissionNo}) was admitted on ${formatDateOnly(student.admissionDate)}, after the attendance date.`
+          );
+        }
+      }
+
+      // 5. Upsert attendance session atomically
+      const session = await tx.attendanceSession.upsert({
+        where: {
+          madrasaId_classId_attendanceDate: {
+            madrasaId,
+            classId: classId.trim(),
+            attendanceDate,
+          },
+        },
+        update: {},
+        create: {
+          madrasaId,
+          classId: classId.trim(),
+          attendanceDate,
+          academicYear: academicYear ? academicYear.trim() : '2026-2027',
+          createdById: userId || null,
+        },
+      });
+
+      // 6. Validate session's academic year
+      if (academicYear && typeof academicYear === 'string' && session.academicYear !== academicYear.trim()) {
+        throw new ConflictError(
+          `Academic year mismatch: Existing attendance session for this date belongs to academic year "${session.academicYear}", but request specified "${academicYear.trim()}".`
+        );
+      }
+
+      // 7. Check for existing attendance record
+      const existingRecord = await tx.attendanceRecord.findUnique({
+        where: {
+          sessionId_studentId: {
+            sessionId: session.id,
+            studentId: student.id,
+          },
+        },
+      });
+
+      if (existingRecord) {
+        const previousStatus = existingRecord.status;
+        if (!overwrite) {
+          return {
+            recorded: false,
+            duplicateScan: true,
+            alreadyMarked: true,
+            status: existingRecord.status,
+            message: `Student (${student.admissionNo}) is already marked ${existingRecord.status}. Silent overwrite prohibited.`,
+            student: {
+              id: student.id,
+              admissionNo: student.admissionNo,
+              fullName: student.fullName,
+              classId: student.classId,
+              className: student.class?.name || null,
+            },
+          };
+        }
+
+        // Overwrite existing record
+        const updated = await tx.attendanceRecord.update({
+          where: { id: existingRecord.id },
+          data: { status },
+        });
+
+        await logTenantActivity(
+          {
+            madrasaId,
+            userId,
+            action: 'ATTENDANCE_RECORD_OVERWRITTEN',
+            entityType: 'AttendanceRecord',
+            entityId: existingRecord.id,
+            metadata: {
+              sessionId: session.id,
+              studentId: student.id,
+              admissionNo: student.admissionNo,
+              classId: classId.trim(),
+              date: dateStr,
+              previousStatus,
+              newStatus: updated.status,
+              reason: reason.trim(),
+              method: '1D_BARCODE_OVERWRITE',
+            },
+          },
+          tx
+        );
+
+        return {
+          recorded: true,
+          overwritten: true,
+          duplicateScan: true,
+          status: updated.status,
+          message: 'Attendance record updated successfully via 1D barcode.',
+          student: {
+            id: student.id,
+            admissionNo: student.admissionNo,
+            fullName: student.fullName,
+            classId: student.classId,
+            className: student.class?.name || null,
+          },
+        };
+      }
+
+      // 8. Create fresh record
+      const created = await tx.attendanceRecord.create({
+        data: {
+          madrasaId,
+          sessionId: session.id,
+          studentId: student.id,
+          status,
+        },
+      });
+
+      // Audit log entry for 1D barcode attendance ingestion
+      await tx.activityLog.create({
+        data: {
+          madrasaId,
+          userId: userId || null,
+          action: 'ATTENDANCE_INGEST_1D_BARCODE_FALLBACK',
+          entityType: 'AttendanceRecord',
+          entityId: created.id,
+          metadata: {
+            sessionId: session.id,
+            studentId: student.id,
+            admissionNo: student.admissionNo,
+            classId: classId.trim(),
+            date: dateStr,
+            status: created.status,
+            verificationMethod: 'VERIFIED_1D_BARCODE_FALLBACK',
+            securityTier: 'FALLBACK_LOW_TRUST',
+          },
+        },
+      });
+
+      return {
+        recorded: true,
+        overwritten: false,
+        duplicateScan: false,
+        status: created.status,
+        message: 'Attendance record ingested successfully via 1D barcode.',
+        student: {
+          id: student.id,
+          admissionNo: student.admissionNo,
+          fullName: student.fullName,
+          classId: student.classId,
+          className: student.class?.name || null,
+        },
+      };
+    });
+
+    return result;
+  } catch (err) {
+    if (err?.code === 'P2002' || err?.message?.includes('P2002') || err?.message?.includes('Unique constraint')) {
+      const session = await prismaClient.attendanceSession.findUnique({
+        where: {
+          madrasaId_classId_attendanceDate: {
+            madrasaId,
+            classId: classId.trim(),
+            attendanceDate,
+          },
+        },
+      });
+
+      if (session && verifiedStudent?.id) {
+        const raceRecord = await prismaClient.attendanceRecord.findUnique({
+          where: {
+            sessionId_studentId: {
+              sessionId: session.id,
+              studentId: verifiedStudent.id,
+            },
+          },
+        });
+
+        if (raceRecord) {
+          return {
+            recorded: false,
+            duplicateScan: true,
+            alreadyMarked: true,
+            status: raceRecord.status,
+            message: `Student (${verifiedStudent.admissionNo}) was marked ${raceRecord.status} concurrently.`,
+            student: {
+              id: verifiedStudent.id,
+              admissionNo: verifiedStudent.admissionNo,
+              fullName: verifiedStudent.fullName,
+              classId: verifiedStudent.classId,
+              className: verifiedStudent.class?.name || null,
+            },
+          };
+        }
+      }
+    }
+    throw err;
+  }
+}

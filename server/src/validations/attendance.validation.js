@@ -92,4 +92,20 @@ export const verifyAdmissionBarcodeSchema = z
     }
   );
 
-
+export const ingestAdmissionBarcodeSchema = z
+  .object({
+    admissionNo: z.string({ required_error: 'Admission number is required.' }).trim().min(1, 'Admission number is required.'),
+    classId: z.string().min(1, 'Class ID is required.'),
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format.'),
+    academicYear: z.string().min(1, 'Academic Year is required.').max(50),
+    status: z.enum(['PRESENT', 'ABSENT']).default('PRESENT'),
+    overwrite: z.boolean().default(false),
+    reason: z.string().max(255).optional(),
+  })
+  .refine(
+    (data) => !data.overwrite || (typeof data.reason === 'string' && data.reason.trim().length >= 3),
+    {
+      message: 'A mandatory reason (minimum 3 characters) is required when overwrite is true.',
+      path: ['reason'],
+    }
+  );

@@ -35,10 +35,18 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSupported, setIsSupported] = useState<boolean>(true);
 
+  const disabledRef = useRef(disabled);
+  disabledRef.current = disabled;
+
+  const onScanRef = useRef(onScan);
+  onScanRef.current = onScan;
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const isDetectingRef = useRef(false);
+  const isLockedRef = useRef(false);
+  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check BarcodeDetector support on mount
   useEffect(() => {
@@ -54,6 +62,12 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
     }
+
+    if (cooldownTimerRef.current) {
+      clearTimeout(cooldownTimerRef.current);
+      cooldownTimerRef.current = null;
+    }
+    isLockedRef.current = false;
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
@@ -173,6 +187,12 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
         return;
       }
 
+      // Respect disabled prop and scan cooldown lock
+      if (disabledRef.current || isLockedRef.current) {
+        animFrameRef.current = requestAnimationFrame(scanFrame);
+        return;
+      }
+
       if (timestamp - lastFrameTime >= FRAME_INTERVAL_MS && !isDetectingRef.current) {
         lastFrameTime = timestamp;
         isDetectingRef.current = true;
@@ -182,7 +202,24 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
           if (barcodes && barcodes.length > 0) {
             const code = barcodes[0].rawValue;
             if (code && code.trim()) {
-              onScan(code.trim(), 'camera');
+              // Immediately lock detection to prevent duplicate frame capture
+              isLockedRef.current = true;
+
+              try {
+                // Await scan handler if asynchronous to keep lock active during processing
+                await Promise.resolve(onScanRef.current(code.trim(), 'camera'));
+              } catch (scanErr) {
+                console.warn('[CameraScannerView] Error executing onScan:', scanErr);
+              } finally {
+                // Apply a safe 2.5-second cooldown after callback completes before allowing next scan
+                if (cooldownTimerRef.current) {
+                  clearTimeout(cooldownTimerRef.current);
+                }
+                cooldownTimerRef.current = setTimeout(() => {
+                  isLockedRef.current = false;
+                  cooldownTimerRef.current = null;
+                }, 2500);
+              }
             }
           }
         } catch (detErr) {

@@ -101,14 +101,18 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
   // Stored idempotency key for in-flight/retry consistency
   const activeIdempotencyKeyRef = useRef<string>(generateUUID());
 
+  // Synchronous submission lock to block concurrent scans before React re-renders
+  const isSubmittingRef = useRef<boolean>(false);
+
   /**
    * Core Scan Submission Handler
    */
   const handleProcessScan = useCallback(
     async (rawToken: string, preservedIdempotencyKey?: string) => {
       const token = (rawToken || '').trim();
-      if (!token || isProcessing) return;
+      if (!token || isSubmittingRef.current || isProcessing) return;
 
+      isSubmittingRef.current = true;
       const idempotencyKey = preservedIdempotencyKey || activeIdempotencyKeyRef.current;
 
       setIsProcessing(true);
@@ -128,24 +132,32 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
           // Audio feedback
           playScannerFeedback('success', isMuted);
 
-          // Record in operator session history
-          const nowStr = new Date().toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          });
+          // Record in operator session history (only for fresh non-replay events)
+          if (!result.idempotentReplay) {
+            const nowStr = new Date().toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            });
 
-          setSessionScans((prev) => [
-            {
-              id: result.event.id || `${Date.now()}`,
-              fullName: result.student.fullName,
-              admissionNo: result.student.admissionNo,
-              eventType: result.event.eventType,
-              time: nowStr,
-              emailStatus: result.event.emailStatus,
-            },
-            ...prev.slice(0, 9),
-          ]);
+            setSessionScans((prev) => {
+              const eventId = result.event.id;
+              if (eventId && prev.some((s) => s.id === eventId)) {
+                return prev;
+              }
+              return [
+                {
+                  id: eventId || `${Date.now()}`,
+                  fullName: result.student.fullName,
+                  admissionNo: result.student.admissionNo,
+                  eventType: result.event.eventType,
+                  time: nowStr,
+                  emailStatus: result.event.emailStatus,
+                },
+                ...prev.slice(0, 9),
+              ];
+            });
+          }
 
           // Refresh idempotency key for NEXT scan
           activeIdempotencyKeyRef.current = generateUUID();
@@ -200,6 +212,7 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
         // Do not update lastResult with success on error
         setLastResult(null);
       } finally {
+        isSubmittingRef.current = false;
         setIsProcessing(false);
       }
     },

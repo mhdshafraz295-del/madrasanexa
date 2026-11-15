@@ -105,8 +105,23 @@ export const A4CardSheet: React.FC<A4CardSheetProps> = ({
     >
       {/* Sheet Top Header Metadata Band (Outside card content area) */}
       <div
-        className="absolute inset-x-0 top-[6mm] flex items-center justify-between px-[14.4mm] text-[1.8mm] font-mono text-stone-500 border-b border-stone-200/80 pb-[1mm]"
-        style={{ height: '8mm' }}
+        className="absolute flex items-center justify-between text-[1.8mm] font-mono text-stone-500 border-b border-stone-200/80 pb-[1mm]"
+        style={{
+          position: 'absolute',
+          top: '6mm',
+          left: '14.4mm',
+          right: '14.4mm',
+          height: '8mm',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #e2e8f0',
+          paddingBottom: '1mm',
+          fontSize: '1.8mm',
+          fontFamily: 'monospace',
+          color: '#64748b',
+          boxSizing: 'border-box',
+        }}
       >
         <div className="flex items-center gap-[2mm]">
           <span className="font-bold uppercase text-[#0F172A]">{madrasaName}</span>
@@ -223,8 +238,23 @@ export const A4CardSheet: React.FC<A4CardSheetProps> = ({
 
       {/* Sheet Bottom Footer Metadata Band */}
       <div
-        className="absolute inset-x-0 bottom-[6mm] flex items-center justify-between px-[14.4mm] text-[1.6mm] font-mono text-stone-500 border-t border-stone-200/80 pt-[1mm]"
-        style={{ height: '8mm' }}
+        className="absolute flex items-center justify-between text-[1.6mm] font-mono text-stone-500 border-t border-stone-200/80 pt-[1mm]"
+        style={{
+          position: 'absolute',
+          bottom: '6mm',
+          left: '14.4mm',
+          right: '14.4mm',
+          height: '8mm',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderTop: '1px solid #e2e8f0',
+          paddingTop: '1mm',
+          fontSize: '1.6mm',
+          fontFamily: 'monospace',
+          color: '#64748b',
+          boxSizing: 'border-box',
+        }}
       >
         <span>MadrasaNexa Gate F • ISO-7810 ID-1 • Exact 85.60 × 53.98 mm</span>
         <span className="font-semibold text-stone-700">

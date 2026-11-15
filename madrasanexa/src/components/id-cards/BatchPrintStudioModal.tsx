@@ -13,6 +13,10 @@ import type { CardPrintData } from '../../services/student-token.service';
 import { apiRenderBatchCardPdf } from '../../services/student-token.service';
 import { A4CardSheet } from './A4CardSheet';
 import { A4CalibrationSheet } from './A4CalibrationSheet';
+import {
+  buildSelfContainedCardSheetPdfHtml,
+  convertImageUrlToDataUri,
+} from './pdf-print-stylesheet';
 
 export interface BatchPrintStudioModalProps {
   isOpen: boolean;
@@ -99,52 +103,24 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
       setIsExportingPdf(true);
       setExportError(null);
 
-      // Extract self-contained print area HTML with embedded SVG strings
-      const printHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>${madrasaName} - Student ID Cards A4</title>
-          <style>
-            @page {
-              size: 210mm 297mm portrait;
-              margin: 0mm;
-            }
-            * {
-              box-sizing: border-box;
-              margin: 0;
-              padding: 0;
-            }
-            html, body {
-              width: 210mm;
-              margin: 0;
-              padding: 0;
-              background: #ffffff;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            .a4-print-page {
-              width: 210mm !important;
-              height: 297mm !important;
-              page-break-after: always !important;
-              break-after: page !important;
-              overflow: hidden !important;
-              position: relative !important;
-              background: #ffffff !important;
-            }
-            .a4-print-page:last-child {
-              page-break-after: avoid !important;
-              break-after: avoid !important;
-            }
-          </style>
-        </head>
-        <body>
-          ${printAreaRef.current.innerHTML}
-        </body>
-        </html>
-      `;
+      let bodyHtml = printAreaRef.current.innerHTML;
+
+      // Convert logo URL to inlined base64 Data URI for Puppeteer security pass-through
+      if (logoUrl) {
+        try {
+          const logoDataUri = await convertImageUrlToDataUri(logoUrl);
+          if (logoDataUri) {
+            bodyHtml = bodyHtml.split(logoUrl).join(logoDataUri);
+          }
+        } catch (e) {
+          console.warn('Failed to convert logo to data URI for PDF', e);
+        }
+      }
+
+      const printHtml = buildSelfContainedCardSheetPdfHtml({
+        bodyHtml,
+        title: `${madrasaName} - Student ID Cards A4`,
+      });
 
       const blob = await apiRenderBatchCardPdf({
         html: printHtml,

@@ -104,22 +104,37 @@ export const A4LabelSheet: React.FC<A4LabelSheetProps> = ({
       {/* 1. Header Metadata Band (Top 8mm outside label area) */}
       {/* ==================================================== */}
       <div
-        className="absolute inset-x-0 top-[4mm] flex items-center justify-between px-[12mm] text-[1.8mm] font-mono text-stone-400 border-b border-stone-200/80 pb-[0.8mm]"
-        style={{ height: '7mm' }}
+        className="absolute flex items-center justify-between text-[1.8mm] font-mono text-stone-400 border-b border-stone-200/80 pb-[0.8mm]"
+        style={{
+          position: 'absolute',
+          top: '4mm',
+          left: `${marginX}mm`,
+          right: `${marginX}mm`,
+          height: '7mm',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '1px solid #e2e8f0',
+          paddingBottom: '0.8mm',
+          fontSize: '1.8mm',
+          fontFamily: 'monospace',
+          color: '#94a3b8',
+          boxSizing: 'border-box',
+        }}
       >
-        <div className="flex items-center gap-[2mm]">
-          <span className="font-bold uppercase text-[#0F172A]">{madrasaName}</span>
+        <div className="flex items-center gap-[2mm]" style={{ display: 'flex', alignItems: 'center', gap: '2mm' }}>
+          <span className="font-bold uppercase text-[#0F172A]" style={{ fontWeight: 700, textTransform: 'uppercase', color: '#0F172A' }}>{madrasaName}</span>
           <span>•</span>
-          <span className="text-[#0F5A47] font-semibold">
+          <span className="text-[#0F5A47] font-semibold" style={{ color: '#0F5A47', fontWeight: 600 }}>
             STUDENT CREDENTIAL LABELS ({credentialMode.toUpperCase().replace(/_/g, ' ')})
           </span>
         </div>
 
-        <div className="flex items-center gap-[3mm]">
+        <div className="flex items-center gap-[3mm]" style={{ display: 'flex', alignItems: 'center', gap: '3mm' }}>
           <span>
             {columns}×{rows} Grid · {labelWidth}×{labelHeight} mm
           </span>
-          <span className="bg-stone-100 px-[1.5mm] py-[0.4mm] rounded-sm font-bold text-stone-800">
+          <span className="bg-stone-100 px-[1.5mm] py-[0.4mm] rounded-sm font-bold text-stone-800" style={{ backgroundColor: '#f1f5f9', padding: '0.4mm 1.5mm', borderRadius: '0.5mm', fontWeight: 700, color: '#1e293b' }}>
             PAGE {pageNumber} OF {totalPages}
           </span>
         </div>
@@ -165,11 +180,26 @@ export const A4LabelSheet: React.FC<A4LabelSheetProps> = ({
       {/* 3. Footer Metadata Band (Bottom 8mm outside label area) */}
       {/* ==================================================== */}
       <div
-        className="absolute inset-x-0 bottom-[4mm] flex items-center justify-between px-[12mm] text-[1.6mm] font-mono text-stone-400 border-t border-stone-200/80 pt-[0.8mm]"
-        style={{ height: '7mm' }}
+        className="absolute flex items-center justify-between text-[1.6mm] font-mono text-stone-400 border-t border-stone-200/80 pt-[0.8mm]"
+        style={{
+          position: 'absolute',
+          bottom: '4mm',
+          left: `${marginX}mm`,
+          right: `${marginX}mm`,
+          height: '7mm',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderTop: '1px solid #e2e8f0',
+          paddingTop: '0.8mm',
+          fontSize: '1.6mm',
+          fontFamily: 'monospace',
+          color: '#94a3b8',
+          boxSizing: 'border-box',
+        }}
       >
         <span>MadrasaNexa Credential Studio · ISO Standard A4 (210 × 297 mm)</span>
-        <span className="font-semibold text-stone-600">
+        <span className="font-semibold text-stone-600" style={{ fontWeight: 600, color: '#475569' }}>
           Print Scale: 100% / Actual Size (Disable &quot;Fit to Printable Area&quot;) · Cut along lines
         </span>
       </div>

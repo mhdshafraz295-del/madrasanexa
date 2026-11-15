@@ -22,6 +22,7 @@ import {
 import type { CardPrintData } from '../../services/student-token.service';
 import { apiRenderBatchCardPdf } from '../../services/student-token.service';
 import { A4LabelSheet } from './A4LabelSheet';
+import { buildSelfContainedLabelSheetPdfHtml } from './pdf-print-stylesheet';
 import type {
   LabelStyle,
   CredentialMode,
@@ -196,51 +197,11 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
       setIsExportingPdf(true);
       setExportError(null);
 
-      const printHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>${madrasaName} - Student Credential Labels A4</title>
-          <style>
-            @page {
-              size: 210mm 297mm portrait;
-              margin: 0mm;
-            }
-            * {
-              box-sizing: border-box;
-              margin: 0;
-              padding: 0;
-            }
-            html, body {
-              width: 210mm;
-              margin: 0;
-              padding: 0;
-              background: #ffffff;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-              -webkit-print-color-adjust: exact !important;
-              print-color-adjust: exact !important;
-            }
-            .a4-print-page {
-              width: 210mm !important;
-              height: 297mm !important;
-              page-break-after: always !important;
-              break-after: page !important;
-              overflow: hidden !important;
-              position: relative !important;
-              background: #ffffff !important;
-            }
-            .a4-print-page:last-child {
-              page-break-after: avoid !important;
-              break-after: avoid !important;
-            }
-          </style>
-        </head>
-        <body>
-          ${printAreaRef.current.innerHTML}
-        </body>
-        </html>
-      `;
+      const bodyHtml = printAreaRef.current.innerHTML;
+      const printHtml = buildSelfContainedLabelSheetPdfHtml({
+        bodyHtml,
+        title: `${madrasaName} - Student Credential Labels A4`,
+      });
 
       const blob = await apiRenderBatchCardPdf({
         html: printHtml,

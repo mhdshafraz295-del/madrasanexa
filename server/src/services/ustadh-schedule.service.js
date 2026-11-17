@@ -244,7 +244,7 @@ export async function createSchedule(madrasaId, userId, data) {
       ustadh: { select: { id: true, fullName: true, ustadhCode: true, staffType: true } },
       class: { select: { id: true, name: true, code: true } },
       subject: { select: { id: true, name: true, code: true } },
-      classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
+      classroom: { select: { id: true, name: true, roomNumber: true } },
     },
   });
 
@@ -294,7 +294,7 @@ export async function listSchedules(madrasaId, query = {}) {
       ustadh: { select: { id: true, fullName: true, ustadhCode: true, staffType: true, phoneNumber: true, whatsappNumber: true } },
       class: { select: { id: true, name: true, code: true } },
       subject: { select: { id: true, name: true, code: true } },
-      classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
+      classroom: { select: { id: true, name: true, roomNumber: true } },
     },
   });
 
@@ -419,7 +419,7 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
           ustadh: { select: { id: true, fullName: true, ustadhCode: true, staffType: true } },
           class: { select: { id: true, name: true, code: true } },
           subject: { select: { id: true, name: true, code: true } },
-          classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
+          classroom: { select: { id: true, name: true, roomNumber: true } },
         },
       });
 
@@ -470,7 +470,7 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
       ustadh: { select: { id: true, fullName: true, ustadhCode: true } },
       class: { select: { id: true, name: true, code: true } },
       subject: { select: { id: true, name: true, code: true } },
-      classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
+      classroom: { select: { id: true, name: true, roomNumber: true } },
     },
   });
 

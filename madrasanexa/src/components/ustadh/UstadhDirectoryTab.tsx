@@ -13,6 +13,7 @@ import {
   XCircle,
   AlertCircle,
   Loader2,
+  Key,
 } from 'lucide-react';
 import {
   listUstadhs,
@@ -20,6 +21,7 @@ import {
   buildUstadhWhatsAppContactUrl,
 } from '../../services/ustadh.service';
 import { formatDateOnly } from '../../utils/dateTime';
+import { ProvisionPortalModal } from './ProvisionPortalModal';
 
 interface UstadhDirectoryTabProps {
   onAddUstadh: () => void;
@@ -46,6 +48,8 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
   const [staffTypeFilter, setStaffTypeFilter] = useState<'ALL' | 'USTADH' | 'SCHOOL_TEACHER'>('ALL');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedUstadhForPortal, setSelectedUstadhForPortal] = useState<UstadhItem | null>(null);
+  const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
 
   const fetchUstadhs = async () => {
     setLoading(true);
@@ -387,6 +391,17 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
                           )}
                           <button
                             type="button"
+                            onClick={() => {
+                              setSelectedUstadhForPortal(u);
+                              setIsPortalModalOpen(true);
+                            }}
+                            title="Provision Teacher Portal Login"
+                            className="p-1.5 text-slate-500 hover:text-teal-700 hover:bg-teal-50 rounded transition-colors cursor-pointer"
+                          >
+                            <Key className="w-4 h-4 text-teal-600" />
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => onEditUstadh(u)}
                             title="Edit Profile"
                             className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
@@ -433,6 +448,19 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
           </div>
         )}
       </div>
+
+      {/* Provision Portal Modal */}
+      <ProvisionPortalModal
+        isOpen={isPortalModalOpen}
+        onClose={() => {
+          setIsPortalModalOpen(false);
+          setSelectedUstadhForPortal(null);
+        }}
+        ustadh={selectedUstadhForPortal}
+        onSuccess={() => {
+          fetchUstadhs();
+        }}
+      />
     </div>
   );
 };

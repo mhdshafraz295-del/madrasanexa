@@ -151,12 +151,40 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
     orderBy: { createdAt: 'desc' },
   });
 
+  // 9. Compute dynamic average attendance rate across teacher's recorded period sessions
+  let averageAttendanceRate = 0;
+  if (prisma.classPeriodAttendanceRecord) {
+    const totalRecords = await prisma.classPeriodAttendanceRecord.count({
+      where: {
+        madrasaId,
+        session: {
+          teacherId: ustadhId,
+          madrasaId,
+        },
+      },
+    });
+
+    if (totalRecords > 0) {
+      const presentRecords = await prisma.classPeriodAttendanceRecord.count({
+        where: {
+          madrasaId,
+          session: {
+            teacherId: ustadhId,
+            madrasaId,
+          },
+          status: { in: ['PRESENT', 'LATE'] },
+        },
+      });
+      averageAttendanceRate = Math.round((presentRecords / totalRecords) * 1000) / 10;
+    }
+  }
+
   return {
     stats: {
       totalClasses: distinctClassIds.length,
       totalStudents,
       weeklyTeachingHours,
-      averageAttendanceRate: 94.6,
+      averageAttendanceRate,
       syllabusCompletionRate: 68.8,
       pendingEvaluations: 0,
       todayTotalSessions: todaySchedules.length,
@@ -495,6 +523,48 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
     },
   });
 
+  const distinctClassIds = [...new Set(schedules.filter((s) => s.classId).map((s) => s.classId))];
+
+  // Compute each class's real attendance rate from ClassPeriodAttendanceRecord for sessions taught by this ustadhId in that classId
+  const classAttendanceMap = new Map();
+  if (distinctClassIds.length > 0 && prisma.classPeriodAttendanceRecord) {
+    for (const cid of distinctClassIds) {
+      const totalClassRecords = await prisma.classPeriodAttendanceRecord.count({
+        where: {
+          madrasaId,
+          session: {
+            teacherId: ustadhId,
+            madrasaId,
+            schedule: {
+              classId: cid,
+              madrasaId,
+            },
+          },
+        },
+      });
+
+      if (totalClassRecords > 0) {
+        const presentClassRecords = await prisma.classPeriodAttendanceRecord.count({
+          where: {
+            madrasaId,
+            session: {
+              teacherId: ustadhId,
+              madrasaId,
+              schedule: {
+                classId: cid,
+                madrasaId,
+              },
+            },
+            status: { in: ['PRESENT', 'LATE'] },
+          },
+        });
+        classAttendanceMap.set(cid, Math.round((presentClassRecords / totalClassRecords) * 1000) / 10);
+      } else {
+        classAttendanceMap.set(cid, 0);
+      }
+    }
+  }
+
   // Group by distinct class
   const classMap = new Map();
   for (const s of schedules) {
@@ -519,7 +589,7 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
         room: roomLabel,
         roomId: s.classroomId || s.class.id,
         syllabusProgress: 70,
-        attendanceRate: 94.2,
+        attendanceRate: classAttendanceMap.get(s.classId) ?? 0,
         meetingSchedule: `${s.dayOfWeek} (${formatMinutesToTime(s.startMinutes)})`,
       });
     }
@@ -552,14 +622,45 @@ export async function getClassDetail({ madrasaId, ustadhId, classId }) {
     throw new NotFoundError('Class not found.');
   }
 
+  let studentAttendanceMap = new Map();
+  if (prisma.classPeriodAttendanceRecord && cls.students.length > 0) {
+    const studentIds = cls.students.map((s) => s.id);
+    const records = await prisma.classPeriodAttendanceRecord.findMany({
+      where: {
+        madrasaId,
+        studentId: { in: studentIds },
+        session: {
+          teacherId: ustadhId,
+          madrasaId,
+        },
+      },
+      select: {
+        studentId: true,
+        status: true,
+      },
+    });
+
+    const stats = new Map();
+    for (const r of records) {
+      if (!stats.has(r.studentId)) stats.set(r.studentId, { total: 0, present: 0 });
+      const cur = stats.get(r.studentId);
+      cur.total++;
+      if (r.status === 'PRESENT' || r.status === 'LATE') cur.present++;
+    }
+
+    for (const [sId, stVal] of stats.entries()) {
+      studentAttendanceMap.set(sId, Math.round((stVal.present / stVal.total) * 1000) / 10);
+    }
+  }
+
   const studentList = cls.students.map((st) => ({
     id: st.id,
     rollNo: st.admissionNo,
     barcodeId: `BC-${st.admissionNo}`,
     name: st.fullName,
     guardianPhone: st.guardianPhone || '',
-    attendanceRate: 95.0,
-    lastScore: '88/100',
+    attendanceRate: studentAttendanceMap.get(st.id) ?? 0,
+    lastScore: '—',
     status: 'Present',
   }));
 
@@ -636,7 +737,7 @@ export async function recordTeacherClassroomCheckIn({ madrasaId, ustadhId, userI
   const { roomToken, scheduleId, method, notes } = payload;
 
   // 1. Verify schedule belongs to authenticated teacher and tenant
-  const schedule = await prisma.ustadhSchedule.findFirst({
+  let schedule = await prisma.ustadhSchedule.findFirst({
     where: { id: scheduleId, madrasaId, ustadhId, isActive: true },
     include: { class: true, classroom: true },
   });
@@ -665,11 +766,45 @@ export async function recordTeacherClassroomCheckIn({ madrasaId, ustadhId, userI
     throw new BadRequestError(`Check-in window closed at ${formatMinutesToTime(windowEnd)}.`);
   }
 
+  // When multiple active schedules exist in the same classroom on the same day within the ±15 minute window,
+  // sort by Math.abs(currentMinutes - schedule.startMinutes) ascending so the closest matching period is always selected.
+  if (schedule.classroomId && prisma.ustadhSchedule.findMany) {
+    try {
+      const candidateSchedules = await prisma.ustadhSchedule.findMany({
+        where: {
+          madrasaId,
+          ustadhId,
+          classroomId: schedule.classroomId,
+          dayOfWeek: colomboNow.weekday,
+          isActive: true,
+        },
+        include: { class: true, classroom: true },
+      });
+
+      const eligibleSchedules = (candidateSchedules || []).filter((s) => {
+        const wStart = s.startMinutes - 15;
+        const wEnd = s.endMinutes + 15;
+        return colomboNow.currentMinutes >= wStart && colomboNow.currentMinutes <= wEnd;
+      });
+
+      if (eligibleSchedules.length > 1) {
+        eligibleSchedules.sort(
+          (a, b) =>
+            Math.abs(colomboNow.currentMinutes - a.startMinutes) -
+            Math.abs(colomboNow.currentMinutes - b.startMinutes)
+        );
+        schedule = eligibleSchedules[0];
+      }
+    } catch {
+      // In offline sandbox or test environments without full schema relation, keep selected schedule
+    }
+  }
+
   // 3. Duplicate check-in protection
   const todayDate = new Date(`${colomboNow.localDateStr}T00:00:00.000Z`);
   const existingCheckIn = await prisma.ustadhAttendanceRecord.findFirst({
     where: {
-      scheduleId,
+      scheduleId: schedule.id,
       attendanceDate: todayDate,
     },
   });
@@ -711,7 +846,7 @@ export async function recordTeacherClassroomCheckIn({ madrasaId, ustadhId, userI
     data: {
       madrasaId,
       ustadhId,
-      scheduleId,
+      scheduleId: schedule.id,
       attendanceDate: todayDate,
       status: attendanceStatus,
       recordedById: userId,

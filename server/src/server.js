@@ -4,6 +4,7 @@ import { env } from './config/env.js';
 import { initSubscriptionStatusJob, stopSubscriptionStatusJob } from './jobs/subscription-status.job.js';
 import { startNotificationWorker, stopNotificationWorker } from './jobs/notification-worker.job.js';
 import { startGateEmailWorker, stopGateEmailWorker } from './jobs/gate-email-worker.job.js';
+import { startAutoSealPeriodAttendanceJob, stopAutoSealPeriodAttendanceJob } from './jobs/auto-seal-period-attendance.job.js';
 
 const PORT = env.PORT || 5000;
 
@@ -22,6 +23,8 @@ const server = app.listen(PORT, () => {
     startNotificationWorker();
     // Start gate email outbox worker
     startGateEmailWorker();
+    // Start nightly period attendance auto-seal job
+    startAutoSealPeriodAttendanceJob();
   }
 });
 
@@ -31,6 +34,7 @@ const gracefulShutdown = (signal) => {
   stopSubscriptionStatusJob();
   stopNotificationWorker();
   stopGateEmailWorker();
+  stopAutoSealPeriodAttendanceJob();
   server.close(() => {
     console.log('Http server closed.');
     process.exit(0);

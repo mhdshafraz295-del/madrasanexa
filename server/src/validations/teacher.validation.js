@@ -59,7 +59,7 @@ export const teacherVerifyQrSchema = z.object({
     .string({ required_error: 'scheduleId is required.' })
     .trim()
     .min(1, 'scheduleId cannot be empty.'),
-  method: z.enum(['Classroom QR', 'Manual Fallback']).default('Classroom QR'),
+  method: z.enum(['Classroom QR', 'Manual Fallback', 'Camera QR Scan']).default('Classroom QR'),
   notes: z.string().trim().max(255).optional(),
 });
 

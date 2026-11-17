@@ -147,6 +147,59 @@ export interface PeriodSessionData {
   roster: StudentPeriodRosterItem[];
 }
 
+export interface DailyStudentItem {
+  id: string;
+  fullName: string;
+  admissionNo: string;
+  rollNo: string;
+  classId: string | null;
+  className: string;
+  category: 'DAY_SCHOLAR' | 'BOARDING';
+  guardianEmail: string | null;
+  guardianPhone: string | null;
+  status: 'PRESENT' | 'ABSENT' | 'UNMARKED';
+  checkInTime: string | null;
+  checkOutTime: string | null;
+  method: string | null;
+  parentEmailSent: boolean;
+}
+
+export interface DailyStudentRosterData {
+  date: string;
+  stats: {
+    totalStudents: number;
+    presentCount: number;
+    dayScholarsPresent: number;
+    boardingPresent: number;
+    unmarkedCount: number;
+  };
+  students: DailyStudentItem[];
+}
+
+export interface DailyStudentScanResult {
+  success: boolean;
+  direction: 'ENTRY' | 'EXIT';
+  student: {
+    id: string;
+    fullName: string;
+    admissionNo: string;
+    classId?: string | null;
+    className?: string;
+    category: 'DAY_SCHOLAR' | 'BOARDING';
+    guardianEmail?: string | null;
+    guardianPhone?: string;
+  };
+  status: string;
+  alreadyMarked: boolean;
+  scannedAt: string;
+  scannedTime: string;
+  method: string;
+  parentEmailSent: boolean;
+  parentEmail?: string | null;
+  emailError?: string | null;
+  message: string;
+}
+
 export interface SalarySummaryData {
   basicSalary: number;
   allowances: Array<{ id?: string; name: string; category: string; amount: number; description?: string }>;
@@ -477,12 +530,34 @@ export const studentAttendanceApi = {
     });
   },
 
+  getDailyRoster(params?: { date?: string; classId?: string; category?: string }): Promise<DailyStudentRosterData> {
+    const q = new URLSearchParams();
+    if (params?.date) q.append('date', params.date);
+    if (params?.classId) q.append('classId', params.classId);
+    if (params?.category) q.append('category', params.category);
+    const query = q.toString() ? `?${q.toString()}` : '';
+    return request<DailyStudentRosterData>(`/teacher/attendance/student/daily-roster${query}`, { method: 'GET' });
+  },
+
+  scanDailyStudentAttendance(payload: {
+    scanInput: string;
+    direction?: 'ENTRY' | 'EXIT';
+    date?: string;
+    classId?: string;
+  }): Promise<DailyStudentScanResult> {
+    return request<DailyStudentScanResult>('/teacher/attendance/student/daily-scan', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
+
   scanStudentPeriodAttendance(payload: {
-    scheduleId: string;
+    scheduleId?: string;
     sessionId?: string;
     scanInput: string;
-    date: string;
+    date?: string;
     periodNumber?: number;
+    direction?: 'ENTRY' | 'EXIT';
   }): Promise<{
     success: boolean;
     sessionId?: string;
@@ -492,11 +567,17 @@ export const studentAttendanceApi = {
       admissionNo: string;
       classId?: string;
       className?: string;
+      category?: 'DAY_SCHOLAR' | 'BOARDING';
+      guardianEmail?: string | null;
+      guardianPhone?: string;
     };
     status: string;
     alreadyMarked: boolean;
     scannedAt: string;
+    scannedTime?: string;
     method: string;
+    parentEmailSent?: boolean;
+    parentEmail?: string | null;
     message: string;
   }> {
     return request('/teacher/attendance/student/scan', {

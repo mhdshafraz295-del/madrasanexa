@@ -16,6 +16,8 @@ import {
   getTodayTeacherAttendance,
   verifyTeacherClassroomQr,
   getStudentPeriodSession,
+  getDailyStudentRoster,
+  scanDailyStudentAttendance,
   markStudentPeriodAttendance,
   scanStudentPeriodAttendance,
   sealStudentPeriodSession,
@@ -99,7 +101,8 @@ router.post('/attendance/teacher/verify-qr', verifyTeacherClassroomQr);
 
 // =============================================================================
 // Module 6: Student Period Attendance (Option A: Full Isolation)
-// =============================================================================
+router.get('/attendance/student/daily-roster', getDailyStudentRoster);
+router.post('/attendance/student/daily-scan', scanDailyStudentAttendance);
 router.get('/attendance/student/session', getStudentPeriodSession);
 router.post('/attendance/student/scan', scanStudentPeriodAttendance);
 router.post('/attendance/student/mark', markStudentPeriodAttendance);

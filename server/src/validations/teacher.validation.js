@@ -105,23 +105,53 @@ export const studentPeriodMarkSchema = z.object({
 });
 
 /**
+ * Unified Daily Morning Attendance Scan Schema (POST /api/teacher/attendance/student/daily-scan)
+ * Time-independent, unified morning scanning across all students with ENTRY / EXIT direction.
+ */
+export const dailyStudentScanSchema = z.object({
+  scanInput: z
+    .string({ required_error: 'scanInput is required.' })
+    .trim()
+    .min(1, 'scanInput cannot be empty.'),
+  direction: z.enum(['ENTRY', 'EXIT']).optional().default('ENTRY'),
+  date: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format.')
+    .optional(),
+  classId: z.string().trim().optional(),
+});
+
+/**
+ * Daily Student Attendance Roster Query Schema (GET /api/teacher/attendance/student/daily-roster)
+ */
+export const dailyStudentRosterQuerySchema = z.object({
+  date: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format.')
+    .optional(),
+  classId: z.string().trim().optional(),
+  category: z.enum(['ALL', 'DAY_SCHOLAR', 'BOARDING']).optional().default('ALL'),
+});
+
+/**
  * Student Period Attendance Single Scan Schema (POST /api/teacher/attendance/student/scan)
  */
 export const studentPeriodScanSchema = z.object({
-  scheduleId: z
-    .string({ required_error: 'scheduleId is required.' })
-    .trim()
-    .min(1, 'scheduleId cannot be empty.'),
+  scheduleId: z.string().trim().optional(),
   sessionId: z.string().trim().optional(),
   scanInput: z
     .string({ required_error: 'scanInput is required.' })
     .trim()
     .min(1, 'scanInput cannot be empty.'),
   date: z
-    .string({ required_error: 'date is required (YYYY-MM-DD).' })
+    .string()
     .trim()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format.'),
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format.')
+    .optional(),
   periodNumber: z.coerce.number().int().positive().optional().default(1),
+  direction: z.enum(['ENTRY', 'EXIT']).optional().default('ENTRY'),
 });
 
 /**

@@ -10,6 +10,8 @@ import { comparePassword, hashPassword } from '../utils/password.js';
 import { resolveObjectAccessUrl, uploadBufferToR2, buildMadrasaKey } from './r2.service.js';
 import { isR2Configured } from '../config/r2.js';
 import { hashToken, isValidTokenFormat } from '../utils/scan-token-crypto.js';
+import { dispatchEmail } from './email.service.js';
+import { renderGateEmailHtml } from '../jobs/gate-email-worker.job.js';
 
 /**
  * Resolves active dynamic logoUrl for a madrasa tenant.
@@ -1585,6 +1587,411 @@ export async function sealPeriodSession({ madrasaId, ustadhId, userId, scheduleI
   };
 }
 
+// =============================================================================
+// Unified Morning / Daily Student Attendance Scanner & Roster
+// =============================================================================
+
+/**
+ * Retrieves the unified daily student roster across all classes (or filtered)
+ * with live Daily Attendance status (PRESENT / UNMARKED), entry/exit timestamps,
+ * and parent notification stats.
+ */
+export async function getDailyStudentRoster({ madrasaId, ustadhId, query = {} }) {
+  if (!madrasaId || !ustadhId) {
+    throw new BadRequestError('Tenant madrasaId and ustadhId are required.');
+  }
+
+  const colomboNow = getColomboTimeContext();
+  const dateStr = query.date || colomboNow.date;
+  const { classId, category } = query;
+
+  let attendanceDate;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    const parts = dateStr.slice(0, 10).split('-').map(Number);
+    attendanceDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0));
+  } else {
+    const now = new Date();
+    attendanceDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+  }
+
+  const studentWhere = {
+    madrasaId,
+    status: 'ACTIVE',
+  };
+  if (classId) {
+    studentWhere.classId = classId;
+  }
+  if (category && category !== 'ALL') {
+    studentWhere.category = category;
+  }
+
+  const students = await prisma.student.findMany({
+    where: studentWhere,
+    include: {
+      class: { select: { id: true, name: true, code: true } },
+    },
+    orderBy: [
+      { class: { name: 'asc' } },
+      { admissionNo: 'asc' },
+    ],
+  });
+
+  const studentIds = students.map((s) => s.id);
+
+  // 1. Fetch today's Admin Daily AttendanceRecords
+  const attendanceRecordsMap = new Map();
+  if (prisma.attendanceRecord && studentIds.length > 0) {
+    try {
+      const records = await prisma.attendanceRecord.findMany({
+        where: {
+          madrasaId,
+          studentId: { in: studentIds },
+          session: {
+            attendanceDate,
+            madrasaId,
+          },
+        },
+        select: {
+          studentId: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+      for (const r of records) {
+        attendanceRecordsMap.set(r.studentId, r);
+      }
+    } catch (_) {}
+  }
+
+  // 2. Fetch today's gate movements for check-in / check-out times
+  const gateEventsMap = new Map();
+  if (prisma.studentGateEvent && studentIds.length > 0) {
+    try {
+      const startOfDay = new Date(attendanceDate.getTime());
+      const endOfDay = new Date(attendanceDate.getTime() + 86399999);
+
+      const events = await prisma.studentGateEvent.findMany({
+        where: {
+          madrasaId,
+          studentId: { in: studentIds },
+          scannedAt: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
+        },
+        orderBy: { scannedAt: 'asc' },
+      });
+
+      for (const ev of events) {
+        if (!gateEventsMap.has(ev.studentId)) {
+          gateEventsMap.set(ev.studentId, { entry: null, exit: null, emailSent: false });
+        }
+        const data = gateEventsMap.get(ev.studentId);
+        if (ev.eventType === 'ENTRY') {
+          data.entry = ev.scannedAt;
+        } else if (ev.eventType === 'EXIT') {
+          data.exit = ev.scannedAt;
+        }
+        if (ev.emailStatus === 'SENT') {
+          data.emailSent = true;
+        }
+      }
+    } catch (_) {}
+  }
+
+  let totalStudents = students.length;
+  let presentCount = 0;
+  let dayScholarsPresent = 0;
+  let boardingPresent = 0;
+  let unmarkedCount = 0;
+
+  const rosterList = students.map((st) => {
+    const attRecord = attendanceRecordsMap.get(st.id);
+    const gateInfo = gateEventsMap.get(st.id);
+
+    const isPresent = attRecord?.status === 'PRESENT' || Boolean(gateInfo?.entry);
+    const status = isPresent ? 'PRESENT' : (attRecord?.status === 'ABSENT' ? 'ABSENT' : 'UNMARKED');
+    const studentCategory = st.category || 'DAY_SCHOLAR';
+
+    if (isPresent) {
+      presentCount++;
+      if (studentCategory === 'BOARDING') {
+        boardingPresent++;
+      } else {
+        dayScholarsPresent++;
+      }
+    } else {
+      unmarkedCount++;
+    }
+
+    const checkInTime = gateInfo?.entry
+      ? new Date(gateInfo.entry).toLocaleTimeString('en-US', {
+          timeZone: 'Asia/Colombo',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })
+      : (attRecord ? '07:30 AM' : null);
+
+    const checkOutTime = gateInfo?.exit
+      ? new Date(gateInfo.exit).toLocaleTimeString('en-US', {
+          timeZone: 'Asia/Colombo',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })
+      : null;
+
+    return {
+      id: st.id,
+      fullName: st.fullName,
+      admissionNo: st.admissionNo,
+      rollNo: st.admissionNo,
+      classId: st.classId,
+      className: st.class?.name || 'Unassigned',
+      category: studentCategory,
+      guardianEmail: st.guardianEmail || null,
+      guardianPhone: st.guardianPhone || null,
+      status,
+      checkInTime,
+      checkOutTime,
+      method: gateInfo ? 'QR_SCAN' : (attRecord ? 'DAILY_RECORD' : null),
+      parentEmailSent: Boolean(gateInfo?.emailSent),
+    };
+  });
+
+  return {
+    date: dateStr,
+    stats: {
+      totalStudents,
+      presentCount,
+      dayScholarsPresent,
+      boardingPresent,
+      unmarkedCount,
+    },
+    students: rosterList,
+  };
+}
+
+/**
+ * Unified morning / daily student attendance scanner.
+ * Decodes 2D QR (MNX1_<32 hex>) or 1D barcode across the entire tenant without time/schedule gates.
+ * Directly syncs Admin Daily Attendance (`AttendanceRecord` PRESENT), logs gate event,
+ * and triggers parent email alert on entry/exit.
+ */
+export async function scanDailyStudentAttendance({
+  madrasaId,
+  ustadhId,
+  userId,
+  scanInput,
+  direction = 'ENTRY',
+  date,
+  classId,
+}) {
+  if (!madrasaId || !ustadhId) {
+    throw new BadRequestError('Tenant madrasaId and ustadhId are required.');
+  }
+  if (!scanInput || typeof scanInput !== 'string') {
+    throw new BadRequestError('Scan input is required.');
+  }
+
+  const cleanInput = scanInput.trim();
+  if (!cleanInput) {
+    throw new BadRequestError('Scan input cannot be empty.');
+  }
+
+  const colomboNow = getColomboTimeContext();
+  const targetDate = date || colomboNow.date;
+  const eventDirection = direction === 'EXIT' ? 'EXIT' : 'ENTRY';
+
+  // 1. Resolve student across the tenant
+  let student = null;
+  let method = 'BARCODE_SCAN';
+
+  // Check canonical QR format
+  if (isValidTokenFormat(cleanInput)) {
+    method = 'QR_SCAN';
+    const tokenHash = hashToken(cleanInput);
+    if (prisma.studentScanToken) {
+      try {
+        const tokenRecord = await prisma.studentScanToken.findFirst({
+          where: {
+            tokenHash,
+            madrasaId,
+            isActive: true,
+          },
+          include: {
+            student: {
+              include: {
+                class: { select: { id: true, name: true, code: true } },
+              },
+            },
+          },
+        });
+        if (tokenRecord?.student) {
+          student = tokenRecord.student;
+        }
+      } catch (_) {}
+    }
+  }
+
+  // Fallback to admissionNo or ID
+  if (!student) {
+    const admissionClean = cleanInput.replace(/^BC-/i, '').trim();
+    student = await prisma.student.findFirst({
+      where: {
+        madrasaId,
+        OR: [
+          { admissionNo: cleanInput },
+          { admissionNo: admissionClean },
+          { id: cleanInput },
+        ],
+      },
+      include: {
+        class: { select: { id: true, name: true, code: true } },
+      },
+    });
+  }
+
+  if (!student) {
+    throw new NotFoundError(
+      `No student found matching "${cleanInput.length > 20 ? cleanInput.substring(0, 20) + '...' : cleanInput}".`
+    );
+  }
+
+  if (student.status !== 'ACTIVE') {
+    throw new BadRequestError(`Student ${student.fullName} is currently ${student.status.toLowerCase()} and cannot be marked.`);
+  }
+
+  // Student class resolution
+  const resolvedClassId = student.classId || classId;
+  const className = student.class?.name || 'General Class';
+  const category = student.category || 'DAY_SCHOLAR';
+
+  // 2. Direct Admin Daily Attendance Sync
+  let alreadyMarked = false;
+  if (resolvedClassId) {
+    try {
+      const syncResult = await syncPeriodStatusToDailyAttendance(prisma, {
+        madrasaId,
+        classId: resolvedClassId,
+        studentId: student.id,
+        date: targetDate,
+        status: 'PRESENT',
+        markedByUserId: userId,
+        sourceNote: `Teacher Morning Unified Scan (${eventDirection})`,
+      });
+      if (syncResult?.record) {
+        // Record was updated or created
+      }
+    } catch (_) {}
+  }
+
+  // 3. Send Parent Email Alert
+  let parentEmailSent = false;
+  const parentEmail = student.guardianEmail ? student.guardianEmail.trim() : null;
+  let emailError = null;
+
+  if (parentEmail) {
+    try {
+      const madrasa = await prisma.madrasa.findUnique({
+        where: { id: madrasaId },
+        select: { name: true },
+      });
+      const madrasaName = madrasa?.name || 'MadrasaNexa';
+      const timeStr = new Date().toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Colombo',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+
+      const isEntry = eventDirection === 'ENTRY';
+      const subject = `[${madrasaName}] Student Attendance Alert: ${student.fullName} has Checked ${isEntry ? 'IN' : 'OUT'}`;
+
+      const html = renderGateEmailHtml({
+        madrasaName,
+        studentName: student.fullName,
+        admissionNo: student.admissionNo,
+        className,
+        eventType: eventDirection,
+        timeStr,
+        dateStr: targetDate,
+      });
+
+      const emailResult = await dispatchEmail({
+        to: parentEmail,
+        subject,
+        html,
+        text: `${madrasaName}: ${student.fullName} (${student.admissionNo}) of ${className} has checked ${isEntry ? 'in' : 'out'} at ${timeStr} on ${targetDate}.`,
+        madrasaId,
+      });
+
+      if (emailResult?.success) {
+        parentEmailSent = true;
+      } else {
+        emailError = emailResult?.error || 'Failed to dispatch email';
+      }
+    } catch (err) {
+      emailError = err.message || 'SMTP dispatch error';
+    }
+  }
+
+  // 4. Log StudentGateEvent if model exists
+  let gateEvent = null;
+  if (prisma.studentGateEvent) {
+    try {
+      gateEvent = await prisma.studentGateEvent.create({
+        data: {
+          madrasaId,
+          studentId: student.id,
+          recordedByUserId: userId,
+          eventType: eventDirection,
+          category,
+          scannedAt: new Date(),
+          emailStatus: parentEmailSent ? 'SENT' : (parentEmail ? 'QUEUED' : 'SKIPPED_NO_RECIPIENT'),
+          emailSkipReason: !parentEmail ? 'NO_GUARDIAN_EMAIL_REGISTERED' : null,
+          sentAt: parentEmailSent ? new Date() : null,
+        },
+      });
+    } catch (_) {}
+  }
+
+  const scannedAtIso = new Date().toISOString();
+  const scannedTimeStr = new Date().toLocaleTimeString('en-US', {
+    timeZone: 'Asia/Colombo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  return {
+    success: true,
+    direction: eventDirection,
+    student: {
+      id: student.id,
+      fullName: student.fullName,
+      admissionNo: student.admissionNo,
+      classId: resolvedClassId,
+      className,
+      category,
+      guardianEmail: parentEmail,
+      guardianPhone: student.guardianPhone || '',
+    },
+    status: 'PRESENT',
+    alreadyMarked,
+    scannedAt: scannedAtIso,
+    scannedTime: scannedTimeStr,
+    method,
+    parentEmailSent,
+    parentEmail,
+    emailError,
+    message: `${eventDirection === 'ENTRY' ? 'Checked in' : 'Checked out'} ${student.fullName} (${student.admissionNo}).${parentEmailSent ? ' Parent email alert sent.' : (parentEmail ? ' (Email queued)' : '')}`,
+  };
+}
+
 /**
  * Single-student QR / Barcode period attendance scanner endpoint.
  * Supports canonical 2D QR (MNX1_<32 hex>) and 1D Admission Barcodes.
@@ -1599,7 +2006,18 @@ export async function scanStudentPeriodAttendance({
   scanInput,
   date,
   periodNumber = 1,
+  direction = 'ENTRY',
 }) {
+  if (!scheduleId) {
+    return scanDailyStudentAttendance({
+      madrasaId,
+      ustadhId,
+      userId,
+      scanInput,
+      direction,
+      date,
+    });
+  }
   if (!madrasaId || !ustadhId) {
     throw new BadRequestError('Tenant madrasaId and ustadhId are required.');
   }

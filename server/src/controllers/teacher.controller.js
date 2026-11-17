@@ -7,6 +7,8 @@ import {
   studentPeriodMarkSchema,
   studentPeriodScanSchema,
   studentPeriodSealSchema,
+  dailyStudentScanSchema,
+  dailyStudentRosterQuerySchema,
   teacherAttendanceHistoryQuerySchema,
   teacherPaymentHistoryQuerySchema,
   teacherNotificationsQuerySchema,
@@ -236,6 +238,45 @@ export async function sealStudentPeriodSession(req, res, next) {
   }
 }
 
+export async function getDailyStudentRoster(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const ustadhId = req.teacher.ustadhId;
+    const validated = dailyStudentRosterQuerySchema.parse(req.query);
+
+    const data = await teacherService.getDailyStudentRoster({
+      madrasaId,
+      ustadhId,
+      query: validated,
+    });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function scanDailyStudentAttendance(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const ustadhId = req.teacher.ustadhId;
+    const userId = req.auth.userId;
+    const validated = dailyStudentScanSchema.parse(req.body);
+
+    const data = await teacherService.scanDailyStudentAttendance({
+      madrasaId,
+      ustadhId,
+      userId,
+      scanInput: validated.scanInput,
+      direction: validated.direction,
+      date: validated.date,
+      classId: validated.classId,
+    });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function scanStudentPeriodAttendance(req, res, next) {
   try {
     const madrasaId = req.tenant.madrasaId;
@@ -252,6 +293,7 @@ export async function scanStudentPeriodAttendance(req, res, next) {
       scanInput: validated.scanInput,
       date: validated.date,
       periodNumber: validated.periodNumber,
+      direction: validated.direction,
     });
     return res.status(200).json({ success: true, data });
   } catch (error) {

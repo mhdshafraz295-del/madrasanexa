@@ -21,15 +21,45 @@ import {
   Sparkles,
   Info,
 } from 'lucide-react';
-import { MOCK_TEACHER_PROFILE, TeacherProfile } from '../mock/teacherMockData';
+import type { TeacherProfile } from '../mock/teacherMockData';
 import { profileApi } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 
 type TabKey = 'personal' | 'contact' | 'address' | 'academic' | 'professional' | 'experience' | 'documents';
 
+const initialProfile: TeacherProfile = {
+  id: '',
+  employeeCode: 'UST-000',
+  fullName: 'Faculty Member',
+  arabicName: 'أستاذ معتمد لدى المنظومة',
+  avatarUrl: '',
+  designation: 'Faculty Instructor',
+  department: 'Academic Faculty',
+  email: '',
+  phone: '',
+  whatsapp: '',
+  status: 'Active',
+  dateOfJoining: '',
+  bloodGroup: 'O+',
+  nicPassport: '',
+  dateOfBirth: '',
+  gender: 'Male',
+  maritalStatus: 'Single',
+  residentialAddress: '',
+  district: '',
+  postalCode: '',
+  country: 'Sri Lanka',
+  emergencyContact: { name: '', relationship: '', phone: '' },
+  academicQualifications: [],
+  professionalQualifications: [],
+  teachingExperience: [],
+  documents: [],
+  profileCompletionPercentage: 85,
+};
+
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<TeacherProfile>(MOCK_TEACHER_PROFILE);
+  const [profile, setProfile] = useState<TeacherProfile>(initialProfile);
   const [activeTab, setActiveTab] = useState<TabKey>('personal');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

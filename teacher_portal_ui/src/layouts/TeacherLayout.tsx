@@ -17,10 +17,7 @@ import {
   KeyRound,
   ChevronDown,
 } from 'lucide-react';
-import {
-  MOCK_TEACHER_PROFILE,
-  MOCK_INSTITUTION_INFO,
-  MOCK_NOTIFICATIONS,
+import type {
   TeacherProfile,
 } from '../mock/teacherMockData';
 import { authApi, profileApi, notificationsApi } from '../services/api';
@@ -35,8 +32,8 @@ interface NavItem {
 export default function TeacherLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [profile, setProfile] = useState<TeacherProfile>(MOCK_TEACHER_PROFILE);
-  const [unreadCount, setUnreadCount] = useState<number>(MOCK_NOTIFICATIONS.filter((n) => !n.isRead).length);
+  const [profile, setProfile] = useState<TeacherProfile | null>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
   const [logoError, setLogoError] = useState(false);
 
   const location = useLocation();
@@ -48,7 +45,7 @@ export default function TeacherLayout() {
     };
     const handleProfileUpdated = (e: any) => {
       if (e.detail) {
-        setProfile((prev) => ({ ...prev, ...e.detail }));
+        setProfile((prev) => (prev ? { ...prev, ...e.detail } : e.detail));
       } else {
         profileApi.getProfile().then((p) => {
           if (isMounted && p) setProfile(p);
@@ -60,6 +57,17 @@ export default function TeacherLayout() {
     window.addEventListener('teacher:profile-updated', handleProfileUpdated);
 
     let isMounted = true;
+    const stored = authApi.getStoredUser();
+    if (stored) {
+      setProfile((prev) => prev || ({
+        id: stored.id,
+        fullName: stored.name,
+        email: stored.email,
+        employeeCode: stored.teacherProfile?.ustadhCode || 'UST',
+        status: 'Active',
+      } as any));
+    }
+
     profileApi
       .getProfile()
       .then((p) => {
@@ -101,8 +109,8 @@ export default function TeacherLayout() {
   ];
 
   const profileAny = profile as any;
-  const madrasaName = profileAny?.institution?.name || profileAny?.madrasa?.name || MOCK_INSTITUTION_INFO.name;
-  const madrasaCode = profileAny?.institution?.code || profileAny?.madrasa?.code || MOCK_INSTITUTION_INFO.code;
+  const madrasaName = profileAny?.institution?.name || profileAny?.madrasa?.name || 'MadrasaNexa';
+  const madrasaCode = profileAny?.institution?.code || profileAny?.madrasa?.code || 'MNX';
   const customLogoUrl = profileAny?.institution?.logoUrl || profileAny?.madrasa?.logoUrl;
   const teacherInitials = profile?.fullName
     ? profile.fullName
@@ -112,7 +120,7 @@ export default function TeacherLayout() {
         .slice(0, 2)
         .join('')
         .toUpperCase()
-    : 'UT';
+    : 'FA';
 
   return (
     <div className="min-h-screen bg-[#F7F6F1] flex flex-col md:flex-row text-[#0F172A]">
@@ -240,14 +248,14 @@ export default function TeacherLayout() {
               >
                 <div className="flex items-center gap-2.5 overflow-hidden text-left">
                   <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                    {profile.fullName?.[0]?.toUpperCase() || 'U'}
+                    {profile?.fullName?.[0]?.toUpperCase() || 'U'}
                   </div>
                   <div className="overflow-hidden">
                     <div className="text-xs font-semibold text-[#0F172A] truncate">
-                      {profile.fullName}
+                      {profile?.fullName || 'Faculty Member'}
                     </div>
                     <div className="text-[10px] text-[#7C8A9A] truncate font-mono">
-                      {profile.email}
+                      {profile?.email || 'faculty@madrasanexa.lk'}
                     </div>
                   </div>
                 </div>

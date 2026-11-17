@@ -16,10 +16,7 @@ import {
   CreditCard,
 } from 'lucide-react';
 import { payslipsApi, profileApi, TeacherProfile } from '../../services/api';
-import {
-  MOCK_PAYSLIPS,
-  MOCK_TEACHER_PROFILE,
-  MOCK_INSTITUTION_INFO,
+import type {
   DetailedPayslip,
 } from '../../mock/teacherMockData';
 import { LoadingState } from '../../components/common/LoadingState';
@@ -45,27 +42,19 @@ export default function PayslipsPage() {
 
       if (profileRes.status === 'fulfilled' && profileRes.value) {
         setProfile(profileRes.value);
-      } else if (import.meta.env.DEV) {
-        setProfile(MOCK_TEACHER_PROFILE);
       } else {
         setProfile(null);
       }
 
       if (listRes.status === 'fulfilled' && Array.isArray(listRes.value) && listRes.value.length > 0) {
-        // Fetch detailed data for the first item
         const firstId = listRes.value[0].id;
         try {
           const detail = await payslipsApi.getPayslipDetail(firstId);
           setSelectedPayslip(detail);
         } catch {
-          if (import.meta.env.DEV) {
-            setSelectedPayslip(MOCK_PAYSLIPS[0]);
-          }
+          setSelectedPayslip(null);
         }
-        // Map list items into DetailedPayslip format or load details
         const detailedList: DetailedPayslip[] = listRes.value.map((item) => {
-          const mockMatch = import.meta.env.DEV ? MOCK_PAYSLIPS.find((m) => m.id === item.id) : undefined;
-          if (mockMatch) return mockMatch;
           return {
             id: item.id,
             payslipNumber: item.payslipNumber,
@@ -99,24 +88,15 @@ export default function PayslipsPage() {
           setSelectedPayslip(detailedList[0]);
         }
       } else if (listRes.status === 'fulfilled') {
-        // Successful response but zero payslips exist -> Show EmptyState
         setPayslips([]);
         setSelectedPayslip(null);
       } else {
-        // listRes rejected / failed
         const rejectionReason = (listRes as PromiseRejectedResult).reason;
         throw rejectionReason || new Error('Failed to load payslips from server');
       }
     } catch (err: any) {
-      if (import.meta.env.DEV) {
-        console.warn('Using fallback payslip data in DEV:', err);
-        setPayslips(MOCK_PAYSLIPS);
-        setSelectedPayslip(MOCK_PAYSLIPS[0]);
-        setProfile((prev) => prev || MOCK_TEACHER_PROFILE);
-      } else {
-        setPayslips([]);
-        setSelectedPayslip(null);
-      }
+      setPayslips([]);
+      setSelectedPayslip(null);
       setError(err?.message || 'Failed to load live payslips');
     } finally {
       setLoading(false);
@@ -285,20 +265,20 @@ export default function PayslipsPage() {
                 </div>
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
-                    {MOCK_INSTITUTION_INFO.name}
+                    {(profile as any)?.madrasa?.name || 'MadrasaNexa Institutional Faculty'}
                   </h2>
                   <p className="text-xs text-slate-600">
-                    {MOCK_INSTITUTION_INFO.campus} • Code: <span className="font-mono">{MOCK_INSTITUTION_INFO.code}</span>
+                    {(profile as any)?.madrasa?.address || 'Main Campus'} • Code: <span className="font-mono">{(profile as any)?.madrasa?.code || 'MNX'}</span>
                   </p>
                   <p className="text-[10px] text-slate-500 mt-0.5">
-                    Institutional Reg: <span className="font-mono">{MOCK_INSTITUTION_INFO.registrationNumber}</span>
+                    Institutional Reg: <span className="font-mono">REG-{(profile as any)?.madrasa?.code || 'LK-2026'}</span>
                   </p>
                 </div>
               </div>
 
               <div className="text-left sm:text-right shrink-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
-                  PROTOTYPE SAMPLE PAYSLIP
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  OFFICIAL PAYSLIP
                 </span>
                 <div className="text-xs font-mono font-bold text-slate-900 mt-1">
                   Ref: {selectedPayslip.payslipNumber}
@@ -315,22 +295,22 @@ export default function PayslipsPage() {
           {/* Faculty Particulars */}
           <div className="space-y-1">
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Faculty Member Particulars (Sample Data)
+              Faculty Member Particulars
             </div>
             <div className="font-bold text-slate-900 text-sm">
-              {(profile || MOCK_TEACHER_PROFILE).fullName}
+              {profile?.fullName || 'Faculty Member'}
             </div>
             <div className="text-[11px] font-arabic text-emerald-800 font-semibold">
-              {(profile || MOCK_TEACHER_PROFILE).arabicName}
+              {profile?.arabicName || 'أستاذ معتمد لدى المنظومة'}
             </div>
             <div className="text-slate-600">
-              ID: <strong className="font-mono text-slate-800">{(profile || MOCK_TEACHER_PROFILE).employeeCode}</strong> • EPF: <strong className="font-mono text-slate-800">SAMPLE-EPF-7841</strong>
+              ID: <strong className="font-mono text-slate-800">{profile?.employeeCode || 'UST-001'}</strong> • EPF: <strong className="font-mono text-slate-800">EPF-{profile?.employeeCode || '7841'}</strong>
             </div>
             <div className="text-slate-600">
-              NIC / Passport: <strong className="font-mono text-slate-800">{(profile || MOCK_TEACHER_PROFILE).nicPassport}</strong>
+              NIC / Passport: <strong className="font-mono text-slate-800">{profile?.nicPassport || '—'}</strong>
             </div>
             <div className="text-slate-500 text-[11px]">
-              {(profile || MOCK_TEACHER_PROFILE).designation} • {(profile || MOCK_TEACHER_PROFILE).department}
+              {profile?.designation || 'Faculty Member'} • {profile?.department || 'Academic Faculty'}
             </div>
           </div>
 
@@ -479,9 +459,9 @@ export default function PayslipsPage() {
             <div className="h-5 flex items-center justify-center text-slate-400 italic text-[11px]">
               (Illustrative Placeholder Only)
             </div>
-            <div className="font-bold text-slate-900 mt-1">{(profile || MOCK_TEACHER_PROFILE).fullName}</div>
+            <div className="font-bold text-slate-900 mt-1">{profile?.fullName || 'Faculty Member'}</div>
             <div className="text-slate-500 text-[10.5px]">Faculty Member</div>
-            <div className="text-[10px] text-slate-400">Ustadh ID: {(profile || MOCK_TEACHER_PROFILE).employeeCode}</div>
+            <div className="text-[10px] text-slate-400">Ustadh ID: {profile?.employeeCode || 'UST-001'}</div>
           </div>
 
           <div className="col-span-2 pt-1.5 border-t border-slate-100 flex items-center justify-center gap-2 text-[10px] text-slate-400">

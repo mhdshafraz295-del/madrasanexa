@@ -19,13 +19,11 @@ import {
   ArrowRight,
   Filter,
 } from 'lucide-react';
-import {
-  MOCK_ASSIGNED_CLASSES,
-  MOCK_TIMETABLE,
+import type {
   AssignedClass,
   AssignedStudent,
 } from '../../mock/teacherMockData';
-import { studentAttendanceApi } from '../../services/api';
+import { studentAttendanceApi, classesApi } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
 
@@ -33,23 +31,26 @@ type SessionStep = 'setup' | 'active_scanning' | 'review_confirm';
 type StatusFilter = 'All' | 'Present' | 'Late' | 'Excused' | 'Absent';
 
 export default function StudentAttendancePage() {
-  const [selectedClassId, setSelectedClassId] = useState<string>(MOCK_ASSIGNED_CLASSES[0].id);
+  const [assignedClasses, setAssignedClasses] = useState<AssignedClass[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedPeriod, setSelectedPeriod] = useState<number>(1);
   const [sessionStep, setSessionStep] = useState<SessionStep>('setup');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sessionCode, setSessionCode] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [roster, setRoster] = useState<AssignedStudent[]>([]);
 
   // Active Session State
-  const currentClass = MOCK_ASSIGNED_CLASSES.find((c) => c.id === selectedClassId) || MOCK_ASSIGNED_CLASSES[0];
-  const [roster, setRoster] = useState<AssignedStudent[]>(() =>
-    currentClass.students.map((s) => ({
-      ...s,
-      // Default initial state before scanning starts
-      status: 'Absent' as const,
-      scannedAt: undefined,
-      manualNote: undefined,
-    }))
-  );
+  const currentClass = assignedClasses.find((c) => c.id === selectedClassId) || assignedClasses[0] || {
+    id: '',
+    name: 'No Class Selected',
+    code: '—',
+    stream: 'Islamic Studies',
+    gradeLevel: '—',
+    totalStudents: 0,
+    subjectTaught: '—',
+    students: [],
+  };
 
   // Scanner Simulator States
   const [barcodeInput, setBarcodeInput] = useState('');
@@ -72,17 +73,55 @@ export default function StudentAttendancePage() {
   // Confirmation Sealed State
   const [isSessionSealed, setIsSessionSealed] = useState(false);
 
-  // When class changes in setup, reload roster
-  const handleClassChange = (classId: string) => {
+  useEffect(() => {
+    classesApi
+      .getAssignedClasses()
+      .then(async (classes) => {
+        if (classes && classes.length > 0) {
+          setAssignedClasses(classes);
+          const firstClassId = classes[0].id;
+          setSelectedClassId(firstClassId);
+          try {
+            const detail = await classesApi.getClassDetail(firstClassId);
+            if (detail?.students) {
+              setRoster(
+                detail.students.map((s) => ({
+                  ...s,
+                  status: 'Absent' as const,
+                  scannedAt: undefined,
+                  manualNote: undefined,
+                }))
+              );
+            }
+          } catch {
+            setRoster([]);
+          }
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  // When class changes in setup, reload roster from live backend
+  const handleClassChange = async (classId: string) => {
     setSelectedClassId(classId);
-    const cls = MOCK_ASSIGNED_CLASSES.find((c) => c.id === classId) || MOCK_ASSIGNED_CLASSES[0];
-    setRoster(
-      cls.students.map((s) => ({
-        ...s,
-        status: 'Absent',
-        scannedAt: undefined,
-      }))
-    );
+    try {
+      const detail = await classesApi.getClassDetail(classId);
+      if (detail?.students) {
+        setRoster(
+          detail.students.map((s) => ({
+            ...s,
+            status: 'Absent' as const,
+            scannedAt: undefined,
+            manualNote: undefined,
+          }))
+        );
+      } else {
+        setRoster([]);
+      }
+    } catch {
+      setRoster([]);
+    }
   };
 
   // Step 4: Start session
@@ -269,11 +308,15 @@ export default function StudentAttendancePage() {
                 onChange={(e) => handleClassChange(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#0D9488] bg-white"
               >
-                {MOCK_ASSIGNED_CLASSES.map((cls) => (
-                  <option key={cls.id} value={cls.id}>
-                    {cls.name} ({cls.totalStudents} Students)
-                  </option>
-                ))}
+                {assignedClasses.length === 0 ? (
+                  <option value="">No Assigned Classes</option>
+                ) : (
+                  assignedClasses.map((cls) => (
+                    <option key={cls.id} value={cls.id}>
+                      {cls.name} ({cls.totalStudents} Students)
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 

@@ -22,15 +22,10 @@ import {
   Keyboard,
   ShieldAlert,
 } from 'lucide-react';
-import {
-  MOCK_TEACHER_PROFILE,
-  MOCK_INSTITUTION_INFO,
-  MOCK_PERMANENT_CLASSROOMS,
-  MOCK_TIMETABLE,
-  MOCK_TEACHER_ATTENDANCE_LOGS,
+import type {
   TeacherAttendanceRecord,
 } from '../../mock/teacherMockData';
-import { teacherAttendanceApi } from '../../services/api';
+import { teacherAttendanceApi, attendanceHistoryApi, authApi } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
 
@@ -40,11 +35,38 @@ const STATIC_VENUE_PLAQUE_NOTICE =
 type ScanState = 'idle' | 'valid' | 'invalid_room' | 'expired_window' | 'already_recorded';
 
 export default function TeacherAttendancePage() {
-  const activeSlot = MOCK_TIMETABLE.find((t) => t.id === 'tt-mon-2') || MOCK_TIMETABLE[0];
-  const assignedRoom = MOCK_PERMANENT_CLASSROOMS.find((r) => r.id === activeSlot.roomId) || MOCK_PERMANENT_CLASSROOMS[1];
+  const [todaySchedule, setTodaySchedule] = useState<any[]>([]);
+  const [logs, setLogs] = useState<TeacherAttendanceRecord[]>([]);
+
+  const storedUser = authApi.getStoredUser();
+  const teacherName = storedUser?.name || 'Faculty Member';
+
+  const activeSlot = todaySchedule[0] || {
+    scheduleId: '',
+    id: '',
+    period: 1,
+    timeSlot: '08:00 AM – 08:45 AM',
+    className: 'Scheduled Lecture',
+    classId: '',
+    subject: 'Academic Session',
+    roomName: 'Allocated Classroom',
+    roomId: '',
+    roomCode: 'CR-01',
+    status: 'Pending',
+    graceWindowMinutes: 15,
+  };
+
+  const assignedRoom = {
+    id: activeSlot.roomId || 'rm-default',
+    name: activeSlot.roomName || 'Classroom Venue',
+    code: activeSlot.roomCode || 'CR-01',
+    building: 'Main Academic Campus',
+    floor: 'Academic Block',
+    capacity: 35,
+    qrPayload: `PLAQUE-${activeSlot.roomCode || 'CR01'}-${activeSlot.classId || 'SESSION'}`,
+  };
 
   const [scanState, setScanState] = useState<ScanState>('idle');
-  const [logs, setLogs] = useState<TeacherAttendanceRecord[]>(MOCK_TEACHER_ATTENDANCE_LOGS);
   const [manualModalOpen, setManualModalOpen] = useState(false);
   const [manualRoomToken, setManualRoomToken] = useState('');
   const [manualReason, setManualReason] = useState('Camera Hardware Fault on Faculty Device');
@@ -177,11 +199,16 @@ export default function TeacherAttendancePage() {
   };
 
   useEffect(() => {
-    teacherAttendanceApi
-      .getTodayTeacherAttendance()
-      .then((records) => {
-        if (records && records.length > 0) {
-          // Format records if available from backend
+    Promise.all([
+      teacherAttendanceApi.getTodayTeacherAttendance(),
+      attendanceHistoryApi.getAttendanceHistory('teacher', 1, 20),
+    ])
+      .then(([todaySlots, hist]) => {
+        if (todaySlots && todaySlots.length > 0) {
+          setTodaySchedule(todaySlots);
+        }
+        if (hist?.data) {
+          setLogs(hist.data);
         }
       })
       .catch(() => {});
@@ -635,7 +662,7 @@ export default function TeacherAttendancePage() {
               <div className="py-3 space-y-2 text-xs">
                 <div className="flex justify-between">
                   <span className="text-slate-400">Ustadh:</span>
-                  <span className="font-bold text-white">{MOCK_TEACHER_PROFILE.fullName.split(' ')[1]}</span>
+                  <span className="font-bold text-white">{teacherName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Classroom:</span>
@@ -673,7 +700,7 @@ export default function TeacherAttendancePage() {
               My Recent Attendance Logs
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Historical classroom QR check-ins recorded for Ustadh Abdullah Farooq
+              Historical classroom QR check-ins recorded for {teacherName}
             </p>
           </div>
           <span className="text-xs font-semibold text-slate-500">
@@ -694,7 +721,15 @@ export default function TeacherAttendancePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {logs.map((log) => (
+              {logs.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-8 text-center text-slate-500">
+                    <p className="font-semibold text-sm text-slate-700">No attendance check-ins recorded yet.</p>
+                    <p className="text-xs text-slate-400 mt-1">Once you verify your classroom arrival using QR check-in, historical logs will appear here.</p>
+                  </td>
+                </tr>
+              ) : (
+                logs.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/60 transition">
                   <td className="py-3 px-4">
                     <div className="font-bold text-slate-900">{log.date}</div>
@@ -727,7 +762,7 @@ export default function TeacherAttendancePage() {
                     </span>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

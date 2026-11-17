@@ -13,7 +13,7 @@ import {
   Check,
 } from 'lucide-react';
 import { notificationsApi } from '../services/api';
-import { MOCK_NOTIFICATIONS, TeacherNotification } from '../mock/teacherMockData';
+import type { TeacherNotification } from '../mock/teacherMockData';
 import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { EmptyState } from '../components/common/EmptyState';
@@ -34,12 +34,7 @@ export default function NotificationsPage() {
       const res = await notificationsApi.getNotifications(undefined, undefined, 1, 50);
       setNotifications(res.data || []);
     } catch (err: any) {
-      if (import.meta.env.DEV) {
-        console.warn('Using fallback notifications data in DEV:', err);
-        setNotifications(MOCK_NOTIFICATIONS);
-      } else {
-        setNotifications([]);
-      }
+      setNotifications([]);
       setError(err?.message || 'Failed to load notifications from server');
     } finally {
       setLoading(false);

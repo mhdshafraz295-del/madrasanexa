@@ -18,7 +18,6 @@ import {
   User,
 } from 'lucide-react';
 import { settingsApi, authApi, AUTH_STORAGE_KEYS, TeacherSettingsData } from '../services/api';
-import { MOCK_TEACHER_PROFILE } from '../mock/teacherMockData';
 import { LoadingState } from '../components/common/LoadingState';
 
 export default function SettingsPage() {

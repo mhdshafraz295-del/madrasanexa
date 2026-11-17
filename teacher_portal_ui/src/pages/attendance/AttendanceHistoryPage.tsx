@@ -16,12 +16,11 @@ import {
   FileText,
   AlertCircle,
 } from 'lucide-react';
-import {
-  MOCK_HISTORICAL_SESSIONS,
-  MOCK_ASSIGNED_CLASSES,
+import type {
   HistoricalAttendanceSession,
+  AssignedClass,
 } from '../../mock/teacherMockData';
-import { attendanceHistoryApi } from '../../services/api';
+import { attendanceHistoryApi, classesApi } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
@@ -30,6 +29,7 @@ type DatePreset = 'All' | 'Today' | 'Yesterday' | '7days' | '30days';
 
 export default function AttendanceHistoryPage() {
   const [sessions, setSessions] = useState<HistoricalAttendanceSession[]>([]);
+  const [assignedClasses, setAssignedClasses] = useState<AssignedClass[]>([]);
   const [datePreset, setDatePreset] = useState<DatePreset>('All');
   const [classFilter, setClassFilter] = useState('All');
   const [subjectFilter, setSubjectFilter] = useState('All');
@@ -42,7 +42,11 @@ export default function AttendanceHistoryPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await attendanceHistoryApi.getAttendanceHistory('student', 1, 50);
+      const [res, classes] = await Promise.all([
+        attendanceHistoryApi.getAttendanceHistory('student', 1, 50),
+        classesApi.getAssignedClasses().catch(() => []),
+      ]);
+      if (classes) setAssignedClasses(classes);
       const rawList = Array.isArray(res?.data) ? res.data : [];
       const mapped: HistoricalAttendanceSession[] = rawList.map((item: any, idx: number) => {
         const total = Number(item.totalEnrolled ?? 0);
@@ -281,7 +285,7 @@ export default function AttendanceHistoryPage() {
               className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
             >
               <option value="All">All Classes</option>
-              {MOCK_ASSIGNED_CLASSES.map((c) => (
+              {assignedClasses.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
             </select>

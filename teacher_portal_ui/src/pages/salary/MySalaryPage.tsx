@@ -18,18 +18,14 @@ import {
   Download,
   AlertCircle,
 } from 'lucide-react';
-import {
-  MOCK_SALARY_OVERVIEW,
-  MOCK_PAYSLIPS,
-  MOCK_TEACHER_PROFILE,
-} from '../../mock/teacherMockData';
 import { salaryApi, SalarySummaryData } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
+import EmptyState from '../../components/common/EmptyState';
 
 export default function MySalaryPage() {
   const [selectedMonthCode, setSelectedMonthCode] = useState('2026-10');
-  const [salaryData, setSalaryData] = useState<SalarySummaryData | typeof MOCK_SALARY_OVERVIEW>(MOCK_SALARY_OVERVIEW);
+  const [salaryData, setSalaryData] = useState<SalarySummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,16 +54,25 @@ export default function MySalaryPage() {
     return <ErrorState message={error} onRetry={loadSalary} className="my-8" />;
   }
 
+  if (!salaryData) {
+    return (
+      <EmptyState
+        title="No Salary Summary Available"
+        description="Your payroll and remuneration details have not been processed by the administration yet."
+      />
+    );
+  }
+
   // Find corresponding payslip/trend for the selected month
   const selectedTrend =
-    salaryData.monthlyTrends?.find((t) => t.month.toLowerCase().includes('oct') && selectedMonthCode === '2026-10') ||
-    salaryData.monthlyTrends?.[salaryData.monthlyTrends.length - 1] || {
-      month: 'Oct 2026',
-      basic: 85000,
-      allowances: 31000,
-      deductions: 10000,
-      net: 106000,
-      status: 'Paid',
+    salaryData.monthlyTrends?.find((t) => selectedMonthCode && t.month.toLowerCase().includes(selectedMonthCode.toLowerCase())) ||
+    salaryData.monthlyTrends?.[0] || {
+      month: 'Current',
+      basic: salaryData.basicSalary,
+      allowances: (salaryData.grossSalary || 0) - (salaryData.basicSalary || 0),
+      deductions: salaryData.totalDeductions,
+      net: salaryData.netSalary,
+      status: salaryData.currentStatus || 'Pending',
     };
 
   const formatLKR = (amount: number) => {

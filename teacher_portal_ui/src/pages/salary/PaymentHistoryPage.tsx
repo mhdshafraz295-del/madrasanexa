@@ -17,8 +17,7 @@ import {
   Download,
 } from 'lucide-react';
 import { paymentHistoryApi } from '../../services/api';
-import {
-  MOCK_PAYMENT_HISTORY,
+import type {
   PaymentHistoryRecord,
 } from '../../mock/teacherMockData';
 import { LoadingState } from '../../components/common/LoadingState';
@@ -43,12 +42,7 @@ export default function PaymentHistoryPage() {
       const res = await paymentHistoryApi.getPaymentHistory(1, 50);
       setPayments((res.data as PaymentHistoryRecord[]) || []);
     } catch (err: any) {
-      if (import.meta.env.DEV) {
-        console.warn('Using fallback payment history data in DEV due to error:', err);
-        setPayments(MOCK_PAYMENT_HISTORY);
-      } else {
-        setPayments([]);
-      }
+      setPayments([]);
       setError(err?.message || 'Failed to load live payment history from server');
     } finally {
       setLoading(false);

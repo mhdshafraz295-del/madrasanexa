@@ -366,6 +366,10 @@ export const profileApi = {
     whatsappNumber?: string;
     address?: string;
     emergencyContact?: { name: string; relationship: string; phone: string };
+    academicQualifications?: any[];
+    professionalQualifications?: any[];
+    teachingExperience?: any[];
+    documents?: any[];
   }): Promise<{ id: string; message: string }> {
     return request<{ id: string; message: string }>('/teacher/profile', {
       method: 'PATCH',

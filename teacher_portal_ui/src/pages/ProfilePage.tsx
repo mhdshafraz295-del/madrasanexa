@@ -39,6 +39,16 @@ export default function ProfilePage() {
   const [newDocTitle, setNewDocTitle] = useState('');
   const [newDocCategory, setNewDocCategory] = useState<'Degree' | 'Ijazah' | 'Identity' | 'Clearance'>('Degree');
 
+  // Qualification Modals State
+  const [degreeModalOpen, setDegreeModalOpen] = useState(false);
+  const [degreeForm, setDegreeForm] = useState({ degree: '', institution: '', year: '', gradeHonor: '' });
+
+  const [sanadModalOpen, setSanadModalOpen] = useState(false);
+  const [sanadForm, setSanadForm] = useState({ title: '', issuingBody: '', year: '', credentialId: '' });
+
+  const [expModalOpen, setExpModalOpen] = useState(false);
+  const [expForm, setExpForm] = useState({ role: '', institution: '', period: '', responsibilities: '' });
+
   const loadProfile = async () => {
     setIsLoading(true);
     setError(null);
@@ -109,6 +119,10 @@ export default function ProfilePage() {
         whatsappNumber: profile.whatsapp,
         address: profile.residentialAddress,
         emergencyContact: profile.emergencyContact,
+        academicQualifications: profile.academicQualifications || [],
+        professionalQualifications: profile.professionalQualifications || [],
+        teachingExperience: profile.teachingExperience || [],
+        documents: profile.documents || [],
       });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3500);
@@ -119,7 +133,106 @@ export default function ProfilePage() {
     }
   };
 
-  const handleAddDocument = (e: React.FormEvent) => {
+  const handleAddDegree = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!degreeForm.degree || !degreeForm.institution) return;
+    const newEntry = {
+      id: `deg-${Date.now()}`,
+      degree: degreeForm.degree,
+      institution: degreeForm.institution,
+      year: degreeForm.year || new Date().getFullYear().toString(),
+      gradeHonor: degreeForm.gradeHonor || 'First Class',
+    };
+    const updated = [...(profile.academicQualifications || []), newEntry];
+    setProfile((prev) => ({ ...prev, academicQualifications: updated }));
+    setDegreeModalOpen(false);
+    setDegreeForm({ degree: '', institution: '', year: '', gradeHonor: '' });
+    try {
+      await profileApi.updateProfile({ academicQualifications: updated });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.warn('Background update warning:', err);
+    }
+  };
+
+  const handleDeleteDegree = async (id: string) => {
+    const updated = (profile.academicQualifications || []).filter((q) => q.id !== id);
+    setProfile((prev) => ({ ...prev, academicQualifications: updated }));
+    try {
+      await profileApi.updateProfile({ academicQualifications: updated });
+    } catch (err) {
+      console.warn('Delete warning:', err);
+    }
+  };
+
+  const handleAddSanad = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sanadForm.title || !sanadForm.issuingBody) return;
+    const newEntry = {
+      id: `snd-${Date.now()}`,
+      title: sanadForm.title,
+      issuingBody: sanadForm.issuingBody,
+      year: sanadForm.year || new Date().getFullYear().toString(),
+      credentialId: sanadForm.credentialId || undefined,
+    };
+    const updated = [...(profile.professionalQualifications || []), newEntry];
+    setProfile((prev) => ({ ...prev, professionalQualifications: updated }));
+    setSanadModalOpen(false);
+    setSanadForm({ title: '', issuingBody: '', year: '', credentialId: '' });
+    try {
+      await profileApi.updateProfile({ professionalQualifications: updated });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.warn('Background update warning:', err);
+    }
+  };
+
+  const handleDeleteSanad = async (id: string) => {
+    const updated = (profile.professionalQualifications || []).filter((s) => s.id !== id);
+    setProfile((prev) => ({ ...prev, professionalQualifications: updated }));
+    try {
+      await profileApi.updateProfile({ professionalQualifications: updated });
+    } catch (err) {
+      console.warn('Delete warning:', err);
+    }
+  };
+
+  const handleAddExperience = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!expForm.role || !expForm.institution) return;
+    const newEntry = {
+      id: `exp-${Date.now()}`,
+      role: expForm.role,
+      institution: expForm.institution,
+      period: expForm.period || '2023 - Present',
+      responsibilities: expForm.responsibilities || 'Conducting daily curriculum instruction and student mentoring.',
+    };
+    const updated = [...(profile.teachingExperience || []), newEntry];
+    setProfile((prev) => ({ ...prev, teachingExperience: updated }));
+    setExpModalOpen(false);
+    setExpForm({ role: '', institution: '', period: '', responsibilities: '' });
+    try {
+      await profileApi.updateProfile({ teachingExperience: updated });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.warn('Background update warning:', err);
+    }
+  };
+
+  const handleDeleteExperience = async (id: string) => {
+    const updated = (profile.teachingExperience || []).filter((e) => e.id !== id);
+    setProfile((prev) => ({ ...prev, teachingExperience: updated }));
+    try {
+      await profileApi.updateProfile({ teachingExperience: updated });
+    } catch (err) {
+      console.warn('Delete warning:', err);
+    }
+  };
+
+  const handleAddDocument = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDocTitle) return;
 
@@ -133,23 +246,35 @@ export default function ProfilePage() {
       category: newDocCategory,
     };
 
+    const updated = [newDoc, ...(profile.documents || [])];
     setProfile((prev) => ({
       ...prev,
-      documents: [newDoc, ...prev.documents],
+      documents: updated,
       profileCompletionPercentage: Math.min(100, prev.profileCompletionPercentage + 5),
     }));
 
     setNewDocTitle('');
     setUploadModalOpen(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+    try {
+      await profileApi.updateProfile({ documents: updated });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.warn('Upload save warning:', err);
+    }
   };
 
-  const handleDeleteDocument = (docId: string) => {
+  const handleDeleteDocument = async (docId: string) => {
+    const updated = (profile.documents || []).filter((d) => d.id !== docId);
     setProfile((prev) => ({
       ...prev,
-      documents: (prev.documents || []).filter((d) => d.id !== docId),
+      documents: updated,
     }));
+    try {
+      await profileApi.updateProfile({ documents: updated });
+    } catch (err) {
+      console.warn('Delete doc warning:', err);
+    }
   };
 
   const TABS: { key: TabKey; label: string; icon: any }[] = [
@@ -523,7 +648,7 @@ export default function ProfilePage() {
         {/* Tab 4: Academic Qualifications */}
         {activeTab === 'academic' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Academic Degrees & University Diplomas
@@ -532,6 +657,14 @@ export default function ProfilePage() {
                   Verified university transcripts and degree records
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setDegreeModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 transition self-start sm:self-auto cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#37C6A3]" />
+                <span>Add Qualification</span>
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -539,7 +672,7 @@ export default function ProfilePage() {
                 <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <GraduationCap className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                   <p className="text-xs font-semibold text-slate-600">No academic degrees recorded yet.</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Degrees and university credentials can be submitted to administration.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Click "Add Qualification" above to add your university degree or diploma.</p>
                 </div>
               ) : (
                 (profile.academicQualifications || []).map((aq) => (
@@ -561,10 +694,20 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Verified
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Verified
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDegree(aq.id)}
+                        className="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer"
+                        title="Delete Qualification"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -575,7 +718,7 @@ export default function ProfilePage() {
         {/* Tab 5: Professional Qualifications & Sanads */}
         {activeTab === 'professional' && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
               <div>
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
                   Traditional Sanads, Ijazahs & Licenses
@@ -584,6 +727,14 @@ export default function ProfilePage() {
                   Continuous transmission chains in Quran recitation and Shariah certificates
                 </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setSanadModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 transition self-start sm:self-auto cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#37C6A3]" />
+                <span>Add Sanad / Ijazah</span>
+              </button>
             </div>
 
             <div className="space-y-3">
@@ -591,7 +742,7 @@ export default function ProfilePage() {
                 <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <Award className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                   <p className="text-xs font-semibold text-slate-600">No traditional sanads or ijazahs on record.</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Official Sanad chains can be verified and added by institution management.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Click "Add Sanad / Ijazah" above to register your traditional sanad or teaching license.</p>
                 </div>
               ) : (
                 (profile.professionalQualifications || []).map((pq) => (
@@ -617,10 +768,20 @@ export default function ProfilePage() {
                         </div>
                       </div>
                     </div>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                      Authenticated
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                        Authenticated
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSanad(pq.id)}
+                        className="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer"
+                        title="Delete Sanad"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 ))
               )}
@@ -631,13 +792,23 @@ export default function ProfilePage() {
         {/* Tab 6: Teaching Experience */}
         {activeTab === 'experience' && (
           <div className="space-y-6">
-            <div className="border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Prior Pedagogical & Teaching Experience
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Past institutional posts and teaching appointments
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+              <div>
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                  Prior Pedagogical & Teaching Experience
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Past institutional posts and teaching appointments
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setExpModalOpen(true)}
+                className="px-3.5 py-1.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 transition self-start sm:self-auto cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#37C6A3]" />
+                <span>Add Experience</span>
+              </button>
             </div>
 
             <div className="space-y-4">
@@ -645,7 +816,7 @@ export default function ProfilePage() {
                 <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <Briefcase className="w-8 h-8 text-slate-400 mx-auto mb-2" />
                   <p className="text-xs font-semibold text-slate-600">No prior appointments listed.</p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">Previous teaching experience history can be entered or updated anytime.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Click "Add Experience" above to list previous madrasa or school teaching positions.</p>
                 </div>
               ) : (
                 (profile.teachingExperience || []).map((te) => (
@@ -658,9 +829,19 @@ export default function ProfilePage() {
                         <h3 className="text-xs font-bold text-slate-900">{te.role}</h3>
                         <div className="text-xs text-[#0D9488] font-semibold mt-0.5">{te.institution}</div>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                        {te.period}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                          {te.period}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteExperience(te.id)}
+                          className="text-slate-400 hover:text-rose-600 transition p-1 cursor-pointer"
+                          title="Delete Experience"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                     <p className="text-xs text-slate-600 mt-2 leading-relaxed">
                       {te.responsibilities}
@@ -767,7 +948,7 @@ export default function ProfilePage() {
         </div>
       </form>
 
-      {/* Upload Document Modal (Prototype Interactive) */}
+      {/* Upload Document Modal */}
       {uploadModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
@@ -820,15 +1001,275 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setUploadModalOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl"
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl cursor-pointer"
                 >
                   Upload & Attach
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Degree Modal */}
+      {degreeModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center gap-2 mb-2">
+              <GraduationCap className="w-5 h-5 text-[#0D9488]" />
+              <h3 className="text-base font-bold text-slate-900">Add Academic Degree / Diploma</h3>
+            </div>
+            <p className="text-xs text-slate-600 mb-4">
+              Enter details of your university degree, diploma, or higher educational qualification.
+            </p>
+            <form onSubmit={handleAddDegree} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Degree / Diploma Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Bachelor of Arts in Islamic Studies"
+                  value={degreeForm.degree}
+                  onChange={(e) => setDegreeForm({ ...degreeForm, degree: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Institution / University *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Jamiah Naleemiah / University of Peradeniya"
+                  value={degreeForm.institution}
+                  onChange={(e) => setDegreeForm({ ...degreeForm, institution: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Graduation Year
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 2023"
+                    value={degreeForm.year}
+                    onChange={(e) => setDegreeForm({ ...degreeForm, year: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Class / Grade Honor
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. First Class / Distinction"
+                    value={degreeForm.gradeHonor}
+                    onChange={(e) => setDegreeForm({ ...degreeForm, gradeHonor: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setDegreeModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl cursor-pointer"
+                >
+                  Save Qualification
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Sanad Modal */}
+      {sanadModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Award className="w-5 h-5 text-amber-600" />
+              <h3 className="text-base font-bold text-slate-900">Add Traditional Sanad / Ijazah</h3>
+            </div>
+            <p className="text-xs text-slate-600 mb-4">
+              Enter your continuous transmission chain (Sanad) in Qira'at or Islamic Sciences certificate.
+            </p>
+            <form onSubmit={handleAddSanad} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Sanad / Ijazah Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Sanad in Hafs 'an 'Asim (Shatibiyyah)"
+                  value={sanadForm.title}
+                  onChange={(e) => setSanadForm({ ...sanadForm, title: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Issuing Sheikh / Academy *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Markaz al-Qira'at / Sheikh Abdullah"
+                  value={sanadForm.issuingBody}
+                  onChange={(e) => setSanadForm({ ...sanadForm, issuingBody: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Certification Year
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 2022"
+                    value={sanadForm.year}
+                    onChange={(e) => setSanadForm({ ...sanadForm, year: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    Credential / Sanad ID
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. IJZ-8821 (Optional)"
+                    value={sanadForm.credentialId}
+                    onChange={(e) => setSanadForm({ ...sanadForm, credentialId: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setSanadModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl cursor-pointer"
+                >
+                  Save Sanad
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Add Experience Modal */}
+      {expModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Briefcase className="w-5 h-5 text-[#0F172A]" />
+              <h3 className="text-base font-bold text-slate-900">Add Teaching Experience</h3>
+            </div>
+            <p className="text-xs text-slate-600 mb-4">
+              Enter prior teaching appointments at madrasas, colleges, or Islamic institutes.
+            </p>
+            <form onSubmit={handleAddExperience} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Designation / Role *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Senior Tajweed & Qira'at Lecturer"
+                  value={expForm.role}
+                  onChange={(e) => setExpForm({ ...expForm, role: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Madrasa / School / Institute *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Madrasathul Falah Arabic College"
+                  value={expForm.institution}
+                  onChange={(e) => setExpForm({ ...expForm, institution: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Tenure / Period
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. 2020 – 2024"
+                  value={expForm.period}
+                  onChange={(e) => setExpForm({ ...expForm, period: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Key Responsibilities / Subjects
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Supervised senior Hifz curriculum and taught Qira'at al-Sab'ah."
+                  value={expForm.responsibilities}
+                  onChange={(e) => setExpForm({ ...expForm, responsibilities: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setExpModalOpen(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl cursor-pointer"
+                >
+                  Save Experience
                 </button>
               </div>
             </form>

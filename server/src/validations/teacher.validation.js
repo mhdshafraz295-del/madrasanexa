@@ -17,6 +17,10 @@ export const teacherProfileUpdateSchema = z.object({
     })
     .optional()
     .nullable(),
+  academicQualifications: z.array(z.any()).optional().nullable(),
+  professionalQualifications: z.array(z.any()).optional().nullable(),
+  teachingExperience: z.array(z.any()).optional().nullable(),
+  documents: z.array(z.any()).optional().nullable(),
 });
 
 /**

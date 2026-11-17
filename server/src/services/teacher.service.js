@@ -207,12 +207,28 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     relationship: 'Family Member',
     phone: ustadh.phoneNumber || 'Not Specified',
   };
+  let academicQualifications = [];
+  let professionalQualifications = [];
+  let teachingExperience = [];
+  let documents = [];
 
   try {
     if (ustadh.notes && ustadh.notes.startsWith('{')) {
       const parsed = JSON.parse(ustadh.notes);
       if (parsed.emergencyContact) {
         emergencyContact = parsed.emergencyContact;
+      }
+      if (Array.isArray(parsed.academicQualifications)) {
+        academicQualifications = parsed.academicQualifications;
+      }
+      if (Array.isArray(parsed.professionalQualifications)) {
+        professionalQualifications = parsed.professionalQualifications;
+      }
+      if (Array.isArray(parsed.teachingExperience)) {
+        teachingExperience = parsed.teachingExperience;
+      }
+      if (Array.isArray(parsed.documents)) {
+        documents = parsed.documents;
       }
     }
   } catch {
@@ -242,10 +258,10 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     postalCode: '10000',
     country: 'Sri Lanka',
     emergencyContact,
-    academicQualifications: [],
-    professionalQualifications: [],
-    teachingExperience: [],
-    documents: [],
+    academicQualifications,
+    professionalQualifications,
+    teachingExperience,
+    documents,
     baseMonthlySalary: Number(ustadh.baseMonthlySalary),
     profileCompletionPercentage: 85,
     madrasa: ustadh.madrasa,
@@ -266,17 +282,39 @@ export async function updateTeacherProfile({ madrasaId, ustadhId, data }) {
   if (data.whatsappNumber !== undefined) updateData.whatsappNumber = data.whatsappNumber;
   if (data.address !== undefined) updateData.address = data.address;
 
-  // Persist emergency contact safely inside notes JSON wrapper
-  if (data.emergencyContact) {
-    let currentNotesObj = {};
-    try {
-      if (existing.notes && existing.notes.startsWith('{')) {
-        currentNotesObj = JSON.parse(existing.notes);
-      }
-    } catch {
-      currentNotesObj = {};
+  // Persist emergency contact and credentials safely inside notes JSON wrapper
+  let currentNotesObj = {};
+  try {
+    if (existing.notes && existing.notes.startsWith('{')) {
+      currentNotesObj = JSON.parse(existing.notes);
     }
+  } catch {
+    currentNotesObj = {};
+  }
+
+  let notesChanged = false;
+  if (data.emergencyContact) {
     currentNotesObj.emergencyContact = data.emergencyContact;
+    notesChanged = true;
+  }
+  if (data.academicQualifications !== undefined) {
+    currentNotesObj.academicQualifications = data.academicQualifications;
+    notesChanged = true;
+  }
+  if (data.professionalQualifications !== undefined) {
+    currentNotesObj.professionalQualifications = data.professionalQualifications;
+    notesChanged = true;
+  }
+  if (data.teachingExperience !== undefined) {
+    currentNotesObj.teachingExperience = data.teachingExperience;
+    notesChanged = true;
+  }
+  if (data.documents !== undefined) {
+    currentNotesObj.documents = data.documents;
+    notesChanged = true;
+  }
+
+  if (notesChanged) {
     updateData.notes = JSON.stringify(currentNotesObj);
   }
 

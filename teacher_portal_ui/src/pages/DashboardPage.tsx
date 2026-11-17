@@ -24,6 +24,7 @@ import {
 import { dashboardApi, profileApi, DashboardData } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
+import InstitutionalLiveClock from '../components/dashboard/InstitutionalLiveClock';
 
 export default function DashboardPage() {
   const [profileDismissed, setProfileDismissed] = useState(false);
@@ -71,7 +72,10 @@ export default function DashboardPage() {
   const stats = dashboardData.stats;
 
   return (
-    <div className="space-y-6 bg-[#F8F7F3] -m-4 sm:-m-6 lg:-m-8 p-4 sm:p-6 lg:p-8 min-h-full">
+    <div className="space-y-6">
+      {/* 0. Institutional Live Clock Banner */}
+      <InstitutionalLiveClock />
+
       {/* 1. Welcome & Faculty Identity Header */}
       <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="flex items-start gap-4">

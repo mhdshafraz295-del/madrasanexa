@@ -1,28 +1,56 @@
 @import "tailwindcss";
 
 @theme {
+  --color-app-bg: #F5F5F1;
+  --color-card-bg: #FFFFFF;
+  --color-navy: #0F172A;
+  --color-mint: #85845C;
+  --color-mint-hover: #6B6A45;
+  --color-gold: #A5A477;
+  --color-secondary-text: #666666;
+  --color-app-border: #E5E5DF;
+
+  /* ACJU Olive & White Institutional Palette */
+  --color-olive-primary: #A5A477;
+  --color-olive-dark: #85845C;
+  --color-olive-deep: #504F34;
+  --color-soft-ivory: #F5F5F1;
+  --color-terracotta: #E56A45;
+  --color-charcoal: #252525;
+  --color-muted-text: #666666;
+  --color-soft-border: #E5E5DF;
+
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-arabic: 'Amiri', serif;
-
-  --color-brand-navy: #0F172A;
-  --color-brand-navy-light: #1E293B;
-  --color-brand-teal: #37C6A3;
-  --color-brand-teal-dark: #0D9488;
-  --color-brand-teal-light: #CCFBF1;
-  --color-brand-emerald: #10B981;
-
-  --color-surface-bg: #F8FAFC;
-  --color-surface-card: #FFFFFF;
-  --color-surface-border: #E2E8F0;
-  --color-surface-border-subtle: #F1F5F9;
-
-  --color-text-primary: #0F172A;
-  --color-text-secondary: #64748B;
-  --color-text-muted: #94A3B8;
 }
 
 :root {
+  --bg-app: #F5F5F1;
+  --bg-card: #FFFFFF;
+  --text-navy: #252525;
+  --brand-olive: #A5A477;
+  --brand-olive-dark: #85845C;
+  --brand-olive-deep: #504F34;
+  --brand-ivory: #F5F5F1;
+  --brand-terracotta: #E56A45;
+  --brand-charcoal: #252525;
+  --text-secondary: #666666;
+  --border-subtle: #E5E5DF;
   font-family: var(--font-sans);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #F7F6F1;
+  color: #0F172A;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
 /* Custom scrollbars for dashboard widgets */
@@ -58,43 +86,27 @@
     padding: 0 !important;
     height: auto !important;
     min-height: 0 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
   }
 
-  /* Reset screen flex constraints and min-heights */
-  div {
-    min-height: 0 !important;
+  body * {
+    visibility: hidden;
   }
 
-  /* Hide navigation, headers, footers and screen controls during payslip print */
-  header,
-  aside,
-  footer,
-  .print-hidden,
-  .no-print,
-  [class*="print:hidden"] {
-    display: none !important;
+  .print-container,
+  .print-container * {
+    visibility: visible;
   }
 
-  main {
+  .print-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    margin: 0 !important;
     padding: 0 !important;
-    margin: 0 !important;
-    max-width: 100% !important;
-    width: 100% !important;
   }
 
-  .print-only-sheet {
-    position: static !important;
-    box-shadow: none !important;
-    border: 1px solid #cbd5e1 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 10px 14px !important;
-    margin: 0 !important;
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-    page-break-after: avoid !important;
-    break-after: avoid !important;
+  .print\:hidden {
+    display: none !important;
   }
 }

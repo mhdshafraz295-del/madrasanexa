@@ -98,10 +98,30 @@ export const studentPeriodMarkSchema = z.object({
           required_error: 'status must be Present, Late, Excused, or Absent.',
         }),
         remarks: z.string().trim().max(255).optional(),
-        method: z.enum(['Barcode Scan', 'Teacher Manual']).default('Teacher Manual'),
+        method: z.string().trim().optional().default('Teacher Manual'),
       })
     )
     .min(1, 'At least one student attendance record must be provided.'),
+});
+
+/**
+ * Student Period Attendance Single Scan Schema (POST /api/teacher/attendance/student/scan)
+ */
+export const studentPeriodScanSchema = z.object({
+  scheduleId: z
+    .string({ required_error: 'scheduleId is required.' })
+    .trim()
+    .min(1, 'scheduleId cannot be empty.'),
+  sessionId: z.string().trim().optional(),
+  scanInput: z
+    .string({ required_error: 'scanInput is required.' })
+    .trim()
+    .min(1, 'scanInput cannot be empty.'),
+  date: z
+    .string({ required_error: 'date is required (YYYY-MM-DD).' })
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format.'),
+  periodNumber: z.coerce.number().int().positive().optional().default(1),
 });
 
 /**

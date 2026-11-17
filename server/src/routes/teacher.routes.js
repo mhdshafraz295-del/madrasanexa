@@ -16,6 +16,7 @@ import {
   verifyTeacherClassroomQr,
   getStudentPeriodSession,
   markStudentPeriodAttendance,
+  scanStudentPeriodAttendance,
   sealStudentPeriodSession,
   getAttendanceHistory,
   getSalarySummary,
@@ -76,6 +77,7 @@ router.post('/attendance/teacher/verify-qr', verifyTeacherClassroomQr);
 // Module 6: Student Period Attendance (Option A: Full Isolation)
 // =============================================================================
 router.get('/attendance/student/session', getStudentPeriodSession);
+router.post('/attendance/student/scan', scanStudentPeriodAttendance);
 router.post('/attendance/student/mark', markStudentPeriodAttendance);
 router.post('/attendance/student/seal', sealStudentPeriodSession);
 

@@ -441,6 +441,34 @@ export const studentAttendanceApi = {
       body: JSON.stringify(payload),
     });
   },
+
+  scanStudentPeriodAttendance(payload: {
+    scheduleId: string;
+    sessionId?: string;
+    scanInput: string;
+    date: string;
+    periodNumber?: number;
+  }): Promise<{
+    success: boolean;
+    sessionId?: string;
+    student: {
+      id: string;
+      fullName: string;
+      admissionNo: string;
+      classId?: string;
+      className?: string;
+    };
+    status: string;
+    alreadyMarked: boolean;
+    scannedAt: string;
+    method: string;
+    message: string;
+  }> {
+    return request('/teacher/attendance/student/scan', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  },
 };
 
 // =============================================================================

@@ -5,6 +5,7 @@ import {
   teacherVerifyQrSchema,
   studentPeriodSessionQuerySchema,
   studentPeriodMarkSchema,
+  studentPeriodScanSchema,
   studentPeriodSealSchema,
   teacherAttendanceHistoryQuerySchema,
   teacherPaymentHistoryQuerySchema,
@@ -203,6 +204,29 @@ export async function sealStudentPeriodSession(req, res, next) {
       userId,
       scheduleId: validated.scheduleId,
       date: validated.date,
+    });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function scanStudentPeriodAttendance(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const ustadhId = req.teacher.ustadhId;
+    const userId = req.auth.userId;
+    const validated = studentPeriodScanSchema.parse(req.body);
+
+    const data = await teacherService.scanStudentPeriodAttendance({
+      madrasaId,
+      ustadhId,
+      userId,
+      scheduleId: validated.scheduleId,
+      sessionId: validated.sessionId,
+      scanInput: validated.scanInput,
+      date: validated.date,
+      periodNumber: validated.periodNumber,
     });
     return res.status(200).json({ success: true, data });
   } catch (error) {

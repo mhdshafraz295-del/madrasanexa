@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   ScanLine,
   Users,
@@ -18,6 +18,12 @@ import {
   Lock,
   ArrowRight,
   Filter,
+  Camera,
+  Volume2,
+  VolumeX,
+  History,
+  QrCode,
+  Barcode,
 } from 'lucide-react';
 import type {
   AssignedClass,
@@ -26,9 +32,27 @@ import type {
 import { studentAttendanceApi, classesApi } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
+import { UsbScannerInput } from '../../components/attendance/UsbScannerInput';
+import { CameraScannerView } from '../../components/attendance/CameraScannerView';
+import {
+  classifyScanInput,
+  ScanDebouncer,
+  playScannerFeedback,
+} from '../../components/attendance/scanner-utils';
 
 type SessionStep = 'setup' | 'active_scanning' | 'review_confirm';
 type StatusFilter = 'All' | 'Present' | 'Late' | 'Excused' | 'Absent';
+type ScannerInputMode = 'usb' | 'camera';
+
+export interface RecentScanItem {
+  id: string;
+  timestamp: string;
+  studentName: string;
+  rollNo: string;
+  method: string;
+  status: 'PRESENT' | 'ALREADY_MARKED';
+  securityTier: string;
+}
 
 export default function StudentAttendancePage() {
   const [assignedClasses, setAssignedClasses] = useState<AssignedClass[]>([]);
@@ -39,6 +63,12 @@ export default function StudentAttendancePage() {
   const [sessionCode, setSessionCode] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [roster, setRoster] = useState<AssignedStudent[]>([]);
+
+  // Scanner Modes & Settings
+  const [scannerMode, setScannerMode] = useState<ScannerInputMode>('usb');
+  const [audioFeedback, setAudioFeedback] = useState<boolean>(true);
+  const [recentScans, setRecentScans] = useState<RecentScanItem[]>([]);
+  const debouncerRef = useRef(new ScanDebouncer(2200));
 
   // Active Session State
   const currentClass = assignedClasses.find((c) => c.id === selectedClassId) || assignedClasses[0] || {
@@ -52,8 +82,7 @@ export default function StudentAttendancePage() {
     students: [],
   };
 
-  // Scanner Simulator States
-  const [barcodeInput, setBarcodeInput] = useState('');
+  // Feedback Toast
   const [lastScannedToast, setLastScannedToast] = useState<{
     studentName: string;
     rollNo: string;
@@ -124,65 +153,165 @@ export default function StudentAttendancePage() {
     }
   };
 
-  // Step 4: Start session
+  // Start session
   const handleStartSession = () => {
     setSessionStep('active_scanning');
     setIsSessionSealed(false);
   };
 
-  // Step 5 - 7: Process Student Scan (with Duplicate Prevention)
-  const processScan = (barcodeOrRoll: string) => {
-    if (!barcodeOrRoll.trim()) return;
+  // Unified Scanner Payload Handler (USB Hardware Scanner, Live Camera, & Manual Verify)
+  const handleScanPayload = useCallback(
+    async (
+      rawPayload: string,
+      _metadata?: { isScanner?: boolean; averageIntervalMs?: number } | 'camera'
+    ) => {
+      const trimmed = (rawPayload || '').trim();
+      if (!trimmed || isSubmitting) return;
 
-    const query = barcodeOrRoll.trim().toLowerCase();
-    const student = roster.find(
-      (s) => s.barcodeId.toLowerCase() === query || s.rollNo.toLowerCase() === query
-    );
+      // 1. Debounce rapid repeat frames
+      if (debouncerRef.current.isDuplicate(trimmed)) {
+        playScannerFeedback('duplicate', !audioFeedback);
+        return;
+      }
 
-    if (!student) {
-      alert(`Invalid Barcode / ID: "${barcodeOrRoll}". No matching student enrolled in this class cohort.`);
-      setBarcodeInput('');
-      return;
-    }
+      const classification = classifyScanInput(trimmed);
+      const todayStr = new Date().toISOString().split('T')[0];
 
-    // Step 7: Prevent Duplicate Scans
-    if (student.status === 'Present' || student.status === 'Late') {
-      setLastScannedToast({
-        studentName: student.name,
-        rollNo: student.rollNo,
-        status: 'duplicate',
-        message: `DUPLICATE SCAN BLOCKED: Already marked ${student.status} at ${student.scannedAt || 'earlier'}. Count unchanged.`,
-      });
-      setBarcodeInput('');
-      setTimeout(() => setLastScannedToast(null), 3000);
-      return;
-    }
+      try {
+        const res = await studentAttendanceApi.scanStudentPeriodAttendance({
+          scheduleId: selectedClassId,
+          scanInput: trimmed,
+          date: todayStr,
+          periodNumber: selectedPeriod,
+        });
 
-    // Record Valid Scan
-    const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    setRoster((prev) =>
-      prev.map((s) =>
-        s.id === student.id
-          ? {
-              ...s,
-              status: 'Present',
-              scannedAt: nowTime,
-            }
-          : s
-      )
-    );
+        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const studentId = res.student.id;
+        const studentName = res.student.fullName;
+        const rollNo = res.student.admissionNo;
 
-    setLastScannedToast({
-      studentName: student.name,
-      rollNo: student.rollNo,
-      status: 'success',
-      message: `SCANNED SUCCESSFULLY: Marked Present at ${nowTime}.`,
-    });
-    setBarcodeInput('');
-    setTimeout(() => setLastScannedToast(null), 3000);
-  };
+        if (res.alreadyMarked) {
+          playScannerFeedback('warning', !audioFeedback);
+          setLastScannedToast({
+            studentName,
+            rollNo,
+            status: 'duplicate',
+            message: `DUPLICATE SCAN BLOCKED: Already marked Present earlier. Count unchanged.`,
+          });
 
-  // Step 9: Authorized Manual Override Handler
+          setRecentScans((prev) => [
+            {
+              id: `${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+              timestamp: nowTime,
+              studentName,
+              rollNo,
+              method: res.method === 'QR_SCAN' ? '2D QR Code' : '1D Barcode',
+              status: 'ALREADY_MARKED',
+              securityTier: classification.securityTier,
+            },
+            ...prev.slice(0, 19),
+          ]);
+        } else {
+          playScannerFeedback('success', !audioFeedback);
+
+          setRoster((prev) =>
+            prev.map((s) =>
+              s.id === studentId || s.rollNo.toLowerCase() === rollNo.toLowerCase()
+                ? {
+                    ...s,
+                    status: 'Present',
+                    scannedAt: nowTime,
+                  }
+                : s
+            )
+          );
+
+          setLastScannedToast({
+            studentName,
+            rollNo,
+            status: 'success',
+            message: `SCANNED SUCCESSFULLY: Marked Present at ${nowTime} via ${
+              res.method === 'QR_SCAN' ? '2D QR Code' : '1D Barcode'
+            }.`,
+          });
+
+          setRecentScans((prev) => [
+            {
+              id: `${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+              timestamp: nowTime,
+              studentName,
+              rollNo,
+              method: res.method === 'QR_SCAN' ? '2D QR Code' : '1D Barcode',
+              status: 'PRESENT',
+              securityTier: classification.securityTier,
+            },
+            ...prev.slice(0, 19),
+          ]);
+        }
+      } catch (err: any) {
+        // Fallback: match local roster in-memory
+        const query = trimmed.toLowerCase();
+        const localStudent = roster.find(
+          (s) =>
+            s.barcodeId.toLowerCase() === query ||
+            s.rollNo.toLowerCase() === query ||
+            s.name.toLowerCase() === query
+        );
+
+        if (localStudent) {
+          const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          if (localStudent.status === 'Present' || localStudent.status === 'Late') {
+            playScannerFeedback('warning', !audioFeedback);
+            setLastScannedToast({
+              studentName: localStudent.name,
+              rollNo: localStudent.rollNo,
+              status: 'duplicate',
+              message: `DUPLICATE SCAN BLOCKED: Already marked ${localStudent.status} at ${
+                localStudent.scannedAt || 'earlier'
+              }. Count unchanged.`,
+            });
+          } else {
+            playScannerFeedback('success', !audioFeedback);
+            setRoster((prev) =>
+              prev.map((s) => (s.id === localStudent.id ? { ...s, status: 'Present', scannedAt: nowTime } : s))
+            );
+            setLastScannedToast({
+              studentName: localStudent.name,
+              rollNo: localStudent.rollNo,
+              status: 'success',
+              message: `SCANNED SUCCESSFULLY: Marked Present at ${nowTime}.`,
+            });
+
+            setRecentScans((prev) => [
+              {
+                id: `${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                timestamp: nowTime,
+                studentName: localStudent.name,
+                rollNo: localStudent.rollNo,
+                method: classification.type === 'QR_TOKEN' ? '2D QR Code' : '1D Barcode',
+                status: 'PRESENT',
+                securityTier: classification.securityTier,
+              },
+              ...prev.slice(0, 19),
+            ]);
+          }
+        } else {
+          playScannerFeedback('error', !audioFeedback);
+          setLastScannedToast({
+            studentName: trimmed,
+            rollNo: '—',
+            status: 'duplicate',
+            message:
+              err?.message ||
+              `Invalid Barcode / QR: "${trimmed}". No matching student found enrolled in this cohort.`,
+          });
+        }
+      }
+    },
+    [audioFeedback, isSubmitting, roster, selectedClassId, selectedPeriod]
+  );
+
+  // Authorized Manual Override Handler
   const handleSaveManualEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStudent) return;
@@ -194,9 +323,10 @@ export default function StudentAttendancePage() {
               ...s,
               status: manualStatusChoice,
               manualNote: manualReasonText || 'Manual teacher authorization',
-              scannedAt: manualStatusChoice === 'Present' || manualStatusChoice === 'Late'
-                ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-                : undefined,
+              scannedAt:
+                manualStatusChoice === 'Present' || manualStatusChoice === 'Late'
+                  ? new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  : undefined,
             }
           : s
       )
@@ -206,12 +336,11 @@ export default function StudentAttendancePage() {
     setManualReasonText('');
   };
 
-  // Step 10: Final Confirmation & Sealing
+  // Final Confirmation & Sealing
   const handleConfirmSealSession = async () => {
     setIsSubmitting(true);
     const todayStr = new Date().toISOString().split('T')[0];
     try {
-      // First persist any marked student records
       await studentAttendanceApi.markPeriodAttendance({
         scheduleId: selectedClassId,
         date: todayStr,
@@ -219,11 +348,10 @@ export default function StudentAttendancePage() {
           studentId: s.id,
           status: s.status,
           remarks: s.manualNote || '',
-          method: s.scannedAt ? 'Barcode Scan' : 'Teacher Manual',
+          method: s.scannedAt ? 'QR/Barcode Scan' : 'Teacher Manual',
         })),
       });
 
-      // Then seal the session
       const sealRes = await studentAttendanceApi.sealPeriodSession({
         scheduleId: selectedClassId,
         date: todayStr,
@@ -232,7 +360,9 @@ export default function StudentAttendancePage() {
       setIsSessionSealed(true);
       setSessionStep('setup');
       setSessionCode(sealRes.sessionCode);
-      alert(`Classroom attendance session (${sealRes.sessionCode}) officially sealed.\nOption A Isolation Active: Daily institutional attendance is unaffected.`);
+      alert(
+        `Classroom attendance session (${sealRes.sessionCode}) officially sealed.\nOption A Isolation Active: Daily institutional attendance is unaffected.`
+      );
     } catch (err: any) {
       alert(err.message || 'Failed to seal attendance session.');
     } finally {
@@ -240,14 +370,15 @@ export default function StudentAttendancePage() {
     }
   };
 
-  // Step 8: Live Attendance Counts
+  // Live Attendance Counts
   const totalStudents = roster.length;
   const presentCount = roster.filter((s) => s.status === 'Present').length;
   const lateCount = roster.filter((s) => s.status === 'Late').length;
   const excusedCount = roster.filter((s) => s.status === 'Excused').length;
   const absentCount = roster.filter((s) => s.status === 'Absent').length;
   const scannedCount = roster.filter((s) => !!s.scannedAt).length;
-  const attendanceRate = totalStudents > 0 ? (((presentCount + lateCount) / totalStudents) * 100).toFixed(1) : '0';
+  const attendanceRate =
+    totalStudents > 0 ? (((presentCount + lateCount) / totalStudents) * 100).toFixed(1) : '0';
 
   const filteredRoster = roster.filter((s) => {
     const matchesFilter = statusFilter === 'All' || s.status === statusFilter;
@@ -265,13 +396,13 @@ export default function StudentAttendancePage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-[#0D9488] uppercase tracking-wider mb-1">
             <ScanLine className="w-4 h-4" />
-            <span>Classroom Student Attendance</span>
+            <span>Classroom Period Attendance</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Live Student ID Scanner & Roster
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Scan physical student ID cards via 1D Barcode or QR code during your scheduled lecture
+            Scan physical student ID cards via USB Barcode Scanner or Device Camera during your lecture
           </p>
         </div>
 
@@ -285,7 +416,7 @@ export default function StudentAttendancePage() {
         </div>
       </div>
 
-      {/* 2. Step 1 - 4: Session Setup Bar (Visible when in setup) */}
+      {/* 2. Step 1 - 3: Session Setup Bar (Visible when in setup) */}
       {sessionStep === 'setup' && (
         <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs">
           <div className="pb-4 border-b border-slate-100 mb-4">
@@ -350,7 +481,8 @@ export default function StudentAttendancePage() {
 
           <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span className="text-xs text-slate-500">
-              Classroom Venue: <strong className="text-slate-800">{currentClass.room}</strong> • Enrolled: <strong className="text-slate-800">{currentClass.totalStudents} Students</strong>
+              Classroom Venue: <strong className="text-slate-800">{currentClass.room}</strong> • Enrolled:{' '}
+              <strong className="text-slate-800">{currentClass.totalStudents} Students</strong>
             </span>
             <button
               type="button"
@@ -378,9 +510,7 @@ export default function StudentAttendancePage() {
                 <h2 className="text-base font-bold text-white">
                   {currentClass.name} — {currentClass.subjectTaught}
                 </h2>
-                <div className="text-xs text-slate-400">
-                  Classroom: {currentClass.room}
-                </div>
+                <div className="text-xs text-slate-400">Classroom: {currentClass.room}</div>
               </div>
             </div>
 
@@ -431,54 +561,96 @@ export default function StudentAttendancePage() {
             </div>
           </div>
 
-          {/* Scanner Viewport & Input Simulator */}
-          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+          {/* DUAL SCANNER WORKSPACE: USB Barcode + Live Camera QR Scanner */}
+          <div className="space-y-4">
+            {/* Scanner Mode Switch & Hardware Audio Toggle Bar */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <ScanLine className="w-4 h-4 text-[#0D9488]" />
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
-                  Student ID Barcode / QR Scanner Input
-                </h3>
+                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Scanner Input:
+                </span>
+                <div className="inline-flex rounded-xl bg-slate-100 p-1">
+                  <button
+                    type="button"
+                    onClick={() => setScannerMode('usb')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      scannerMode === 'usb'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <ScanLine className="w-3.5 h-3.5 text-[#0D9488]" />
+                    <span>USB Hardware Scanner</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setScannerMode('camera')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      scannerMode === 'camera'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Camera className="w-3.5 h-3.5 text-[#0D9488]" />
+                    <span>Device Camera Scanner</span>
+                  </button>
+                </div>
               </div>
-              <span className="text-xs text-slate-500 font-mono">
-                Scanned This Session: <strong>{scannedCount}</strong> / {totalStudents}
-              </span>
+
+              {/* Sound Audio Toggle & Status Info */}
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() => setAudioFeedback(!audioFeedback)}
+                  className={`px-2.5 py-1.5 rounded-xl border text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                    audioFeedback
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-800'
+                  }`}
+                  title={audioFeedback ? 'Sound Feedback: Active' : 'Sound Feedback: Muted'}
+                >
+                  {audioFeedback ? (
+                    <>
+                      <Volume2 className="w-4 h-4 text-emerald-600" />
+                      <span>Sound: ON</span>
+                    </>
+                  ) : (
+                    <>
+                      <VolumeX className="w-4 h-4 text-slate-400" />
+                      <span>Sound: OFF</span>
+                    </>
+                  )}
+                </button>
+
+                <div className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono text-slate-600">
+                  Scanned: <strong className="text-slate-900">{scannedCount}</strong> / {totalStudents}
+                </div>
+              </div>
             </div>
 
-            {/* Direct Input & Quick Scan Simulator */}
-            <div className="flex flex-col sm:flex-row items-center gap-2">
-              <div className="relative flex-1 w-full">
-                <ScanLine className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Enter or scan student barcode (e.g. BC-STU-10A-01)..."
-                  value={barcodeInput}
-                  onChange={(e) => setBarcodeInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      processScan(barcodeInput);
-                    }
-                  }}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
-                />
-              </div>
-              <button
-                type="button"
-                onClick={() => processScan(barcodeInput)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs transition cursor-pointer"
-              >
-                Scan Input
-              </button>
-            </div>
+            {/* Render Active Scanner Component */}
+            {scannerMode === 'usb' ? (
+              <UsbScannerInput
+                onScan={(payload, meta) => handleScanPayload(payload, meta)}
+                disabled={isSubmitting}
+                autoFocus={true}
+              />
+            ) : (
+              <CameraScannerView
+                onScan={(payload) => handleScanPayload(payload, 'camera')}
+                disabled={isSubmitting}
+              />
+            )}
 
-            {/* Quick-Tap Student Scan Buttons (Simulates Scanner Hardware Input) */}
-            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-              <div className="flex items-center justify-between mb-2">
+            {/* Quick-Tap Student Scan Simulation (Convenient Hardware Fallback) */}
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+              <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-[#0D9488]" />
-                  <span>Interactive Quick-Scan Simulation (Tap to scan student ID)</span>
+                  <span>Interactive Quick-Scan Simulation (Tap to simulate physical card scan)</span>
                 </span>
-                <span className="text-[10px] text-slate-400">Hardware Simulator</span>
+                <span className="text-[10px] text-slate-400">Simulator / Manual Fallback</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {roster.map((s) => {
@@ -487,7 +659,7 @@ export default function StudentAttendancePage() {
                     <button
                       key={s.id}
                       type="button"
-                      onClick={() => processScan(s.barcodeId)}
+                      onClick={() => handleScanPayload(s.barcodeId || s.rollNo)}
                       className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition border flex items-center gap-1.5 cursor-pointer ${
                         isScanned
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
@@ -522,11 +694,69 @@ export default function StudentAttendancePage() {
                   <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
                 )}
                 <div>
-                  <div className="font-extrabold">{lastScannedToast.studentName} ({lastScannedToast.rollNo})</div>
+                  <div className="font-extrabold">
+                    {lastScannedToast.studentName} ({lastScannedToast.rollNo})
+                  </div>
                   <div className="text-[11px] font-medium">{lastScannedToast.message}</div>
                 </div>
               </div>
             )}
+
+            {/* RECENT SCANS (THIS SESSION) FEED */}
+            <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div className="flex items-center gap-2">
+                  <History className="w-4 h-4 text-[#0D9488]" />
+                  <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Recent Scans (This Period Session)
+                  </h3>
+                </div>
+                <span className="text-xs text-slate-400 font-mono">
+                  {recentScans.length} events logged
+                </span>
+              </div>
+
+              {recentScans.length === 0 ? (
+                <div className="py-6 text-center text-slate-400 text-xs">
+                  No student cards scanned yet this period. Scan physical student ID cards using the USB
+                  scanner or camera above.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto">
+                  {recentScans.map((item) => (
+                    <div
+                      key={item.id}
+                      className="py-2 flex items-center justify-between text-xs gap-2"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="font-mono text-[11px] text-slate-400">{item.timestamp}</span>
+                        <div className="font-bold text-slate-900 truncate">
+                          {item.studentName}
+                        </div>
+                        <span className="font-mono text-[11px] text-slate-500">
+                          ({item.rollNo})
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                          {item.method}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            item.status === 'PRESENT'
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          }`}
+                        >
+                          {item.status === 'PRESENT' ? 'Marked Present' : 'Already Scanned'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Student Roster Table with Search & Status Filtering */}
@@ -601,7 +831,7 @@ export default function StudentAttendancePage() {
                         )}
                       </td>
                       <td className="py-3 px-4 font-mono text-[11px] text-slate-400">
-                        {student.barcodeId}
+                        {student.barcodeId || student.rollNo}
                       </td>
                       <td className="py-3 px-4 font-mono text-slate-700">
                         {student.scannedAt || '—'}
@@ -703,7 +933,8 @@ export default function StudentAttendancePage() {
           </div>
 
           <div className="p-3.5 bg-teal-50 border border-teal-200 rounded-xl text-teal-900 text-xs">
-            Final Attendance Percentage: <strong>{attendanceRate}%</strong>. Sealing this record registers the session snapshot permanently into institutional archives.
+            Final Attendance Percentage: <strong>{attendanceRate}%</strong>. Sealing this record registers
+            the session snapshot permanently into institutional archives.
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-end gap-2 pt-2 border-t border-slate-100">
@@ -717,10 +948,11 @@ export default function StudentAttendancePage() {
             <button
               type="button"
               onClick={handleConfirmSealSession}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 disabled:bg-slate-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs cursor-pointer"
             >
               <Lock className="w-4 h-4 text-[#37C6A3]" />
-              <span>Confirm & Seal Attendance Record</span>
+              <span>{isSubmitting ? 'Sealing Record...' : 'Confirm & Seal Attendance Record'}</span>
             </button>
           </div>
         </div>
@@ -735,13 +967,11 @@ export default function StudentAttendancePage() {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#0D9488]">
                   Manual Override
                 </span>
-                <h3 className="text-base font-bold text-slate-900">
-                  {editingStudent.name}
-                </h3>
+                <h3 className="text-base font-bold text-slate-900">{editingStudent.name}</h3>
               </div>
               <button
                 onClick={() => setEditingStudent(null)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
               >
                 ✕
               </button>
@@ -749,9 +979,7 @@ export default function StudentAttendancePage() {
 
             <form onSubmit={handleSaveManualEdit} className="space-y-4 mt-4 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Attendance Status
-                </label>
+                <label className="block font-bold text-slate-700 mb-1">Attendance Status</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(['Present', 'Late', 'Excused', 'Absent'] as const).map((st) => (
                     <button
@@ -771,9 +999,7 @@ export default function StudentAttendancePage() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  Reason / Teacher Note
-                </label>
+                <label className="block font-bold text-slate-700 mb-1">Reason / Teacher Note</label>
                 <input
                   type="text"
                   placeholder="e.g. Card forgotten at home / excused by Ustadh"
@@ -787,13 +1013,13 @@ export default function StudentAttendancePage() {
                 <button
                   type="button"
                   onClick={() => setEditingStudent(null)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl"
+                  className="px-4 py-2 text-xs font-bold text-white bg-[#0D9488] hover:bg-[#0F766E] rounded-xl cursor-pointer"
                 >
                   Save Status Override
                 </button>

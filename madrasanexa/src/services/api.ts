@@ -1414,6 +1414,7 @@ export interface ClassItem {
   defaultMonthlyFee: string;
   isActive?: boolean;
   status?: 'ACTIVE' | 'INACTIVE';
+  capacity?: number | null;
   studentCount?: number;
   createdAt: string;
   updatedAt: string;

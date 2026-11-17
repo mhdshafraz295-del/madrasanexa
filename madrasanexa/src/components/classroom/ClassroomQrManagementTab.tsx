@@ -27,6 +27,10 @@ import {
   getClassroomQrPrintData,
   type ClassroomItem,
 } from '../../services/classroom.service';
+import {
+  apiListClasses,
+  type ClassItem,
+} from '../../services/api';
 
 const STATIC_VENUE_PLAQUE_NOTICE =
   'Static Venue Plaque Notice: Classroom QR codes verify venue and schedule alignment within the approved timetable window. Static QR codes do not certify biometric physical presence or continuous attendance.';
@@ -41,6 +45,10 @@ export const ClassroomQrManagementTab: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Classes list for dropdown
+  const [classesList, setClassesList] = useState<ClassItem[]>([]);
+  const [formClassId, setFormClassId] = useState<string>('');
 
   // Classroom Create / Edit Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -96,14 +104,53 @@ export const ClassroomQrManagementTab: React.FC = () => {
     fetchClassrooms();
   }, [fetchClassrooms]);
 
+  useEffect(() => {
+    apiListClasses({ isActive: true, pageSize: 100 })
+      .then((res) => {
+        setClassesList(res.items || res.classes || []);
+      })
+      .catch((err) => {
+        console.warn('Could not load classes for dropdown:', err);
+      });
+  }, []);
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
     fetchClassrooms();
   };
 
+  const handleClassSelectChange = (selectedId: string) => {
+    setFormClassId(selectedId);
+    if (!selectedId) return;
+
+    const selectedClass = classesList.find((c) => c.id === selectedId);
+    if (!selectedClass) return;
+
+    const cleanCode = (selectedClass.code || selectedClass.name)
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, '')
+      .slice(0, 12) || 'CLASS';
+
+    // Auto-fill venue name if empty or default-prefixed
+    if (!formName.trim() || formName.startsWith('Classroom - ')) {
+      setFormName(`Classroom - ${selectedClass.name}`);
+    }
+
+    // Auto-fill room number if empty or default-prefixed
+    if (!formRoomNumber.trim() || formRoomNumber.startsWith('CR-')) {
+      setFormRoomNumber(`CR-${cleanCode}`);
+    }
+
+    // Auto-fill capacity if empty
+    if (!formCapacity) {
+      setFormCapacity(selectedClass.capacity ? String(selectedClass.capacity) : '35');
+    }
+  };
+
   const handleOpenCreateModal = () => {
     setEditingClassroom(null);
+    setFormClassId('');
     setFormName('');
     setFormRoomNumber('');
     setFormBuilding('');
@@ -116,6 +163,7 @@ export const ClassroomQrManagementTab: React.FC = () => {
 
   const handleOpenEditModal = (room: ClassroomItem) => {
     setEditingClassroom(room);
+    setFormClassId(room.classId || '');
     setFormName(room.name);
     setFormRoomNumber(room.roomNumber);
     setFormBuilding(room.building || '');
@@ -144,6 +192,7 @@ export const ClassroomQrManagementTab: React.FC = () => {
         floor: formFloor.trim() || undefined,
         capacity: formCapacity ? parseInt(formCapacity, 10) : undefined,
         notes: formNotes.trim() || undefined,
+        classId: formClassId || null,
       };
 
       if (editingClassroom) {
@@ -474,14 +523,21 @@ export const ClassroomQrManagementTab: React.FC = () => {
                 classrooms.map((room) => (
                   <tr key={room.id} className="hover:bg-[#F8FAFC]/80 transition">
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-lg bg-[#E6F7F3] text-[#08483A] font-bold flex items-center justify-center shrink-0">
+                      <div className="flex items-center gap-3">
+                        <div className="min-w-[42px] px-2.5 py-1 rounded-lg bg-[#E6F7F3] text-[#08483A] font-bold font-mono text-[11px] flex items-center justify-center shrink-0 border border-[#37C6A3]/25 whitespace-nowrap shadow-2xs">
                           {room.roomNumber}
                         </div>
-                        <div>
-                          <span className="font-bold text-[#0F172A] block">{room.name}</span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-[#0F172A]">{room.name}</span>
+                            {room.className && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 shrink-0">
+                                Class: {room.className}
+                              </span>
+                            )}
+                          </div>
                           {room.notes && (
-                            <span className="text-[11px] text-[#5B6B7F] truncate max-w-[180px] block">
+                            <span className="text-[11px] text-[#5B6B7F] truncate max-w-[220px] block mt-0.5">
                               {room.notes}
                             </span>
                           )}
@@ -672,6 +728,27 @@ export const ClassroomQrManagementTab: React.FC = () => {
                   <span>{formError}</span>
                 </div>
               )}
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Link to Academic Class (Optional)
+                </label>
+                <select
+                  value={formClassId}
+                  onChange={(e) => handleClassSelectChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-[#37C6A3]"
+                >
+                  <option value="">-- No Class Linked (General Venue) --</option>
+                  {classesList.map((cls) => (
+                    <option key={cls.id} value={cls.id}>
+                      {cls.name} {cls.code ? `(${cls.code})` : ''} {cls.sectionName ? `• ${cls.sectionName}` : ''}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Selecting an existing class auto-generates venue titles and binds Ustadh check-ins to this class.
+                </p>
+              </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>

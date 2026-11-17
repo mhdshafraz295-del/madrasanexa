@@ -11,6 +11,9 @@ export interface ClassroomItem {
   roomToken: string;
   isActive: boolean;
   notes?: string | null;
+  classId?: string | null;
+  className?: string | null;
+  classCode?: string | null;
   assignedScheduleCount?: number;
   createdAt: string;
   updatedAt: string;
@@ -31,7 +34,8 @@ export interface ClassroomResponse {
   success: boolean;
   message?: string;
   data: {
-    classroom: ClassroomItem;
+    classroom?: ClassroomItem;
+    [key: string]: any;
   };
 }
 
@@ -58,6 +62,7 @@ export interface CreateClassroomPayload {
   floor?: string;
   capacity?: number;
   notes?: string;
+  classId?: string | null;
 }
 
 export interface UpdateClassroomPayload {
@@ -67,6 +72,7 @@ export interface UpdateClassroomPayload {
   floor?: string | null;
   capacity?: number | null;
   notes?: string | null;
+  classId?: string | null;
 }
 
 export async function listClassrooms(params: {
@@ -83,32 +89,32 @@ export async function listClassrooms(params: {
 
 export async function getClassroom(id: string): Promise<ClassroomItem> {
   const res = await apiClient.get<ClassroomResponse>(`/madrasa-admin/classrooms/${id}`);
-  return res.data.data.classroom;
+  return (res.data.data as any)?.classroom || (res.data.data as any);
 }
 
 export async function createClassroom(payload: CreateClassroomPayload): Promise<ClassroomItem> {
   const res = await apiClient.post<ClassroomResponse>('/madrasa-admin/classrooms', payload);
-  return res.data.data.classroom;
+  return (res.data.data as any)?.classroom || (res.data.data as any);
 }
 
 export async function updateClassroom(id: string, payload: UpdateClassroomPayload): Promise<ClassroomItem> {
   const res = await apiClient.patch<ClassroomResponse>(`/madrasa-admin/classrooms/${id}`, payload);
-  return res.data.data.classroom;
+  return (res.data.data as any)?.classroom || (res.data.data as any);
 }
 
 export async function regenerateClassroomQr(id: string): Promise<ClassroomItem> {
   const res = await apiClient.post<ClassroomResponse>(`/madrasa-admin/classrooms/${id}/regenerate-qr`);
-  return res.data.data.classroom;
+  return (res.data.data as any)?.classroom || (res.data.data as any);
 }
 
 export async function revokeClassroomQr(id: string): Promise<ClassroomItem> {
   const res = await apiClient.post<ClassroomResponse>(`/madrasa-admin/classrooms/${id}/revoke-qr`);
-  return res.data.data.classroom;
+  return (res.data.data as any)?.classroom || (res.data.data as any);
 }
 
 export async function activateClassroom(id: string): Promise<ClassroomItem> {
   const res = await apiClient.post<ClassroomResponse>(`/madrasa-admin/classrooms/${id}/activate`);
-  return res.data.data.classroom;
+  return (res.data.data as any)?.classroom || (res.data.data as any);
 }
 
 export async function getClassroomQrPrintData(id: string): Promise<ClassroomQrPrintDataResponse['data']> {

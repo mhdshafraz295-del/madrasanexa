@@ -20,6 +20,43 @@ export function generateRoomToken(_madrasaId) {
 }
 
 /**
+ * Safely parses facilities column to extract metadata JSON (classId, building, floor, notes).
+ * Falls back gracefully to legacy plain string notes.
+ */
+export function parseFacilities(facilitiesStr) {
+  if (!facilitiesStr) return { building: null, floor: null, notes: null, classId: null, className: null, classCode: null };
+  if (typeof facilitiesStr === 'string' && facilitiesStr.trim().startsWith('{')) {
+    try {
+      const obj = JSON.parse(facilitiesStr);
+      return {
+        building: obj.building || null,
+        floor: obj.floor || null,
+        notes: obj.notes || null,
+        classId: obj.classId || null,
+        className: obj.className || null,
+        classCode: obj.classCode || null,
+      };
+    } catch (_) {}
+  }
+  return { building: null, floor: null, notes: facilitiesStr, classId: null, className: null, classCode: null };
+}
+
+/**
+ * Builds structured JSON string for classroom facilities & linked class metadata.
+ */
+export function buildFacilitiesString({ building, floor, notes, facilities, classId, className, classCode }) {
+  const obj = {
+    building: building || null,
+    floor: floor || null,
+    notes: notes || facilities || null,
+    classId: classId || null,
+    className: className || null,
+    classCode: classCode || null,
+  };
+  return JSON.stringify(obj);
+}
+
+/**
  * Ensures a dedicated physical classroom with a unique printable QR plaque exists for a Class.
  * Idempotent: returns existing classroom if one already matches the roomNumber or name.
  *
@@ -49,7 +86,34 @@ export async function ensureClassroomForClass(madrasaId, classObj) {
     },
   });
 
+  const facilitiesJson = buildFacilitiesString({
+    notes: 'Standard Class Venue, Whiteboard, High-Contrast Matte Wall Plaque',
+    classId: classObj.id,
+    className: classObj.name,
+    classCode: classObj.code,
+  });
+
   if (existing) {
+    const meta = parseFacilities(existing.facilities);
+    if (!meta.classId) {
+      const updatedFacilities = buildFacilitiesString({
+        ...meta,
+        classId: classObj.id,
+        className: classObj.name,
+        classCode: classObj.code,
+      });
+      existing = await prisma.classroom.update({
+        where: { id: existing.id },
+        data: { facilities: updatedFacilities },
+      });
+    }
+
+    // Link any existing schedules for this class to this classroom
+    await prisma.ustadhSchedule.updateMany({
+      where: { madrasaId, classId: classObj.id },
+      data: { classroomId: existing.id },
+    }).catch(() => {});
+
     return existing;
   }
 
@@ -71,10 +135,16 @@ export async function ensureClassroomForClass(madrasaId, classObj) {
       roomNumber: roomNumberToUse,
       roomToken,
       capacity: 35,
-      facilities: 'Standard Class Venue, Whiteboard, High-Contrast Matte Wall Plaque',
+      facilities: facilitiesJson,
       isActive: true,
     },
   });
+
+  // Link any existing schedules for this class to this classroom
+  await prisma.ustadhSchedule.updateMany({
+    where: { madrasaId, classId: classObj.id },
+    data: { classroomId: created.id },
+  }).catch(() => {});
 
   return created;
 }
@@ -129,7 +199,7 @@ export async function listClassrooms(madrasaId, query = {}) {
     ];
   }
 
-  const [total, items] = await Promise.all([
+  const [total, items, madrasaClasses] = await Promise.all([
     prisma.classroom.count({ where }),
     prisma.classroom.findMany({
       where,
@@ -137,27 +207,68 @@ export async function listClassrooms(madrasaId, query = {}) {
       take,
       orderBy: [{ roomNumber: 'asc' }, { name: 'asc' }],
       include: {
+        schedules: {
+          select: {
+            class: {
+              select: { id: true, name: true, code: true },
+            },
+          },
+        },
         _count: {
           select: { schedules: true },
         },
       },
     }),
+    prisma.class.findMany({
+      where: { madrasaId, isActive: true },
+      select: { id: true, name: true, code: true },
+    }),
   ]);
 
   return {
-    items: items.map((c) => ({
-      id: c.id,
-      madrasaId: c.madrasaId,
-      name: c.name,
-      roomNumber: c.roomNumber,
-      roomToken: c.roomToken,
-      capacity: c.capacity,
-      facilities: c.facilities,
-      isActive: c.isActive,
-      schedulesCount: c._count.schedules,
-      createdAt: c.createdAt,
-      updatedAt: c.updatedAt,
-    })),
+    items: items.map((c) => {
+      const meta = parseFacilities(c.facilities);
+      let linkedClass = null;
+      if (meta.classId) {
+        linkedClass = madrasaClasses.find((cls) => cls.id === meta.classId) || null;
+      }
+      if (!linkedClass && c.schedules?.length > 0) {
+        const sWithClass = c.schedules.find((s) => s.class);
+        if (sWithClass) linkedClass = sWithClass.class;
+      }
+      if (!linkedClass) {
+        linkedClass = madrasaClasses.find((cls) => {
+          const clean = (cls.code || cls.name).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+          return (
+            c.roomNumber === `CR-${clean}` ||
+            c.name === `Classroom - ${cls.name}` ||
+            c.name === cls.name ||
+            c.name.toLowerCase().includes(cls.name.toLowerCase())
+          );
+        }) || null;
+      }
+
+      return {
+        id: c.id,
+        madrasaId: c.madrasaId,
+        name: c.name,
+        roomNumber: c.roomNumber,
+        roomToken: c.roomToken,
+        capacity: c.capacity,
+        facilities: c.facilities,
+        classId: linkedClass?.id || meta.classId || null,
+        className: linkedClass?.name || meta.className || null,
+        classCode: linkedClass?.code || meta.classCode || null,
+        building: meta.building,
+        floor: meta.floor,
+        notes: meta.notes,
+        isActive: c.isActive,
+        assignedScheduleCount: c._count.schedules,
+        schedulesCount: c._count.schedules,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      };
+    }),
     total,
     page: Number(page),
     pageSize: Number(pageSize),
@@ -173,26 +284,53 @@ export async function listClassrooms(madrasaId, query = {}) {
  * @returns {Promise<object>}
  */
 export async function getClassroomById(madrasaId, classroomId) {
-  const classroom = await prisma.classroom.findFirst({
-    where: { id: classroomId, madrasaId },
-    include: {
-      schedules: {
-        where: { isActive: true },
-        include: {
-          class: { select: { id: true, name: true, code: true } },
-          subject: { select: { id: true, name: true, code: true } },
-          ustadh: { select: { id: true, fullName: true, ustadhCode: true } },
+  const [classroom, madrasaClasses] = await Promise.all([
+    prisma.classroom.findFirst({
+      where: { id: classroomId, madrasaId },
+      include: {
+        schedules: {
+          where: { isActive: true },
+          include: {
+            class: { select: { id: true, name: true, code: true } },
+            subject: { select: { id: true, name: true, code: true } },
+            ustadh: { select: { id: true, fullName: true, ustadhCode: true } },
+          },
+          orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
         },
-        orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
+        _count: {
+          select: { schedules: true },
+        },
       },
-      _count: {
-        select: { schedules: true },
-      },
-    },
-  });
+    }),
+    prisma.class.findMany({
+      where: { madrasaId, isActive: true },
+      select: { id: true, name: true, code: true },
+    }),
+  ]);
 
   if (!classroom) {
     throw new NotFoundError('Classroom not found.');
+  }
+
+  const meta = parseFacilities(classroom.facilities);
+  let linkedClass = null;
+  if (meta.classId) {
+    linkedClass = madrasaClasses.find((cls) => cls.id === meta.classId) || null;
+  }
+  if (!linkedClass && classroom.schedules?.length > 0) {
+    const sWithClass = classroom.schedules.find((s) => s.class);
+    if (sWithClass) linkedClass = sWithClass.class;
+  }
+  if (!linkedClass) {
+    linkedClass = madrasaClasses.find((cls) => {
+      const clean = (cls.code || cls.name).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+      return (
+        classroom.roomNumber === `CR-${clean}` ||
+        classroom.name === `Classroom - ${cls.name}` ||
+        classroom.name === cls.name ||
+        classroom.name.toLowerCase().includes(cls.name.toLowerCase())
+      );
+    }) || null;
   }
 
   return {
@@ -203,7 +341,14 @@ export async function getClassroomById(madrasaId, classroomId) {
     roomToken: classroom.roomToken,
     capacity: classroom.capacity,
     facilities: classroom.facilities,
+    classId: linkedClass?.id || meta.classId || null,
+    className: linkedClass?.name || meta.className || null,
+    classCode: linkedClass?.code || meta.classCode || null,
+    building: meta.building,
+    floor: meta.floor,
+    notes: meta.notes,
     isActive: classroom.isActive,
+    assignedScheduleCount: classroom._count.schedules,
     schedulesCount: classroom._count.schedules,
     schedules: classroom.schedules.map((s) => ({
       id: s.id,
@@ -229,27 +374,67 @@ export async function getClassroomById(madrasaId, classroomId) {
  * @returns {Promise<object>}
  */
 export async function createClassroom(madrasaId, adminUserId, data) {
+  let linkedClass = null;
+  if (data.classId) {
+    linkedClass = await prisma.class.findFirst({
+      where: { id: data.classId, madrasaId },
+    });
+    if (!linkedClass) {
+      throw new NotFoundError('Selected academic class not found in this institution.');
+    }
+  }
+
+  // Auto pre-fill if not specified
+  let roomName = data.name ? data.name.trim() : '';
+  if (!roomName && linkedClass) {
+    roomName = `Classroom - ${linkedClass.name}`;
+  }
+
+  let roomNumber = data.roomNumber ? data.roomNumber.trim() : '';
+  if (!roomNumber && linkedClass) {
+    const clean = (linkedClass.code || linkedClass.name).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+    roomNumber = `CR-${clean}`;
+  }
+
   const existingWithNumber = await prisma.classroom.findFirst({
-    where: { madrasaId, roomNumber: data.roomNumber.trim() },
+    where: { madrasaId, roomNumber },
   });
 
   if (existingWithNumber) {
-    throw new ConflictError(`Classroom with room number "${data.roomNumber}" already exists in this institution.`);
+    throw new ConflictError(`Classroom with room number "${roomNumber}" already exists in this institution.`);
   }
 
   const roomToken = generateRoomToken(madrasaId);
 
+  const facilitiesJson = buildFacilitiesString({
+    building: data.building,
+    floor: data.floor,
+    notes: data.notes,
+    facilities: data.facilities,
+    classId: linkedClass?.id || null,
+    className: linkedClass?.name || null,
+    classCode: linkedClass?.code || null,
+  });
+
   const created = await prisma.classroom.create({
     data: {
       madrasaId,
-      name: data.name.trim(),
-      roomNumber: data.roomNumber.trim(),
+      name: roomName,
+      roomNumber,
       roomToken,
-      capacity: data.capacity !== undefined ? data.capacity : null,
-      facilities: data.facilities ? data.facilities.trim() : null,
+      capacity: data.capacity !== undefined ? data.capacity : (linkedClass?.capacity || 35),
+      facilities: facilitiesJson,
       isActive: data.isActive !== undefined ? data.isActive : true,
     },
   });
+
+  if (linkedClass) {
+    // Link existing schedules for this class to this classroom
+    await prisma.ustadhSchedule.updateMany({
+      where: { madrasaId, classId: linkedClass.id },
+      data: { classroomId: created.id },
+    }).catch(() => {});
+  }
 
   logTenantActivity({
     madrasaId,
@@ -260,9 +445,13 @@ export async function createClassroom(madrasaId, adminUserId, data) {
     metadata: {
       name: created.name,
       roomNumber: created.roomNumber,
+      classId: linkedClass?.id || null,
+      className: linkedClass?.name || null,
       tokenHint: `${created.roomToken.slice(0, 14)}...${created.roomToken.slice(-6)}`,
     },
   }).catch(() => {});
+
+  const meta = parseFacilities(created.facilities);
 
   return {
     id: created.id,
@@ -272,7 +461,14 @@ export async function createClassroom(madrasaId, adminUserId, data) {
     roomToken: created.roomToken,
     capacity: created.capacity,
     facilities: created.facilities,
+    classId: linkedClass?.id || meta.classId || null,
+    className: linkedClass?.name || meta.className || null,
+    classCode: linkedClass?.code || meta.classCode || null,
+    building: meta.building,
+    floor: meta.floor,
+    notes: meta.notes,
     isActive: created.isActive,
+    assignedScheduleCount: 0,
     schedulesCount: 0,
     createdAt: created.createdAt,
     updatedAt: created.updatedAt,
@@ -306,17 +502,51 @@ export async function updateClassroom(madrasaId, classroomId, adminUserId, data)
     }
   }
 
+  let linkedClass = undefined;
+  if (data.classId !== undefined) {
+    if (data.classId) {
+      linkedClass = await prisma.class.findFirst({
+        where: { id: data.classId, madrasaId },
+      });
+      if (!linkedClass) {
+        throw new NotFoundError('Selected academic class not found in this institution.');
+      }
+    } else {
+      linkedClass = null;
+    }
+  }
+
+  const existingMeta = parseFacilities(existing.facilities);
+
+  const updatedMeta = {
+    building: data.building !== undefined ? data.building : existingMeta.building,
+    floor: data.floor !== undefined ? data.floor : existingMeta.floor,
+    notes: data.notes !== undefined ? data.notes : (data.facilities !== undefined ? data.facilities : existingMeta.notes),
+    classId: linkedClass !== undefined ? (linkedClass ? linkedClass.id : null) : existingMeta.classId,
+    className: linkedClass !== undefined ? (linkedClass ? linkedClass.name : null) : existingMeta.className,
+    classCode: linkedClass !== undefined ? (linkedClass ? linkedClass.code : null) : existingMeta.classCode,
+  };
+
   const updateData = {};
   if (data.name !== undefined) updateData.name = data.name.trim();
   if (data.roomNumber !== undefined) updateData.roomNumber = data.roomNumber.trim();
   if (data.capacity !== undefined) updateData.capacity = data.capacity;
-  if (data.facilities !== undefined) updateData.facilities = data.facilities ? data.facilities.trim() : null;
   if (data.isActive !== undefined) updateData.isActive = data.isActive;
+  updateData.facilities = JSON.stringify(updatedMeta);
 
   const updated = await prisma.classroom.update({
     where: { id: existing.id },
     data: updateData,
   });
+
+  if (linkedClass !== undefined) {
+    if (linkedClass) {
+      await prisma.ustadhSchedule.updateMany({
+        where: { madrasaId, classId: linkedClass.id },
+        data: { classroomId: updated.id },
+      }).catch(() => {});
+    }
+  }
 
   logTenantActivity({
     madrasaId,
@@ -327,8 +557,14 @@ export async function updateClassroom(madrasaId, classroomId, adminUserId, data)
     metadata: {
       name: updated.name,
       roomNumber: updated.roomNumber,
+      classId: updatedMeta.classId,
+      className: updatedMeta.className,
     },
   }).catch(() => {});
+
+  const scheduleCount = await prisma.ustadhSchedule.count({
+    where: { madrasaId, classroomId: updated.id },
+  });
 
   return {
     id: updated.id,
@@ -338,7 +574,15 @@ export async function updateClassroom(madrasaId, classroomId, adminUserId, data)
     roomToken: updated.roomToken,
     capacity: updated.capacity,
     facilities: updated.facilities,
+    classId: updatedMeta.classId,
+    className: updatedMeta.className,
+    classCode: updatedMeta.classCode,
+    building: updatedMeta.building,
+    floor: updatedMeta.floor,
+    notes: updatedMeta.notes,
     isActive: updated.isActive,
+    assignedScheduleCount: scheduleCount,
+    schedulesCount: scheduleCount,
     createdAt: updated.createdAt,
     updatedAt: updated.updatedAt,
   };

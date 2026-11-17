@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma.js';
 import { NotFoundError, BadRequestError } from '../utils/errors.js';
 import { logTenantActivity } from './tenant.service.js';
 import { parseDateOnly, formatDateOnly } from './ustadh.service.js';
+import { ensureClassroomForClass } from './classroom.service.js';
 
 /**
  * Checks if two date ranges overlap.
@@ -200,6 +201,21 @@ export async function createSchedule(madrasaId, userId, data) {
     throw new NotFoundError('Subject not found.');
   }
 
+  // Auto-bind classroom QR plaque to schedule if not explicitly provided
+  if (!data.classroomId && data.classId) {
+    try {
+      const cls = await prisma.class.findFirst({ where: { id: data.classId, madrasaId } });
+      if (cls) {
+        const autoRm = await ensureClassroomForClass(madrasaId, cls);
+        if (autoRm) {
+          data.classroomId = autoRm.id;
+        }
+      }
+    } catch {
+      // Non-blocking fallback
+    }
+  }
+
   // Validate Classroom belongs to tenant if provided
   if (data.classroomId) {
     const rm = await prisma.classroom.findFirst({
@@ -349,6 +365,21 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
       targetClassroomId = rm.id;
     } else {
       targetClassroomId = null;
+    }
+  }
+
+  // If no classroom is assigned, auto-bind the class venue
+  if (!targetClassroomId && targetClassId) {
+    try {
+      const cls = await prisma.class.findFirst({ where: { id: targetClassId, madrasaId } });
+      if (cls) {
+        const autoRm = await ensureClassroomForClass(madrasaId, cls);
+        if (autoRm) {
+          targetClassroomId = autoRm.id;
+        }
+      }
+    } catch {
+      // Non-blocking fallback
     }
   }
 

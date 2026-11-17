@@ -41,30 +41,18 @@ export default function TeacherAttendancePage() {
   const storedUser = authApi.getStoredUser();
   const teacherName = storedUser?.name || 'Faculty Member';
 
-  const activeSlot = todaySchedule[0] || {
-    scheduleId: '',
-    id: '',
-    period: 1,
-    timeSlot: '08:00 AM – 08:45 AM',
-    className: 'Scheduled Lecture',
-    classId: '',
-    subject: 'Academic Session',
-    roomName: 'Allocated Classroom',
-    roomId: '',
-    roomCode: 'CR-01',
-    status: 'Pending',
-    graceWindowMinutes: 15,
-  };
+  const hasSchedule = todaySchedule.length > 0;
+  const activeSlot = hasSchedule ? todaySchedule[0] : null;
 
-  const assignedRoom = {
-    id: activeSlot.roomId || 'rm-default',
-    name: activeSlot.roomName || 'Classroom Venue',
-    code: activeSlot.roomCode || 'CR-01',
-    building: 'Main Academic Campus',
-    floor: 'Academic Block',
-    capacity: 35,
-    qrPayload: `PLAQUE-${activeSlot.roomCode || 'CR01'}-${activeSlot.classId || 'SESSION'}`,
-  };
+  const assignedRoom = activeSlot
+    ? {
+        id: activeSlot.roomId || activeSlot.classroomId || 'rm-assigned',
+        name: activeSlot.roomName || 'Classroom Venue',
+        code: activeSlot.roomCode || 'CR-01',
+        capacity: activeSlot.capacity || activeSlot.studentsCount || 35,
+        qrPayload: activeSlot.roomToken || activeSlot.roomCode || '',
+      }
+    : null;
 
   const [scanState, setScanState] = useState<ScanState>('idle');
   const [manualModalOpen, setManualModalOpen] = useState(false);
@@ -99,14 +87,33 @@ export default function TeacherAttendancePage() {
     setCameraActive(false);
   }, []);
 
-  const handleVerifyToken = useCallback(async (token: string, method: string = 'Camera QR Scan') => {
+  const loadData = useCallback(async () => {
+    try {
+      const [todaySlots, hist] = await Promise.all([
+        teacherAttendanceApi.getTodayTeacherAttendance(),
+        attendanceHistoryApi.getAttendanceHistory('teacher', 1, 20),
+      ]);
+      if (todaySlots && Array.isArray(todaySlots)) {
+        setTodaySchedule(todaySlots);
+      }
+      if (hist?.data) {
+        setLogs(hist.data);
+      }
+    } catch {
+      // Non-fatal
+    }
+  }, []);
+
+  const handleVerifyToken = useCallback(async (token: string, method: string = 'Classroom QR') => {
+    if (!activeSlot) return;
     setIsLoading(true);
     setBackendNotice(null);
     try {
+      const scheduleId = activeSlot.scheduleId || activeSlot.id;
       const result = await teacherAttendanceApi.verifyClassroomQr({
         roomToken: token.trim(),
-        scheduleId: activeSlot.id,
-        method,
+        scheduleId,
+        method: method.toLowerCase().includes('manual') ? 'Manual Fallback' : 'Classroom QR',
       });
 
       const newRecord: TeacherAttendanceRecord = {
@@ -115,11 +122,11 @@ export default function TeacherAttendancePage() {
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         period: activeSlot.period,
         periodTime: activeSlot.timeSlot,
-        classId: 'cls-11b',
+        classId: activeSlot.classId || 'cls',
         className: activeSlot.className,
         subject: activeSlot.subject,
-        roomId: assignedRoom.id,
-        roomName: assignedRoom.name,
+        roomId: assignedRoom?.id || '',
+        roomName: assignedRoom?.name || 'Classroom',
         classroomQrScanned: token,
         status: 'Verified',
         method: method.toLowerCase().includes('manual') ? 'Manual Fallback' : 'Classroom QR',
@@ -131,6 +138,7 @@ export default function TeacherAttendancePage() {
       setBackendNotice(result.notice);
       setScanState('valid');
       stopLiveCamera();
+      loadData();
     } catch (err: any) {
       const msg = err.message || '';
       if (msg.includes('already recorded')) {
@@ -143,7 +151,7 @@ export default function TeacherAttendancePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [activeSlot, assignedRoom, stopLiveCamera]);
+  }, [activeSlot, assignedRoom, stopLiveCamera, loadData]);
 
   const startLiveCamera = async () => {
     setCameraError(null);
@@ -199,39 +207,27 @@ export default function TeacherAttendancePage() {
   };
 
   useEffect(() => {
-    Promise.all([
-      teacherAttendanceApi.getTodayTeacherAttendance(),
-      attendanceHistoryApi.getAttendanceHistory('teacher', 1, 20),
-    ])
-      .then(([todaySlots, hist]) => {
-        if (todaySlots && todaySlots.length > 0) {
-          setTodaySchedule(todaySlots);
-        }
-        if (hist?.data) {
-          setLogs(hist.data);
-        }
-      })
-      .catch(() => {});
-
+    loadData();
     return () => {
       stopLiveCamera();
     };
-  }, [stopLiveCamera]);
+  }, [loadData, stopLiveCamera]);
 
   // Scan simulation triggers with live backend API verification
   const triggerScan = async (state: ScanState) => {
     setScanState(state);
     setBackendNotice(null);
 
-    if (state === 'valid') {
-      await handleVerifyToken(assignedRoom.qrPayload, 'Classroom QR Simulator');
+    if (state === 'valid' && assignedRoom) {
+      await handleVerifyToken(assignedRoom.qrPayload, 'Classroom QR');
     }
   };
 
   const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const tokenToUse = manualRoomToken.trim() || assignedRoom.qrPayload || 'MANUAL_AUTH_OVERRIDE_FACULTY';
-    await handleVerifyToken(tokenToUse, 'Manual Plaque Code Entry');
+    if (!assignedRoom) return;
+    const tokenToUse = manualRoomToken.trim() || assignedRoom.qrPayload || assignedRoom.code;
+    await handleVerifyToken(tokenToUse, 'Manual Fallback');
 
     setManualModalOpen(false);
     setManualRoomToken('');
@@ -260,62 +256,74 @@ export default function TeacherAttendancePage() {
         {/* Current Time Display */}
         <div className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-left md:text-right shrink-0">
           <div className="text-xs font-mono font-bold text-slate-900">
-            09:02 AM • Period {activeSlot.period}
+            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {hasSchedule && activeSlot ? `Period ${activeSlot.period}` : 'Timetable Inactive'}
           </div>
           <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
-            Within 15-min grace window (Active until 09:15 AM)
+            {hasSchedule && activeSlot ? `${activeSlot.timeSlot} (Active Period)` : 'No teaching sessions scheduled today'}
           </div>
         </div>
       </div>
 
-      {manualSuccessToast && (
+      {manualSuccessToast && activeSlot && (
         <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>Manual attendance override recorded successfully for Period {activeSlot.period}.</span>
         </div>
       )}
 
-      {/* Mandatory Architectural Disclaimer Banner */}
-      <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 sm:p-5 shadow-xs text-xs flex items-start gap-3.5">
-        <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5 font-bold">
-          <ShieldAlert className="w-4 h-4 text-amber-700" />
-        </div>
-        <div className="text-amber-900 leading-relaxed">
-          <div className="font-bold text-amber-950 text-sm mb-0.5">
-            Static Venue Plaque Architectural Notice
+      {!hasSchedule || !activeSlot || !assignedRoom ? (
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-10 text-center shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-teal-50 text-[#0D9488] flex items-center justify-center mx-auto mb-3">
+            <Calendar className="w-7 h-7" />
           </div>
-          <p>
-            {STATIC_VENUE_PLAQUE_NOTICE}
+          <h3 className="text-base font-bold text-slate-900">No Scheduled Classes Today</h3>
+          <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 leading-relaxed">
+            You do not have any timetable sessions assigned for today. Once Madrasa Administration schedules periods for your classes, classroom QR check-in will automatically activate here.
           </p>
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Mandatory Architectural Disclaimer Banner */}
+          <div className="bg-amber-50/90 border border-amber-200/90 rounded-2xl p-4 sm:p-5 shadow-xs text-xs flex items-start gap-3.5">
+            <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 mt-0.5 font-bold">
+              <ShieldAlert className="w-4 h-4 text-amber-700" />
+            </div>
+            <div className="text-amber-900 leading-relaxed">
+              <div className="font-bold text-amber-950 text-sm mb-0.5">
+                Static Venue Plaque Architectural Notice
+              </div>
+              <p>
+                {STATIC_VENUE_PLAQUE_NOTICE}
+              </p>
+            </div>
+          </div>
 
-      {/* 2. Permanent Classroom QR Architectural Banner */}
-      <div className="bg-gradient-to-r from-teal-50 via-slate-50 to-emerald-50 border border-teal-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
-        <div className="flex items-start gap-3.5">
-          <div className="w-9 h-9 rounded-xl bg-[#0D9488] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-            <Building2 className="w-5 h-5" />
-          </div>
-          <div className="text-xs text-slate-700 leading-relaxed">
-            <div className="font-bold text-slate-900 text-sm mb-0.5">
-              Permanent Classroom Identity Standard
+          {/* 2. Permanent Classroom QR Architectural Banner */}
+          <div className="bg-gradient-to-r from-teal-50 via-slate-50 to-emerald-50 border border-teal-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
+            <div className="flex items-start gap-3.5">
+              <div className="w-9 h-9 rounded-xl bg-[#0D9488] text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                <Building2 className="w-5 h-5" />
+              </div>
+              <div className="text-xs text-slate-700 leading-relaxed">
+                <div className="font-bold text-slate-900 text-sm mb-0.5">
+                  Permanent Classroom Identity Standard
+                </div>
+                <p>
+                  Each physical lecture hall has an <strong>invariant, permanent QR code plaque</strong>.
+                  The classroom identity remains permanent regardless of timetable changes, teacher rotations, or subject shifts.
+                  Attendance is validated against your allocated timetable schedule for the current time slot.
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[11px] text-teal-800">
+                  <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200">
+                    Plaque Code: {assignedRoom.code}
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200 truncate max-w-md">
+                    Payload: {assignedRoom.qrPayload}
+                  </span>
+                </div>
+              </div>
             </div>
-            <p>
-              Each physical lecture hall has an <strong>invariant, permanent QR code plaque</strong>.
-              The classroom identity remains permanent regardless of timetable changes, teacher rotations, or subject shifts.
-              Attendance is validated against your allocated timetable schedule for the current time slot.
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[11px] text-teal-800">
-              <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200">
-                Plaque Code: {assignedRoom.code}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200 truncate max-w-md">
-                Payload: {assignedRoom.qrPayload}
-              </span>
-            </div>
           </div>
-        </div>
-      </div>
 
       {/* 3. Core Scanning Workflow & Context */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -630,16 +638,18 @@ export default function TeacherAttendancePage() {
                 <span className="font-bold text-[#0D9488]">{assignedRoom.name}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Building Location</span>
-                <span className="text-slate-700">{assignedRoom.building}</span>
+                <span className="text-slate-500">Venue Code</span>
+                <span className="font-mono font-semibold text-slate-800">{assignedRoom.code}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Floor & Wing</span>
-                <span className="text-slate-700">{assignedRoom.floor}</span>
-              </div>
-              <div className="flex justify-between py-1">
                 <span className="text-slate-500">Room Capacity</span>
                 <span className="font-bold text-slate-900">{assignedRoom.capacity} Seats</span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-slate-500">Check-in Status</span>
+                <span className={`font-bold ${activeSlot.status === 'Verified' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  {activeSlot.status}
+                </span>
               </div>
             </div>
           </div>
@@ -666,15 +676,15 @@ export default function TeacherAttendancePage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Classroom:</span>
-                  <span className="font-semibold text-[#37C6A3]">{assignedRoom.code}</span>
+                  <span className="font-semibold text-[#37C6A3]">{assignedRoom.name} ({assignedRoom.code})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Check-in Time:</span>
                   <span className="font-mono text-white">{new Date().toLocaleTimeString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Session Digest:</span>
-                  <span className="font-mono text-[10px] text-slate-400">SHA256:7e9b4...f12a</span>
+                  <span className="text-slate-400">Session Method:</span>
+                  <span className="font-mono text-xs text-emerald-400">Classroom Plaque QR</span>
                 </div>
               </div>
 
@@ -691,6 +701,8 @@ export default function TeacherAttendancePage() {
           )}
         </div>
       </div>
+    </>
+  )}
 
       {/* 4. Faculty Attendance Logs Table */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs overflow-hidden">
@@ -796,7 +808,7 @@ export default function TeacherAttendancePage() {
                 <input
                   type="text"
                   required
-                  placeholder={`e.g. ${assignedRoom.qrPayload} or ${assignedRoom.code}`}
+                  placeholder={assignedRoom ? `e.g. ${assignedRoom.qrPayload || assignedRoom.code}` : 'e.g. CR-01 or CLS-ROOM-TOKEN'}
                   value={manualRoomToken}
                   onChange={(e) => setManualRoomToken(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"

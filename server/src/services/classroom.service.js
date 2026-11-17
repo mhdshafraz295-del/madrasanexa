@@ -20,6 +20,86 @@ export function generateRoomToken(_madrasaId) {
 }
 
 /**
+ * Ensures a dedicated physical classroom with a unique printable QR plaque exists for a Class.
+ * Idempotent: returns existing classroom if one already matches the roomNumber or name.
+ *
+ * @param {string} madrasaId
+ * @param {{ id: string, name: string, code?: string|null }} classObj
+ * @returns {Promise<object>}
+ */
+export async function ensureClassroomForClass(madrasaId, classObj) {
+  if (!classObj || !classObj.name) return null;
+
+  const cleanCode = (classObj.code || classObj.name)
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 10) || 'CLS';
+
+  const candidateRoomNumber = `CR-${cleanCode}`;
+
+  // Check if a classroom already exists for this class
+  let existing = await prisma.classroom.findFirst({
+    where: {
+      madrasaId,
+      OR: [
+        { roomNumber: candidateRoomNumber },
+        { name: `Classroom - ${classObj.name}` },
+        { name: classObj.name },
+      ],
+    },
+  });
+
+  if (existing) {
+    return existing;
+  }
+
+  // Create new classroom linked to this class
+  let roomNumberToUse = candidateRoomNumber;
+  const duplicateNumber = await prisma.classroom.findFirst({
+    where: { madrasaId, roomNumber: roomNumberToUse },
+  });
+  if (duplicateNumber) {
+    roomNumberToUse = `CR-${cleanCode}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+  }
+
+  const roomToken = `CLS-${cleanCode}-${crypto.randomBytes(16).toString('hex')}`;
+
+  const created = await prisma.classroom.create({
+    data: {
+      madrasaId,
+      name: `Classroom - ${classObj.name}`,
+      roomNumber: roomNumberToUse,
+      roomToken,
+      capacity: 35,
+      facilities: 'Standard Class Venue, Whiteboard, High-Contrast Matte Wall Plaque',
+      isActive: true,
+    },
+  });
+
+  return created;
+}
+
+/**
+ * Ensures all active classes in a Madrasa have a dedicated classroom QR plaque.
+ *
+ * @param {string} madrasaId
+ */
+export async function ensureClassroomsForAllClasses(madrasaId) {
+  try {
+    const classes = await prisma.class.findMany({
+      where: { madrasaId, isActive: true },
+      select: { id: true, name: true, code: true },
+    });
+
+    for (const cls of classes) {
+      await ensureClassroomForClass(madrasaId, cls);
+    }
+  } catch (err) {
+    // Non-fatal if DB table is syncing or running in sandbox
+  }
+}
+
+/**
  * Lists permanent physical classrooms for a Madrasa with pagination and filters.
  *
  * @param {string} madrasaId
@@ -27,6 +107,9 @@ export function generateRoomToken(_madrasaId) {
  * @returns {Promise<object>}
  */
 export async function listClassrooms(madrasaId, query = {}) {
+  // Idempotently ensure all classes have a classroom QR plaque ready
+  await ensureClassroomsForAllClasses(madrasaId);
+
   const { page = 1, pageSize = 50, search, isActive } = query;
   const skip = (Number(page) - 1) * Number(pageSize);
   const take = Number(pageSize);
@@ -428,7 +511,20 @@ export async function getClassroomQrPrintData(madrasaId, classroomId) {
     throw new NotFoundError('Classroom not found.');
   }
 
+  const qrPayload = classroom.roomToken;
+
   return {
+    id: classroom.id,
+    name: classroom.name,
+    roomNumber: classroom.roomNumber,
+    roomToken: classroom.roomToken,
+    capacity: classroom.capacity,
+    facilities: classroom.facilities,
+    isActive: classroom.isActive,
+    qrPayload,
+    venuePlaqueTitle: `Venue Plaque - ${classroom.roomNumber} ${classroom.name}`,
+    architecturalDisclaimer:
+      'Classroom QR codes verify venue and schedule alignment within the approved timetable window. Static QR codes do not certify continuous attendance or biometric physical presence.',
     institution: {
       id: madrasa?.id || madrasaId,
       name: madrasa?.name || 'MadrasaNexa Partner Institution',

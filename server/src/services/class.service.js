@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { findTenantRecordOrThrow, assertTenantOwnership } from '../lib/tenant-prisma.js';
 import { ConflictError, NotFoundError, BadRequestError } from '../utils/errors.js';
+import { ensureClassroomForClass } from './classroom.service.js';
 
 /**
  * Lists classes for the authenticated Madrasa with pagination and filters.
@@ -222,6 +223,13 @@ export async function createClass(madrasaId, data, userId) {
         },
       },
     });
+
+    // Auto-generate 1-to-1 dedicated classroom QR plaque for this class
+    try {
+      await ensureClassroomForClass(madrasaId, createdClass);
+    } catch (err) {
+      // Non-fatal if classroom sync encounters issue
+    }
 
     // Activity log
     await prisma.activityLog.create({

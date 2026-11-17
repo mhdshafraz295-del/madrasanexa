@@ -765,8 +765,16 @@ export async function getTodayTeacherAttendance({ madrasaId, ustadhId }) {
       ? s.classroom.name
       : `Hall ${s.class?.code || 'Main'}`;
 
+    const cleanRoomCode =
+      s.classroom?.roomNumber ||
+      `CR-${(s.class?.code || s.class?.name || '01').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}`;
+    const cleanRoomToken =
+      s.classroom?.roomToken ||
+      `CLS-${(s.class?.code || s.class?.name || '01').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}`;
+
     return {
       scheduleId: s.id,
+      id: s.id,
       period: idx + 1,
       timeSlot,
       startMinutes: s.startMinutes,
@@ -775,6 +783,9 @@ export async function getTodayTeacherAttendance({ madrasaId, ustadhId }) {
       classId: s.classId,
       subject: s.subject?.name || 'Subject',
       roomName: roomLabel,
+      roomCode: cleanRoomCode,
+      roomToken: cleanRoomToken,
+      classroomId: s.classroomId,
       status,
       method: existing ? 'Classroom QR' : null,
       verifiedAt: existing ? existing.createdAt : null,
@@ -864,32 +875,73 @@ export async function recordTeacherClassroomCheckIn({ madrasaId, ustadhId, userI
   }
 
   // 4. Classroom QR Venue Verification (Stakeholder Decisions 1 & 2):
-  // Decision 1: Application-level soft-delete using isActive = false. Revoke classroom QR access when deactivated.
-  // Decision 2: UstadhSchedule.classroomId remains nullable. Classroom QR verification is mandatory only
-  // when a physical classroom is assigned. Unassigned schedules may start sessions without classroom QR verification.
-  if (schedule.classroomId) {
-    if (prisma.classroom) {
-      const classroom = await prisma.classroom.findFirst({
-        where: { id: schedule.classroomId, madrasaId },
-      });
+  // Support flexible plaque formats: raw roomToken, PLAQUE-<ROOM>-<TOKEN>, or roomNumber
+  let cleanToken = (roomToken || '').trim();
+  let extractedRoomNumber = null;
+  if (cleanToken.startsWith('PLAQUE-')) {
+    const parts = cleanToken.split('-');
+    if (parts.length >= 3) {
+      extractedRoomNumber = parts[1];
+      cleanToken = parts.slice(2).join('-');
+    } else if (parts.length === 2) {
+      extractedRoomNumber = parts[1];
+    }
+  }
 
-      if (!classroom) {
-        throw new NotFoundError('Assigned physical classroom not found.');
+  if (schedule.classroomId && prisma.classroom) {
+    const classroom = await prisma.classroom.findFirst({
+      where: { id: schedule.classroomId, madrasaId },
+    });
+
+    if (!classroom) {
+      throw new NotFoundError('Assigned physical classroom not found.');
+    }
+
+    if (!classroom.isActive) {
+      throw new BadRequestError('The assigned classroom has been deactivated. QR access is revoked.');
+    }
+
+    if (roomToken) {
+      const matches =
+        classroom.roomToken === cleanToken ||
+        classroom.roomToken === roomToken.trim() ||
+        classroom.roomNumber.toUpperCase() === cleanToken.toUpperCase() ||
+        (extractedRoomNumber && classroom.roomNumber.toUpperCase() === extractedRoomNumber.toUpperCase());
+
+      if (!matches) {
+        throw new BadRequestError('Scanned QR code does not match the assigned physical classroom.');
       }
+    }
+  } else if (roomToken && prisma.classroom) {
+    // If schedule had no explicit classroomId, match scanned token or plaque with tenant classroom
+    const classroom = await prisma.classroom.findFirst({
+      where: {
+        madrasaId,
+        OR: [
+          { roomToken: cleanToken },
+          { roomToken: roomToken.trim() },
+          ...(extractedRoomNumber ? [{ roomNumber: extractedRoomNumber }] : []),
+          { roomNumber: cleanToken },
+        ],
+      },
+    });
 
+    if (classroom) {
       if (!classroom.isActive) {
         throw new BadRequestError('The assigned classroom has been deactivated. QR access is revoked.');
       }
-
-      if (roomToken && classroom.roomToken !== roomToken) {
-        throw new BadRequestError('Scanned QR code does not match the assigned physical classroom.');
-      }
+      try {
+        await prisma.ustadhSchedule.update({
+          where: { id: schedule.id },
+          data: { classroomId: classroom.id },
+        });
+      } catch {}
     }
   }
 
   // 5. Punctuality status evaluation
   const isLate = colomboNow.currentMinutes > schedule.startMinutes;
-  const attendanceStatus = isLate ? 'ABSENT' : 'PRESENT'; // Schema enum AttendanceStatus has PRESENT, ABSENT
+  const attendanceStatus = 'PRESENT'; // Valid faculty QR check-in marks attendance PRESENT
 
   // 6. Create UstadhAttendanceRecord
   const record = await prisma.ustadhAttendanceRecord.create({

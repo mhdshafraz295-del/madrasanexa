@@ -7,7 +7,8 @@ import {
   ConflictError,
 } from '../utils/errors.js';
 import { comparePassword, hashPassword } from '../utils/password.js';
-import { resolveObjectAccessUrl } from './r2.service.js';
+import { resolveObjectAccessUrl, uploadBufferToR2, buildMadrasaKey } from './r2.service.js';
+import { isR2Configured } from '../config/r2.js';
 import { hashToken, isValidTokenFormat } from '../utils/scan-token-crypto.js';
 
 /**
@@ -221,6 +222,18 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
     };
   }
 
+  let teacherPhotoUrl = null;
+  try {
+    const teacherUstadh = await prisma.ustadh.findFirst({
+      where: { id: ustadhId, madrasaId },
+      select: { notes: true },
+    });
+    if (teacherUstadh?.notes && teacherUstadh.notes.startsWith('{')) {
+      const parsedNotes = JSON.parse(teacherUstadh.notes);
+      teacherPhotoUrl = parsedNotes.photoUrl || parsedNotes.avatarUrl || null;
+    }
+  } catch (_) {}
+
   return {
     stats: {
       totalClasses: distinctClassIds.length,
@@ -247,6 +260,11 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
       weekday: colomboNow.weekday,
     },
     madrasa: madrasaInfo,
+    teacher: {
+      id: ustadhId,
+      photoUrl: teacherPhotoUrl,
+      avatarUrl: teacherPhotoUrl,
+    },
   };
 }
 
@@ -347,6 +365,9 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
       if (parsed.avatarUrl !== undefined && parsed.avatarUrl !== null) {
         avatarUrl = String(parsed.avatarUrl);
       }
+      if (parsed.photoUrl !== undefined && parsed.photoUrl !== null) {
+        avatarUrl = String(parsed.photoUrl);
+      }
     }
   } catch {
     // Ignore JSON parse errors on legacy string notes
@@ -358,6 +379,7 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     fullName: ustadh.fullName,
     arabicName,
     avatarUrl,
+    photoUrl: avatarUrl,
     designation: ustadh.staffType === 'USTADH' ? 'Senior Faculty Member' : String(ustadh.staffType),
     department: 'Department of Islamic Studies & Quranic Sciences',
     email: ustadh.email || '',
@@ -491,6 +513,86 @@ export async function updateTeacherProfile({ madrasaId, ustadhId, data }) {
     whatsappNumber: updated.whatsappNumber,
     address: updated.address,
     message: 'Teacher profile updated successfully.',
+  };
+}
+
+export async function uploadTeacherProfilePhoto({ madrasaId, ustadhId, userId, file }) {
+  if (!madrasaId || !ustadhId) {
+    throw new BadRequestError('Tenant madrasaId and ustadhId are required.');
+  }
+  if (!file || !file.buffer) {
+    throw new BadRequestError('No image buffer provided.');
+  }
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!allowedTypes.includes(file.mimetype)) {
+    throw new BadRequestError('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+  }
+
+  const ustadh = await prisma.ustadh.findFirst({
+    where: { id: ustadhId, madrasaId },
+  });
+
+  if (!ustadh) {
+    throw new NotFoundError('Teacher profile not found.');
+  }
+
+  let photoUrl = '';
+  let photoFileId = null;
+
+  if (isR2Configured && isR2Configured()) {
+    try {
+      const ext = file.mimetype === 'image/png' ? 'png' : file.mimetype === 'image/webp' ? 'webp' : 'jpg';
+      const filename = `ustadh_${ustadhId}_${Date.now()}.${ext}`;
+      const objectKey = buildMadrasaKey(madrasaId, 'uploads', filename);
+
+      await uploadBufferToR2(objectKey, file.buffer, file.mimetype);
+
+      if (prisma.fileObject) {
+        const fileRecord = await prisma.fileObject.create({
+          data: {
+            madrasaId,
+            type: 'OTHER',
+            objectKey,
+            originalName: file.originalname || filename,
+            mimeType: file.mimetype,
+            size: file.size || file.buffer.length,
+          },
+        });
+        photoFileId = fileRecord.id;
+      }
+      photoUrl = await resolveObjectAccessUrl(objectKey);
+    } catch (_) {
+      photoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+    }
+  } else {
+    photoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+  }
+
+  let currentNotesObj = {};
+  try {
+    if (ustadh.notes && ustadh.notes.startsWith('{')) {
+      currentNotesObj = JSON.parse(ustadh.notes);
+    }
+  } catch (_) {
+    currentNotesObj = {};
+  }
+  currentNotesObj.avatarUrl = photoUrl;
+  currentNotesObj.photoUrl = photoUrl;
+  if (photoFileId) currentNotesObj.photoFileId = photoFileId;
+
+  await prisma.ustadh.update({
+    where: { id: ustadh.id },
+    data: {
+      notes: JSON.stringify(currentNotesObj),
+    },
+  });
+
+  return {
+    photoUrl,
+    avatarUrl: photoUrl,
+    photoFileId,
+    message: 'Profile photo updated successfully.',
   };
 }
 

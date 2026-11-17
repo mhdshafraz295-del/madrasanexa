@@ -20,9 +20,10 @@ import {
   ShieldCheck,
   Sparkles,
   Info,
+  Camera,
 } from 'lucide-react';
 import type { TeacherProfile } from '../mock/teacherMockData';
-import { profileApi } from '../services/api';
+import { profileApi, resolveAssetUrl, AUTH_STORAGE_KEYS } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 
@@ -78,6 +79,63 @@ export default function ProfilePage() {
 
   const [expModalOpen, setExpModalOpen] = useState(false);
   const [expForm, setExpForm] = useState({ role: '', institution: '', period: '', responsibilities: '' });
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
+  const [photoUploadError, setPhotoUploadError] = useState<string | null>(null);
+
+  const handlePhotoSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setPhotoUploadError('Please select a JPG, PNG, or WEBP image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoUploadError('Photo size must be less than 5MB.');
+      return;
+    }
+
+    setIsUploadingPhoto(true);
+    setPhotoUploadError(null);
+    try {
+      const res = await profileApi.uploadPhoto(file);
+      setProfile((prev) => ({
+        ...prev,
+        avatarUrl: res.photoUrl || res.avatarUrl,
+        photoUrl: res.photoUrl || res.avatarUrl,
+      }));
+      setPhotoError(false);
+
+      // Update local storage teacher user object
+      try {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_USER);
+        if (stored) {
+          const userObj = JSON.parse(stored);
+          userObj.photoUrl = res.photoUrl || res.avatarUrl;
+          userObj.avatarUrl = res.photoUrl || res.avatarUrl;
+          if (userObj.teacherProfile) {
+            userObj.teacherProfile.photoUrl = res.photoUrl || res.avatarUrl;
+            userObj.teacherProfile.avatarUrl = res.photoUrl || res.avatarUrl;
+          }
+          localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(userObj));
+        }
+      } catch (err) {
+        console.error('Failed to sync updated photo to localStorage', err);
+      }
+
+      window.dispatchEvent(new CustomEvent('teacher_user_updated'));
+    } catch (err: any) {
+      setPhotoUploadError(err.message || 'Failed to upload photo.');
+    } finally {
+      setIsUploadingPhoto(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
 
   const loadProfile = async () => {
     setIsLoading(true);
@@ -357,16 +415,49 @@ export default function ProfilePage() {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
+  const resolvedPhotoUrl = resolveAssetUrl(profile.photoUrl || profile.avatarUrl);
+
   return (
     <div className="space-y-6">
       {/* 1. Profile Hero & Photo Card */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-          <div className="relative">
-            <div className="w-24 h-24 rounded-2xl bg-[#0F172A] text-[#37C6A3] font-bold text-3xl flex items-center justify-center border-4 border-slate-100 shadow-md">
-              {getInitials(profile.fullName)}
+          <div className="relative group">
+            <div className="w-24 h-24 rounded-2xl bg-[#0F172A] text-[#37C6A3] font-bold text-3xl flex items-center justify-center border-4 border-slate-100 shadow-md overflow-hidden shrink-0">
+              {resolvedPhotoUrl && !photoError ? (
+                <img
+                  src={resolvedPhotoUrl}
+                  alt={profile.fullName}
+                  onError={() => setPhotoError(true)}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                getInitials(profile.fullName)
+              )}
             </div>
             <span className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-600/20" title="Active Faculty Status" />
+            
+            {/* Upload Trigger Button */}
+            <button
+              type="button"
+              disabled={isUploadingPhoto}
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute -top-1.5 -right-1.5 p-1.5 rounded-full bg-[#0D9488] text-white hover:bg-[#0F766E] shadow-md border-2 border-white transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+              title="Upload / Change Profile Photo"
+            >
+              {isUploadingPhoto ? (
+                <Clock className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Camera className="w-3.5 h-3.5" />
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handlePhotoSelected}
+              className="hidden"
+            />
           </div>
 
           <div>
@@ -390,6 +481,22 @@ export default function ProfilePage() {
             )}
             <div className="text-xs text-slate-500 mt-1">
               {profile.designation} — {profile.department}
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <button
+                type="button"
+                disabled={isUploadingPhoto}
+                onClick={() => fileInputRef.current?.click()}
+                className="text-xs text-[#0D9488] hover:text-[#0F766E] font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <Camera className="w-3.5 h-3.5" />
+                {isUploadingPhoto ? 'Uploading photo...' : 'Change Profile Photo'}
+              </button>
+              {photoUploadError && (
+                <span className="text-xs text-red-600 font-medium">
+                  {photoUploadError}
+                </span>
+              )}
             </div>
           </div>
         </div>

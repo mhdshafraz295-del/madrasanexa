@@ -67,31 +67,21 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden bg-[#0F172A]">
-      {/* 1. Full-Screen Video Background with Fallback Image */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        poster="/auth-bg.png"
-        className="fixed inset-0 w-full h-full object-cover -z-10 opacity-75"
-        style={{ opacity: 0.75 }}
-        aria-hidden="true"
-      >
-        <source src="/auth-bg.mp4" type="video/mp4" />
-      </video>
+    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 md:p-8 overflow-hidden bg-gradient-to-br from-[#06241B] via-[#0B1D26] to-[#071914]">
+      {/* Ambient Lighting Orbs */}
+      <div className="fixed -top-40 -left-40 w-96 h-96 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed -bottom-40 -right-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      {/* Fallback Static Background Image behind video */}
+      {/* Subtle Geometric Dot Grid Pattern Overlay */}
       <div
-        className="fixed inset-0 w-full h-full bg-cover bg-center -z-20"
-        style={{ backgroundImage: "url('/auth-bg.png')" }}
+        className="fixed inset-0 pointer-events-none opacity-20"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+        }}
         aria-hidden="true"
       />
-
-      {/* Soft Dark & Blur Glass Overlay */}
-      <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-[6px] -z-10" aria-hidden="true" />
 
       {/* 2. Floating Crisp Admin-Matched Login Card */}
       <div className="relative z-10 w-full max-w-md bg-white rounded-3xl shadow-2xl border border-[#E7E9EE] p-6 sm:p-8 md:p-10 transition-all mx-4">

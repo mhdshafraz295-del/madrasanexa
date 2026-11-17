@@ -8,6 +8,7 @@ export interface TeacherProfile {
   fullName: string;
   arabicName: string;
   avatarUrl: string;
+  photoUrl?: string;
   designation: string;
   department: string;
   email: string;

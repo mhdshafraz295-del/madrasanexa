@@ -16,7 +16,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import type { TeacherProfile, AssignedClass } from '../mock/teacherMockData';
-import { dashboardApi, profileApi, classesApi, DashboardData } from '../services/api';
+import { dashboardApi, profileApi, classesApi, DashboardData, resolveAssetUrl } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import InstitutionalLiveClock from '../components/dashboard/InstitutionalLiveClock';
@@ -58,6 +58,7 @@ export default function DashboardPage() {
   const [assignedClasses, setAssignedClasses] = useState<AssignedClass[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState(false);
 
   const navigate = useNavigate();
 
@@ -98,6 +99,12 @@ export default function DashboardPage() {
     todayClasses.find((t) => t.status === 'Upcoming');
 
   const stats = dashboardData.stats;
+  const resolvedPhotoUrl = resolveAssetUrl(
+    profile.photoUrl ||
+    profile.avatarUrl ||
+    dashboardData?.teacher?.photoUrl ||
+    dashboardData?.teacher?.avatarUrl
+  );
 
   return (
     <div className="space-y-6">
@@ -106,11 +113,20 @@ export default function DashboardPage() {
 
       {/* 1. Welcome & Faculty Identity Header */}
       <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#111827] text-[#10B981] font-bold text-xl flex items-center justify-center border-2 border-[#E2E8F0] shadow-xs shrink-0">
-            {profile.fullName.slice(0, 2).toUpperCase()}
+        <div className="flex items-start gap-4 min-w-0 flex-1">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#111827] text-[#10B981] font-bold text-xl flex items-center justify-center border-2 border-[#E2E8F0] shadow-xs shrink-0 overflow-hidden">
+            {resolvedPhotoUrl && !photoError ? (
+              <img
+                src={resolvedPhotoUrl}
+                alt={profile.fullName}
+                onError={() => setPhotoError(true)}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              profile.fullName.slice(0, 2).toUpperCase()
+            )}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2 mb-1">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E6F7F2] text-[#10B981] border border-[#10B981]/30">
                 ● Faculty Status: {profile.status}
@@ -119,7 +135,7 @@ export default function DashboardPage() {
                 ID: {profile.employeeCode}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#111827] tracking-tight min-w-0 break-words">
               Assalamu Alaikum, {profile.fullName}
             </h1>
             <p className="text-sm font-arabic text-[#10B981] font-semibold mt-0.5">
@@ -140,11 +156,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Date Card for Mobile/Tablet */}
-        <div className="lg:hidden p-3 bg-[#F8F7F3] rounded-xl border border-[#E2E8F0] text-xs">
-          <div className="font-bold text-[#10B981] font-arabic">
+        <div className="lg:hidden p-3 bg-[#F8F7F3] rounded-xl border border-[#E2E8F0] text-xs min-w-0">
+          <div className="font-bold text-[#10B981] font-arabic truncate">
             {(profile as any).madrasa?.name || 'MadrasaNexa'}
           </div>
-          <div className="text-[#718096] text-[11px] mt-0.5">
+          <div className="text-[#718096] text-[11px] mt-0.5 min-w-0 break-words">
             {dashboardData.timeContext.date} ({dashboardData.timeContext.weekday})
           </div>
         </div>

@@ -245,27 +245,21 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-3.5 sm:p-5 transition-all">
       {/* CSS Animation for Green Sweeping Laser */}
       <style>{`
-        @keyframes scanVerticalLaser {
-          0% {
-            top: 6%;
-            opacity: 0.4;
-          }
-          50% {
-            opacity: 1;
-          }
-          100% {
-            top: 92%;
-            opacity: 0.4;
-          }
+        @keyframes scanSweep {
+          0% { top: 12%; opacity: 0.85; }
+          50% { top: 88%; opacity: 1; }
+          100% { top: 12%; opacity: 0.85; }
         }
         .scanner-active-laser {
           position: absolute;
-          left: 4%;
-          right: 4%;
-          height: 2.5px;
-          background: linear-gradient(90deg, rgba(55,198,163,0.1) 0%, rgba(55,198,163,1) 50%, rgba(55,198,163,0.1) 100%);
-          box-shadow: 0 0 12px 2px rgba(13,148,136,0.8), 0 0 4px 1px rgba(55,198,163,1);
-          animation: scanVerticalLaser 2.2s ease-in-out infinite alternate;
+          left: 8px;
+          right: 8px;
+          height: 2px;
+          background: linear-gradient(90deg, transparent, #10B981, #34D399, #10B981, transparent);
+          box-shadow: 0 0 14px #10B981, 0 0 6px #10B981;
+          animation: scanSweep 2.4s ease-in-out infinite;
+          pointer-events: none;
+          z-index: 25;
           border-radius: 9999px;
         }
         @media (prefers-reduced-motion: reduce) {
@@ -393,7 +387,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
               <div className="scanner-active-laser" />
             </div>
 
-            <p className="mt-3.5 text-xs text-[#37C6A3] bg-slate-900/85 border border-[#37C6A3]/20 px-3 py-1 rounded-full backdrop-blur-xs font-semibold shadow-xs">
+            <p className="mt-3.5 text-xs text-emerald-300 bg-slate-950/90 border border-emerald-500/40 px-3.5 py-1.5 rounded-full backdrop-blur-xs font-semibold shadow-lg z-20 pointer-events-none">
               Align Student QR Code or Barcode within frame
             </p>
           </div>

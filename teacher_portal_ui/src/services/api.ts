@@ -52,6 +52,8 @@ export interface AuthUser {
   role: 'TEACHER' | 'MADRASA_ADMIN' | 'SUPER_ADMIN';
   madrasaId: string | null;
   mustChangePassword?: boolean;
+  avatarUrl?: string | null;
+  photoUrl?: string | null;
   madrasa?: {
     id: string;
     name: string;
@@ -63,6 +65,8 @@ export interface AuthUser {
     ustadhCode: string;
     fullName: string;
     staffType: string;
+    photoUrl?: string | null;
+    avatarUrl?: string | null;
   };
 }
 
@@ -72,6 +76,11 @@ export interface LoginResult {
 }
 
 export interface DashboardData {
+  teacher?: {
+    id: string;
+    photoUrl?: string | null;
+    avatarUrl?: string | null;
+  };
   stats: {
     totalClasses: number;
     totalStudents: number;
@@ -327,6 +336,32 @@ export const profileApi = {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
+  },
+
+  async uploadPhoto(file: File): Promise<{ photoUrl: string; avatarUrl: string; message: string }> {
+    const formData = new FormData();
+    formData.append('photo', file);
+    const token = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN);
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${BASE_URL}/teacher/profile/photo`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (res.status === 401) {
+      localStorage.removeItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN);
+      localStorage.removeItem(AUTH_STORAGE_KEYS.TEACHER_USER);
+      window.dispatchEvent(new CustomEvent('teacher:unauthorized'));
+      throw new Error('Your session has expired. Please log in again.');
+    }
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || 'Failed to upload photo.');
+    }
+    return json.data;
   },
 };
 

@@ -344,59 +344,59 @@ export default function AttendanceHistoryPage() {
             className="my-8"
           />
         ) : (
-          <div className="overflow-x-auto mt-4 -mx-5 sm:mx-0">
+          <div className="w-full overflow-x-auto mt-4 -mx-5 sm:mx-0">
             <table className="w-full text-left border-collapse min-w-[720px] text-xs">
               <thead>
-                <tr className="bg-slate-50/70 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                  <th className="py-3 px-4">Date & Period</th>
-                  <th className="py-3 px-4">Class & Subject</th>
-                  <th className="py-3 px-4">Room Venue</th>
-                  <th className="py-3 px-4">Faculty Check-in</th>
-                  <th className="py-3 px-4">Attendance Tally</th>
-                  <th className="py-3 px-4">Rate %</th>
-                  <th className="py-3 px-4">Archive Seal</th>
-                  <th className="py-3 px-4 text-right">Audit</th>
+                <tr className="bg-slate-50/70 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap">
+                  <th className="py-3 px-4 whitespace-nowrap">Date & Period</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Class & Subject</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Room Venue</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Faculty Check-in</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Attendance Tally</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Rate %</th>
+                  <th className="py-3 px-4 whitespace-nowrap">Archive Seal</th>
+                  <th className="py-3 px-4 text-right whitespace-nowrap">Audit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredSessions.map((sess) => (
                   <tr key={sess.id} className="hover:bg-slate-50/70 transition">
-                    <td className="py-3.5 px-4 font-bold text-slate-900">
+                    <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
                       <div>{sess.date}</div>
                       <div className="text-[11px] text-slate-500 font-mono">
                         Period {sess.period} ({sess.timeSlot.split('–')[0].trim()})
                       </div>
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="font-semibold text-slate-900">{sess.className}</div>
                       <div className="text-[11px] text-[#0D9488] font-medium">{sess.subject}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-700">
+                    <td className="py-3.5 px-4 text-slate-700 whitespace-nowrap">
                       <div>{sess.roomName}</div>
                       <div className="text-[10px] text-slate-400 font-mono">{sess.sessionCode}</div>
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
                         {sess.teacherStatus}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 font-semibold text-slate-800">
+                    <td className="py-3.5 px-4 font-semibold text-slate-800 whitespace-nowrap">
                       <div>{sess.presentCount + sess.lateCount} / {sess.totalEnrolled} Present</div>
                       <div className="text-[10px] text-slate-400">
                         {sess.lateCount > 0 && `${sess.lateCount} Late • `}
                         {sess.excusedCount > 0 && `${sess.excusedCount} Excused`}
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-[#0D9488]">
+                    <td className="py-3.5 px-4 font-bold text-[#0D9488] whitespace-nowrap">
                       {sess.attendanceRate}%
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                         <span>Sealed</span>
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => setSelectedSessionDetail(sess)}

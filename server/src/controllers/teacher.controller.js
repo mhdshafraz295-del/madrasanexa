@@ -65,6 +65,31 @@ export async function updateTeacherProfile(req, res, next) {
   }
 }
 
+export async function uploadTeacherPhoto(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const ustadhId = req.teacher.ustadhId;
+    const userId = req.auth.userId;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No photo provided. Please upload an image file.',
+      });
+    }
+
+    const data = await teacherService.uploadTeacherProfilePhoto({
+      madrasaId,
+      ustadhId,
+      userId,
+      file: req.file,
+    });
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // =============================================================================
 // Module 3: Timetable
 // =============================================================================

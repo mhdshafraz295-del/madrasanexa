@@ -9,6 +9,7 @@ import {
   getTeacherDashboard,
   getTeacherProfile,
   updateTeacherProfile,
+  uploadTeacherPhoto,
   getTeacherTimetable,
   getAssignedClasses,
   getAssignedClassDetail,
@@ -30,6 +31,28 @@ import {
   changeTeacherPassword,
   updateTeacherPreferences,
 } from '../controllers/teacher.controller.js';
+import multer from 'multer';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB
+    files: 1,
+  },
+});
+
+const uploadPhotoMiddleware = (req, res, next) => {
+  const singleUpload = upload.single('photo');
+  singleUpload(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'File upload error.',
+      });
+    }
+    next();
+  });
+};
 
 const router = Router();
 
@@ -55,6 +78,7 @@ router.get('/dashboard', getTeacherDashboard);
 // =============================================================================
 router.get('/profile', getTeacherProfile);
 router.patch('/profile', updateTeacherProfile);
+router.post('/profile/photo', uploadPhotoMiddleware, uploadTeacherPhoto);
 
 // =============================================================================
 // Module 3: Timetable

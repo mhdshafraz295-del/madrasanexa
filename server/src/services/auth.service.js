@@ -148,11 +148,21 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
       throw error;
     }
 
+    let photoUrl = null;
+    if (ustadh.notes && ustadh.notes.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(ustadh.notes);
+        photoUrl = parsed.photoUrl || parsed.avatarUrl || null;
+      } catch (_) {}
+    }
+
     teacherProfile = {
       id: ustadh.id,
       ustadhCode: ustadh.ustadhCode,
       fullName: ustadh.fullName,
       staffType: ustadh.staffType,
+      photoUrl,
+      avatarUrl: photoUrl,
     };
   }
 
@@ -281,11 +291,21 @@ export const getMe = async (userId) => {
       throw error;
     }
 
+    let photoUrl = null;
+    if (ustadh.notes && ustadh.notes.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(ustadh.notes);
+        photoUrl = parsed.photoUrl || parsed.avatarUrl || null;
+      } catch (_) {}
+    }
+
     teacherProfile = {
       id: ustadh.id,
       ustadhCode: ustadh.ustadhCode,
       fullName: ustadh.fullName,
       staffType: ustadh.staffType,
+      photoUrl,
+      avatarUrl: photoUrl,
     };
   }
 

@@ -298,11 +298,11 @@ export default function TeacherAttendancePage() {
               The classroom identity remains permanent regardless of timetable changes, teacher rotations, or subject shifts.
               Attendance is validated against your allocated timetable schedule for the current time slot.
             </p>
-            <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[11px] text-teal-800">
-              <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200">
+            <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[11px] text-teal-800 min-w-0 max-w-full">
+              <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200 shrink-0">
                 Plaque Code: {assignedRoom.code}
               </span>
-              <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200 truncate max-w-md">
+              <span className="px-2 py-0.5 rounded bg-teal-100/80 border border-teal-200 break-all max-w-full">
                 Payload: {assignedRoom.qrPayload}
               </span>
             </div>
@@ -375,21 +375,41 @@ export default function TeacherAttendancePage() {
               <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-[#37C6A3] z-20" />
               <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-[#37C6A3] z-20" />
 
-              {/* Scanning Laser Beam (CSS Animation) */}
+              {/* Continuous Moving Green Laser Sweep Animation Style */}
+              <style>{`
+                @keyframes classroomScanSweep {
+                  0% { top: 12%; opacity: 0.85; }
+                  50% { top: 88%; opacity: 1; }
+                  100% { top: 12%; opacity: 0.85; }
+                }
+                .animate-classroom-scan-laser {
+                  position: absolute;
+                  left: 2rem;
+                  right: 2rem;
+                  height: 2px;
+                  background: linear-gradient(90deg, transparent, #10B981, #34D399, #10B981, transparent);
+                  box-shadow: 0 0 14px #10B981, 0 0 6px #10B981;
+                  animation: classroomScanSweep 2.5s ease-in-out infinite;
+                  pointer-events: none;
+                  z-index: 25;
+                }
+              `}</style>
+
+              {/* Scanning Laser Beam (Continuous Moving Sweep) */}
               {scanState === 'idle' && (
-                <div className="absolute inset-x-8 h-0.5 bg-gradient-to-r from-transparent via-[#37C6A3] to-transparent animate-pulse shadow-[0_0_12px_#37C6A3] z-20" />
+                <div className="animate-classroom-scan-laser" />
               )}
 
-              {/* Viewport Overlay Content */}
+              {/* Viewport Overlay Content (Visible even when live camera streams) */}
               {scanState === 'idle' && (
-                <div className="z-10 text-slate-300 max-w-xs">
-                  <div className="w-16 h-16 rounded-2xl bg-slate-900/80 border border-slate-700 flex items-center justify-center mx-auto mb-3 shadow-lg">
-                    <QrCode className="w-8 h-8 text-[#37C6A3]" />
+                <div className="z-10 text-slate-300 max-w-xs bg-slate-950/75 backdrop-blur-xs p-4 rounded-2xl border border-slate-800/80 shadow-lg">
+                  <div className="w-12 h-12 rounded-xl bg-slate-900/90 border border-slate-700 flex items-center justify-center mx-auto mb-2.5 shadow-md">
+                    <QrCode className="w-6 h-6 text-[#10B981]" />
                   </div>
                   <h3 className="text-sm font-bold text-white mb-1">
                     Align Classroom QR Plaque
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-300 leading-relaxed">
                     Point camera toward the permanent acrylic QR plaque affixed at the door of <strong>{assignedRoom.name}</strong>.
                   </p>
                 </div>
@@ -453,13 +473,13 @@ export default function TeacherAttendancePage() {
 
             {/* Live Camera Controls Bar */}
             {activeScannerTab === 'camera' && (
-              <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2">
+              <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full sm:w-auto">
                   {cameraActive ? (
                     <button
                       type="button"
                       onClick={stopLiveCamera}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg shadow-xs transition"
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg shadow-xs transition cursor-pointer"
                     >
                       <VideoOff className="w-3.5 h-3.5" />
                       <span>Stop Camera</span>
@@ -468,7 +488,7 @@ export default function TeacherAttendancePage() {
                     <button
                       type="button"
                       onClick={startLiveCamera}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold rounded-lg shadow-xs transition"
+                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold rounded-lg shadow-xs transition cursor-pointer"
                     >
                       <Video className="w-3.5 h-3.5" />
                       <span>Start Camera</span>
@@ -478,7 +498,7 @@ export default function TeacherAttendancePage() {
                   <button
                     type="button"
                     onClick={() => setManualModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg shadow-xs transition"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg shadow-xs transition cursor-pointer"
                   >
                     <Keyboard className="w-3.5 h-3.5 text-slate-500" />
                     <span>Enter Plaque Code Manually</span>

@@ -35,11 +35,14 @@ export default function TeacherLayout() {
   const [profile, setProfile] = useState<TeacherProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
   const [logoError, setLogoError] = useState(false);
+  const [photoError, setPhotoError] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
+    let isMounted = true;
+
     const handleUnauthorized = () => {
       navigate('/login');
     };
@@ -52,11 +55,30 @@ export default function TeacherLayout() {
         }).catch(() => {});
       }
     };
+    const handleTeacherUserUpdated = () => {
+      const stored = authApi.getStoredUser();
+      if (stored && isMounted) {
+        setProfile((prev) => prev ? {
+          ...prev,
+          fullName: stored.name || prev.fullName,
+          avatarUrl: (stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || prev.avatarUrl) as string,
+          photoUrl: (stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || prev.photoUrl) as string,
+        } : null);
+        setPhotoError(false);
+      }
+      profileApi.getProfile().then((p) => {
+        if (isMounted && p) {
+          setProfile(p);
+          setPhotoError(false);
+        }
+      }).catch(() => {});
+    };
+
     window.addEventListener('teacher:unauthorized', handleUnauthorized);
     window.addEventListener('teacher:logout', handleUnauthorized);
     window.addEventListener('teacher:profile-updated', handleProfileUpdated);
+    window.addEventListener('teacher_user_updated', handleTeacherUserUpdated);
 
-    let isMounted = true;
     const stored = authApi.getStoredUser();
     if (stored) {
       setProfile((prev) => prev || ({
@@ -65,6 +87,8 @@ export default function TeacherLayout() {
         email: stored.email,
         employeeCode: stored.teacherProfile?.ustadhCode || 'UST',
         status: 'Active',
+        avatarUrl: stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || '',
+        photoUrl: stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || '',
         madrasa: stored.madrasa,
       } as any));
     }
@@ -90,6 +114,7 @@ export default function TeacherLayout() {
       window.removeEventListener('teacher:unauthorized', handleUnauthorized);
       window.removeEventListener('teacher:logout', handleUnauthorized);
       window.removeEventListener('teacher:profile-updated', handleProfileUpdated);
+      window.removeEventListener('teacher_user_updated', handleTeacherUserUpdated);
     };
   }, [navigate]);
 
@@ -114,6 +139,8 @@ export default function TeacherLayout() {
   const madrasaCode = profileAny?.institution?.code || profileAny?.madrasa?.code || 'MNX';
   const rawLogoUrl = profileAny?.institution?.logoUrl || profileAny?.madrasa?.logoUrl;
   const resolvedLogoUrl = resolveAssetUrl(rawLogoUrl);
+  const rawPhotoUrl = profile?.photoUrl || profile?.avatarUrl;
+  const resolvedPhotoUrl = resolveAssetUrl(rawPhotoUrl);
   const madrasaInitials = madrasaName
     .split(' ')
     .filter(Boolean)
@@ -260,8 +287,17 @@ export default function TeacherLayout() {
                 className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F7F6F1] transition border border-transparent hover:border-[#E7E9EE] cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 overflow-hidden text-left">
-                  <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shrink-0">
-                    {profile?.fullName?.[0]?.toUpperCase() || 'U'}
+                  <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden">
+                    {resolvedPhotoUrl && !photoError ? (
+                      <img
+                        src={resolvedPhotoUrl}
+                        alt={profile?.fullName || 'Avatar'}
+                        onError={() => setPhotoError(true)}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      profile?.fullName?.[0]?.toUpperCase() || 'U'
+                    )}
                   </div>
                   <div className="overflow-hidden">
                     <div className="text-xs font-semibold text-[#0F172A] truncate">

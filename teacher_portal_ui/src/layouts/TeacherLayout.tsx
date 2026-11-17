@@ -46,8 +46,18 @@ export default function TeacherLayout() {
     const handleUnauthorized = () => {
       navigate('/login');
     };
+    const handleProfileUpdated = (e: any) => {
+      if (e.detail) {
+        setProfile((prev) => ({ ...prev, ...e.detail }));
+      } else {
+        profileApi.getProfile().then((p) => {
+          if (isMounted && p) setProfile(p);
+        }).catch(() => {});
+      }
+    };
     window.addEventListener('teacher:unauthorized', handleUnauthorized);
     window.addEventListener('teacher:logout', handleUnauthorized);
+    window.addEventListener('teacher:profile-updated', handleProfileUpdated);
 
     let isMounted = true;
     profileApi
@@ -70,6 +80,7 @@ export default function TeacherLayout() {
       isMounted = false;
       window.removeEventListener('teacher:unauthorized', handleUnauthorized);
       window.removeEventListener('teacher:logout', handleUnauthorized);
+      window.removeEventListener('teacher:profile-updated', handleProfileUpdated);
     };
   }, [navigate]);
 

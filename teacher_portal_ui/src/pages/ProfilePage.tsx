@@ -58,16 +58,16 @@ export default function ProfilePage() {
         setProfile((prev) => ({
           ...prev,
           ...data,
-          fullName: data.fullName || prev.fullName || '',
-          arabicName: data.arabicName || prev.arabicName || '',
-          nicPassport: data.nicPassport || prev.nicPassport || '',
-          dateOfBirth: data.dateOfBirth || prev.dateOfBirth || '',
+          fullName: data.fullName ?? prev.fullName ?? '',
+          arabicName: data.arabicName !== undefined ? data.arabicName : '',
+          nicPassport: data.nicPassport !== undefined ? data.nicPassport : '',
+          dateOfBirth: data.dateOfBirth !== undefined ? data.dateOfBirth : '',
           gender: data.gender || prev.gender || 'Male',
           maritalStatus: data.maritalStatus || prev.maritalStatus || 'Married',
           bloodGroup: data.bloodGroup || prev.bloodGroup || 'O+',
-          residentialAddress: data.residentialAddress || prev.residentialAddress || '',
-          district: data.district || prev.district || '',
-          postalCode: data.postalCode || prev.postalCode || '',
+          residentialAddress: data.residentialAddress !== undefined ? data.residentialAddress : (prev.residentialAddress || ''),
+          district: data.district !== undefined ? data.district : (prev.district || ''),
+          postalCode: data.postalCode !== undefined ? data.postalCode : (prev.postalCode || ''),
           country: data.country || prev.country || 'Sri Lanka',
           emergencyContact: {
             name: data.emergencyContact?.name || prev.emergencyContact?.name || '',
@@ -115,15 +115,41 @@ export default function ProfilePage() {
     setIsSaving(true);
     try {
       await profileApi.updateProfile({
+        fullName: profile.fullName,
+        arabicName: profile.arabicName,
         phoneNumber: profile.phone,
         whatsappNumber: profile.whatsapp,
         address: profile.residentialAddress,
+        residentialAddress: profile.residentialAddress,
+        nicPassport: profile.nicPassport,
+        dateOfBirth: profile.dateOfBirth,
+        gender: profile.gender,
+        maritalStatus: profile.maritalStatus,
+        bloodGroup: profile.bloodGroup,
+        district: profile.district,
+        postalCode: profile.postalCode,
+        country: profile.country,
+        avatarUrl: profile.avatarUrl,
         emergencyContact: profile.emergencyContact,
         academicQualifications: profile.academicQualifications || [],
         professionalQualifications: profile.professionalQualifications || [],
         teachingExperience: profile.teachingExperience || [],
         documents: profile.documents || [],
       });
+
+      // Synchronize updated user name and notify layout of changes
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const u = JSON.parse(storedUser);
+          if (profile.fullName) u.name = profile.fullName;
+          localStorage.setItem('user', JSON.stringify(u));
+        }
+        window.dispatchEvent(new CustomEvent('teacher:profile-updated', { detail: profile }));
+      } catch {
+        // Ignore storage error
+      }
+
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3500);
     } catch (err: any) {
@@ -325,11 +351,13 @@ export default function ProfilePage() {
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              {profile.fullName}
+              {profile.fullName || 'Ustadh Profile'}
             </h1>
-            <p className="text-sm font-arabic text-emerald-800 font-semibold mt-0.5">
-              {profile.arabicName}
-            </p>
+            {profile.arabicName && (
+              <p className="text-sm font-arabic text-emerald-800 font-semibold mt-0.5">
+                {profile.arabicName}
+              </p>
+            )}
             <div className="text-xs text-slate-500 mt-1">
               {profile.designation} — {profile.department}
             </div>
@@ -358,7 +386,7 @@ export default function ProfilePage() {
       {saveSuccess && (
         <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>Profile changes saved successfully in local prototype session.</span>
+          <span>Profile changes saved successfully.</span>
         </div>
       )}
 
@@ -939,10 +967,11 @@ export default function ProfilePage() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-xs cursor-pointer"
+              disabled={isSaving}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4 text-[#37C6A3]" />
-              <span>Save Profile Changes</span>
+              <span>{isSaving ? 'Saving Changes...' : 'Save Profile Changes'}</span>
             </button>
           </div>
         </div>

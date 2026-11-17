@@ -6,9 +6,21 @@ import { z } from 'zod';
  * modification of institutional, financial, or security fields.
  */
 export const teacherProfileUpdateSchema = z.object({
+  fullName: z.string().trim().max(100).optional().nullable(),
+  arabicName: z.string().trim().max(100).optional().nullable(),
   phoneNumber: z.string().trim().max(30).optional().nullable(),
   whatsappNumber: z.string().trim().max(30).optional().nullable(),
   address: z.string().trim().max(500).optional().nullable(),
+  residentialAddress: z.string().trim().max(500).optional().nullable(),
+  nicPassport: z.string().trim().max(50).optional().nullable(),
+  dateOfBirth: z.string().trim().max(50).optional().nullable(),
+  gender: z.string().trim().max(20).optional().nullable(),
+  maritalStatus: z.string().trim().max(20).optional().nullable(),
+  bloodGroup: z.string().trim().max(10).optional().nullable(),
+  district: z.string().trim().max(100).optional().nullable(),
+  postalCode: z.string().trim().max(30).optional().nullable(),
+  country: z.string().trim().max(100).optional().nullable(),
+  avatarUrl: z.string().trim().max(500).optional().nullable(),
   emergencyContact: z
     .object({
       name: z.string().trim().min(1).max(100),

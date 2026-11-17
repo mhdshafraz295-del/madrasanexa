@@ -362,16 +362,28 @@ export const profileApi = {
   },
 
   updateProfile(data: {
+    fullName?: string;
+    arabicName?: string;
     phoneNumber?: string;
     whatsappNumber?: string;
     address?: string;
+    residentialAddress?: string;
+    nicPassport?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    maritalStatus?: string;
+    bloodGroup?: string;
+    district?: string;
+    postalCode?: string;
+    country?: string;
+    avatarUrl?: string;
     emergencyContact?: { name: string; relationship: string; phone: string };
     academicQualifications?: any[];
     professionalQualifications?: any[];
     teachingExperience?: any[];
     documents?: any[];
-  }): Promise<{ id: string; message: string }> {
-    return request<{ id: string; message: string }>('/teacher/profile', {
+  }): Promise<{ id: string; fullName?: string; message: string }> {
+    return request<{ id: string; fullName?: string; message: string }>('/teacher/profile', {
       method: 'PATCH',
       body: JSON.stringify(data),
     }, () => ({ id: MOCK_TEACHER_PROFILE.id, message: 'Profile updated successfully (Offline preview).' }));

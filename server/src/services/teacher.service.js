@@ -201,7 +201,7 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     throw new NotFoundError('Teacher profile not found.');
   }
 
-  // Parse structured notes if emergency contact or qualifications are stored in JSON
+  // Parse structured notes if emergency contact, civil details, or qualifications are stored in JSON
   let emergencyContact = {
     name: 'Primary Family Contact',
     relationship: 'Family Member',
@@ -211,6 +211,16 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
   let professionalQualifications = [];
   let teachingExperience = [];
   let documents = [];
+  let arabicName = '';
+  let dateOfBirth = '';
+  let gender = 'Male';
+  let maritalStatus = 'Married';
+  let bloodGroup = 'O+';
+  let nicPassport = '';
+  let district = '';
+  let postalCode = '';
+  let country = 'Sri Lanka';
+  let avatarUrl = '';
 
   try {
     if (ustadh.notes && ustadh.notes.startsWith('{')) {
@@ -230,6 +240,36 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
       if (Array.isArray(parsed.documents)) {
         documents = parsed.documents;
       }
+      if (parsed.arabicName !== undefined && parsed.arabicName !== null) {
+        arabicName = String(parsed.arabicName);
+      }
+      if (parsed.dateOfBirth !== undefined && parsed.dateOfBirth !== null) {
+        dateOfBirth = String(parsed.dateOfBirth);
+      }
+      if (parsed.gender !== undefined && parsed.gender !== null) {
+        gender = String(parsed.gender);
+      }
+      if (parsed.maritalStatus !== undefined && parsed.maritalStatus !== null) {
+        maritalStatus = String(parsed.maritalStatus);
+      }
+      if (parsed.bloodGroup !== undefined && parsed.bloodGroup !== null) {
+        bloodGroup = String(parsed.bloodGroup);
+      }
+      if (parsed.nicPassport !== undefined && parsed.nicPassport !== null) {
+        nicPassport = String(parsed.nicPassport);
+      }
+      if (parsed.district !== undefined && parsed.district !== null) {
+        district = String(parsed.district);
+      }
+      if (parsed.postalCode !== undefined && parsed.postalCode !== null) {
+        postalCode = String(parsed.postalCode);
+      }
+      if (parsed.country !== undefined && parsed.country !== null) {
+        country = String(parsed.country);
+      }
+      if (parsed.avatarUrl !== undefined && parsed.avatarUrl !== null) {
+        avatarUrl = String(parsed.avatarUrl);
+      }
     }
   } catch {
     // Ignore JSON parse errors on legacy string notes
@@ -239,8 +279,8 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     id: ustadh.id,
     employeeCode: ustadh.ustadhCode,
     fullName: ustadh.fullName,
-    arabicName: '',
-    avatarUrl: '',
+    arabicName,
+    avatarUrl,
     designation: ustadh.staffType === 'USTADH' ? 'Senior Faculty Member' : String(ustadh.staffType),
     department: 'Department of Islamic Studies & Quranic Sciences',
     email: ustadh.email || '',
@@ -248,15 +288,15 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     whatsapp: ustadh.whatsappNumber || ustadh.phoneNumber || '',
     status: ustadh.isActive ? 'Active' : 'Inactive',
     dateOfJoining: ustadh.joinDate ? ustadh.joinDate.toISOString().split('T')[0] : '',
-    dateOfBirth: '',
-    gender: 'Male',
-    maritalStatus: 'Married',
-    bloodGroup: 'O+',
-    nicPassport: 'SAMPLE-NIC-RESTRICTED',
+    dateOfBirth,
+    gender,
+    maritalStatus,
+    bloodGroup,
+    nicPassport,
     residentialAddress: ustadh.address || '',
-    district: 'Institutional District',
-    postalCode: '10000',
-    country: 'Sri Lanka',
+    district,
+    postalCode,
+    country,
     emergencyContact,
     academicQualifications,
     professionalQualifications,
@@ -278,11 +318,17 @@ export async function updateTeacherProfile({ madrasaId, ustadhId, data }) {
   }
 
   const updateData = {};
+  if (data.fullName !== undefined && data.fullName !== null && data.fullName.trim() !== '') {
+    updateData.fullName = data.fullName.trim();
+  }
   if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber;
   if (data.whatsappNumber !== undefined) updateData.whatsappNumber = data.whatsappNumber;
   if (data.address !== undefined) updateData.address = data.address;
+  if (data.residentialAddress !== undefined && data.address === undefined) {
+    updateData.address = data.residentialAddress;
+  }
 
-  // Persist emergency contact and credentials safely inside notes JSON wrapper
+  // Persist emergency contact, qualifications, and personal identity fields safely inside notes JSON wrapper
   let currentNotesObj = {};
   try {
     if (existing.notes && existing.notes.startsWith('{')) {
@@ -314,8 +360,39 @@ export async function updateTeacherProfile({ madrasaId, ustadhId, data }) {
     notesChanged = true;
   }
 
+  const personalFields = [
+    'arabicName',
+    'dateOfBirth',
+    'gender',
+    'maritalStatus',
+    'bloodGroup',
+    'nicPassport',
+    'district',
+    'postalCode',
+    'country',
+    'avatarUrl',
+  ];
+  for (const field of personalFields) {
+    if (data[field] !== undefined) {
+      currentNotesObj[field] = data[field];
+      notesChanged = true;
+    }
+  }
+
   if (notesChanged) {
     updateData.notes = JSON.stringify(currentNotesObj);
+  }
+
+  // If fullName changed, also update User table name for consistent session header display
+  if (updateData.fullName && existing.userId) {
+    try {
+      await prisma.user.update({
+        where: { id: existing.userId },
+        data: { name: updateData.fullName },
+      });
+    } catch {
+      // Ignore user update error if not found
+    }
   }
 
   const updated = await prisma.ustadh.update({
@@ -325,6 +402,7 @@ export async function updateTeacherProfile({ madrasaId, ustadhId, data }) {
 
   return {
     id: updated.id,
+    fullName: updated.fullName,
     phoneNumber: updated.phoneNumber,
     whatsappNumber: updated.whatsappNumber,
     address: updated.address,

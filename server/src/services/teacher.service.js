@@ -1110,6 +1110,107 @@ export async function getPeriodAttendanceSession({ madrasaId, ustadhId, schedule
   };
 }
 
+/**
+ * Idempotently syncs a student's period attendance status directly into
+ * Admin Portal's Daily Class Attendance (AttendanceSession & AttendanceRecord).
+ *
+ * @param {object} txOrPrisma - PrismaClient instance or active transaction
+ * @param {object} params
+ * @param {string} params.madrasaId - Tenant ID
+ * @param {string} params.classId - Enrolled class ID
+ * @param {string} params.studentId - Student ID
+ * @param {string|Date} params.date - Session calendar date (YYYY-MM-DD or Date)
+ * @param {string} params.status - Period status (PRESENT, LATE, EXCUSED, ABSENT)
+ * @param {string} [params.markedByUserId] - Authenticated user ID performing the mark
+ * @param {string} [params.sourceNote] - Provenance note
+ * @returns {Promise<object|null>}
+ */
+export async function syncPeriodStatusToDailyAttendance(
+  txOrPrisma,
+  { madrasaId, classId, studentId, date, status, markedByUserId, sourceNote }
+) {
+  if (!madrasaId || !classId || !studentId) return null;
+  const db = txOrPrisma || prisma;
+
+  if (!db.attendanceSession || !db.attendanceRecord) {
+    return null;
+  }
+
+  try {
+    let attendanceDate;
+    if (date instanceof Date) {
+      attendanceDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
+    } else if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(date)) {
+      const parts = date.slice(0, 10).split('-').map(Number);
+      attendanceDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0));
+    } else {
+      const now = new Date();
+      attendanceDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
+    }
+
+    // 1. Resolve academicYear from existing session, madrasa setting, or fallback
+    let academicYear = '2026-2027';
+    if (db.madrasaSetting) {
+      try {
+        const settings = await db.madrasaSetting.findUnique({
+          where: { madrasaId },
+          select: { academicYear: true },
+        });
+        if (settings?.academicYear) {
+          academicYear = settings.academicYear;
+        }
+      } catch (_) {}
+    }
+
+    // 2. Upsert AttendanceSession for (madrasaId, classId, attendanceDate)
+    const session = await db.attendanceSession.upsert({
+      where: {
+        madrasaId_classId_attendanceDate: {
+          madrasaId,
+          classId,
+          attendanceDate,
+        },
+      },
+      update: {}, // Invariant: preserve existing session fields
+      create: {
+        madrasaId,
+        classId,
+        attendanceDate,
+        academicYear,
+        createdById: markedByUserId || null,
+      },
+    });
+
+    // 3. Map period status to AttendanceStatus enum (PRESENT | ABSENT)
+    const norm = String(status || 'PRESENT').toUpperCase();
+    const dailyStatus = (norm === 'ABSENT' || norm === 'EXCUSED') ? 'ABSENT' : 'PRESENT';
+
+    // 4. Upsert AttendanceRecord within tenant boundary
+    const record = await db.attendanceRecord.upsert({
+      where: {
+        sessionId_studentId: {
+          sessionId: session.id,
+          studentId,
+        },
+      },
+      create: {
+        madrasaId,
+        sessionId: session.id,
+        studentId,
+        status: dailyStatus,
+      },
+      update: {
+        status: dailyStatus,
+      },
+    });
+
+    return { session, record, dailyStatus };
+  } catch (err) {
+    // Non-blocking for offline mock suites / unmigrated dev environments
+    return null;
+  }
+}
+
 export async function markPeriodAttendance({ madrasaId, ustadhId, userId, payload }) {
   const { scheduleId, date, periodNumber = 1, topicCovered, remarks, records } = payload;
 
@@ -1184,6 +1285,19 @@ export async function markPeriodAttendance({ madrasaId, ustadhId, userId, payloa
             markedAt: new Date(),
           },
         });
+
+        // Sync student mark directly to Admin Portal Daily Class Attendance
+        if (schedule.classId) {
+          await syncPeriodStatusToDailyAttendance(prisma, {
+            madrasaId,
+            classId: schedule.classId,
+            studentId: rec.studentId,
+            date,
+            status: normalizedStatus,
+            markedByUserId: userId,
+            sourceNote: 'Teacher Period Roster Mark',
+          });
+        }
       }
 
       return {
@@ -1216,6 +1330,19 @@ export async function markPeriodAttendance({ madrasaId, ustadhId, userId, payloa
       method: rec.method || 'Teacher Manual',
       scannedTime: new Date().toISOString(),
     });
+
+    // Sync student mark directly to Admin Portal Daily Class Attendance
+    if (schedule.classId) {
+      await syncPeriodStatusToDailyAttendance(prisma, {
+        madrasaId,
+        classId: schedule.classId,
+        studentId: rec.studentId,
+        date,
+        status: rec.status,
+        markedByUserId: userId,
+        sourceNote: 'Teacher Period Roster Mark',
+      });
+    }
   }
 
   const updatedRecords = Array.from(recordMap.values());
@@ -1286,6 +1413,29 @@ export async function sealPeriodSession({ madrasaId, ustadhId, userId, scheduleI
         });
       }
 
+      // Bulk-sync all finalized student records in that period session to Admin Daily Attendance
+      if (schedule.classId && prisma.classPeriodAttendanceRecord) {
+        try {
+          const finalizedRecords = await prisma.classPeriodAttendanceRecord.findMany({
+            where: {
+              sessionId: session.id,
+              madrasaId,
+            },
+          });
+          for (const r of finalizedRecords) {
+            await syncPeriodStatusToDailyAttendance(prisma, {
+              madrasaId,
+              classId: schedule.classId,
+              studentId: r.studentId,
+              date,
+              status: r.status,
+              markedByUserId: userId,
+              sourceNote: 'Teacher Period Session Sealed',
+            });
+          }
+        } catch (_) {}
+      }
+
       return {
         sessionCode: `SES-${date.replace(/-/g, '')}-${schedule.id.slice(-4)}`,
         isSealed: true,
@@ -1309,6 +1459,21 @@ export async function sealPeriodSession({ madrasaId, ustadhId, userId, scheduleI
     sealedAt,
     sealedBy: userId,
   });
+
+  // Bulk-sync finalized memory records to Admin Daily Attendance
+  if (schedule.classId) {
+    for (const r of (existingSession.records || [])) {
+      await syncPeriodStatusToDailyAttendance(prisma, {
+        madrasaId,
+        classId: schedule.classId,
+        studentId: r.studentId,
+        date,
+        status: r.status,
+        markedByUserId: userId,
+        sourceNote: 'Teacher Period Session Sealed',
+      });
+    }
+  }
 
   return {
     sessionCode: `SES-${date.replace(/-/g, '')}-${schedule.id.slice(-4)}`,
@@ -1506,6 +1671,19 @@ export async function scanStudentPeriodAttendance({
         record = existingRecord;
       }
 
+      // Sync immediately to Admin Portal's Daily Class Attendance
+      if (schedule.classId || classId) {
+        await syncPeriodStatusToDailyAttendance(prisma, {
+          madrasaId,
+          classId: schedule.classId || classId,
+          studentId: student.id,
+          date,
+          status: 'PRESENT',
+          markedByUserId: userId,
+          sourceNote: method === 'QR_SCAN' ? 'Teacher Period QR Scan' : 'Teacher Period Barcode Scan',
+        });
+      }
+
       return {
         success: true,
         sessionId: session.id,
@@ -1567,6 +1745,19 @@ export async function scanStudentPeriodAttendance({
         remarks: '',
       });
     }
+  }
+
+  // Sync immediately to Admin Portal's Daily Class Attendance
+  if (schedule.classId || classId) {
+    await syncPeriodStatusToDailyAttendance(prisma, {
+      madrasaId,
+      classId: schedule.classId || classId,
+      studentId: student.id,
+      date,
+      status: 'PRESENT',
+      markedByUserId: userId,
+      sourceNote: method === 'QR_SCAN' ? 'Teacher Period QR Scan' : 'Teacher Period Barcode Scan',
+    });
   }
 
   return {

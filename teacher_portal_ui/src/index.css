@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-arabic: 'Amiri', serif;
+
+  --color-brand-navy: #0F172A;
+  --color-brand-navy-light: #1E293B;
+  --color-brand-teal: #37C6A3;
+  --color-brand-teal-dark: #0D9488;
+  --color-brand-teal-light: #CCFBF1;
+  --color-brand-emerald: #10B981;
+
+  --color-surface-bg: #F8FAFC;
+  --color-surface-card: #FFFFFF;
+  --color-surface-border: #E2E8F0;
+  --color-surface-border-subtle: #F1F5F9;
+
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-muted: #94A3B8;
+}
+
+:root {
+  font-family: var(--font-sans);
+}
+
+/* Custom scrollbars for dashboard widgets */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Dedicated Print Styles for Single-Page Official A4 Payslips */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm;
+  }
+
+  html, body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Reset screen flex constraints and min-heights */
+  div {
+    min-height: 0 !important;
+  }
+
+  /* Hide navigation, headers, footers and screen controls during payslip print */
+  header,
+  aside,
+  footer,
+  .print-hidden,
+  .no-print,
+  [class*="print:hidden"] {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .print-only-sheet {
+    position: static !important;
+    box-shadow: none !important;
+    border: 1px solid #cbd5e1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px 14px !important;
+    margin: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+}

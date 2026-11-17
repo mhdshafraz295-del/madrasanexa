@@ -153,11 +153,19 @@ export const requireTeacherContext = async (req, res, next) => {
     }
 
     if (req.auth.mustChangePassword) {
-      return res.status(403).json({
-        success: false,
-        code: 'MUST_CHANGE_PASSWORD',
-        message: 'Mandatory password change required before accessing teacher workspace.',
-      });
+      // Exclude settings & password change endpoints so teachers can update their temporary password
+      const isSettingsEndpoint =
+        req.path === '/settings' ||
+        req.path === '/settings/password' ||
+        Boolean(req.originalUrl && (req.originalUrl.endsWith('/settings') || req.originalUrl.endsWith('/settings/password')));
+
+      if (!isSettingsEndpoint) {
+        return res.status(403).json({
+          success: false,
+          code: 'MUST_CHANGE_PASSWORD',
+          message: 'Mandatory password change required before accessing teacher workspace.',
+        });
+      }
     }
 
     const trustedMadrasaId = req.auth.madrasaId;

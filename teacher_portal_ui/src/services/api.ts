@@ -42,6 +42,7 @@ export interface AuthUser {
   email: string;
   role: 'TEACHER' | 'MADRASA_ADMIN' | 'SUPER_ADMIN';
   madrasaId: string | null;
+  mustChangePassword?: boolean;
   teacherProfile?: {
     id: string;
     ustadhCode: string;

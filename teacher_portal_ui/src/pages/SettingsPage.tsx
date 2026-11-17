@@ -17,7 +17,7 @@ import {
   Info,
   User,
 } from 'lucide-react';
-import { settingsApi, TeacherSettingsData } from '../services/api';
+import { settingsApi, authApi, AUTH_STORAGE_KEYS, TeacherSettingsData } from '../services/api';
 import { MOCK_TEACHER_PROFILE } from '../mock/teacherMockData';
 import { LoadingState } from '../components/common/LoadingState';
 
@@ -118,7 +118,22 @@ export default function SettingsPage() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setTimeout(() => setPasswordSuccess(false), 4000);
+
+      // Clear mustChangePassword in stored user and state
+      const stored = authApi.getStoredUser();
+      if (stored) {
+        stored.mustChangePassword = false;
+        localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(stored));
+      }
+      if (accountData) {
+        setAccountData({ ...accountData, mustChangePassword: false });
+      }
+
+      // Smoothly redirect to dashboard after 1.5s
+      setTimeout(() => {
+        setPasswordSuccess(false);
+        window.location.href = '/dashboard';
+      }, 1500);
     } catch (err: any) {
       setPasswordError(err?.message || 'Failed to update faculty password');
     } finally {
@@ -320,6 +335,17 @@ export default function SettingsPage() {
               <div className="mt-4 p-3 bg-rose-50 border border-rose-300 rounded-xl text-xs font-bold text-rose-900 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
                 <span>{passwordError}</span>
+              </div>
+            )}
+            {(authApi.getStoredUser()?.mustChangePassword || accountData?.mustChangePassword) && (
+              <div className="mt-4 p-3.5 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold">Mandatory Initial Password Update</div>
+                  <div className="text-[11px] text-amber-800 mt-0.5">
+                    Your account was provisioned with a temporary password. Please set your new private password below to activate and unlock your Teacher Workspace.
+                  </div>
+                </div>
               </div>
             )}
 

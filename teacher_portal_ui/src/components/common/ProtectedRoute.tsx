@@ -14,5 +14,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  const user = authApi.getStoredUser();
+  if (user?.mustChangePassword && location.pathname !== '/settings') {
+    return <Navigate to="/settings" replace />;
+  }
+
   return <>{children}</>;
 }

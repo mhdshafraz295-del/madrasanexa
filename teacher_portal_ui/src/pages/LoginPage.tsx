@@ -36,9 +36,13 @@ export default function LoginPage() {
     }
 
     try {
-      await authApi.login(identifier.trim(), password);
+      const result = await authApi.login(identifier.trim(), password);
       setIsLoading(false);
-      navigate('/dashboard');
+      if (result.user.mustChangePassword) {
+        navigate('/settings');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err: any) {
       setIsLoading(false);
       setErrorMessage(err.message || 'Invalid faculty credentials. Please check your email and password.');

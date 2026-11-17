@@ -103,6 +103,23 @@ export const authenticateToken = async (req, res, next) => {
       }
     }
 
+    // Teacher checks
+    if (user.role === 'TEACHER') {
+      if (!user.madrasaId || !user.madrasa) {
+        return res.status(403).json({
+          success: false,
+          message: 'Teacher account is not associated with an active Madrasa.',
+        });
+      }
+
+      if (user.madrasa.status !== 'ACTIVE') {
+        return res.status(403).json({
+          success: false,
+          message: `Madrasa workspace is ${user.madrasa.status.toLowerCase()}. Access restricted.`,
+        });
+      }
+    }
+
     // Attach minimal authenticated context (NEVER include passwordHash)
     req.auth = {
       userId: user.id,

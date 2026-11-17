@@ -26,3 +26,4 @@ export const requireRoles = (...allowedRoles) => {
 
 export const requireSuperAdmin = requireRoles('SUPER_ADMIN');
 export const requireMadrasaAdmin = requireRoles('MADRASA_ADMIN');
+export const requireTeacher = requireRoles('TEACHER');

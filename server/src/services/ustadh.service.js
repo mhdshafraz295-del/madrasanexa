@@ -2,6 +2,7 @@ import { prisma } from '../lib/prisma.js';
 import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors.js';
 import { logTenantActivity } from './tenant.service.js';
 import { Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 /**
  * Parses YYYY-MM-DD into a UTC midnight Date object to prevent timezone shifts.
@@ -295,10 +296,27 @@ export async function updateUstadh(madrasaId, ustadhId, userId, data) {
   }
 
   try {
-    const updated = await prisma.ustadh.update({
-      where: { id: existing.id },
-      data: updateData,
-    });
+    let updated;
+    if (data.isActive === false && existing.userId) {
+      [updated] = await prisma.$transaction([
+        prisma.ustadh.update({
+          where: { id: existing.id },
+          data: updateData,
+        }),
+        prisma.user.update({
+          where: { id: existing.userId },
+          data: {
+            isActive: false,
+            tokenVersion: { increment: 1 },
+          },
+        }),
+      ]);
+    } else {
+      updated = await prisma.ustadh.update({
+        where: { id: existing.id },
+        data: updateData,
+      });
+    }
 
     logTenantActivity({
       madrasaId,
@@ -316,6 +334,247 @@ export async function updateUstadh(madrasaId, ustadhId, userId, data) {
     }
     throw err;
   }
+}
+
+/**
+ * Atomically deactivates an Ustadh and any linked User account, incrementing tokenVersion to revoke active JWTs.
+ *
+ * @param {string} madrasaId
+ * @param {string} ustadhId
+ * @param {string} adminUserId
+ * @returns {Promise<object>}
+ */
+export async function deactivateUstadhAccount(madrasaId, ustadhId, adminUserId) {
+  const existing = await prisma.ustadh.findFirst({
+    where: { id: ustadhId, madrasaId },
+  });
+
+  if (!existing) {
+    throw new NotFoundError('Ustadh not found.');
+  }
+
+  const operations = [
+    prisma.ustadh.update({
+      where: { id: existing.id },
+      data: { isActive: false },
+    }),
+  ];
+
+  if (existing.userId) {
+    operations.push(
+      prisma.user.update({
+        where: { id: existing.userId },
+        data: {
+          isActive: false,
+          tokenVersion: { increment: 1 },
+        },
+      })
+    );
+  }
+
+  const [updatedUstadh] = await prisma.$transaction(operations);
+
+  logTenantActivity({
+    madrasaId,
+    userId: adminUserId,
+    action: 'USTADH_DEACTIVATED',
+    entityType: 'Ustadh',
+    entityId: updatedUstadh.id,
+    metadata: {
+      ustadhCode: updatedUstadh.ustadhCode,
+      hasLinkedUser: Boolean(existing.userId),
+      tokenRevoked: Boolean(existing.userId),
+    },
+  }).catch(() => {});
+
+  return formatUstadhResponse(updatedUstadh);
+}
+
+/**
+ * Links an Ustadh to a User account with TEACHER role.
+ *
+ * @param {string} madrasaId
+ * @param {string} ustadhId
+ * @param {string} targetUserId
+ * @param {string} adminUserId
+ * @returns {Promise<object>}
+ */
+export async function linkUstadhToUser(madrasaId, ustadhId, targetUserId, adminUserId) {
+  const ustadh = await prisma.ustadh.findFirst({
+    where: { id: ustadhId, madrasaId },
+  });
+
+  if (!ustadh) {
+    throw new NotFoundError('Ustadh not found.');
+  }
+
+  if (ustadh.userId) {
+    throw new ConflictError('Ustadh is already linked to a user account.');
+  }
+
+  const user = await prisma.user.findFirst({
+    where: { id: targetUserId, madrasaId },
+  });
+
+  if (!user) {
+    throw new NotFoundError('User not found in this institution.');
+  }
+
+  if (user.role !== 'TEACHER') {
+    throw new ConflictError('User must have TEACHER role to be linked to an Ustadh profile.');
+  }
+
+  const existingLink = await prisma.ustadh.findFirst({
+    where: { userId: targetUserId },
+  });
+
+  if (existingLink) {
+    throw new ConflictError('User is already linked to another Ustadh profile.');
+  }
+
+  const updated = await prisma.ustadh.update({
+    where: { id: ustadh.id },
+    data: { userId: user.id },
+  });
+
+  logTenantActivity({
+    madrasaId,
+    userId: adminUserId,
+    action: 'USTADH_USER_LINKED',
+    entityType: 'Ustadh',
+    entityId: updated.id,
+    metadata: { ustadhCode: updated.ustadhCode, userId: user.id },
+  }).catch(() => {});
+
+  return formatUstadhResponse(updated);
+}
+
+/**
+ * Creates a linked TEACHER portal user account for an existing Ustadh profile.
+ *
+ * @param {string} madrasaId
+ * @param {string} ustadhId
+ * @param {string} adminUserId
+ * @param {{ email: string, password?: string, mustChangePassword?: boolean }} data
+ * @returns {Promise<object>}
+ */
+export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUserId, data) {
+  const ustadh = await prisma.ustadh.findFirst({
+    where: { id: ustadhId, madrasaId },
+  });
+
+  if (!ustadh) {
+    throw new NotFoundError('Ustadh not found.');
+  }
+
+  if (ustadh.userId) {
+    throw new ConflictError('This Ustadh already has a linked portal user account.');
+  }
+
+  const emailToUse = (data.email || ustadh.email || '').trim().toLowerCase();
+  if (!emailToUse) {
+    throw new BadRequestError('An email address is required to create a Teacher Portal login account.');
+  }
+
+  // Check if a User with this email already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: emailToUse },
+  });
+
+  if (existingUser) {
+    // If the user already belongs to this madrasa and has TEACHER role and is not linked to any ustadh
+    if (existingUser.madrasaId === madrasaId && existingUser.role === 'TEACHER') {
+      const linkedAnother = await prisma.ustadh.findFirst({
+        where: { userId: existingUser.id },
+      });
+      if (!linkedAnother) {
+        // Link to existing teacher user
+        const updated = await prisma.ustadh.update({
+          where: { id: ustadh.id },
+          data: { userId: existingUser.id, email: emailToUse },
+        });
+
+        logTenantActivity({
+          madrasaId,
+          userId: adminUserId,
+          action: 'TEACHER_PORTAL_ACCOUNT_LINKED',
+          entityType: 'Ustadh',
+          entityId: updated.id,
+          metadata: { ustadhCode: updated.ustadhCode, userId: existingUser.id, email: emailToUse },
+        }).catch(() => {});
+
+        return {
+          ustadh: formatUstadhResponse(updated),
+          user: {
+            id: existingUser.id,
+            email: existingUser.email,
+            name: existingUser.name,
+            role: existingUser.role,
+            mustChangePassword: existingUser.mustChangePassword,
+            isExistingUserLinked: true,
+          },
+        };
+      }
+    }
+    throw new ConflictError(`An account with email "${emailToUse}" already exists.`);
+  }
+
+  // Generate or hash temporary password
+  const rawPassword = data.password && data.password.trim() ? data.password.trim() : `Ustadh@${Math.floor(100000 + Math.random() * 900000)}`;
+  const passwordHash = await bcrypt.hash(rawPassword, 10);
+  const mustChange = data.mustChangePassword !== undefined ? data.mustChangePassword : true;
+
+  // Execute atomically in transaction
+  const [createdUser, updatedUstadh] = await prisma.$transaction(async (tx) => {
+    const newUser = await tx.user.create({
+      data: {
+        madrasaId,
+        name: ustadh.fullName,
+        email: emailToUse,
+        passwordHash,
+        role: 'TEACHER',
+        mustChangePassword: mustChange,
+        isActive: true,
+        tokenVersion: 1,
+      },
+    });
+
+    const updated = await tx.ustadh.update({
+      where: { id: ustadh.id },
+      data: {
+        userId: newUser.id,
+        email: emailToUse,
+      },
+    });
+
+    return [newUser, updated];
+  });
+
+  logTenantActivity({
+    madrasaId,
+    userId: adminUserId,
+    action: 'TEACHER_PORTAL_ACCOUNT_CREATED',
+    entityType: 'Ustadh',
+    entityId: updatedUstadh.id,
+    metadata: {
+      ustadhCode: updatedUstadh.ustadhCode,
+      userId: createdUser.id,
+      email: emailToUse,
+      mustChangePassword: mustChange,
+    },
+  }).catch(() => {});
+
+  return {
+    ustadh: formatUstadhResponse(updatedUstadh),
+    user: {
+      id: createdUser.id,
+      email: createdUser.email,
+      name: createdUser.name,
+      role: createdUser.role,
+      mustChangePassword: createdUser.mustChangePassword,
+      temporaryPassword: data.password ? undefined : rawPassword,
+    },
+  };
 }
 
 /**
@@ -340,6 +599,8 @@ export function formatUstadhResponse(u) {
     leaveDate: u.leaveDate ? formatDateOnly(u.leaveDate) : null,
     baseMonthlySalary: parseFloat(u.baseMonthlySalary.toString()),
     isActive: u.isActive,
+    userId: u.userId || null,
+    hasPortalAccess: Boolean(u.userId),
     notes: u.notes,
     createdAt: u.createdAt,
     updatedAt: u.updatedAt,

@@ -126,3 +126,112 @@ export const rejectClientSuppliedTenantOverride = (req, res, next) => {
   }
   next();
 };
+
+/**
+ * Tenant & Teacher Context Middleware for Teachers.
+ *
+ * Strict Isolation Rules:
+ * 1. Must run AFTER authenticateToken.
+ * 2. Authenticated user role must be TEACHER.
+ * 3. Enforces mandatory password change (blocks if mustChangePassword is true).
+ * 4. The ONLY authoritative tenant source is req.auth.madrasaId.
+ * 5. Rejects any client-supplied overrides in req.body, req.query, or req.params.
+ * 6. Live verification that:
+ *    a. Tenant Madrasa exists and is ACTIVE.
+ *    b. Linked Ustadh profile exists for req.auth.userId, belongs to req.auth.madrasaId, and isActive === true.
+ * 7. Attaches immutable req.tenant = Object.freeze({ madrasaId, code, name }).
+ * 8. Attaches immutable req.teacher = Object.freeze({ ustadhId, ustadhCode, fullName, staffType }).
+ */
+export const requireTeacherContext = async (req, res, next) => {
+  try {
+    if (!req.auth || !req.auth.userId) {
+      throw new UnauthorizedError('Authentication token is required before establishing teacher context.');
+    }
+
+    if (req.auth.role !== 'TEACHER') {
+      throw new ForbiddenError('Teacher workspace requires Teacher credentials.');
+    }
+
+    if (req.auth.mustChangePassword) {
+      return res.status(403).json({
+        success: false,
+        code: 'MUST_CHANGE_PASSWORD',
+        message: 'Mandatory password change required before accessing teacher workspace.',
+      });
+    }
+
+    const trustedMadrasaId = req.auth.madrasaId;
+    if (!trustedMadrasaId) {
+      throw new ForbiddenError('Teacher account is not associated with an authorized Madrasa.');
+    }
+
+    // Live verification that Madrasa is ACTIVE and Ustadh profile is linked, active, and tenant-matched
+    const ustadh = await prisma.ustadh.findFirst({
+      where: {
+        userId: req.auth.userId,
+        madrasaId: trustedMadrasaId,
+      },
+      select: {
+        id: true,
+        ustadhCode: true,
+        fullName: true,
+        staffType: true,
+        isActive: true,
+        madrasaId: true,
+        madrasa: {
+          select: {
+            id: true,
+            status: true,
+            code: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!ustadh) {
+      throw new ForbiddenError('No teacher profile is linked to this authenticated account.');
+    }
+
+    if (!ustadh.isActive) {
+      throw new ForbiddenError('Teacher profile has been deactivated by the institution.');
+    }
+
+    if (!ustadh.madrasa || ustadh.madrasa.status !== 'ACTIVE') {
+      throw new ForbiddenError(`Madrasa workspace is ${ustadh.madrasa ? ustadh.madrasa.status.toLowerCase() : 'unavailable'}. Access restricted.`);
+    }
+
+    // Attach immutable server-derived contexts
+    req.tenant = Object.freeze({
+      madrasaId: ustadh.madrasa.id,
+      code: ustadh.madrasa.code,
+      name: ustadh.madrasa.name,
+    });
+
+    req.teacher = Object.freeze({
+      ustadhId: ustadh.id,
+      ustadhCode: ustadh.ustadhCode,
+      fullName: ustadh.fullName,
+      staffType: ustadh.staffType,
+    });
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Rejects client-supplied security overrides (madrasaId, ustadhId, role) in req.body for teacher routes.
+ */
+export const rejectClientSuppliedTeacherOverride = (req, res, next) => {
+  if (req.body && typeof req.body === 'object') {
+    if ('madrasaId' in req.body || 'ustadhId' in req.body || 'role' in req.body) {
+      return res.status(403).json({
+        success: false,
+        message: 'Specifying or altering security boundaries (madrasaId, ustadhId, role) is strictly prohibited.',
+      });
+    }
+  }
+  next();
+};

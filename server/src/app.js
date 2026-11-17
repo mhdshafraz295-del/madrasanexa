@@ -69,18 +69,59 @@ app.disable('x-powered-by');
 // Security HTTP headers
 app.use(helmet());
 
-// Secure CORS configuration
-const allowedOrigins = [
-  env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-].filter(Boolean);
+/**
+ * Resolves the list of authorized CORS origins from environment configuration.
+ * Supports comma-separated ALLOWED_ORIGINS alongside backward-compatible FRONTEND_URL.
+ * Localhost ports are only permitted in development and test environments.
+ * Wildcard ('*') or arbitrary origin reflection is strictly prohibited.
+ *
+ * @param {object} [config] Configuration object (defaults to env)
+ * @returns {string[]} Array of authorized origins (canonical normalized strings without trailing slash)
+ */
+export function resolveAllowedOrigins(config = env) {
+  const origins = new Set();
+
+  // 1. Explicitly configured ALLOWED_ORIGINS
+  if (config.ALLOWED_ORIGINS) {
+    const list = Array.isArray(config.ALLOWED_ORIGINS)
+      ? config.ALLOWED_ORIGINS
+      : String(config.ALLOWED_ORIGINS).split(',').map((s) => s.trim()).filter(Boolean);
+
+    for (const raw of list) {
+      if (raw) {
+        origins.add(raw.replace(/\/+$/, ''));
+      }
+    }
+  }
+
+  // 2. Backward compatibility with FRONTEND_URL
+  if (config.FRONTEND_URL) {
+    origins.add(String(config.FRONTEND_URL).trim().replace(/\/+$/, ''));
+  }
+
+  // 3. Localhost development environments only
+  if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
+    origins.add('http://localhost:5173');
+    origins.add('http://127.0.0.1:5173');
+    origins.add('http://localhost:5174');
+    origins.add('http://127.0.0.1:5174');
+  }
+
+  return Array.from(origins);
+}
+
+// Secure Multi-Origin CORS configuration
+const allowedOrigins = resolveAllowedOrigins(env);
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) {
+        return callback(null, true);
+      }
+      const normalizedOrigin = origin.replace(/\/+$/, '');
+      if (allowedOrigins.includes(normalizedOrigin)) {
         callback(null, true);
       } else {
         callback(new Error(`CORS policy does not allow access from origin: ${origin}`));

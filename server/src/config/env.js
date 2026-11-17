@@ -18,6 +18,37 @@ export const envSchema = z.object({
   PORT: z.coerce.number().default(5000),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 
+  // Multi-Origin Production CORS Support: comma-separated list of allowed origins.
+  // Backward-compatible: combined with FRONTEND_URL in server/src/app.js.
+  ALLOWED_ORIGINS: z
+    .string()
+    .optional()
+    .default('')
+    .transform((val) => {
+      if (!val) return [];
+      return val
+        .split(',')
+        .map((s) => s.trim().replace(/\/+$/, ''))
+        .filter(Boolean);
+    })
+    .refine(
+      (origins) => {
+        if (!origins || origins.length === 0) return true;
+        return origins.every((origin) => {
+          try {
+            const url = new URL(origin);
+            return url.protocol === 'http:' || url.protocol === 'https:';
+          } catch {
+            return false;
+          }
+        });
+      },
+      {
+        message:
+          'ALLOWED_ORIGINS must be a comma-separated list of valid HTTP/HTTPS URLs (e.g. "https://admin.madrasanexa.lk,https://teacher.madrasanexa.lk")',
+      }
+    ),
+
   // Configurable Trust Proxy: strictly validated, trust-all ("true") is forbidden.
   // Defaults to '1' on Railway (verified 1-hop Envoy edge proxy topology), or 'false' for direct local dev.
   TRUST_PROXY: z

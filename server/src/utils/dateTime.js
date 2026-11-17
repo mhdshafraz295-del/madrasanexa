@@ -206,3 +206,41 @@ export function formatDateTime(timestamp, settings = {}) {
   const timePart = `${hour}:${minute}${dayPeriod}`;
   return `${datePart} ${timePart}`;
 }
+
+/**
+ * Resolves current authoritative institutional wall-clock time in Asia/Colombo (UTC+05:30).
+ * Used for timetable bounding, classroom check-in verification, and attendance logging.
+ *
+ * @param {Date} [serverNow=new Date()]
+ * @returns {{ localDateStr: string, weekday: string, currentMinutes: number, hours: number, minutes: number }}
+ */
+export function getColomboTimeContext(serverNow = new Date()) {
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Asia/Colombo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'long',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false,
+  });
+
+  const parts = Object.fromEntries(
+    formatter.formatToParts(serverNow).map((p) => [p.type, p.value])
+  );
+
+  const year = parts.year;
+  const month = parts.month;
+  const day = parts.day;
+  const weekday = (parts.weekday || '').toUpperCase(); // 'MONDAY', 'TUESDAY', etc.
+  const rawHour = parseInt(parts.hour, 10);
+  const hours = rawHour === 24 ? 0 : rawHour;
+  const minutes = parseInt(parts.minute, 10);
+
+  const localDateStr = `${year}-${month}-${day}`; // Authoritative YYYY-MM-DD
+  const currentMinutes = hours * 60 + minutes;    // Authoritative minutes from midnight [0..1439]
+
+  return { localDateStr, weekday, currentMinutes, hours, minutes };
+}

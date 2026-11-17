@@ -200,7 +200,18 @@ import {
   paySalary,
   exportSalarySlipPdf,
   sendSalaryEmail,
+  createPortalAccount,
 } from '../controllers/ustadh.controller.js';
+import {
+  listClassrooms,
+  getClassroom,
+  createClassroom,
+  updateClassroom,
+  regenerateClassroomQr,
+  revokeClassroomQr,
+  activateClassroom,
+  getClassroomQrPrintData,
+} from '../controllers/classroom.controller.js';
 import {
   getClassTimetable,
   getStaffTimetable,
@@ -431,6 +442,16 @@ router.patch('/classes/:id', updateClass);
 router.post('/classes/:id/activate', activateClass);
 router.post('/classes/:id/deactivate', deactivateClass);
 
+// Phase 4E-4: Permanent Physical Classroom QR Management
+router.get('/classrooms', listClassrooms);
+router.post('/classrooms', createClassroom);
+router.get('/classrooms/:id', getClassroom);
+router.patch('/classrooms/:id', updateClassroom);
+router.post('/classrooms/:id/regenerate-qr', regenerateClassroomQr);
+router.post('/classrooms/:id/revoke-qr', revokeClassroomQr);
+router.post('/classrooms/:id/activate', activateClassroom);
+router.get('/classrooms/:id/qr-print', getClassroomQrPrintData);
+
 // Phase 8: Student Management & Status Actions
 router.get('/students', listStudents);
 router.get('/students/card-tokens', listCardTokens);
@@ -530,6 +551,7 @@ router.get('/ustadhs', listUstadhs);
 router.get('/ustadhs/:id', getUstadh);
 router.patch('/ustadhs/:id', updateUstadh);
 router.post('/ustadhs/:id/email', sendUstadhEmail);
+router.post('/ustadhs/:id/portal-account', createPortalAccount);
 
 // Weekly Schedules
 router.post('/ustadh-schedules', createSchedule);

@@ -66,6 +66,7 @@ export const createScheduleSchema = z.object({
   ustadhId: z.string().min(1, 'Ustadh ID is required.'),
   classId: z.string().min(1, 'Class ID is required.'),
   subjectId: z.string().min(1, 'Subject ID is required.'),
+  classroomId: z.string().trim().min(1).optional().nullable(),
   dayOfWeek: z.enum(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']),
   startMinutes: z.number().int().min(0).max(1439, 'Start minutes must be between 0 and 1439.'),
   endMinutes: z.number().int().min(1).max(1440, 'End minutes must be between 1 and 1440.'),
@@ -88,6 +89,7 @@ export const createScheduleSchema = z.object({
 export const updateScheduleSchema = z.object({
   classId: z.string().min(1).optional(),
   subjectId: z.string().min(1).optional(),
+  classroomId: z.string().trim().min(1).optional().nullable(),
   dayOfWeek: z.enum(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']).optional(),
   startMinutes: z.number().int().min(0).max(1439).optional(),
   endMinutes: z.number().int().min(1).max(1440).optional(),
@@ -196,4 +198,10 @@ export const sendSalaryEmailSchema = z.object({
       message: 'Message cannot exceed 5000 characters.',
     })
     .optional(),
+});
+
+export const createPortalAccountSchema = z.object({
+  email: z.string().trim().email('Valid email address is required.').max(150),
+  password: z.string().min(8, 'Temporary password must be at least 8 characters.').max(100).optional(),
+  mustChangePassword: z.boolean().default(true),
 });

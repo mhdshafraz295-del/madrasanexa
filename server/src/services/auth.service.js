@@ -96,6 +96,66 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
     }
   }
 
+  // Validate Teacher constraints
+  let teacherProfile = null;
+  if (user.role === 'TEACHER') {
+    if (!user.madrasaId || !user.madrasa) {
+      const error = new Error('Teacher account is not linked to any institution.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    if (user.madrasa.status === 'ARCHIVED') {
+      const error = new Error('This Madrasa account has been archived. Access is restricted.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    if (user.madrasa.status === 'SUSPENDED') {
+      const error = new Error('This Madrasa account is currently suspended. Access is restricted.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    // Verify linked Ustadh profile
+    const ustadh = await prisma.ustadh.findFirst({
+      where: { userId: user.id },
+      select: {
+        id: true,
+        ustadhCode: true,
+        fullName: true,
+        staffType: true,
+        isActive: true,
+        madrasaId: true,
+      },
+    });
+
+    if (!ustadh) {
+      const error = new Error('Teacher account is not linked to any active staff profile.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    if (!ustadh.isActive) {
+      const error = new Error('Your teaching staff profile has been deactivated. Please contact the administrator.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    if (ustadh.madrasaId !== user.madrasaId) {
+      const error = new Error('Institution security mismatch detected.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    teacherProfile = {
+      id: ustadh.id,
+      ustadhCode: ustadh.ustadhCode,
+      fullName: ustadh.fullName,
+      staffType: ustadh.staffType,
+    };
+  }
+
   // Update lastLoginAt and record ActivityLog atomically in a safe transaction
   await prisma.$transaction([
     prisma.user.update({
@@ -145,6 +205,7 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
           },
         }
       : {}),
+    ...(teacherProfile ? { teacherProfile } : {}),
   };
 
   return {
@@ -195,6 +256,39 @@ export const getMe = async (userId) => {
     throw error;
   }
 
+  let teacherProfile = null;
+  if (user.role === 'TEACHER') {
+    if (user.madrasa && user.madrasa.status !== 'ACTIVE') {
+      const error = new Error(`Madrasa workspace is ${user.madrasa.status.toLowerCase()}.`);
+      error.statusCode = 403;
+      throw error;
+    }
+
+    const ustadh = await prisma.ustadh.findFirst({
+      where: { userId: user.id, madrasaId: user.madrasaId },
+      select: {
+        id: true,
+        ustadhCode: true,
+        fullName: true,
+        staffType: true,
+        isActive: true,
+      },
+    });
+
+    if (!ustadh || !ustadh.isActive) {
+      const error = new Error('Teaching staff profile not found or deactivated.');
+      error.statusCode = 403;
+      throw error;
+    }
+
+    teacherProfile = {
+      id: ustadh.id,
+      ustadhCode: ustadh.ustadhCode,
+      fullName: ustadh.fullName,
+      staffType: ustadh.staffType,
+    };
+  }
+
   let logoUrl = null;
   if (user.madrasa?.logoFileId) {
     logoUrl = await resolveMadrasaLogoUrl(user.madrasa.id, user.madrasa.logoFileId);
@@ -217,6 +311,7 @@ export const getMe = async (userId) => {
           },
         }
       : {}),
+    ...(teacherProfile ? { teacherProfile } : {}),
   };
 };
 
@@ -359,7 +454,7 @@ export const verifyPasswordSetupToken = async (rawToken) => {
     throw error;
   }
 
-  if (user.role === 'MADRASA_ADMIN' && user.madrasa && user.madrasa.status !== 'ACTIVE') {
+  if ((user.role === 'MADRASA_ADMIN' || user.role === 'TEACHER') && user.madrasa && user.madrasa.status !== 'ACTIVE') {
     const error = new Error(`Madrasa workspace is ${user.madrasa.status.toLowerCase()}.`);
     error.statusCode = 403;
     throw error;
@@ -443,7 +538,7 @@ export const setupPasswordWithToken = async ({ rawToken, newPassword, ip = null,
     throw error;
   }
 
-  if (user.role === 'MADRASA_ADMIN' && user.madrasa && user.madrasa.status !== 'ACTIVE') {
+  if ((user.role === 'MADRASA_ADMIN' || user.role === 'TEACHER') && user.madrasa && user.madrasa.status !== 'ACTIVE') {
     const error = new Error(`Madrasa workspace is ${user.madrasa.status.toLowerCase()}.`);
     error.statusCode = 403;
     throw error;

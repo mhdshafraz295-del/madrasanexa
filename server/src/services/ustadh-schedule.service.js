@@ -200,6 +200,16 @@ export async function createSchedule(madrasaId, userId, data) {
     throw new NotFoundError('Subject not found.');
   }
 
+  // Validate Classroom belongs to tenant if provided
+  if (data.classroomId) {
+    const rm = await prisma.classroom.findFirst({
+      where: { id: data.classroomId, madrasaId },
+    });
+    if (!rm) {
+      throw new NotFoundError('Classroom not found.');
+    }
+  }
+
   const effectiveFrom = parseDateOnly(data.effectiveFrom);
   const effectiveTo = data.effectiveTo ? parseDateOnly(data.effectiveTo) : null;
 
@@ -222,6 +232,7 @@ export async function createSchedule(madrasaId, userId, data) {
       ustadhId: data.ustadhId,
       classId: data.classId,
       subjectId: data.subjectId,
+      classroomId: data.classroomId || null,
       dayOfWeek: data.dayOfWeek,
       startMinutes: data.startMinutes,
       endMinutes: data.endMinutes,
@@ -233,6 +244,7 @@ export async function createSchedule(madrasaId, userId, data) {
       ustadh: { select: { id: true, fullName: true, ustadhCode: true, staffType: true } },
       class: { select: { id: true, name: true, code: true } },
       subject: { select: { id: true, name: true, code: true } },
+      classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
     },
   });
 
@@ -282,6 +294,7 @@ export async function listSchedules(madrasaId, query = {}) {
       ustadh: { select: { id: true, fullName: true, ustadhCode: true, staffType: true, phoneNumber: true, whatsappNumber: true } },
       class: { select: { id: true, name: true, code: true } },
       subject: { select: { id: true, name: true, code: true } },
+      classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
     },
   });
 
@@ -327,6 +340,17 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
     ? (updates.effectiveTo ? parseDateOnly(updates.effectiveTo) : null)
     : existing.effectiveTo;
   const targetIsActive = updates.isActive !== undefined ? updates.isActive : existing.isActive;
+
+  let targetClassroomId = existing.classroomId;
+  if (updates.classroomId !== undefined) {
+    if (updates.classroomId) {
+      const rm = await prisma.classroom.findFirst({ where: { id: updates.classroomId, madrasaId } });
+      if (!rm) throw new NotFoundError('Classroom not found.');
+      targetClassroomId = rm.id;
+    } else {
+      targetClassroomId = null;
+    }
+  }
 
   // If class or subject changed, verify they belong to tenant
   if (updates.classId && updates.classId !== existing.classId) {
@@ -383,6 +407,7 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
           ustadhId: existing.ustadhId,
           classId: targetClassId,
           subjectId: targetSubjectId,
+          classroomId: targetClassroomId,
           dayOfWeek: targetDayOfWeek,
           startMinutes: targetStartMinutes,
           endMinutes: targetEndMinutes,
@@ -394,6 +419,7 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
           ustadh: { select: { id: true, fullName: true, ustadhCode: true, staffType: true } },
           class: { select: { id: true, name: true, code: true } },
           subject: { select: { id: true, name: true, code: true } },
+          classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
         },
       });
 
@@ -432,6 +458,7 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
     data: {
       classId: targetClassId,
       subjectId: targetSubjectId,
+      classroomId: targetClassroomId,
       dayOfWeek: targetDayOfWeek,
       startMinutes: targetStartMinutes,
       endMinutes: targetEndMinutes,
@@ -443,6 +470,7 @@ export async function updateSchedule(madrasaId, scheduleId, userId, updates) {
       ustadh: { select: { id: true, fullName: true, ustadhCode: true } },
       class: { select: { id: true, name: true, code: true } },
       subject: { select: { id: true, name: true, code: true } },
+      classroom: { select: { id: true, name: true, roomNumber: true, building: true } },
     },
   });
 
@@ -532,6 +560,7 @@ export function formatScheduleResponse(s) {
     ustadhId: s.ustadhId,
     classId: s.classId,
     subjectId: s.subjectId,
+    classroomId: s.classroomId || null,
     dayOfWeek: s.dayOfWeek,
     startMinutes: s.startMinutes,
     endMinutes: s.endMinutes,
@@ -541,6 +570,7 @@ export function formatScheduleResponse(s) {
     ustadh: s.ustadh,
     class: s.class,
     subject: s.subject,
+    classroom: s.classroom || null,
     createdAt: s.createdAt,
     updatedAt: s.updatedAt,
   };

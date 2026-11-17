@@ -17,6 +17,7 @@ import {
   paySalarySchema,
   sendUstadhEmailSchema,
   sendSalaryEmailSchema,
+  createPortalAccountSchema,
 } from '../validations/ustadh.validation.js';
 
 // ==========================================
@@ -263,6 +264,19 @@ export async function sendSalaryEmail(req, res, next) {
     const validated = sendSalaryEmailSchema.parse(req.body || {});
     const result = await salaryService.sendSalaryPaymentEmail(madrasaId, id, userId, validated);
     res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function createPortalAccount(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const adminUserId = req.auth?.userId || req.user?.id;
+    const { id } = req.params;
+    const validated = createPortalAccountSchema.parse(req.body);
+    const data = await ustadhService.createPortalAccountForUstadh(madrasaId, id, adminUserId, validated);
+    res.status(201).json({ success: true, message: 'Teacher Portal login account created successfully.', data });
   } catch (err) {
     next(err);
   }

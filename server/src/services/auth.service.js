@@ -13,10 +13,10 @@ async function resolveMadrasaLogoUrl(madrasaId, logoFileId) {
   try {
     const file = await prisma.fileObject.findFirst({
       where: { id: logoFileId, madrasaId, type: 'MADRASA_LOGO' },
-      select: { objectKey: true },
+      select: { objectKey: true, publicUrl: true },
     });
-    if (file?.objectKey) {
-      return await resolveObjectAccessUrl(file.objectKey);
+    if (file) {
+      return file.publicUrl || (file.objectKey ? await resolveObjectAccessUrl(file.objectKey) : null);
     }
   } catch (e) {
     // Non-blocking fallback

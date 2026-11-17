@@ -20,7 +20,24 @@ export const AUTH_STORAGE_KEYS = {
   TEACHER_USER: 'madrasanexa_teacher_user',
 };
 
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+export const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+/**
+ * Resolves static or uploaded asset URLs safely.
+ * - Returns null if url is empty/null.
+ * - Returns url as-is if it starts with http://, https://, or data:.
+ * - Prepends the backend API origin (stripping /api from BASE_URL) if url is a relative path.
+ */
+export function resolveAssetUrl(url?: string | null): string | null {
+  if (!url || typeof url !== 'string' || !url.trim()) return null;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+    return trimmed;
+  }
+  const origin = BASE_URL.replace(/\/api\/?$/, '');
+  const path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return `${origin}${path}`;
+}
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -35,6 +52,12 @@ export interface AuthUser {
   role: 'TEACHER' | 'MADRASA_ADMIN' | 'SUPER_ADMIN';
   madrasaId: string | null;
   mustChangePassword?: boolean;
+  madrasa?: {
+    id: string;
+    name: string;
+    code: string;
+    logoUrl?: string | null;
+  };
   teacherProfile?: {
     id: string;
     ustadhCode: string;
@@ -84,6 +107,12 @@ export interface DashboardData {
     date: string;
     weekday: string;
   };
+  madrasa?: {
+    id: string;
+    name: string;
+    code: string;
+    logoUrl?: string | null;
+  } | null;
 }
 
 export interface StudentPeriodRosterItem {

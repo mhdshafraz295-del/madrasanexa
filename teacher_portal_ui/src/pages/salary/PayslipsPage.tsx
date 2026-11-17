@@ -15,7 +15,7 @@ import {
   User,
   CreditCard,
 } from 'lucide-react';
-import { payslipsApi, profileApi, TeacherProfile } from '../../services/api';
+import { payslipsApi, profileApi, authApi, resolveAssetUrl, TeacherProfile } from '../../services/api';
 import type {
   DetailedPayslip,
 } from '../../mock/teacherMockData';
@@ -30,6 +30,7 @@ export default function PayslipsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
   const loadData = async () => {
     try {
@@ -43,7 +44,19 @@ export default function PayslipsPage() {
       if (profileRes.status === 'fulfilled' && profileRes.value) {
         setProfile(profileRes.value);
       } else {
-        setProfile(null);
+        const stored = authApi.getStoredUser();
+        if (stored) {
+          setProfile({
+            id: stored.id,
+            fullName: stored.name,
+            email: stored.email,
+            employeeCode: stored.teacherProfile?.ustadhCode || 'UST',
+            status: 'Active',
+            madrasa: stored.madrasa,
+          } as any);
+        } else {
+          setProfile(null);
+        }
       }
 
       if (listRes.status === 'fulfilled' && Array.isArray(listRes.value) && listRes.value.length > 0) {
@@ -129,6 +142,11 @@ export default function PayslipsPage() {
       window.print();
     }, 150);
   };
+
+  const rawLogoUrl = (profile as any)?.madrasa?.logoUrl || (profile as any)?.institution?.logoUrl;
+  const resolvedLogoUrl = resolveAssetUrl(rawLogoUrl);
+  const madrasaName = (profile as any)?.madrasa?.name || 'MadrasaNexa Institutional Faculty';
+  const madrasaInitials = ((profile as any)?.madrasa?.code || (profile as any)?.madrasa?.name || 'MS').slice(0, 3).toUpperCase();
 
   return (
     <div className="space-y-6 print:space-y-0 print:m-0">
@@ -260,9 +278,20 @@ export default function PayslipsPage() {
           <div className="border-b-2 border-slate-900 pb-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-[#0F172A] text-[#37C6A3] font-black text-lg flex items-center justify-center shrink-0 border border-slate-800 shadow-xs">
-                  MNX
-                </div>
+                {resolvedLogoUrl && !logoError ? (
+                  <div className="w-12 h-12 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0 p-0.5 shadow-xs flex items-center justify-center">
+                    <img
+                      src={resolvedLogoUrl}
+                      alt={madrasaName}
+                      onError={() => setLogoError(true)}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-[#0F172A] text-[#37C6A3] font-black text-lg flex items-center justify-center shrink-0 border border-slate-800 shadow-xs">
+                    {madrasaInitials}
+                  </div>
+                )}
                 <div>
                   <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight">
                     {(profile as any)?.madrasa?.name || 'MadrasaNexa Institutional Faculty'}

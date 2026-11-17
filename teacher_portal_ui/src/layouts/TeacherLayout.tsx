@@ -20,7 +20,7 @@ import {
 import type {
   TeacherProfile,
 } from '../mock/teacherMockData';
-import { authApi, profileApi, notificationsApi } from '../services/api';
+import { authApi, profileApi, notificationsApi, resolveAssetUrl } from '../services/api';
 
 interface NavItem {
   to: string;
@@ -65,6 +65,7 @@ export default function TeacherLayout() {
         email: stored.email,
         employeeCode: stored.teacherProfile?.ustadhCode || 'UST',
         status: 'Active',
+        madrasa: stored.madrasa,
       } as any));
     }
 
@@ -111,7 +112,15 @@ export default function TeacherLayout() {
   const profileAny = profile as any;
   const madrasaName = profileAny?.institution?.name || profileAny?.madrasa?.name || 'MadrasaNexa';
   const madrasaCode = profileAny?.institution?.code || profileAny?.madrasa?.code || 'MNX';
-  const customLogoUrl = profileAny?.institution?.logoUrl || profileAny?.madrasa?.logoUrl;
+  const rawLogoUrl = profileAny?.institution?.logoUrl || profileAny?.madrasa?.logoUrl;
+  const resolvedLogoUrl = resolveAssetUrl(rawLogoUrl);
+  const madrasaInitials = madrasaName
+    .split(' ')
+    .filter(Boolean)
+    .map((p: string) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || 'MS';
   const teacherInitials = profile?.fullName
     ? profile.fullName
         .split(' ')
@@ -127,16 +136,18 @@ export default function TeacherLayout() {
       {/* 1. Mobile Header */}
       <header className="md:hidden bg-white border-b border-[#E7E9EE] px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sticky top-0 z-30 shadow-xs print:hidden">
         <div className="flex items-center gap-2 min-w-0">
-          {customLogoUrl && !logoError ? (
-            <img
-              src={customLogoUrl}
-              alt={madrasaName}
-              onError={() => setLogoError(true)}
-              className="h-8 w-8 rounded-lg object-contain bg-white border border-[#E7E9EE] shrink-0 p-0.5"
-            />
+          {resolvedLogoUrl && !logoError ? (
+            <div className="h-8 w-8 rounded-lg overflow-hidden bg-white border border-[#E7E9EE] shrink-0 p-0.5 shadow-xs flex items-center justify-center">
+              <img
+                src={resolvedLogoUrl}
+                alt={madrasaName}
+                onError={() => setLogoError(true)}
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
           ) : (
             <div className="h-8 w-8 rounded-lg bg-[#0F172A] text-[#37C6A3] font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
-              {teacherInitials}
+              {madrasaInitials}
             </div>
           )}
           <div className="flex flex-col min-w-0">
@@ -183,16 +194,18 @@ export default function TeacherLayout() {
           {/* Institution & Brand Header */}
           <div className="pb-5 border-b border-[#E7E9EE]">
             <div className="flex items-center gap-3">
-              {customLogoUrl && !logoError ? (
-                <img
-                  src={customLogoUrl}
-                  alt={madrasaName}
-                  onError={() => setLogoError(true)}
-                  className="h-10 w-10 rounded-xl object-contain bg-white border border-[#E7E9EE] shrink-0 p-1 shadow-xs"
-                />
+              {resolvedLogoUrl && !logoError ? (
+                <div className="h-10 w-10 rounded-xl overflow-hidden bg-white border border-[#E7E9EE] shrink-0 p-0.5 shadow-xs flex items-center justify-center">
+                  <img
+                    src={resolvedLogoUrl}
+                    alt={madrasaName}
+                    onError={() => setLogoError(true)}
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                </div>
               ) : (
                 <div className="h-10 w-10 rounded-xl bg-[#0F172A] text-[#37C6A3] font-bold text-sm flex items-center justify-center shrink-0 shadow-xs">
-                  {teacherInitials}
+                  {madrasaInitials}
                 </div>
               )}
               <div className="overflow-hidden">

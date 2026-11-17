@@ -7,6 +7,26 @@ import {
   ConflictError,
 } from '../utils/errors.js';
 import { comparePassword, hashPassword } from '../utils/password.js';
+import { resolveObjectAccessUrl } from './r2.service.js';
+
+/**
+ * Resolves active dynamic logoUrl for a madrasa tenant.
+ */
+async function resolveMadrasaLogoUrl(madrasaId, logoFileId) {
+  if (!logoFileId) return null;
+  try {
+    const file = await prisma.fileObject.findFirst({
+      where: { id: logoFileId, madrasaId, type: 'MADRASA_LOGO' },
+      select: { objectKey: true, publicUrl: true },
+    });
+    if (file) {
+      return file.publicUrl || (file.objectKey ? await resolveObjectAccessUrl(file.objectKey) : null);
+    }
+  } catch (e) {
+    // Non-blocking fallback
+  }
+  return null;
+}
 
 // =============================================================================
 // Helper Utilities
@@ -179,6 +199,22 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
     }
   }
 
+  // 10. Fetch madrasa details with dynamic logoUrl
+  let madrasaInfo = null;
+  const madrasa = await prisma.madrasa.findUnique({
+    where: { id: madrasaId },
+    select: { id: true, name: true, code: true, logoFileId: true },
+  });
+  if (madrasa) {
+    const logoUrl = await resolveMadrasaLogoUrl(madrasaId, madrasa.logoFileId);
+    madrasaInfo = {
+      id: madrasa.id,
+      name: madrasa.name,
+      code: madrasa.code,
+      logoUrl,
+    };
+  }
+
   return {
     stats: {
       totalClasses: distinctClassIds.length,
@@ -204,6 +240,7 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
       date: colomboNow.localDateStr,
       weekday: colomboNow.weekday,
     },
+    madrasa: madrasaInfo,
   };
 }
 
@@ -220,6 +257,7 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
           id: true,
           name: true,
           code: true,
+          logoFileId: true,
         },
       },
     },
@@ -227,6 +265,11 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
 
   if (!ustadh) {
     throw new NotFoundError('Teacher profile not found.');
+  }
+
+  let madrasaLogoUrl = null;
+  if (ustadh.madrasa?.logoFileId) {
+    madrasaLogoUrl = await resolveMadrasaLogoUrl(ustadh.madrasa.id, ustadh.madrasa.logoFileId);
   }
 
   // Parse structured notes if emergency contact, civil details, or qualifications are stored in JSON
@@ -332,7 +375,14 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     documents,
     baseMonthlySalary: Number(ustadh.baseMonthlySalary),
     profileCompletionPercentage: 85,
-    madrasa: ustadh.madrasa,
+    madrasa: ustadh.madrasa
+      ? {
+          id: ustadh.madrasa.id,
+          name: ustadh.madrasa.name,
+          code: ustadh.madrasa.code,
+          logoUrl: madrasaLogoUrl,
+        }
+      : null,
   };
 }
 

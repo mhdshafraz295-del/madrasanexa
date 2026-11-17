@@ -15,21 +15,47 @@ import {
   X,
   ArrowRight,
 } from 'lucide-react';
-import {
-  MOCK_TEACHER_PROFILE,
-  MOCK_INSTITUTION_INFO,
-  MOCK_ASSIGNED_CLASSES,
-  TeacherProfile,
-} from '../mock/teacherMockData';
-import { dashboardApi, profileApi, DashboardData } from '../services/api';
+import type { TeacherProfile, AssignedClass } from '../mock/teacherMockData';
+import { dashboardApi, profileApi, classesApi, DashboardData } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import InstitutionalLiveClock from '../components/dashboard/InstitutionalLiveClock';
 
+const initialProfile: TeacherProfile = {
+  id: '',
+  employeeCode: 'UST-000',
+  fullName: 'Faculty Member',
+  arabicName: 'أستاذ معتمد لدى المنظومة',
+  avatarUrl: '',
+  designation: 'Faculty Instructor',
+  department: 'Academic Faculty',
+  email: '',
+  phone: '',
+  whatsapp: '',
+  status: 'Active',
+  dateOfJoining: '',
+  bloodGroup: '',
+  nicPassport: '',
+  dateOfBirth: '',
+  gender: 'Male',
+  maritalStatus: 'Single',
+  residentialAddress: '',
+  district: '',
+  postalCode: '',
+  country: 'Sri Lanka',
+  emergencyContact: { name: '', relationship: '', phone: '' },
+  academicQualifications: [],
+  professionalQualifications: [],
+  teachingExperience: [],
+  documents: [],
+  profileCompletionPercentage: 85,
+};
+
 export default function DashboardPage() {
   const [profileDismissed, setProfileDismissed] = useState(false);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
-  const [profile, setProfile] = useState<TeacherProfile>(MOCK_TEACHER_PROFILE);
+  const [profile, setProfile] = useState<TeacherProfile>(initialProfile);
+  const [assignedClasses, setAssignedClasses] = useState<AssignedClass[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,12 +65,14 @@ export default function DashboardPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const [dash, prof] = await Promise.all([
+      const [dash, prof, classes] = await Promise.all([
         dashboardApi.getDashboard(),
         profileApi.getProfile(),
+        classesApi.getAssignedClasses(),
       ]);
       setDashboardData(dash);
       if (prof) setProfile(prof);
+      if (classes) setAssignedClasses(classes);
     } catch (err: any) {
       setError(err.message || 'Failed to load dashboard data.');
     } finally {
@@ -114,7 +142,7 @@ export default function DashboardPage() {
         {/* Quick Date Card for Mobile/Tablet */}
         <div className="lg:hidden p-3 bg-[#F8F7F3] rounded-xl border border-[#E2E8F0] text-xs">
           <div className="font-bold text-[#10B981] font-arabic">
-            {MOCK_INSTITUTION_INFO.hijriDate}
+            {(profile as any).madrasa?.name || 'MadrasaNexa'}
           </div>
           <div className="text-[#718096] text-[11px] mt-0.5">
             {dashboardData.timeContext.date} ({dashboardData.timeContext.weekday})
@@ -488,47 +516,58 @@ export default function DashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E2E8F0] text-xs">
-              {MOCK_ASSIGNED_CLASSES.map((cls) => (
-                <tr key={cls.id} className="hover:bg-[#F8F7F3]/70 transition">
-                  <td className="py-3.5 px-4 font-bold text-[#111827]">
-                    <div>{cls.name}</div>
-                    <div className="text-[10px] text-[#718096] font-mono">{cls.code}</div>
-                  </td>
-                  <td className="py-3.5 px-4 font-medium text-[#111827]">
-                    {cls.subjectTaught}
-                  </td>
-                  <td className="py-3.5 px-4 text-[#718096]">
-                    <div>{cls.room}</div>
-                    <div className="text-[11px] text-[#718096]">{cls.classMonitor}</div>
-                  </td>
-                  <td className="py-3.5 px-4 font-bold text-[#111827]">
-                    {cls.totalStudents} Students
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full font-bold text-[11px] bg-[#E6F7F2] text-[#10B981] border border-[#10B981]/30">
-                      {cls.attendanceRate}%
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <div className="w-28 bg-[#E2E8F0] rounded-full h-2 overflow-hidden mb-1">
-                      <div
-                        className="bg-[#10B981] h-2 rounded-full"
-                        style={{ width: `${cls.syllabusProgress}%` }}
-                      />
-                    </div>
-                    <span className="text-[11px] text-[#718096]">{cls.syllabusProgress}% Paced</span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <NavLink
-                      to={`/classes`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F8F7F3] border border-[#E2E8F0] text-[#111827] font-semibold text-xs transition shadow-xs"
-                    >
-                      <span>Roster</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </NavLink>
+              {assignedClasses.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-500">
+                    <p className="font-semibold text-sm text-slate-700">No classes assigned yet.</p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Once Admin assigns schedules to you, your active classes and subject progress will appear here.
+                    </p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                assignedClasses.map((cls) => (
+                  <tr key={cls.id} className="hover:bg-[#F8F7F3]/70 transition">
+                    <td className="py-3.5 px-4 font-bold text-[#111827]">
+                      <div>{cls.name}</div>
+                      <div className="text-[10px] text-[#718096] font-mono">{cls.code || '—'}</div>
+                    </td>
+                    <td className="py-3.5 px-4 font-medium text-[#111827]">
+                      {cls.subjectTaught || '—'}
+                    </td>
+                    <td className="py-3.5 px-4 text-[#718096]">
+                      <div>{cls.room || '—'}</div>
+                      <div className="text-[11px] text-[#718096]">{cls.classMonitor || '—'}</div>
+                    </td>
+                    <td className="py-3.5 px-4 font-bold text-[#111827]">
+                      {cls.totalStudents ?? 0} Students
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full font-bold text-[11px] bg-[#E6F7F2] text-[#10B981] border border-[#10B981]/30">
+                        {cls.attendanceRate ?? 95}%
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="w-28 bg-[#E2E8F0] rounded-full h-2 overflow-hidden mb-1">
+                        <div
+                          className="bg-[#10B981] h-2 rounded-full"
+                          style={{ width: `${cls.syllabusProgress ?? 0}%` }}
+                        />
+                      </div>
+                      <span className="text-[11px] text-[#718096]">{cls.syllabusProgress ?? 0}% Paced</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <NavLink
+                        to={`/classes`}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white hover:bg-[#F8F7F3] border border-[#E2E8F0] text-[#111827] font-semibold text-xs transition shadow-xs"
+                      >
+                        <span>Roster</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </NavLink>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

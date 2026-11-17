@@ -13,7 +13,7 @@ import {
   Info,
   ChevronRight,
 } from 'lucide-react';
-import { MOCK_TIMETABLE, MOCK_INSTITUTION_INFO, TimetableSlot } from '../mock/teacherMockData';
+import type { TimetableSlot } from '../mock/teacherMockData';
 import { timetableApi } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
@@ -28,7 +28,7 @@ export default function TimetablePage() {
   const [selectedDay, setSelectedDay] = useState<DayFilter>('All');
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [selectedSession, setSelectedSession] = useState<TimetableSlot | null>(null);
-  const [slots, setSlots] = useState<TimetableSlot[]>(MOCK_TIMETABLE);
+  const [slots, setSlots] = useState<TimetableSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,7 +78,7 @@ export default function TimetablePage() {
             Weekly Teaching Timetable
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Semester 2 • {MOCK_TIMETABLE.length} Total Weekly Classroom Periods
+            Semester 2 • {slots.length} Total Weekly Classroom Periods
           </p>
         </div>
 
@@ -123,8 +123,8 @@ export default function TimetablePage() {
           {DAYS.map((day) => {
             const isSelected = selectedDay === day;
             const count = day === 'All'
-              ? MOCK_TIMETABLE.length
-              : MOCK_TIMETABLE.filter((s) => s.day === day).length;
+              ? slots.length
+              : slots.filter((s) => s.day.toLowerCase() === day.toLowerCase()).length;
 
             return (
               <button
@@ -265,7 +265,9 @@ export default function TimetablePage() {
                       </div>
                     </td>
                     {DAYS.filter(d => d !== 'All').map(day => {
-                      const slot = MOCK_TIMETABLE.find(s => s.day === day && s.period === pNum);
+                      const slot = slots.find(
+                        s => s.day.toLowerCase() === day.toLowerCase() && (s.period === pNum || String(s.period) === String(pNum))
+                      );
                       return (
                         <td key={day} className="py-3.5 px-3 align-top border-r border-slate-100 last:border-r-0">
                           {slot ? (

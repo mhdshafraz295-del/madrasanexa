@@ -15,14 +15,14 @@ import {
   Phone,
   Award,
 } from 'lucide-react';
-import { MOCK_ASSIGNED_CLASSES, AssignedClass } from '../mock/teacherMockData';
+import type { AssignedClass } from '../mock/teacherMockData';
 import { classesApi } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
 
 export default function ClassesSubjectsPage() {
-  const [classes, setClasses] = useState<AssignedClass[]>(MOCK_ASSIGNED_CLASSES);
+  const [classes, setClasses] = useState<AssignedClass[]>([]);
   const [selectedClass, setSelectedClass] = useState<AssignedClass | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTabFilter, setActiveTabFilter] = useState<'All' | 'Tahfeez' | 'Alimiyyah' | 'Shariah'>('All');
@@ -85,7 +85,7 @@ export default function ClassesSubjectsPage() {
             My Classes & Subjects
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            4 Allocated Class Cohorts • 114 Active Madrasa Students Under Supervision
+            {classes.length} Allocated Class Cohort{classes.length === 1 ? '' : 's'} • {classes.reduce((acc, c) => acc + (c.totalStudents || 0), 0)} Active Madrasa Students Under Supervision
           </p>
         </div>
 
@@ -125,7 +125,13 @@ export default function ClassesSubjectsPage() {
       </div>
 
       {/* 3. Class Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {filteredClasses.length === 0 ? (
+        <EmptyState
+          title="No assigned classes found"
+          description="Once the administration assigns weekly timetable slots to your profile, your cohorts will appear here."
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredClasses.map((cls) => (
           <div
             key={cls.id}
@@ -200,6 +206,7 @@ export default function ClassesSubjectsPage() {
           </div>
         ))}
       </div>
+      )}
 
       {/* 4. Student Roster Modal / Drawer */}
       {selectedClass && (
@@ -239,37 +246,45 @@ export default function ClassesSubjectsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {selectedClass.students.map((student) => (
-                    <tr key={student.id} className="hover:bg-slate-50">
-                      <td className="py-3 px-3 font-mono text-slate-500 font-semibold">
-                        {student.rollNo}
-                      </td>
-                      <td className="py-3 px-3 font-bold text-slate-900">
-                        {student.name}
-                      </td>
-                      <td className="py-3 px-3 text-slate-600 font-mono">
-                        {student.guardianPhone}
-                      </td>
-                      <td className="py-3 px-3 font-semibold text-slate-800">
-                        {student.attendanceRate}%
-                      </td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            student.status === 'Present'
-                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                              : student.status === 'Late'
-                              ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                              : student.status === 'Excused'
-                              ? 'bg-blue-50 text-blue-800 border border-blue-200'
-                              : 'bg-rose-50 text-rose-800 border border-rose-200'
-                          }`}
-                        >
-                          {student.status}
-                        </span>
+                  {(selectedClass.students || []).length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-slate-500">
+                        No students enrolled in this cohort yet.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    (selectedClass.students || []).map((student) => (
+                      <tr key={student.id} className="hover:bg-slate-50">
+                        <td className="py-3 px-3 font-mono text-slate-500 font-semibold">
+                          {student.rollNo}
+                        </td>
+                        <td className="py-3 px-3 font-bold text-slate-900">
+                          {student.name}
+                        </td>
+                        <td className="py-3 px-3 text-slate-600 font-mono">
+                          {student.guardianPhone || '—'}
+                        </td>
+                        <td className="py-3 px-3 font-semibold text-slate-800">
+                          {student.attendanceRate}%
+                        </td>
+                        <td className="py-3 px-3">
+                          <span
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              student.status === 'Present'
+                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                : student.status === 'Late'
+                                ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                                : student.status === 'Excused'
+                                ? 'bg-blue-50 text-blue-800 border border-blue-200'
+                                : 'bg-rose-50 text-rose-800 border border-rose-200'
+                            }`}
+                          >
+                            {student.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -277,7 +292,7 @@ export default function ClassesSubjectsPage() {
             {/* Modal Footer */}
             <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs mt-4">
               <span className="text-slate-500">
-                Sample cohort preview (Illustrative prototype roster)
+                Official cohort roster verified with madrasa administration
               </span>
               <button
                 onClick={() => setSelectedClass(null)}

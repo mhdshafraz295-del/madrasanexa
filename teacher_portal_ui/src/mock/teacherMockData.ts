@@ -108,15 +108,15 @@ export interface AssignedClass {
   stream: string;
   gradeLevel: string;
   totalStudents: number;
-  maleStudents: number;
-  femaleStudents: number;
+  maleStudents?: number;
+  femaleStudents?: number;
   subjectTaught: string;
-  classMonitor: string;
-  room: string;
-  roomId: string;
-  syllabusProgress: number; // 0 - 100
-  attendanceRate: number; // 0 - 100
-  meetingSchedule: string;
+  classMonitor?: string;
+  room?: string;
+  roomId?: string;
+  syllabusProgress?: number; // 0 - 100
+  attendanceRate?: number; // 0 - 100
+  meetingSchedule?: string;
   students: AssignedStudent[];
 }
 

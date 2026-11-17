@@ -4,15 +4,7 @@
  * Implements token attachment, unauthorized event dispatching, and offline fallback.
  */
 
-import {
-  MOCK_TEACHER_PROFILE,
-  MOCK_INSTITUTION_INFO,
-  MOCK_TIMETABLE,
-  MOCK_ASSIGNED_CLASSES,
-  MOCK_TEACHER_ATTENDANCE_LOGS,
-  MOCK_PAYSLIPS,
-  MOCK_NOTIFICATIONS,
-  MOCK_TEACHER_STATS,
+import type {
   TeacherProfile,
   TimetableSlot,
   AssignedClass,
@@ -179,12 +171,11 @@ export interface TeacherSettingsData {
 }
 
 /**
- * Generic Fetch Wrapper with Authorization, 401 Interception, and Offline Mock Fallback
+ * Generic Fetch Wrapper with Authorization and 401 Interception
  */
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {},
-  fallbackFn?: () => T
+  options: RequestInit = {}
 ): Promise<T> {
   const token = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN);
   const headers: Record<string, string> = {
@@ -198,38 +189,24 @@ async function request<T>(
 
   const url = `${BASE_URL}${endpoint}`;
 
-  try {
-    const res = await fetch(url, {
-      ...options,
-      headers,
-    });
+  const res = await fetch(url, {
+    ...options,
+    headers,
+  });
 
-    if (res.status === 401) {
-      localStorage.removeItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN);
-      localStorage.removeItem(AUTH_STORAGE_KEYS.TEACHER_USER);
-      window.dispatchEvent(new CustomEvent('teacher:unauthorized'));
-      throw new Error('Your session has expired. Please log in again.');
-    }
-
-    const json = await res.json();
-    if (!res.ok) {
-      throw new Error(json.message || `Request failed with status ${res.status}`);
-    }
-
-    return (json.data !== undefined ? json.data : json) as T;
-  } catch (err: any) {
-    // If backend connection is refused (offline local dev), use illustrative prototype fallback ONLY in DEV mode
-    if (
-      import.meta.env.DEV &&
-      fallbackFn &&
-      (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('connection refused'))
-    ) {
-      console.info(`[MadrasaNexa Portal DEV] Offline fallback engaged for endpoint: ${endpoint}`);
-      return fallbackFn();
-    }
-    // In production, never return mock data on failure; rethrow to display explicit ErrorState
-    throw err;
+  if (res.status === 401) {
+    localStorage.removeItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN);
+    localStorage.removeItem(AUTH_STORAGE_KEYS.TEACHER_USER);
+    window.dispatchEvent(new CustomEvent('teacher:unauthorized'));
+    throw new Error('Your session has expired. Please log in again.');
   }
+
+  const json = await res.json();
+  if (!res.ok) {
+    throw new Error(json.message || `Request failed with status ${res.status}`);
+  }
+
+  return (json.data !== undefined ? json.data : json) as T;
 }
 
 // =============================================================================
@@ -237,55 +214,25 @@ async function request<T>(
 // =============================================================================
 export const authApi = {
   async login(email: string, password: string): Promise<LoginResult> {
-    try {
-      const res = await fetch(`${BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+    const res = await fetch(`${BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.message || 'Login failed.');
-      }
-
-      const result: LoginResult = json.data;
-      if (result.user.role !== 'TEACHER') {
-        throw new Error('Access denied: Only accounts with TEACHER role can access the Teacher Portal.');
-      }
-
-      localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN, result.accessToken);
-      localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(result.user));
-      return result;
-    } catch (err: any) {
-      // Offline fallback for evaluator preview demo credentials STRICTLY in DEV mode
-      if (
-        import.meta.env.DEV &&
-        (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) &&
-        email === 'abdullah.farooq@madrasanexa.lk'
-      ) {
-        const demoResult: LoginResult = {
-          accessToken: 'demo_faculty_token_offline_2026',
-          user: {
-            id: 'demo_ustadh_user_1',
-            name: 'Ustadh Abdullah Farooq',
-            email: 'abdullah.farooq@madrasanexa.lk',
-            role: 'TEACHER',
-            madrasaId: 'demo_madrasa_1',
-            teacherProfile: {
-              id: 'demo_ustadh_1',
-              ustadhCode: 'UST-014',
-              fullName: 'Ustadh Abdullah Farooq',
-              staffType: 'USTADH',
-            },
-          },
-        };
-        localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN, demoResult.accessToken);
-        localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(demoResult.user));
-        return demoResult;
-      }
-      throw err;
+    const json = await res.json();
+    if (!res.ok) {
+      throw new Error(json.message || 'Login failed.');
     }
+
+    const result: LoginResult = json.data;
+    if (result.user.role !== 'TEACHER') {
+      throw new Error('Access denied: Only accounts with TEACHER role can access the Teacher Portal.');
+    }
+
+    localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN, result.accessToken);
+    localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(result.user));
+    return result;
   },
 
   logout(): void {
@@ -313,43 +260,7 @@ export const authApi = {
 // =============================================================================
 export const dashboardApi = {
   getDashboard(): Promise<DashboardData> {
-    return request<DashboardData>('/teacher/dashboard', { method: 'GET' }, () => ({
-      stats: {
-        totalClasses: 4,
-        totalStudents: 104,
-        weeklyTeachingHours: 18.5,
-        averageAttendanceRate: 94.6,
-        syllabusCompletionRate: 68.8,
-        pendingEvaluations: 0,
-        todayTotalSessions: 3,
-        todayCompletedSessions: 1,
-      },
-      todaySchedule: MOCK_TIMETABLE.filter((t) => t.day === 'Monday').map((s) => ({
-        id: s.id,
-        period: s.period,
-        timeSlot: s.timeSlot,
-        className: s.className,
-        classId: 'cls_1',
-        subject: s.subject,
-        room: s.room,
-        roomId: s.roomId,
-        studentsCount: s.studentsCount,
-        status: s.status,
-      })),
-      recentNotifications: MOCK_NOTIFICATIONS.slice(0, 4).map((n) => ({
-        id: n.id,
-        title: n.title,
-        message: n.message,
-        category: n.category,
-        priority: n.priority,
-        timestamp: n.timestamp,
-      })),
-      timeContext: {
-        timeZone: 'Asia/Colombo',
-        date: new Date().toISOString().split('T')[0],
-        weekday: 'MONDAY',
-      },
-    }));
+    return request<DashboardData>('/teacher/dashboard', { method: 'GET' });
   },
 };
 
@@ -358,7 +269,7 @@ export const dashboardApi = {
 // =============================================================================
 export const profileApi = {
   getProfile(): Promise<TeacherProfile> {
-    return request<TeacherProfile>('/teacher/profile', { method: 'GET' }, () => MOCK_TEACHER_PROFILE);
+    return request<TeacherProfile>('/teacher/profile', { method: 'GET' });
   },
 
   updateProfile(data: {
@@ -386,7 +297,7 @@ export const profileApi = {
     return request<{ id: string; fullName?: string; message: string }>('/teacher/profile', {
       method: 'PATCH',
       body: JSON.stringify(data),
-    }, () => ({ id: MOCK_TEACHER_PROFILE.id, message: 'Profile updated successfully (Offline preview).' }));
+    });
   },
 };
 
@@ -396,9 +307,7 @@ export const profileApi = {
 export const timetableApi = {
   getTimetable(day?: string): Promise<TimetableSlot[]> {
     const query = day ? `?day=${day}` : '';
-    return request<TimetableSlot[]>(`/teacher/timetable${query}`, { method: 'GET' }, () =>
-      day ? MOCK_TIMETABLE.filter((t) => t.day.toUpperCase() === day.toUpperCase()) : MOCK_TIMETABLE
-    );
+    return request<TimetableSlot[]>(`/teacher/timetable${query}`, { method: 'GET' });
   },
 };
 
@@ -407,14 +316,25 @@ export const timetableApi = {
 // =============================================================================
 export const classesApi = {
   getAssignedClasses(): Promise<AssignedClass[]> {
-    return request<AssignedClass[]>('/teacher/classes', { method: 'GET' }, () => MOCK_ASSIGNED_CLASSES);
+    return request<AssignedClass[]>('/teacher/classes', { method: 'GET' }).then((list) =>
+      list.map((cls) => ({
+        ...cls,
+        stream: cls.stream || 'Islamic Studies',
+        gradeLevel: cls.gradeLevel || cls.name,
+        subjectTaught: cls.subjectTaught || 'General Subject',
+        students: cls.students || [],
+      }))
+    );
   },
 
   getClassDetail(classId: string): Promise<AssignedClass> {
-    return request<AssignedClass>(`/teacher/classes/${classId}`, { method: 'GET' }, () => {
-      const cls = MOCK_ASSIGNED_CLASSES.find((c) => c.id === classId) || MOCK_ASSIGNED_CLASSES[0];
-      return cls;
-    });
+    return request<AssignedClass>(`/teacher/classes/${classId}`, { method: 'GET' }).then((cls) => ({
+      ...cls,
+      stream: cls.stream || 'Islamic Studies',
+      gradeLevel: cls.gradeLevel || cls.name,
+      subjectTaught: cls.subjectTaught || 'General Subject',
+      students: cls.students || [],
+    }));
   },
 };
 
@@ -437,23 +357,7 @@ export const teacherAttendanceApi = {
     verifiedAt: string | null;
     graceWindowMinutes: number;
   }>> {
-    return request('/teacher/attendance/teacher/today', { method: 'GET' }, () =>
-      MOCK_TIMETABLE.filter((t) => t.day === 'Monday').map((s, idx) => ({
-        scheduleId: s.id,
-        period: idx + 1,
-        timeSlot: s.timeSlot,
-        startMinutes: 480 + idx * 45,
-        endMinutes: 525 + idx * 45,
-        className: s.className,
-        classId: 'cls_1',
-        subject: s.subject,
-        roomName: s.room,
-        status: idx === 0 ? 'Verified' : 'Pending',
-        method: idx === 0 ? 'Classroom QR' : null,
-        verifiedAt: idx === 0 ? new Date().toISOString() : null,
-        graceWindowMinutes: 15,
-      }))
-    );
+    return request('/teacher/attendance/teacher/today', { method: 'GET' });
   },
 
   verifyClassroomQr(payload: {
@@ -473,15 +377,7 @@ export const teacherAttendanceApi = {
     return request('/teacher/attendance/teacher/verify-qr', {
       method: 'POST',
       body: JSON.stringify(payload),
-    }, () => ({
-      id: `att_mock_${Date.now()}`,
-      status: 'Verified',
-      method: payload.method || 'Classroom QR',
-      verifiedAt: new Date().toISOString(),
-      scheduleId: payload.scheduleId,
-      roomTokenAccepted: payload.roomToken,
-      notice: 'Verification recorded. Static QR code confirms institutional timetable compliance.',
-    }));
+    });
   },
 };
 
@@ -492,27 +388,7 @@ export const studentAttendanceApi = {
   getPeriodSession(scheduleId: string, date: string): Promise<PeriodSessionData> {
     return request<PeriodSessionData>(
       `/teacher/attendance/student/session?scheduleId=${encodeURIComponent(scheduleId)}&date=${encodeURIComponent(date)}`,
-      { method: 'GET' },
-      () => ({
-        sessionCode: `SES-${date.replace(/-/g, '')}-${scheduleId.slice(-4)}`,
-        date,
-        period: 1,
-        timeSlot: '08:00 AM – 08:45 AM',
-        className: 'Class 10-A (Hifz & Tajweed)',
-        subject: 'Tajweed Rules & Application',
-        totalEnrolled: MOCK_ASSIGNED_CLASSES[0].students.length,
-        isSealed: false,
-        sealedAt: null,
-        roster: MOCK_ASSIGNED_CLASSES[0].students.map((st) => ({
-          studentId: st.id,
-          rollNo: st.rollNo,
-          name: st.name,
-          status: 'Present',
-          scannedTime: null,
-          method: 'Teacher Manual',
-          remarks: '',
-        })),
-      })
+      { method: 'GET' }
     );
   },
 
@@ -524,13 +400,7 @@ export const studentAttendanceApi = {
     return request('/teacher/attendance/student/mark', {
       method: 'POST',
       body: JSON.stringify(payload),
-    }, () => ({
-      success: true,
-      message: `Period attendance recorded for ${payload.records.length} students.`,
-      totalRecorded: payload.records.length,
-      isSealed: false,
-      optionAIsolationNotice: 'Attendance recorded exclusively for period roll-call. Daily institutional attendance is isolated and unaffected.',
-    }));
+    });
   },
 
   sealPeriodSession(payload: {
@@ -540,12 +410,7 @@ export const studentAttendanceApi = {
     return request('/teacher/attendance/student/seal', {
       method: 'POST',
       body: JSON.stringify(payload),
-    }, () => ({
-      sessionCode: `SES-${payload.date.replace(/-/g, '')}`,
-      isSealed: true,
-      sealedAt: new Date().toISOString(),
-      message: 'Period attendance session sealed successfully.',
-    }));
+    });
   },
 };
 
@@ -556,28 +421,7 @@ export const attendanceHistoryApi = {
   getAttendanceHistory(type: 'student' | 'teacher', page = 1, limit = 10): Promise<PaginatedResponse<any>> {
     return request<PaginatedResponse<any>>(
       `/teacher/attendance/history?type=${type}&page=${page}&limit=${limit}`,
-      { method: 'GET' },
-      () => ({
-        totalCount: type === 'teacher' ? MOCK_TEACHER_ATTENDANCE_LOGS.length : 4,
-        page,
-        limit,
-        data: type === 'teacher' ? MOCK_TEACHER_ATTENDANCE_LOGS : [
-          {
-            id: 'ses_1',
-            sessionCode: 'SES-20261116',
-            date: '2026-11-16',
-            period: 1,
-            timeSlot: '08:00 AM – 08:45 AM',
-            className: 'Class 10-A',
-            subject: 'Tajweed Rules',
-            totalEnrolled: 25,
-            presentCount: 24,
-            attendanceRate: 96,
-            isSealed: true,
-            sealedAt: '2026-11-16T08:50:00Z',
-          },
-        ],
-      })
+      { method: 'GET' }
     );
   },
 };
@@ -587,46 +431,7 @@ export const attendanceHistoryApi = {
 // =============================================================================
 export const salaryApi = {
   getSalarySummary(): Promise<SalarySummaryData> {
-    return request<SalarySummaryData>('/teacher/salary/summary', { method: 'GET' }, () => ({
-      basicSalary: 85000,
-      allowances: [
-        { name: 'Academic Research & Pedagogy', category: 'Academic', amount: 12000, description: 'Manuscript study grant' },
-        { name: 'Faculty Residential / Housing', category: 'Housing', amount: 8000, description: 'Housing stipend' },
-        { name: 'Special Ten Qira’at Ijazah Allowance', category: 'Special', amount: 6000, description: 'Credential incentive' },
-        { name: 'Transport & Inter-Campus Travel', category: 'Transport', amount: 5000, description: 'Commuter allowance' },
-      ],
-      deductions: [
-        { name: 'Employee EPF Contribution (8%)', category: 'Statutory EPF', amount: 6800, description: 'Statutory 8% EPF' },
-        { name: 'Staff Welfare & Benevolent Fund', category: 'Welfare', amount: 1200, description: 'Benevolent fund' },
-        { name: 'Group Health Takaful Scheme', category: 'Takaful', amount: 2000, description: 'Medical takaful' },
-      ],
-      grossSalary: 116000,
-      totalDeductions: 10000,
-      netSalary: 106000,
-      currency: 'Rs.',
-      currentStatus: 'Paid',
-      latestPaymentMonth: '2026-10',
-      latestPaymentDate: '2026-10-31',
-      epfNumber: 'EPF-7841-UST',
-      bankDetails: {
-        bankName: 'Bank of Ceylon (BOC)',
-        branch: 'Colombo Central Branch',
-        accountNumber: 'BOC-****-4910',
-        accountHolder: 'Ustadh Abdullah Farooq',
-      },
-      employerContributions: {
-        employerEpfRate: '12%',
-        employerEpfAmount: 10200,
-        employerEtfRate: '3%',
-        employerEtfAmount: 2550,
-        institutionalNotice: 'Employer EPF (12%) and ETF (3%) are institutional liabilities and are NOT deducted from employee net salary.',
-      },
-      monthlyTrends: [
-        { month: 'Oct 2026', basic: 85000, allowances: 31000, deductions: 10000, net: 106000, status: 'Paid' },
-        { month: 'Sep 2026', basic: 85000, allowances: 31000, deductions: 10000, net: 106000, status: 'Paid' },
-        { month: 'Aug 2026', basic: 85000, allowances: 31000, deductions: 10000, net: 106000, status: 'Paid' },
-      ],
-    }));
+    return request<SalarySummaryData>('/teacher/salary/summary', { method: 'GET' });
   },
 };
 
@@ -637,44 +442,7 @@ export const paymentHistoryApi = {
   getPaymentHistory(page = 1, limit = 10): Promise<PaginatedResponse<any>> {
     return request<PaginatedResponse<any>>(
       `/teacher/salary/history?page=${page}&limit=${limit}`,
-      { method: 'GET' },
-      () => ({
-        totalCount: 3,
-        page,
-        limit,
-        data: [
-          {
-            id: 'sal_oct',
-            month: 'October 2026',
-            monthCode: '2026-10',
-            grossSalary: 116000,
-            deductions: 10000,
-            netSalary: 106000,
-            paymentDate: '2026-10-31',
-            paymentMethod: 'BANK_TRANSFER',
-            paymentReference: 'SAL-REF-OCT26',
-            transactionId: 'TXN-4910OCT',
-            status: 'Paid',
-            disbursementChannel: 'Direct Bank Clearance',
-            bankSummary: 'BOC-****-4910',
-          },
-          {
-            id: 'sal_sep',
-            month: 'September 2026',
-            monthCode: '2026-09',
-            grossSalary: 116000,
-            deductions: 10000,
-            netSalary: 106000,
-            paymentDate: '2026-09-30',
-            paymentMethod: 'BANK_TRANSFER',
-            paymentReference: 'SAL-REF-SEP26',
-            transactionId: 'TXN-4910SEP',
-            status: 'Paid',
-            disbursementChannel: 'Direct Bank Clearance',
-            bankSummary: 'BOC-****-4910',
-          },
-        ],
-      })
+      { method: 'GET' }
     );
   },
 };
@@ -693,25 +461,11 @@ export const payslipsApi = {
     issueDate: string;
     status: string;
   }>> {
-    return request('/teacher/salary/payslips', { method: 'GET' }, () =>
-      MOCK_PAYSLIPS.map((ps) => ({
-        id: ps.id,
-        payslipNumber: ps.payslipNumber,
-        revision: 1,
-        monthYear: ps.monthYear,
-        monthCode: ps.monthCode,
-        netSalary: ps.netPayable,
-        issueDate: ps.issueDate,
-        status: ps.status,
-      }))
-    );
+    return request('/teacher/salary/payslips', { method: 'GET' });
   },
 
   getPayslipDetail(payslipId: string): Promise<DetailedPayslip> {
-    return request<DetailedPayslip>(`/teacher/salary/payslips/${payslipId}`, { method: 'GET' }, () => {
-      const ps = MOCK_PAYSLIPS.find((p) => p.id === payslipId) || MOCK_PAYSLIPS[0];
-      return ps;
-    });
+    return request<DetailedPayslip>(`/teacher/salary/payslips/${payslipId}`, { method: 'GET' });
   },
 };
 
@@ -728,30 +482,16 @@ export const notificationsApi = {
 
     return request<PaginatedResponse<TeacherNotification>>(
       `/teacher/notifications?${params.toString()}`,
-      { method: 'GET' },
-      () => ({
-        totalCount: MOCK_NOTIFICATIONS.length,
-        unreadCount: MOCK_NOTIFICATIONS.filter((n) => !n.isRead).length,
-        page,
-        limit,
-        data: MOCK_NOTIFICATIONS,
-      })
+      { method: 'GET' }
     );
   },
 
   markRead(id: string): Promise<{ success: boolean; announcementId: string; isRead: boolean }> {
-    return request(`/teacher/notifications/${id}/read`, { method: 'PATCH' }, () => ({
-      success: true,
-      announcementId: id,
-      isRead: true,
-    }));
+    return request(`/teacher/notifications/${id}/read`, { method: 'PATCH' });
   },
 
   markAllRead(): Promise<{ success: boolean; message: string }> {
-    return request('/teacher/notifications/read-all', { method: 'PATCH' }, () => ({
-      success: true,
-      message: 'All notifications marked as read.',
-    }));
+    return request('/teacher/notifications/read-all', { method: 'PATCH' });
   },
 };
 
@@ -760,29 +500,14 @@ export const notificationsApi = {
 // =============================================================================
 export const settingsApi = {
   getSettings(): Promise<TeacherSettingsData> {
-    return request<TeacherSettingsData>('/teacher/settings', { method: 'GET' }, () => ({
-      account: {
-        id: 'user_1',
-        name: 'Ustadh Abdullah Farooq',
-        email: 'abdullah.farooq@madrasanexa.lk',
-        role: 'TEACHER',
-        ustadhCode: 'UST-014',
-        mustChangePassword: false,
-        memberSince: '2023-01-15T00:00:00Z',
-      },
-      preferences: {
-        emailNotifications: true,
-        whatsappAlerts: true,
-        language: 'en',
-      },
-    }));
+    return request<TeacherSettingsData>('/teacher/settings', { method: 'GET' });
   },
 
   changePassword(payload: { currentPassword: string; newPassword: string }): Promise<{ success: boolean; message: string }> {
     return request('/teacher/settings/password', {
       method: 'PUT',
       body: JSON.stringify(payload),
-    }, () => ({ success: true, message: 'Password updated successfully.' }));
+    });
   },
 
   updatePreferences(preferences: { emailNotifications?: boolean; whatsappAlerts?: boolean; language?: string }): Promise<{
@@ -793,6 +518,6 @@ export const settingsApi = {
     return request('/teacher/settings/preferences', {
       method: 'PUT',
       body: JSON.stringify(preferences),
-    }, () => ({ success: true, message: 'Preferences updated successfully.', preferences }));
+    });
   },
 };

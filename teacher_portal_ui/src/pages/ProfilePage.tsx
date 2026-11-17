@@ -44,7 +44,32 @@ export default function ProfilePage() {
     setError(null);
     try {
       const data = await profileApi.getProfile();
-      if (data) setProfile(data);
+      if (data) {
+        setProfile((prev) => ({
+          ...prev,
+          ...data,
+          fullName: data.fullName || prev.fullName || '',
+          arabicName: data.arabicName || prev.arabicName || '',
+          nicPassport: data.nicPassport || prev.nicPassport || '',
+          dateOfBirth: data.dateOfBirth || prev.dateOfBirth || '',
+          gender: data.gender || prev.gender || 'Male',
+          maritalStatus: data.maritalStatus || prev.maritalStatus || 'Married',
+          bloodGroup: data.bloodGroup || prev.bloodGroup || 'O+',
+          residentialAddress: data.residentialAddress || prev.residentialAddress || '',
+          district: data.district || prev.district || '',
+          postalCode: data.postalCode || prev.postalCode || '',
+          country: data.country || prev.country || 'Sri Lanka',
+          emergencyContact: {
+            name: data.emergencyContact?.name || prev.emergencyContact?.name || '',
+            relationship: data.emergencyContact?.relationship || prev.emergencyContact?.relationship || '',
+            phone: data.emergencyContact?.phone || prev.emergencyContact?.phone || '',
+          },
+          academicQualifications: Array.isArray(data.academicQualifications) ? data.academicQualifications : (prev.academicQualifications || []),
+          professionalQualifications: Array.isArray(data.professionalQualifications) ? data.professionalQualifications : (prev.professionalQualifications || []),
+          teachingExperience: Array.isArray(data.teachingExperience) ? data.teachingExperience : (prev.teachingExperience || []),
+          documents: Array.isArray(data.documents) ? data.documents : (prev.documents || []),
+        }));
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load teacher profile.');
     } finally {
@@ -67,7 +92,9 @@ export default function ProfilePage() {
     setProfile((prev) => ({
       ...prev,
       emergencyContact: {
-        ...prev.emergencyContact,
+        name: prev.emergencyContact?.name || '',
+        relationship: prev.emergencyContact?.relationship || '',
+        phone: prev.emergencyContact?.phone || '',
         [field]: value,
       },
     }));
@@ -118,6 +145,13 @@ export default function ProfilePage() {
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
+  const handleDeleteDocument = (docId: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      documents: (prev.documents || []).filter((d) => d.id !== docId),
+    }));
+  };
+
   const TABS: { key: TabKey; label: string; icon: any }[] = [
     { key: 'personal', label: 'Personal Information', icon: User },
     { key: 'contact', label: 'Contact & Emergency', icon: Phone },
@@ -135,6 +169,13 @@ export default function ProfilePage() {
     return <ErrorState message={error} onRetry={loadProfile} className="my-8" />;
   }
 
+  const getInitials = (name?: string) => {
+    if (!name) return 'TR';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
   return (
     <div className="space-y-6">
       {/* 1. Profile Hero & Photo Card */}
@@ -142,7 +183,7 @@ export default function ProfilePage() {
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
           <div className="relative">
             <div className="w-24 h-24 rounded-2xl bg-[#0F172A] text-[#37C6A3] font-bold text-3xl flex items-center justify-center border-4 border-slate-100 shadow-md">
-              AF
+              {getInitials(profile.fullName)}
             </div>
             <span className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-600/20" title="Active Faculty Status" />
           </div>
@@ -383,7 +424,7 @@ export default function ProfilePage() {
                   </label>
                   <input
                     type="text"
-                    value={profile.emergencyContact.name}
+                    value={profile.emergencyContact?.name || ''}
                     onChange={(e) => handleEmergencyChange('name', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
                   />
@@ -394,7 +435,7 @@ export default function ProfilePage() {
                   </label>
                   <input
                     type="text"
-                    value={profile.emergencyContact.relationship}
+                    value={profile.emergencyContact?.relationship || ''}
                     onChange={(e) => handleEmergencyChange('relationship', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
                   />
@@ -405,7 +446,7 @@ export default function ProfilePage() {
                   </label>
                   <input
                     type="text"
-                    value={profile.emergencyContact.phone}
+                    value={profile.emergencyContact?.phone || ''}
                     onChange={(e) => handleEmergencyChange('phone', e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0D9488]"
                   />
@@ -494,31 +535,39 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-3">
-              {profile.academicQualifications.map((aq) => (
-                <div
-                  key={aq.id}
-                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-teal-100 text-[#0D9488] flex items-center justify-center font-bold text-sm shrink-0">
-                      <GraduationCap className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-bold text-slate-900">{aq.degree}</h3>
-                      <div className="text-xs text-slate-600 mt-0.5">{aq.institution}</div>
-                      <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-2">
-                        <span>Year: <strong className="text-slate-700">{aq.year}</strong></span>
-                        <span>•</span>
-                        <span>Honor: <strong className="text-emerald-700">{aq.gradeHonor}</strong></span>
+              {(profile.academicQualifications || []).length === 0 ? (
+                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <GraduationCap className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-600">No academic degrees recorded yet.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Degrees and university credentials can be submitted to administration.</p>
+                </div>
+              ) : (
+                (profile.academicQualifications || []).map((aq) => (
+                  <div
+                    key={aq.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-teal-100 text-[#0D9488] flex items-center justify-center font-bold text-sm shrink-0">
+                        <GraduationCap className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-900">{aq.degree}</h3>
+                        <div className="text-xs text-slate-600 mt-0.5">{aq.institution}</div>
+                        <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-2">
+                          <span>Year: <strong className="text-slate-700">{aq.year}</strong></span>
+                          <span>•</span>
+                          <span>Honor: <strong className="text-emerald-700">{aq.gradeHonor}</strong></span>
+                        </div>
                       </div>
                     </div>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Verified
+                    </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Verified
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
@@ -538,35 +587,43 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-3">
-              {profile.professionalQualifications.map((pq) => (
-                <div
-                  key={pq.id}
-                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-4"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-xs font-bold text-slate-900">{pq.title}</h3>
-                      <div className="text-xs text-slate-600 mt-0.5">{pq.issuingBody}</div>
-                      <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-2">
-                        <span>Year: <strong className="text-slate-700">{pq.year}</strong></span>
-                        {pq.credentialId && (
-                          <>
-                            <span>•</span>
-                            <span className="font-mono text-slate-600">ID: {pq.credentialId}</span>
-                          </>
-                        )}
+              {(profile.professionalQualifications || []).length === 0 ? (
+                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <Award className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-600">No traditional sanads or ijazahs on record.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Official Sanad chains can be verified and added by institution management.</p>
+                </div>
+              ) : (
+                (profile.professionalQualifications || []).map((pq) => (
+                  <div
+                    key={pq.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex items-start justify-between gap-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-sm shrink-0">
+                        <Award className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-900">{pq.title}</h3>
+                        <div className="text-xs text-slate-600 mt-0.5">{pq.issuingBody}</div>
+                        <div className="text-[11px] text-slate-500 mt-1 flex items-center gap-2">
+                          <span>Year: <strong className="text-slate-700">{pq.year}</strong></span>
+                          {pq.credentialId && (
+                            <>
+                              <span>•</span>
+                              <span className="font-mono text-slate-600">ID: {pq.credentialId}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                      Authenticated
+                    </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                    Authenticated
-                  </span>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         )}
@@ -584,25 +641,33 @@ export default function ProfilePage() {
             </div>
 
             <div className="space-y-4">
-              {profile.teachingExperience.map((te) => (
-                <div
-                  key={te.id}
-                  className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition"
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-xs font-bold text-slate-900">{te.role}</h3>
-                      <div className="text-xs text-[#0D9488] font-semibold mt-0.5">{te.institution}</div>
-                    </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
-                      {te.period}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                    {te.responsibilities}
-                  </p>
+              {(profile.teachingExperience || []).length === 0 ? (
+                <div className="p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <Briefcase className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-600">No prior appointments listed.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Previous teaching experience history can be entered or updated anytime.</p>
                 </div>
-              ))}
+              ) : (
+                (profile.teachingExperience || []).map((te) => (
+                  <div
+                    key={te.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="text-xs font-bold text-slate-900">{te.role}</h3>
+                        <div className="text-xs text-[#0D9488] font-semibold mt-0.5">{te.institution}</div>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
+                        {te.period}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                      {te.responsibilities}
+                    </p>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}
@@ -630,46 +695,55 @@ export default function ProfilePage() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {profile.documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200 text-slate-700 uppercase">
-                        {doc.category}
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          doc.status === 'Verified'
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                            : 'bg-amber-50 text-amber-800 border border-amber-200'
-                        }`}
-                      >
-                        {doc.status}
-                      </span>
-                    </div>
-                    <h3 className="text-xs font-bold text-slate-900 leading-snug">
-                      {doc.title}
-                    </h3>
-                    <div className="text-[11px] text-slate-500 font-mono mt-1 truncate">
-                      {doc.fileName} • {doc.fileSize}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                    <span className="text-[10px] text-slate-400">Uploaded {doc.uploadedDate}</span>
-                    <button
-                      type="button"
-                      onClick={() => alert(`Simulated preview for: ${doc.fileName}`)}
-                      className="text-xs font-semibold text-[#0D9488] hover:underline cursor-pointer"
-                    >
-                      View File
-                    </button>
-                  </div>
+              {(profile.documents || []).length === 0 ? (
+                <div className="sm:col-span-2 p-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-slate-600">No faculty documents uploaded yet.</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">Click "Upload New Document" above to upload certificates, degree scans, or ID.</p>
                 </div>
-              ))}
+              ) : (
+                (profile.documents || []).map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 hover:bg-slate-50 transition flex flex-col justify-between"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-200 text-slate-700 uppercase">
+                          {doc.category}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            doc.status === 'Verified'
+                              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                              : 'bg-amber-50 text-amber-800 border border-amber-200'
+                          }`}
+                        >
+                          {doc.status}
+                        </span>
+                      </div>
+                      <h3 className="text-xs font-bold text-slate-900 leading-snug">
+                        {doc.title}
+                      </h3>
+                      <div className="text-[11px] text-slate-500 font-mono mt-1 truncate">
+                        {doc.fileName} • {doc.fileSize}
+                      </div>
+                    </div>
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-200/80 flex items-center justify-between text-[11px] text-slate-500">
+                      <span>Uploaded {doc.uploadedDate}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        className="text-slate-400 hover:text-rose-600 transition"
+                        title="Delete Document"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

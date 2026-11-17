@@ -14,6 +14,7 @@ import {
   MapPin,
   X,
   ArrowRight,
+  User,
 } from 'lucide-react';
 import type { TeacherProfile, AssignedClass } from '../mock/teacherMockData';
 import { dashboardApi, profileApi, classesApi, DashboardData, resolveAssetUrl } from '../services/api';
@@ -112,22 +113,22 @@ export default function DashboardPage() {
       <InstitutionalLiveClock />
 
       {/* 1. Welcome & Faculty Identity Header */}
-      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="flex items-start gap-4 min-w-0 flex-1">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-[#111827] text-[#10B981] font-bold text-xl flex items-center justify-center border-2 border-[#E2E8F0] shadow-xs shrink-0 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+        <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-5 min-w-0 flex-1">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-[#111827] text-[#10B981] font-bold text-xl flex items-center justify-center border-2 border-emerald-500/20 ring-4 ring-emerald-500/10 shadow-xs shrink-0 overflow-hidden">
             {resolvedPhotoUrl && !photoError ? (
               <img
                 src={resolvedPhotoUrl}
                 alt={profile.fullName}
                 onError={() => setPhotoError(true)}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-full"
               />
             ) : (
               profile.fullName.slice(0, 2).toUpperCase()
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2 mb-1">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
               <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#E6F7F2] text-[#10B981] border border-[#10B981]/30">
                 ● Faculty Status: {profile.status}
               </span>
@@ -141,13 +142,13 @@ export default function DashboardPage() {
             <p className="text-sm font-arabic text-[#10B981] font-semibold mt-0.5">
               {profile.arabicName || 'أستاذ معتمد لدى المنظومة'}
             </p>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-[#718096] mt-2">
-              <span className="flex items-center gap-1">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs text-[#718096] mt-2">
+              <span className="inline-flex items-center gap-1">
                 <BookOpen className="w-3.5 h-3.5 text-[#718096]" />
                 {profile.designation}
               </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
+              <span className="hidden sm:inline text-slate-300">•</span>
+              <span className="inline-flex items-center gap-1">
                 <Building2 className="w-3.5 h-3.5 text-[#718096]" />
                 {profile.department}
               </span>
@@ -156,7 +157,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Date Card for Mobile/Tablet */}
-        <div className="lg:hidden p-3 bg-[#F8F7F3] rounded-xl border border-[#E2E8F0] text-xs min-w-0">
+        <div className="lg:hidden p-3 bg-[#F8F7F3] rounded-xl border border-[#E2E8F0] text-xs min-w-0 text-center sm:text-left">
           <div className="font-bold text-[#10B981] font-arabic truncate">
             {(profile as any).madrasa?.name || 'MadrasaNexa'}
           </div>
@@ -165,26 +166,34 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-end shrink-0">
+        {/* Action Buttons: Responsive & Includes Permanent Edit Profile */}
+        <div className="flex flex-col sm:flex-row lg:flex-row flex-wrap items-stretch sm:items-center gap-2 shrink-0 w-full sm:w-auto">
           <NavLink
             to="/timetable"
-            className="px-4 py-2 rounded-xl bg-[#111827] hover:bg-black text-white font-bold text-xs flex items-center gap-1.5 transition shadow-xs min-h-[40px]"
+            className="px-4 py-2 rounded-xl bg-[#111827] hover:bg-black text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-xs min-h-[40px] w-full sm:w-auto"
           >
             <Calendar className="w-3.5 h-3.5 text-[#10B981]" />
             <span>View Full Timetable</span>
           </NavLink>
           <NavLink
             to="/classes"
-            className="px-4 py-2 rounded-xl bg-white hover:bg-[#F8F7F3] border border-[#E2E8F0] text-[#111827] font-semibold text-xs flex items-center gap-1.5 transition shadow-xs min-h-[40px]"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-[#F8F7F3] border border-[#E2E8F0] text-[#111827] font-semibold text-xs flex items-center justify-center gap-1.5 transition shadow-xs min-h-[40px] w-full sm:w-auto"
           >
             <Users className="w-3.5 h-3.5 text-[#718096]" />
             <span>Manage Classes</span>
           </NavLink>
+          <NavLink
+            to="/profile?edit=true"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-[#F8F7F3] border border-[#E2E8F0] text-[#111827] font-semibold text-xs flex items-center justify-center gap-1.5 transition shadow-xs min-h-[40px] w-full sm:w-auto"
+          >
+            <User className="w-3.5 h-3.5 text-[#10B981]" />
+            <span>Edit Profile</span>
+          </NavLink>
         </div>
       </div>
 
-      {/* 2. Optional Profile Completion Indicator Banner */}
-      {!profileDismissed && (
+      {/* 2. Optional Profile Completion Indicator Banner (Hidden if 100% complete or dismissed) */}
+      {(profile.profileCompletionPercentage ?? (dashboardData?.teacher as any)?.profileCompletionPercentage ?? 100) < 100 && !profileDismissed && (
         <div className="bg-white border border-[#E2E8F0] rounded-2xl p-4 sm:p-5 relative shadow-xs">
           <button
             onClick={() => setProfileDismissed(true)}
@@ -201,7 +210,7 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-[#111827] uppercase tracking-wide">
-                    Profile Completion: {profile.profileCompletionPercentage}%
+                    Profile Completion: {profile.profileCompletionPercentage ?? (dashboardData?.teacher as any)?.profileCompletionPercentage ?? 85}%
                   </span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
                     Optional
@@ -214,7 +223,7 @@ export default function DashboardPage() {
                 <div className="w-full sm:w-72 bg-[#E2E8F0] rounded-full h-2 mt-2.5 overflow-hidden">
                   <div
                     className="bg-[#10B981] h-2 rounded-full transition-all duration-500"
-                    style={{ width: `${profile.profileCompletionPercentage}%` }}
+                    style={{ width: `${profile.profileCompletionPercentage ?? (dashboardData?.teacher as any)?.profileCompletionPercentage ?? 85}%` }}
                   />
                 </div>
               </div>
@@ -228,7 +237,7 @@ export default function DashboardPage() {
                 Skip for now
               </button>
               <NavLink
-                to="/profile"
+                to="/profile?edit=true"
                 className="px-3.5 py-1.5 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold transition shadow-xs min-h-[36px] flex items-center"
               >
                 Complete Profile

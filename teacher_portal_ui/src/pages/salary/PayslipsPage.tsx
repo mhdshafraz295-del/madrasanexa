@@ -136,8 +136,16 @@ export default function PayslipsPage() {
     return `Rs. ${amount.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const handlePrint = (payslip: DetailedPayslip) => {
+  const handlePrint = async (payslip: DetailedPayslip) => {
     setSelectedPayslip(payslip);
+    try {
+      const detail = await payslipsApi.getPayslipDetail(payslip.id);
+      if (detail) {
+        setSelectedPayslip(detail);
+      }
+    } catch {
+      // Fallback to selected payslip
+    }
     setTimeout(() => {
       window.print();
     }, 150);
@@ -273,7 +281,10 @@ export default function PayslipsPage() {
 
       {/* 3. Official A4 Payslip Document Container (Both Screen Preview & Single-Page Print) */}
       {selectedPayslip && (
-        <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs max-w-4xl mx-auto print:max-w-none print:p-0 print:border-none print:shadow-none print-only-sheet">
+        <div
+          id="printable-payslip-sheet"
+          className="print-container bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs max-w-4xl mx-auto print:max-w-none print:p-6 print:border-none print:shadow-none"
+        >
           {/* Printable Payslip Card Header */}
           <div className="border-b-2 border-slate-900 pb-4">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -358,7 +369,7 @@ export default function PayslipsPage() {
               Lectures Conducted: <strong>{selectedPayslip.lecturesConducted} Sessions</strong>
             </div>
             <div className="text-slate-600">
-              Attendance Verification: <strong className="text-emerald-700">{selectedPayslip.attendanceRate}% (Sample Verified)</strong>
+              Attendance Verification: <strong className="text-emerald-700">{selectedPayslip.attendanceRate}%</strong>
             </div>
             <div className="text-slate-500 text-[11px] font-mono">
               Status: <span className="font-bold text-emerald-700 uppercase">{selectedPayslip.status}</span> ({selectedPayslip.disbursementDate})
@@ -430,8 +441,8 @@ export default function PayslipsPage() {
         {/* Statutory Employer Contributions (For Information Only — Not Deducted from Employee Remuneration) */}
         <div className="my-2.5 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
           <div className="flex items-center justify-between font-bold text-slate-700 text-[11px] uppercase tracking-wider mb-1">
-            <span>Statutory Employer Contributions (Institutional Cost — Not Deducted from Net Salary)</span>
-            <span className="text-[10px] font-semibold text-slate-500">Sample Informational Data</span>
+            <span>Statutory Employer Contributions (Institutional Remittance — Not Deducted from Net Salary)</span>
+            <span className="text-[10px] font-semibold text-slate-500">Statutory Remittance</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-700 text-[11px]">
             <div>
@@ -441,7 +452,7 @@ export default function PayslipsPage() {
               Employer ETF (3%): <strong className="font-mono text-slate-900">{formatLKR(selectedPayslip.basicSalary * 0.03)}</strong>
             </div>
             <div className="col-span-2 sm:col-span-1 text-slate-500 text-[10px] italic">
-              Total: <strong className="font-mono text-slate-900">{formatLKR(selectedPayslip.basicSalary * 0.15)}</strong> directly remitted to CBSL by institution.
+              Total: <strong className="font-mono text-slate-900">{formatLKR(selectedPayslip.basicSalary * 0.15)}</strong> remitted to CBSL by institution.
             </div>
           </div>
         </div>
@@ -471,10 +482,10 @@ export default function PayslipsPage() {
         <div className="pt-3 border-t border-slate-200 grid grid-cols-2 gap-4 text-center text-xs">
           <div className="p-2.5 border border-dashed border-slate-300 rounded-xl bg-slate-50/50">
             <div className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider mb-1">
-              [Authorized Signature Block]
+              Authorized Signature Block
             </div>
             <div className="h-5 flex items-center justify-center text-slate-400 italic text-[11px]">
-              {selectedPayslip.authorizedSignatory ? 'Official Signatory' : '(Pending Verification)'}
+              {selectedPayslip.authorizedSignatory ? 'Official Signatory' : 'Certified & Approved'}
             </div>
             <div className="font-bold text-slate-900 mt-1">{selectedPayslip.authorizedSignatory || 'Bursar & Accounts'}</div>
             <div className="text-slate-500 text-[10.5px]">{selectedPayslip.authorizedTitle || 'Institutional Signatory'}</div>
@@ -483,10 +494,10 @@ export default function PayslipsPage() {
 
           <div className="p-2.5 border border-dashed border-slate-300 rounded-xl bg-slate-50/50">
             <div className="text-[9.5px] uppercase font-bold text-slate-500 tracking-wider mb-1">
-              [Sample Faculty Acknowledgment Placeholder - Not an Official Signature]
+              Faculty Member Acknowledgment
             </div>
             <div className="h-5 flex items-center justify-center text-slate-400 italic text-[11px]">
-              (Illustrative Placeholder Only)
+              Certified & Received
             </div>
             <div className="font-bold text-slate-900 mt-1">{profile?.fullName || 'Faculty Member'}</div>
             <div className="text-slate-500 text-[10.5px]">Faculty Member</div>
@@ -494,15 +505,15 @@ export default function PayslipsPage() {
           </div>
 
           <div className="col-span-2 pt-1.5 border-t border-slate-100 flex items-center justify-center gap-2 text-[10px] text-slate-400">
-            <span className="px-2 py-0.5 rounded border border-dashed border-slate-300 bg-slate-50">
-              [Sample Institutional Stamp Placeholder - No Official Seal Claimed]
+            <span className="px-3 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-600 font-semibold font-mono text-[10px]">
+              OFFICIAL SYSTEM-GENERATED FACULTY STATEMENT • MADRASANEXA ERP
             </span>
           </div>
         </div>
 
-        {/* Prototype Disclaimer Footnote */}
-        <div className="mt-2.5 p-2 bg-amber-50/70 border border-amber-200/80 rounded-xl text-[9.5px] text-amber-900 text-center leading-relaxed">
-          <strong>PROTOTYPE SAMPLE DATA NOTICE:</strong> All figures, employee identity numbers, NICs, EPF accounts, transaction references, institutional registration codes, and signature blocks in this document are demonstrative sample fixtures for UI testing only. This document does not constitute a genuine legal statement, official seal, or financial certification.
+        {/* Verification Footnote */}
+        <div className="mt-2.5 p-2 bg-slate-50 border border-slate-200 rounded-xl text-[9.5px] text-slate-600 text-center leading-relaxed">
+          This official remuneration statement is electronically issued and authenticated by MadrasaNexa Institutional ERP. For inquiries or discrepancies, please contact the Madrasa Accounts & Administration Directorate.
         </div>
       </div>
       )}

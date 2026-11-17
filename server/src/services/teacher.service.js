@@ -225,14 +225,42 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
   }
 
   let teacherPhotoUrl = null;
+  let profileCompletionPercentage = 85;
   try {
     const teacherUstadh = await prisma.ustadh.findFirst({
       where: { id: ustadhId, madrasaId },
-      select: { notes: true },
+      select: {
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        address: true,
+        staffType: true,
+        notes: true,
+      },
     });
-    if (teacherUstadh?.notes && teacherUstadh.notes.startsWith('{')) {
-      const parsedNotes = JSON.parse(teacherUstadh.notes);
-      teacherPhotoUrl = parsedNotes.photoUrl || parsedNotes.avatarUrl || null;
+    if (teacherUstadh) {
+      let notesObj = {};
+      if (teacherUstadh.notes && teacherUstadh.notes.startsWith('{')) {
+        try {
+          notesObj = JSON.parse(teacherUstadh.notes);
+        } catch (_) {}
+      }
+      teacherPhotoUrl = notesObj.photoUrl || notesObj.avatarUrl || null;
+      const ec = notesObj.emergencyContact;
+      const hasAcademics = Array.isArray(notesObj.academicQualifications) && notesObj.academicQualifications.length > 0;
+      const hasProfessionals = Array.isArray(notesObj.professionalQualifications) && notesObj.professionalQualifications.length > 0;
+
+      const completionChecks = [
+        Boolean(teacherUstadh.fullName && teacherUstadh.fullName.trim()),
+        Boolean(teacherUstadh.email && teacherUstadh.email.trim()),
+        Boolean(teacherUstadh.phoneNumber && teacherUstadh.phoneNumber.trim()),
+        Boolean(teacherUstadh.address && teacherUstadh.address.trim()),
+        Boolean(ec && ec.phone && ec.phone !== 'Not Specified'),
+        Boolean(teacherUstadh.staffType || hasAcademics || hasProfessionals),
+        Boolean(teacherPhotoUrl && String(teacherPhotoUrl).trim()),
+      ];
+      const filledCount = completionChecks.filter(Boolean).length;
+      profileCompletionPercentage = Math.round((filledCount / completionChecks.length) * 100);
     }
   } catch (_) {}
 
@@ -266,6 +294,7 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
       id: ustadhId,
       photoUrl: teacherPhotoUrl,
       avatarUrl: teacherPhotoUrl,
+      profileCompletionPercentage,
     },
   };
 }
@@ -375,6 +404,18 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     // Ignore JSON parse errors on legacy string notes
   }
 
+  const completionChecks = [
+    Boolean(ustadh.fullName && ustadh.fullName.trim()),
+    Boolean(ustadh.email && ustadh.email.trim()),
+    Boolean(ustadh.phoneNumber && ustadh.phoneNumber.trim()),
+    Boolean(ustadh.address && ustadh.address.trim()),
+    Boolean(emergencyContact && emergencyContact.phone && emergencyContact.phone !== 'Not Specified'),
+    Boolean(ustadh.staffType || academicQualifications.length > 0 || professionalQualifications.length > 0),
+    Boolean(avatarUrl && String(avatarUrl).trim()),
+  ];
+  const filledCount = completionChecks.filter(Boolean).length;
+  const profileCompletionPercentage = Math.round((filledCount / completionChecks.length) * 100);
+
   return {
     id: ustadh.id,
     employeeCode: ustadh.ustadhCode,
@@ -404,7 +445,7 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     teachingExperience,
     documents,
     baseMonthlySalary: Number(ustadh.baseMonthlySalary),
-    profileCompletionPercentage: 85,
+    profileCompletionPercentage,
     madrasa: ustadh.madrasa
       ? {
           id: ustadh.madrasa.id,

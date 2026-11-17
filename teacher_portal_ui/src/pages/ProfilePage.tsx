@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   User,
   Mail,
@@ -60,11 +61,19 @@ const initialProfile: TeacherProfile = {
 };
 
 export default function ProfilePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [isEditing, setIsEditing] = useState(searchParams.get('edit') === 'true');
   const [profile, setProfile] = useState<TeacherProfile>(initialProfile);
   const [activeTab, setActiveTab] = useState<TabKey>('personal');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (searchParams.get('edit') === 'true') {
+      setIsEditing(true);
+    }
+  }, [searchParams]);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [newDocTitle, setNewDocTitle] = useState('');
@@ -419,141 +428,325 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      {/* 1. Profile Hero & Photo Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left">
-          <div className="relative group">
-            <div className="w-24 h-24 rounded-2xl bg-[#0F172A] text-[#37C6A3] font-bold text-3xl flex items-center justify-center border-4 border-slate-100 shadow-md overflow-hidden shrink-0">
-              {resolvedPhotoUrl && !photoError ? (
-                <img
-                  src={resolvedPhotoUrl}
-                  alt={profile.fullName}
-                  onError={() => setPhotoError(true)}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                getInitials(profile.fullName)
-              )}
-            </div>
-            <span className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white ring-1 ring-emerald-600/20" title="Active Faculty Status" />
-            
-            {/* Upload Trigger Button */}
-            <button
-              type="button"
-              disabled={isUploadingPhoto}
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute -top-1.5 -right-1.5 p-1.5 rounded-full bg-[#0D9488] text-white hover:bg-[#0F766E] shadow-md border-2 border-white transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
-              title="Upload / Change Profile Photo"
-            >
-              {isUploadingPhoto ? (
-                <Clock className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Camera className="w-3.5 h-3.5" />
-              )}
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              onChange={handlePhotoSelected}
-              className="hidden"
-            />
-          </div>
-
-          <div>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                {profile.status}
-              </span>
-              <span className="text-xs text-slate-500 font-mono">
-                {profile.employeeCode}
-              </span>
-              <span className="text-xs text-slate-400">• Joined {profile.dateOfJoining}</span>
-            </div>
-
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-              {profile.fullName || 'Ustadh Profile'}
-            </h1>
-            {profile.arabicName && (
-              <p className="text-sm font-arabic text-emerald-800 font-semibold mt-0.5">
-                {profile.arabicName}
-              </p>
+      {/* 1. WhatsApp-Style Clean Profile Card */}
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-6 sm:p-8 shadow-xs max-w-3xl mx-auto text-center">
+        {/* Top Centered Circular Profile Avatar with Floating Camera Upload Badge */}
+        <div className="relative inline-block mx-auto">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#0F172A] text-[#37C6A3] font-bold text-3xl flex items-center justify-center border-4 border-white ring-4 ring-emerald-500/20 shadow-md overflow-hidden shrink-0">
+            {resolvedPhotoUrl && !photoError ? (
+              <img
+                src={resolvedPhotoUrl}
+                alt={profile.fullName}
+                onError={() => setPhotoError(true)}
+                className="w-full h-full object-cover rounded-full"
+              />
+            ) : (
+              getInitials(profile.fullName)
             )}
-            <div className="text-xs text-slate-500 mt-1">
-              {profile.designation} — {profile.department}
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <button
-                type="button"
-                disabled={isUploadingPhoto}
-                onClick={() => fileInputRef.current?.click()}
-                className="text-xs text-[#0D9488] hover:text-[#0F766E] font-medium flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-              >
-                <Camera className="w-3.5 h-3.5" />
-                {isUploadingPhoto ? 'Uploading photo...' : 'Change Profile Photo'}
-              </button>
-              {photoUploadError && (
-                <span className="text-xs text-red-600 font-medium">
-                  {photoUploadError}
-                </span>
-              )}
-            </div>
           </div>
+          {/* Floating camera upload badge at bottom-right of circle */}
+          <button
+            type="button"
+            disabled={isUploadingPhoto}
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-0 right-0 p-2 rounded-full bg-[#0D9488] text-white hover:bg-[#0F766E] shadow-md border-2 border-white transition-transform active:scale-95 cursor-pointer disabled:opacity-50"
+            title="Upload / Change Profile Photo"
+          >
+            {isUploadingPhoto ? (
+              <Clock className="w-4 h-4 animate-spin" />
+            ) : (
+              <Camera className="w-4 h-4" />
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handlePhotoSelected}
+            className="hidden"
+          />
         </div>
 
-        {/* Profile Completion Indicator Pill & Skip Notice */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col items-start sm:items-end justify-center shrink-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold text-slate-700">Profile Completion:</span>
-            <span className="text-xs font-black text-[#0D9488]">{profile.profileCompletionPercentage}%</span>
+        {/* Centered Full Name & Arabic Honorific */}
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-3.5">
+          {profile.fullName || 'Ustadh Profile'}
+        </h1>
+        {profile.arabicName && (
+          <p className="text-sm font-arabic text-emerald-800 font-semibold mt-0.5">
+            {profile.arabicName}
+          </p>
+        )}
+
+        {/* Centered @username / Ustadh ID Badge & Active Status */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-2">
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+            ID: {profile.employeeCode || 'UST001'}
+          </span>
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+            ● {profile.status || 'Active'}
+          </span>
+          {profile.dateOfJoining && (
+            <span className="text-xs text-slate-400">Joined {profile.dateOfJoining}</span>
+          )}
+        </div>
+
+        {/* Prominent Edit Profile Button */}
+        <div className="flex items-center justify-center gap-2.5 mt-4">
+          <button
+            type="button"
+            onClick={() => {
+              const next = !isEditing;
+              setIsEditing(next);
+              if (next) {
+                setSearchParams({ edit: 'true' });
+              } else {
+                setSearchParams({});
+              }
+            }}
+            className="px-5 py-2.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-2 transition cursor-pointer shadow-xs min-h-[40px]"
+          >
+            <User className="w-3.5 h-3.5 text-[#37C6A3]" />
+            <span>{isEditing ? 'Close Profile Editor' : 'Edit Profile'}</span>
+          </button>
+          <button
+            type="button"
+            disabled={isUploadingPhoto}
+            onClick={() => fileInputRef.current?.click()}
+            className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer shadow-xs min-h-[40px]"
+          >
+            <Camera className="w-3.5 h-3.5 text-[#0D9488]" />
+            <span>{isUploadingPhoto ? 'Uploading...' : 'Change Photo'}</span>
+          </button>
+        </div>
+
+        {photoUploadError && (
+          <p className="text-xs text-rose-600 font-medium mt-2">
+            {photoUploadError}
+          </p>
+        )}
+
+        {/* Profile Completion Indicator Pill */}
+        <div className="mt-5 p-3 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-xs shrink-0">
+              {profile.profileCompletionPercentage}%
+            </div>
+            <div>
+              <div className="text-xs font-bold text-slate-800">
+                Institutional Profile Completion
+              </div>
+              <div className="text-[11px] text-slate-500">
+                {profile.profileCompletionPercentage >= 100
+                  ? 'All core faculty particulars are verified and 100% complete.'
+                  : 'You may update civil details or add emergency contacts.'}
+              </div>
+            </div>
           </div>
-          <div className="w-48 bg-slate-200 rounded-full h-2 overflow-hidden mb-2">
+          <div className="w-full sm:w-44 bg-slate-200 rounded-full h-2 overflow-hidden shrink-0">
             <div
-              className="bg-[#0D9488] h-2 rounded-full transition-all duration-300"
+              className="bg-[#0D9488] h-2 rounded-full transition-all duration-500"
               style={{ width: `${profile.profileCompletionPercentage}%` }}
             />
           </div>
-          <span className="text-[10px] text-slate-500">
-            Completion is <span className="font-bold text-slate-700">optional</span>. You may skip and complete later.
-          </span>
+        </div>
+
+        {/* WhatsApp-Style Grouped Info Rows with Left Icon Badges */}
+        <div className="mt-6 border-t border-slate-100 pt-1 divide-y divide-slate-100 text-left">
+          {/* 1. About / Role */}
+          <div className="flex items-center gap-3.5 py-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <Briefcase className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">About / Role</div>
+              <div className="text-sm font-bold text-slate-900 mt-0.5 truncate">{profile.designation || 'Senior Faculty Member'}</div>
+            </div>
+          </div>
+
+          {/* 2. Department */}
+          <div className="flex items-center gap-3.5 py-3.5">
+            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <GraduationCap className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Department</div>
+              <div className="text-sm font-bold text-slate-900 mt-0.5 truncate">{profile.department || 'Department of Islamic Studies & Quranic Sciences'}</div>
+            </div>
+          </div>
+
+          {/* 3. Phone Number */}
+          <div className="flex items-center gap-3.5 py-3.5">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <Phone className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Phone Number</div>
+              <div className="text-sm font-bold text-slate-900 mt-0.5 font-mono">{profile.phone || 'Not Specified'}</div>
+            </div>
+          </div>
+
+          {/* 4. Email Address */}
+          <div className="flex items-center gap-3.5 py-3.5">
+            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <Mail className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Email Address</div>
+              <div className="text-sm font-bold text-slate-900 mt-0.5 truncate">{profile.email || 'Not Specified'}</div>
+            </div>
+          </div>
+
+          {/* 5. Residential Address */}
+          <div className="flex items-center gap-3.5 py-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <MapPin className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Residential Address</div>
+              <div className="text-sm font-bold text-slate-900 mt-0.5 break-words">{profile.residentialAddress || 'Not Specified'}</div>
+            </div>
+          </div>
+
+          {/* 6. Emergency Contact */}
+          <div className="flex items-center gap-3.5 py-3.5">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center shrink-0 shadow-2xs">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Emergency Contact</div>
+              <div className="text-sm font-bold text-slate-900 mt-0.5">
+                {profile.emergencyContact?.name || 'Primary Contact'}{' '}
+                <span className="text-xs text-slate-500 font-normal">({profile.emergencyContact?.relationship || 'Family'})</span>
+                {profile.emergencyContact?.phone ? (
+                  <span className="font-mono ml-2 text-slate-800 font-bold">• {profile.emergencyContact.phone}</span>
+                ) : null}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Save Success Toast */}
       {saveSuccess && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 flex items-center gap-2 animate-in fade-in">
+        <div className="max-w-3xl mx-auto p-3.5 bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-bold text-emerald-900 flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>Profile changes saved successfully.</span>
         </div>
       )}
 
       {/* 2. Interactive Navigation Tabs (Desktop Grid & Mobile Horizontal Scroll) */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs">
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer shrink-0 ${
-                  isActive
-                    ? 'bg-[#0F172A] text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#37C6A3]' : 'text-slate-400'}`} />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+      {isEditing && (
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs max-w-4xl mx-auto animate-in fade-in">
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+            {TABS.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer shrink-0 ${
+                    isActive
+                      ? 'bg-[#0F172A] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-[#37C6A3]' : 'text-slate-400'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 3. Tab Contents Form */}
-      <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-7 shadow-xs">
+      {/* 3. Credentials Summary when NOT Editing */}
+      {!isEditing && (
+        <div className="max-w-3xl mx-auto space-y-6">
+          {/* Academic Qualifications Card */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Academic Qualifications</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDegreeModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#37C6A3]" />
+                <span>Add Degree</span>
+              </button>
+            </div>
+            <div className="mt-4 space-y-3">
+              {(profile.academicQualifications || []).length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  No tertiary academic degrees recorded.
+                </div>
+              ) : (
+                profile.academicQualifications.map((aq) => (
+                  <div key={aq.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">{aq.degree}</div>
+                      <div className="text-xs text-slate-600 mt-0.5">{aq.institution} • {aq.year}</div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+                      {aq.gradeHonor || 'Verified'}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Traditional Sanads & Ijazahs Card */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center">
+                  <Award className="w-4 h-4" />
+                </div>
+                <h3 className="text-sm font-bold text-slate-900">Professional Sanads & Ijazahs</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSanadModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#37C6A3]" />
+                <span>Add Sanad</span>
+              </button>
+            </div>
+            <div className="mt-4 space-y-3">
+              {(profile.professionalQualifications || []).length === 0 ? (
+                <div className="p-4 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                  No traditional sanads or ijazahs on record.
+                </div>
+              ) : (
+                profile.professionalQualifications.map((pq) => (
+                  <div key={pq.id} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">{pq.title}</div>
+                      <div className="text-xs text-slate-600 mt-0.5">{pq.issuingBody} • {pq.year}</div>
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
+                      Authenticated
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Tab Contents Form (Visible when isEditing is true) */}
+      {isEditing && (
+      <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-7 shadow-xs max-w-4xl mx-auto animate-in fade-in">
         {/* Tab 1: Personal Information */}
         {activeTab === 'personal' && (
           <div className="space-y-6">
@@ -1103,6 +1296,16 @@ export default function ProfilePage() {
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
+              type="button"
+              onClick={() => {
+                setIsEditing(false);
+                setSearchParams({});
+              }}
+              className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-xs transition cursor-pointer"
+            >
+              Done Editing
+            </button>
+            <button
               type="submit"
               disabled={isSaving}
               className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-slate-800 text-white font-bold text-xs flex items-center justify-center gap-2 transition shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1113,6 +1316,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </form>
+      )}
 
       {/* Upload Document Modal */}
       {uploadModalOpen && (

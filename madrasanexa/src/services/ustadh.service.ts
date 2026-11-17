@@ -22,6 +22,8 @@ export interface UstadhItem {
   isActive: boolean;
   notes?: string | null;
   activeScheduleCount?: number;
+  userId?: string | null;
+  hasPortalAccess?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -452,4 +454,37 @@ export function maskEmail(email?: string | null): string {
   const [name, domain] = parts;
   const visible = name.slice(0, 3);
   return `${visible}***@${domain}`;
+}
+
+export interface CreatePortalAccountPayload {
+  email?: string;
+  password?: string;
+  mustChangePassword?: boolean;
+}
+
+export interface CreatePortalAccountResponse {
+  success: boolean;
+  message: string;
+  data: {
+    ustadh: UstadhItem;
+    user: {
+      id: string;
+      email: string;
+      name: string;
+      role: string;
+      mustChangePassword: boolean;
+      temporaryPassword?: string;
+    };
+  };
+}
+
+export async function createTeacherPortalAccount(
+  ustadhId: string,
+  payload: CreatePortalAccountPayload = {}
+): Promise<CreatePortalAccountResponse> {
+  const res = await apiClient.post<CreatePortalAccountResponse>(
+    `/madrasa-admin/ustadhs/${ustadhId}/portal-account`,
+    payload
+  );
+  return res.data;
 }

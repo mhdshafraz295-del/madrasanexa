@@ -27,10 +27,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
+  QrCode,
 } from 'lucide-react';
+import { ClassroomQrManagementTab } from '../../components/classroom/ClassroomQrManagementTab';
 
 export default function ClassesPage() {
-  const [activeTab, setActiveTab] = useState<'CLASSES' | 'SECTIONS'>('CLASSES');
+  const [activeTab, setActiveTab] = useState<'CLASSES' | 'SECTIONS' | 'CLASSROOMS'>('CLASSES');
 
   // ==========================================
   // CLASSES STATE
@@ -379,7 +381,7 @@ export default function ClassesPage() {
             <Plus className="w-4 h-4" />
             <span>Add New Class</span>
           </button>
-        ) : (
+        ) : activeTab === 'SECTIONS' ? (
           <button
             onClick={handleOpenCreateSectionModal}
             className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#08483A] hover:bg-[#06382d] text-white font-semibold text-xs rounded-xl shadow-xs transition cursor-pointer shrink-0"
@@ -387,7 +389,7 @@ export default function ClassesPage() {
             <Plus className="w-4 h-4" />
             <span>Add Academic Section</span>
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* Main Tab Navigation */}
@@ -414,6 +416,18 @@ export default function ClassesPage() {
         >
           <Layers className="w-4 h-4 text-[#08483A]" />
           <span>Academic Sections ({totalSections || activeSectionsList.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('CLASSROOMS')}
+          className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition flex items-center gap-2 border-b-2 cursor-pointer whitespace-nowrap shrink-0 ${
+            activeTab === 'CLASSROOMS'
+              ? 'text-[#08483A] border-[#08483A] bg-white shadow-xs'
+              : 'text-[#5B6B7F] border-transparent hover:text-[#0F172A]'
+          }`}
+        >
+          <QrCode className="w-4 h-4 text-[#37C6A3]" />
+          <span>Classrooms & QR Plaques</span>
         </button>
       </div>
 
@@ -991,6 +1005,13 @@ export default function ClassesPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 3: CLASSROOM QR PLAQUE MANAGEMENT */}
+      {/* ========================================================================= */}
+      {activeTab === 'CLASSROOMS' && (
+        <ClassroomQrManagementTab />
       )}
 
       {/* ========================================================================= */}

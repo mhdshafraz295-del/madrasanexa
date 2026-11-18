@@ -3661,6 +3661,17 @@ export const apiCreateAdmissionPeriod = async (
   return response.data.data;
 };
 
+export const apiUpdateAdmissionPeriod = async (
+  id: string,
+  payload: Partial<Omit<AdmissionPeriodData, 'id' | 'totalApplications' | 'createdAt' | 'updatedAt'>>
+): Promise<AdmissionPeriodData> => {
+  const response = await apiClient.patch<ApiResponse<AdmissionPeriodData>>(
+    `/madrasa-admin/admissions/periods/${id}`,
+    payload
+  );
+  return response.data.data;
+};
+
 export const apiToggleAdmissionPeriod = async (id: string): Promise<AdmissionPeriodData> => {
   const response = await apiClient.patch<ApiResponse<AdmissionPeriodData>>(
     `/madrasa-admin/admissions/periods/${id}/toggle`

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   apiListAdmissionPeriods,
   apiCreateAdmissionPeriod,
+  apiUpdateAdmissionPeriod,
   apiToggleAdmissionPeriod,
   apiListStudentApplications,
   apiGetStudentApplication,
@@ -32,6 +33,7 @@ import {
   X,
   GraduationCap,
   CalendarClock,
+  Pencil,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { InterviewManagementSection } from '../../components/admissions/InterviewManagementSection';
@@ -62,6 +64,18 @@ export const AdmissionsManagementPage: React.FC = () => {
   const [newPeriodCapacity, setNewPeriodCapacity] = useState<string>('');
   const [newPeriodInstructions, setNewPeriodInstructions] = useState('');
   const [savingPeriod, setSavingPeriod] = useState(false);
+
+  // Edit Intake Cycle State
+  const [editingPeriod, setEditingPeriod] = useState<AdmissionPeriodData | null>(null);
+  const [editPeriodCode, setEditPeriodCode] = useState('');
+  const [editPeriodName, setEditPeriodName] = useState('');
+  const [editPeriodYear, setEditPeriodYear] = useState<number>(new Date().getFullYear());
+  const [editPeriodStart, setEditPeriodStart] = useState('');
+  const [editPeriodEnd, setEditPeriodEnd] = useState('');
+  const [editPeriodCapacity, setEditPeriodCapacity] = useState<string>('');
+  const [editPeriodInstructions, setEditPeriodInstructions] = useState('');
+  const [editPeriodIsOpen, setEditPeriodIsOpen] = useState(true);
+  const [savingEditPeriod, setSavingEditPeriod] = useState(false);
 
   // Selected Application for Review
   const [selectedAppId, setSelectedAppId] = useState<string | null>(null);
@@ -258,6 +272,57 @@ export const AdmissionsManagementPage: React.FC = () => {
         type: 'error',
         message: err.response?.data?.message || 'Failed to toggle intake period status.',
       });
+    }
+  };
+
+  const openEditPeriodModal = (period: AdmissionPeriodData) => {
+    setEditingPeriod(period);
+    setEditPeriodCode(period.code);
+    setEditPeriodName(period.name);
+    setEditPeriodYear(period.academicYear);
+    const formatDate = (val: string) => {
+      try {
+        const d = new Date(val);
+        if (isNaN(d.getTime())) return '';
+        return d.toISOString().split('T')[0];
+      } catch {
+        return '';
+      }
+    };
+    setEditPeriodStart(formatDate(period.startDate));
+    setEditPeriodEnd(formatDate(period.endDate));
+    setEditPeriodCapacity(period.capacity !== null && period.capacity !== undefined ? String(period.capacity) : '');
+    setEditPeriodInstructions(period.instructions || '');
+    setEditPeriodIsOpen(period.isOpen);
+  };
+
+  const handleUpdatePeriod = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingPeriod) return;
+    setSavingEditPeriod(true);
+    try {
+      const updated = await apiUpdateAdmissionPeriod(editingPeriod.id, {
+        code: editPeriodCode.trim().toUpperCase(),
+        name: editPeriodName.trim(),
+        academicYear: Number(editPeriodYear),
+        startDate: editPeriodStart,
+        endDate: editPeriodEnd,
+        capacity: editPeriodCapacity.trim() ? Number(editPeriodCapacity) : null,
+        instructions: editPeriodInstructions.trim() || null,
+        isOpen: editPeriodIsOpen,
+      });
+      setPeriods((prev) =>
+        prev.map((p) => (p.id === editingPeriod.id ? { ...p, ...updated, totalApplications: p.totalApplications } : p))
+      );
+      setEditingPeriod(null);
+      setFeedback({ type: 'success', message: `Intake cycle "${updated.name}" updated successfully.` });
+    } catch (err: any) {
+      setFeedback({
+        type: 'error',
+        message: err.response?.data?.message || 'Failed to update intake cycle.',
+      });
+    } finally {
+      setSavingEditPeriod(false);
     }
   };
 
@@ -643,14 +708,23 @@ export const AdmissionsManagementPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="pt-2">
+                  <div className="pt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEditPeriodModal(period)}
+                      className="border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/60 text-slate-700 hover:text-emerald-700 rounded-xl px-3 py-2 text-xs font-semibold transition-all inline-flex items-center justify-center gap-1.5 shrink-0"
+                      title="Edit intake cycle details"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>Edit</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => {
                         setPeriodFilter(period.id);
                         setActiveTab('applications');
                       }}
-                      className="w-full inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors border border-slate-200/60"
+                      className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors border border-slate-200/60"
                     >
                       <span>View Applications</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -1114,6 +1188,189 @@ export const AdmissionsManagementPage: React.FC = () => {
                     </>
                   ) : (
                     <span>Create Intake</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Intake Cycle */}
+      {editingPeriod && (
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-7 space-y-4 shadow-xl border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base leading-tight">Edit Intake Cycle</h3>
+                  <p className="text-[11px] text-slate-400 font-medium">Update cycle parameters, schedule, or acceptance status</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingPeriod(null)}
+                className="w-7 h-7 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdatePeriod} className="space-y-3.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                    Period Code *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editPeriodCode}
+                    onChange={(e) => setEditPeriodCode(e.target.value)}
+                    placeholder="e.g. INTAKE-2026-01"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs uppercase font-mono font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                    Academic Year *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    value={editPeriodYear}
+                    onChange={(e) => setEditPeriodYear(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                  Intake Title / Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editPeriodName}
+                  onChange={(e) => setEditPeriodName(e.target.value)}
+                  placeholder="e.g. Primary Islamic Studies Intake 2026"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                    Start Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={editPeriodStart}
+                    onChange={(e) => setEditPeriodStart(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                    End Date *
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={editPeriodEnd}
+                    onChange={(e) => setEditPeriodEnd(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1.5">
+                  Intake Status
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditPeriodIsOpen(true)}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
+                      editPeriodIsOpen
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${editPeriodIsOpen ? 'bg-emerald-600' : 'bg-slate-300'}`} />
+                    <span>Open (Accepting)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditPeriodIsOpen(false)}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-semibold border transition-all ${
+                      !editPeriodIsOpen
+                        ? 'bg-amber-50 border-amber-500 text-amber-800 shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${!editPeriodIsOpen ? 'bg-amber-600' : 'bg-slate-300'}`} />
+                    <span>Closed</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                  Student Capacity Limit (Optional)
+                </label>
+                <input
+                  type="number"
+                  value={editPeriodCapacity}
+                  onChange={(e) => setEditPeriodCapacity(e.target.value)}
+                  placeholder="e.g. 50 (leave empty for unlimited)"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                  Public Instructions / Guidelines
+                </label>
+                <textarea
+                  rows={2}
+                  value={editPeriodInstructions}
+                  onChange={(e) => setEditPeriodInstructions(e.target.value)}
+                  placeholder="e.g. Please bring original birth certificates for in-person review."
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  disabled={savingEditPeriod}
+                  onClick={() => setEditingPeriod(null)}
+                  className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEditPeriod}
+                  className="w-full sm:w-auto inline-flex items-center justify-center space-x-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm disabled:opacity-50 transition-colors"
+                >
+                  {savingEditPeriod ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Save Changes</span>
+                    </>
                   )}
                 </button>
               </div>

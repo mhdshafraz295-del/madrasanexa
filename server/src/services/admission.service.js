@@ -570,6 +570,106 @@ export async function toggleAdmissionPeriod(madrasaId, periodId, userId = null) 
 }
 
 /**
+ * Admin: Updates an existing admission intake period.
+ */
+export async function updateAdmissionPeriod(madrasaId, periodId, data, userId = null) {
+  const period = await prisma.admissionPeriod.findFirst({
+    where: { id: periodId, madrasaId },
+  });
+
+  if (!period) {
+    throw new NotFoundError('Admission period not found.');
+  }
+
+  const updateData = {};
+
+  // Resolve title/name
+  const resolvedName = data.name !== undefined ? data.name : data.title;
+  if (resolvedName !== undefined) {
+    updateData.name = resolvedName.trim();
+  }
+
+  // Resolve code
+  if (data.code !== undefined) {
+    const code = data.code.trim().toUpperCase();
+    const targetYear = data.academicYear !== undefined ? data.academicYear : period.academicYear;
+    const existingCode = await prisma.admissionPeriod.findFirst({
+      where: {
+        madrasaId,
+        academicYear: targetYear,
+        code,
+        id: { not: periodId },
+      },
+    });
+    if (existingCode) {
+      throw new ConflictError(
+        `An intake period with code "${code}" already exists for academic year ${targetYear}.`
+      );
+    }
+    updateData.code = code;
+  }
+
+  if (data.academicYear !== undefined) {
+    updateData.academicYear = data.academicYear;
+  }
+
+  const startDate = data.startDate ? new Date(data.startDate) : period.startDate;
+  const endDate = data.endDate ? new Date(data.endDate) : period.endDate;
+
+  if (endDate < startDate) {
+    throw new BadRequestError('End date must be on or after start date.');
+  }
+
+  if (data.startDate !== undefined) {
+    updateData.startDate = startDate;
+  }
+  if (data.endDate !== undefined) {
+    updateData.endDate = endDate;
+  }
+
+  // Resolve isOpen vs status
+  if (data.isOpen !== undefined) {
+    updateData.isOpen = Boolean(data.isOpen);
+  } else if (data.status !== undefined) {
+    updateData.isOpen = data.status === 'OPEN';
+  }
+
+  // Resolve instructions vs description
+  const resolvedInstructions = data.instructions !== undefined ? data.instructions : data.description;
+  if (resolvedInstructions !== undefined) {
+    updateData.instructions = resolvedInstructions ? resolvedInstructions.trim() : null;
+  }
+
+  // Resolve capacity vs capacityLimit vs maxCapacity
+  const resolvedCapacity =
+    data.capacity !== undefined
+      ? data.capacity
+      : data.capacityLimit !== undefined
+      ? data.capacityLimit
+      : data.maxCapacity;
+
+  if (resolvedCapacity !== undefined) {
+    updateData.capacity = resolvedCapacity ? Number(resolvedCapacity) : null;
+  }
+
+  const updated = await prisma.admissionPeriod.update({
+    where: { id: period.id },
+    data: updateData,
+  });
+
+  if (userId) {
+    await logTenantActivity({
+      madrasaId,
+      userId,
+      action: 'UPDATE_ADMISSION_PERIOD',
+      details: `Updated admission period "${updated.name}" (${updated.code}).`,
+    });
+  }
+
+  return updated;
+}
+
+/**
  * Admin: Lists student applications with status filtering, search, and pagination.
  */
 export async function listApplications(madrasaId, query = {}) {

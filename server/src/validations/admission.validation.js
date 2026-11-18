@@ -32,6 +32,56 @@ export const createAdmissionPeriodSchema = z.object({
   path: ['endDate'],
 });
 
+export const updateAdmissionPeriodSchema = z.object({
+  code: z
+    .string()
+    .min(1, 'Period code is required.')
+    .max(50, 'Code cannot exceed 50 characters.')
+    .regex(/^[A-Za-z0-9_-]+$/, 'Code can only contain letters, numbers, hyphens, and underscores.')
+    .transform((val) => val.trim().toUpperCase())
+    .optional(),
+  name: z
+    .string()
+    .min(2, 'Period name must be at least 2 characters.')
+    .max(191, 'Name cannot exceed 191 characters.')
+    .transform((val) => val.trim())
+    .optional(),
+  title: z
+    .string()
+    .min(2, 'Period title must be at least 2 characters.')
+    .max(191, 'Title cannot exceed 191 characters.')
+    .transform((val) => val.trim())
+    .optional(),
+  academicYear: z
+    .coerce
+    .number()
+    .int('Academic year must be an integer.')
+    .min(2000, 'Academic year must be 2000 or later.')
+    .max(2100, 'Academic year must be 2100 or earlier.')
+    .optional(),
+  startDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Valid start date is required.',
+  }).optional(),
+  endDate: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Valid end date is required.',
+  }).optional(),
+  isOpen: z.boolean().optional(),
+  status: z.enum(['OPEN', 'CLOSED', 'UPCOMING']).optional(),
+  instructions: z.string().max(2000, 'Instructions cannot exceed 2000 characters.').optional().nullable(),
+  description: z.string().max(2000, 'Description cannot exceed 2000 characters.').optional().nullable(),
+  capacity: z.coerce.number().int().positive('Capacity must be a positive integer.').optional().nullable(),
+  capacityLimit: z.coerce.number().int().positive('Capacity limit must be a positive integer.').optional().nullable(),
+  maxCapacity: z.coerce.number().int().positive('Max capacity must be a positive integer.').optional().nullable(),
+}).refine((data) => {
+  if (data.startDate && data.endDate) {
+    return new Date(data.endDate) >= new Date(data.startDate);
+  }
+  return true;
+}, {
+  message: 'End date must be on or after start date.',
+  path: ['endDate'],
+});
+
 export const submitApplicationSchema = z.object({
   admissionPeriodId: z.string().min(1, 'Admission intake period is required.'),
   applicantName: z

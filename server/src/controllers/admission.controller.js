@@ -2,6 +2,7 @@ import multer from 'multer';
 import * as admissionService from '../services/admission.service.js';
 import {
   createAdmissionPeriodSchema,
+  updateAdmissionPeriodSchema,
   submitApplicationSchema,
   reviewApplicationSchema,
   convertApplicationSchema,
@@ -147,6 +148,25 @@ export async function togglePeriod(req, res, next) {
     return res.status(200).json({
       success: true,
       message: `Intake period is now ${updated.isOpen ? 'open' : 'closed'}.`,
+      data: updated,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function updatePeriod(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const userId = req.auth?.userId;
+    const { id } = req.params;
+    const validated = updateAdmissionPeriodSchema.parse(req.body);
+
+    const updated = await admissionService.updateAdmissionPeriod(madrasaId, id, validated, userId);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Intake cycle updated successfully.',
       data: updated,
     });
   } catch (error) {

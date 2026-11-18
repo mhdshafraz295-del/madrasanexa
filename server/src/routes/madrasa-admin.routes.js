@@ -51,6 +51,7 @@ import {
 import {
   listPeriods,
   createPeriod,
+  updatePeriod,
   togglePeriod,
   listApplications,
   getApplication,
@@ -408,6 +409,8 @@ router.post('/portal-cms/theme/discard', discardTheme);
 // Online Admissions & Applications Management
 router.get('/admissions/periods', listPeriods);
 router.post('/admissions/periods', createPeriod);
+router.patch('/admissions/periods/:id', updatePeriod);
+router.patch('/admissions/intake-cycles/:id', updatePeriod);
 router.patch('/admissions/periods/:id/toggle', togglePeriod);
 router.get('/admissions/applications', listApplications);
 router.get('/admissions/applications/:id', getApplication);

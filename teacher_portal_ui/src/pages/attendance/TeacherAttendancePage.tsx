@@ -329,7 +329,6 @@ export default function TeacherAttendancePage() {
                   type="button"
                   onClick={() => {
                     setActiveScannerTab('camera');
-                    if (!cameraActive) startLiveCamera();
                   }}
                   className={`px-3 py-1 rounded-lg font-bold transition ${
                     activeScannerTab === 'camera'
@@ -357,7 +356,12 @@ export default function TeacherAttendancePage() {
             </div>
 
             {/* Camera Viewfinder Box */}
-            <div className="relative aspect-4/3 w-full rounded-2xl bg-slate-950 overflow-hidden flex flex-col items-center justify-center p-6 text-center shadow-inner border-2 border-slate-800">
+            <div
+              onClick={activeScannerTab === 'camera' && !cameraActive ? startLiveCamera : undefined}
+              className={`relative aspect-4/3 w-full rounded-2xl bg-slate-950 overflow-hidden flex flex-col items-center justify-center p-6 text-center shadow-inner border-2 border-slate-800 transition-all ${
+                activeScannerTab === 'camera' && !cameraActive ? 'cursor-pointer hover:border-slate-700' : ''
+              }`}
+            >
               {/* Real Video Stream when Active */}
               <video
                 ref={videoRef}
@@ -395,22 +399,48 @@ export default function TeacherAttendancePage() {
                 }
               `}</style>
 
-              {/* Scanning Laser Beam (Continuous Moving Sweep) */}
-              {scanState === 'idle' && (
+              {/* Scanning Laser Beam (Continuous Moving Sweep ONLY when camera is actively streaming) */}
+              {scanState === 'idle' && cameraActive && activeScannerTab === 'camera' && (
                 <div className="animate-classroom-scan-laser" />
               )}
 
-              {/* Viewport Overlay Content (Visible even when live camera streams) */}
-              {scanState === 'idle' && (
-                <div className="z-10 text-slate-300 max-w-xs bg-slate-950/75 backdrop-blur-xs p-4 rounded-2xl border border-slate-800/80 shadow-lg">
-                  <div className="w-12 h-12 rounded-xl bg-slate-900/90 border border-slate-700 flex items-center justify-center mx-auto mb-2.5 shadow-md">
-                    <QrCode className="w-6 h-6 text-[#10B981]" />
+              {/* Idle State: Camera Standby */}
+              {scanState === 'idle' && (!cameraActive || activeScannerTab !== 'camera') && (
+                <div className="z-10 text-slate-300 max-w-xs bg-slate-950/85 backdrop-blur-xs p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center mb-3 text-[#10B981] shadow-lg">
+                    <Camera className="w-7 h-7" />
                   </div>
                   <h3 className="text-sm font-bold text-white mb-1">
+                    Classroom QR Plaque Scanner
+                  </h3>
+                  <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                    Camera is currently in standby. Click below to activate your camera and scan the room plaque for <strong>{assignedRoom.name}</strong>.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startLiveCamera();
+                    }}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#0D9488] to-[#10B981] hover:from-[#0F766E] hover:to-[#059669] text-white text-xs font-bold rounded-xl shadow-md transition transform active:scale-95 cursor-pointer"
+                  >
+                    <Video className="w-4 h-4" />
+                    <span>Start Camera Scanner</span>
+                  </button>
+                </div>
+              )}
+
+              {/* Active Streaming Overlay */}
+              {scanState === 'idle' && cameraActive && activeScannerTab === 'camera' && (
+                <div className="z-10 text-slate-300 max-w-xs bg-slate-950/75 backdrop-blur-xs p-3.5 rounded-2xl border border-slate-800/80 shadow-lg pointer-events-none">
+                  <div className="w-10 h-10 rounded-xl bg-slate-900/90 border border-slate-700 flex items-center justify-center mx-auto mb-2 shadow-md">
+                    <QrCode className="w-5 h-5 text-[#10B981]" />
+                  </div>
+                  <h3 className="text-xs font-bold text-white mb-0.5">
                     Align Classroom QR Plaque
                   </h3>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Point camera toward the permanent acrylic QR plaque affixed at the door of <strong>{assignedRoom.name}</strong>.
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Point camera toward permanent acrylic QR plaque for <strong>{assignedRoom.name}</strong>.
                   </p>
                 </div>
               )}

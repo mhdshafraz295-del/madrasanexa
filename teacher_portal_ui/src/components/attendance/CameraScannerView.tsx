@@ -362,7 +362,12 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
       )}
 
       {/* Viewfinder Container */}
-      <div className="relative w-full aspect-4/3 sm:aspect-16/9 min-h-[220px] max-h-[320px] sm:max-h-[360px] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-800 shadow-inner">
+      <div
+        onClick={!isActive && !disabled && !isStarting ? startCamera : undefined}
+        className={`relative w-full aspect-4/3 sm:aspect-16/9 min-h-[220px] max-h-[320px] sm:max-h-[360px] bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center border border-slate-800 shadow-inner transition-colors ${
+          !isActive && !disabled && !isStarting ? 'cursor-pointer hover:border-slate-700' : ''
+        }`}
+      >
         <video
           ref={videoRef}
           playsInline
@@ -393,14 +398,30 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
           </div>
         ) : (
           /* Idle Viewfinder Placeholder */
-          <div className="text-center p-6 space-y-2 text-slate-500">
-            <Video className="w-10 h-10 mx-auto text-slate-600 stroke-[1.5]" />
-            <p className="text-xs font-semibold text-slate-400">
-              Camera feed is currently inactive.
-            </p>
-            <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
-              Click &quot;Start Camera&quot; to scan student ID cards using your device camera.
-            </p>
+          <div className="text-center p-6 space-y-3 text-slate-500 flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+              <Camera className="w-6 h-6 text-[#37C6A3]" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-slate-300">
+                Camera Scanner is Inactive
+              </p>
+              <p className="text-[11px] text-slate-400 max-w-sm mx-auto mt-0.5">
+                Click below to activate device camera and scan student ID cards.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={disabled || isStarting}
+              onClick={(e) => {
+                e.stopPropagation();
+                startCamera();
+              }}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0D9488] to-[#10B981] hover:from-[#0F766E] hover:to-[#059669] disabled:bg-slate-800 text-white disabled:text-slate-500 text-xs font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer active:scale-95"
+            >
+              <Camera className="w-4 h-4 text-emerald-100" />
+              <span>{isStarting ? 'Starting...' : 'Start Camera Scanner'}</span>
+            </button>
           </div>
         )}
       </div>

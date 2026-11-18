@@ -1069,15 +1069,17 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
                               </span>
                             </div>
 
-                            <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
-                              {renderVerificationPill(s)}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-end gap-2 sm:gap-2.5 w-full sm:w-auto pt-2 sm:pt-0 border-t border-slate-100 sm:border-0">
+                              <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end">
+                                {renderVerificationPill(s)}
+                              </div>
 
                               {/* Status Toggle Buttons */}
-                              <div className="flex items-center gap-1.5 shrink-0">
+                              <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center sm:gap-1.5 shrink-0">
                                 <button
                                   type="button"
                                   onClick={() => handleStatusChange(s.scheduleId, 'PRESENT')}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                     s.status === 'PRESENT'
                                       ? 'bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-600/30'
                                       : 'bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200'
@@ -1089,7 +1091,7 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleStatusChange(s.scheduleId, 'ABSENT')}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                     s.status === 'ABSENT'
                                       ? 'bg-rose-600 text-white shadow-xs ring-2 ring-rose-600/30'
                                       : 'bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-700 border border-slate-200'
@@ -1210,15 +1212,17 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
                               </span>
                             </div>
 
-                            <div className="flex items-center justify-between sm:justify-end gap-2.5 w-full sm:w-auto">
-                              {renderVerificationPill(s)}
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between sm:justify-end gap-2 sm:gap-2.5 w-full sm:w-auto pt-2 sm:pt-0 border-t border-slate-100 sm:border-0">
+                              <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end">
+                                {renderVerificationPill(s)}
+                              </div>
 
                               {/* Status Toggle Buttons */}
-                              <div className="flex items-center gap-1.5 shrink-0">
+                              <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:items-center sm:gap-1.5 shrink-0">
                                 <button
                                   type="button"
                                   onClick={() => handleStatusChange(s.scheduleId, 'PRESENT')}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                     s.status === 'PRESENT'
                                       ? 'bg-emerald-600 text-white shadow-xs ring-2 ring-emerald-600/30'
                                       : 'bg-white text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200'
@@ -1230,7 +1234,7 @@ export const StaffAttendanceTab: React.FC<StaffAttendanceTabProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => handleStatusChange(s.scheduleId, 'ABSENT')}
-                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                                     s.status === 'ABSENT'
                                       ? 'bg-rose-600 text-white shadow-xs ring-2 ring-rose-600/30'
                                       : 'bg-white text-slate-600 hover:bg-rose-50 hover:text-rose-700 border border-slate-200'

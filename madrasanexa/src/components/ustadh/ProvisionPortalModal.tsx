@@ -169,29 +169,24 @@ export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
     currentMadrasaCode
   )}&email=${encodeURIComponent(activeLoginId)}`;
 
-  // Pure ASCII String.fromCodePoint emoji constants (100% immune to file encoding corruption)
-  const MOSQUE = String.fromCodePoint(0x1F54C); // 🕌
-  const SCHOOL = String.fromCodePoint(0x1F3EB); // 🏫
-  const USER_ICON = String.fromCodePoint(0x1F464); // 👤
-  const MAIL_ICON = String.fromCodePoint(0x1F4E7); // 📧
-  const KEY_ICON = String.fromCodePoint(0x1F511); // 🔑
-  const LINK_ICON = String.fromCodePoint(0x1F517); // 🔗
-  const WARN_ICON = String.fromCodePoint(0x26A0, 0xFE0F); // ⚠️
+  // Basic Multilingual Plane (BMP) typographic bullets (100% immune to Windows URL redirect surrogate corruption)
+  const BULLET_STAR = '\u2726'; // ✦
+  const BULLET_ITEM = '\u25B8'; // ▸
 
-  // Formatted WhatsApp Welcome Message (starts with English/Emoji header to guarantee strict LTR bubble direction on Web & Mobile)
+  // Formatted WhatsApp Welcome Message (BMP characters only - guaranteed zero replacement corruption on Windows)
   const formattedWhatsAppMessage = [
-    `${MOSQUE} *Assalamu Alaikum wa Rahmatullahi wa Barakatuh*`,
+    `${BULLET_STAR} *Assalamu Alaikum wa Rahmatullahi wa Barakatuh*`,
     `Welcome Ustadh *${ustadh.fullName}* to *${currentMadrasaName}* Teacher Portal.`,
     ``,
     `Here are your login credentials:`,
-    `${SCHOOL} *Madrasa Code:* ${currentMadrasaCode}`,
-    `${USER_ICON} *Staff ID:* ${ustadh.ustadhCode}`,
-    `${MAIL_ICON} *Login Email / ID:* ${activeLoginId}`,
-    `${KEY_ICON} *Temporary Password:* *${activeOtp}*`,
-    `${LINK_ICON} *Direct Login Link:*`,
+    `${BULLET_ITEM} *Madrasa Code:* ${currentMadrasaCode}`,
+    `${BULLET_ITEM} *Staff ID:* ${ustadh.ustadhCode}`,
+    `${BULLET_ITEM} *Login Email / ID:* ${activeLoginId}`,
+    `${BULLET_ITEM} *Temporary Password:* *${activeOtp}*`,
+    `${BULLET_ITEM} *Direct Login Link:*`,
     `${liveLoginUrl}`,
     ``,
-    `${WARN_ICON} _Please log in and update your password upon your first sign-in._`,
+    `${BULLET_STAR} _Please log in and update your password upon your first sign-in._`,
   ].join('\n');
 
   // WhatsApp phone digits

@@ -315,22 +315,22 @@ export default function TeacherAttendancePage() {
         {/* Left Column (7 cols): Camera Viewport & Simulated Controls */}
         <div className="lg:col-span-7 space-y-4">
           <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-100 mb-4 gap-3">
-              <div className="flex items-center gap-2">
-                <Camera className="w-4 h-4 text-[#0D9488]" />
-                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+            <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-slate-100 mb-4 gap-2.5">
+              <div className="flex items-center gap-2 min-w-0">
+                <Camera className="w-4 h-4 text-[#0D9488] shrink-0" />
+                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider truncate">
                   Classroom Scanner Viewport
                 </h2>
               </div>
 
               {/* Mode Switcher */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs">
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs shrink-0">
                 <button
                   type="button"
                   onClick={() => {
                     setActiveScannerTab('camera');
                   }}
-                  className={`px-3 py-1 rounded-lg font-bold transition ${
+                  className={`px-3 py-1 rounded-lg font-bold transition cursor-pointer ${
                     activeScannerTab === 'camera'
                       ? 'bg-white text-[#0D9488] shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
@@ -344,7 +344,7 @@ export default function TeacherAttendancePage() {
                     setActiveScannerTab('simulator');
                     stopLiveCamera();
                   }}
-                  className={`px-3 py-1 rounded-lg font-bold transition ${
+                  className={`px-3 py-1 rounded-lg font-bold transition cursor-pointer ${
                     activeScannerTab === 'simulator'
                       ? 'bg-white text-[#0D9488] shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
@@ -404,29 +404,18 @@ export default function TeacherAttendancePage() {
                 <div className="animate-classroom-scan-laser" />
               )}
 
-              {/* Idle State: Camera Standby */}
+              {/* Idle State: Clean Centered Standby Viewport (NO clipped buttons inside) */}
               {scanState === 'idle' && (!cameraActive || activeScannerTab !== 'camera') && (
-                <div className="z-10 text-slate-300 max-w-xs bg-slate-950/85 backdrop-blur-xs p-5 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center">
-                  <div className="w-14 h-14 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center mb-3 text-[#10B981] shadow-lg">
-                    <Camera className="w-7 h-7" />
+                <div className="z-10 text-slate-300 max-w-xs flex flex-col items-center justify-center p-2 pointer-events-none">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center mb-2.5 text-[#10B981] shadow-lg">
+                    <QrCode className="w-6 h-6" />
                   </div>
                   <h3 className="text-sm font-bold text-white mb-1">
                     Classroom QR Plaque Scanner
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                    Camera is currently in standby. Click below to activate your camera and scan the room plaque for <strong>{assignedRoom.name}</strong>.
+                  <p className="text-xs text-slate-400 leading-relaxed max-w-[260px]">
+                    Tap <strong className="text-emerald-300">Start Camera</strong> below to scan the plaque for <strong>{assignedRoom.name}</strong>.
                   </p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startLiveCamera();
-                    }}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-[#0D9488] to-[#10B981] hover:from-[#0F766E] hover:to-[#059669] text-white text-xs font-bold rounded-xl shadow-md transition transform active:scale-95 cursor-pointer"
-                  >
-                    <Video className="w-4 h-4" />
-                    <span>Start Camera Scanner</span>
-                  </button>
                 </div>
               )}
 
@@ -501,49 +490,38 @@ export default function TeacherAttendancePage() {
               )}
             </div>
 
-            {/* Live Camera Controls Bar */}
+            {/* Single Clean Primary Action Button & Subtle Manual Link */}
             {activeScannerTab === 'camera' && (
-              <div className="mt-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full sm:w-auto">
-                  {cameraActive ? (
-                    <button
-                      type="button"
-                      onClick={stopLiveCamera}
-                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg shadow-xs transition cursor-pointer"
-                    >
-                      <VideoOff className="w-3.5 h-3.5" />
-                      <span>Stop Camera</span>
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={startLiveCamera}
-                      className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0D9488] hover:bg-[#0F766E] text-white font-semibold rounded-lg shadow-xs transition cursor-pointer"
-                    >
-                      <Video className="w-3.5 h-3.5" />
-                      <span>Start Camera</span>
-                    </button>
-                  )}
+              <div className="mt-4 space-y-3">
+                {cameraActive ? (
+                  <button
+                    type="button"
+                    onClick={stopLiveCamera}
+                    className="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                  >
+                    <VideoOff className="w-4 h-4" />
+                    <span>Stop Camera</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={startLiveCamera}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#0D9488] to-[#10B981] hover:from-[#0F766E] hover:to-[#059669] active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  >
+                    <Video className="w-4 h-4" />
+                    <span>Start Camera</span>
+                  </button>
+                )}
 
+                {/* Consolidated Subtle Secondary Action Link */}
+                <div className="text-center">
                   <button
                     type="button"
                     onClick={() => setManualModalOpen(true)}
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg shadow-xs transition cursor-pointer"
+                    className="text-xs font-semibold text-slate-500 hover:text-[#0D9488] hover:underline transition cursor-pointer"
                   >
-                    <Keyboard className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Enter Plaque Code Manually</span>
+                    Camera unavailable? Enter Plaque Code Manually &rarr;
                   </button>
-                </div>
-
-                <div className="text-[11px] text-slate-500 font-medium">
-                  {cameraActive ? (
-                    <span className="text-emerald-700 flex items-center gap-1 font-semibold">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
-                      Streaming camera feed...
-                    </span>
-                  ) : (
-                    <span>Camera in standby mode</span>
-                  )}
                 </div>
               </div>
             )}
@@ -554,7 +532,7 @@ export default function TeacherAttendancePage() {
                 <button
                   type="button"
                   onClick={() => setManualModalOpen(true)}
-                  className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shrink-0"
+                  className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shrink-0 cursor-pointer"
                 >
                   Enter Code Manually
                 </button>
@@ -630,20 +608,6 @@ export default function TeacherAttendancePage() {
                 </div>
               </div>
             )}
-
-            {/* Manual Attendance Fallback Trigger */}
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-              <span className="text-slate-500">
-                Camera damaged or room relocated?
-              </span>
-              <button
-                type="button"
-                onClick={() => setManualModalOpen(true)}
-                className="text-xs font-bold text-[#0D9488] hover:text-[#0F766E] hover:underline cursor-pointer"
-              >
-                Use Manual Attendance Fallback →
-              </button>
-            </div>
           </div>
         </div>
 

@@ -397,31 +397,19 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
             </p>
           </div>
         ) : (
-          /* Idle Viewfinder Placeholder */
-          <div className="text-center p-6 space-y-3 text-slate-500 flex flex-col items-center justify-center">
-            <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400">
+          /* Idle Viewfinder Placeholder (Clean centered standby state with zero clipped/duplicate buttons) */
+          <div className="text-center p-5 space-y-2 text-slate-500 flex flex-col items-center justify-center pointer-events-none">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-[#10B981] shadow-lg mb-1">
               <Camera className="w-6 h-6 text-[#37C6A3]" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-300">
-                Camera Scanner is Inactive
+              <p className="text-xs font-bold text-slate-200">
+                Student ID Scanner Standby
               </p>
               <p className="text-[11px] text-slate-400 max-w-sm mx-auto mt-0.5">
-                Click below to activate device camera and scan student ID cards.
+                Tap &quot;Start Camera&quot; above to scan student ID cards using your device camera.
               </p>
             </div>
-            <button
-              type="button"
-              disabled={disabled || isStarting}
-              onClick={(e) => {
-                e.stopPropagation();
-                startCamera();
-              }}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#0D9488] to-[#10B981] hover:from-[#0F766E] hover:to-[#059669] disabled:bg-slate-800 text-white disabled:text-slate-500 text-xs font-bold flex items-center gap-2 shadow-md transition-all cursor-pointer active:scale-95"
-            >
-              <Camera className="w-4 h-4 text-emerald-100" />
-              <span>{isStarting ? 'Starting...' : 'Start Camera Scanner'}</span>
-            </button>
           </div>
         )}
       </div>

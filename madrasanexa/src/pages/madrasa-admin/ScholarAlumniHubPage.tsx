@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   Star,
 } from 'lucide-react';
+import { Pagination } from '../../components/common/Pagination';
 import {
   getAdminAlumniHub,
   toggleWebsiteVisibility,
@@ -51,6 +52,10 @@ export const ScholarAlumniHubPage: React.FC = () => {
   const [selectedClass, setSelectedClass] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Pagination State
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 9;
 
   // Toggling Website Visibility
   const [togglingVisibility, setTogglingVisibility] = useState(false);
@@ -109,6 +114,10 @@ export const ScholarAlumniHubPage: React.FC = () => {
   useEffect(() => {
     fetchHub();
   }, [selectedBatch, selectedClass, searchQuery]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, selectedBatch, selectedClass, selectedStatus, searchQuery]);
 
   const handleToggleWebsiteVisibility = async () => {
     if (!hubData || togglingVisibility) return;
@@ -354,6 +363,8 @@ export const ScholarAlumniHubPage: React.FC = () => {
     if (selectedStatus !== 'ALL' && item.academicStatus !== selectedStatus) return false;
     return true;
   });
+
+  const paginatedList = currentList.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -627,8 +638,9 @@ export const ScholarAlumniHubPage: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {currentList.map((item: AlumniScholarItem) => {
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedList.map((item: AlumniScholarItem) => {
             const initials = item.fullName
               .split(' ')
               .filter(Boolean)
@@ -799,6 +811,16 @@ export const ScholarAlumniHubPage: React.FC = () => {
             );
           })}
         </div>
+
+        <Pagination
+          currentPage={page}
+          totalItems={currentList.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          itemLabel="scholars"
+          className="mt-4 rounded-2xl border border-slate-200/90 shadow-2xs"
+        />
+      </>
       )}
 
       {/* Editor Modal (Add / Edit) */}

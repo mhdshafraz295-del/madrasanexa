@@ -24,6 +24,7 @@ import { attendanceHistoryApi, classesApi } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
 import EmptyState from '../../components/common/EmptyState';
+import Pagination from '../../components/common/Pagination';
 
 type DatePreset = 'All' | 'Today' | 'Yesterday' | '7days' | '30days';
 
@@ -34,9 +35,14 @@ export default function AttendanceHistoryPage() {
   const [classFilter, setClassFilter] = useState('All');
   const [subjectFilter, setSubjectFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedSessionDetail, setSelectedSessionDetail] = useState<HistoricalAttendanceSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [datePreset, classFilter, subjectFilter, searchQuery]);
 
   const loadHistory = async () => {
     setIsLoading(true);
@@ -359,7 +365,7 @@ export default function AttendanceHistoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredSessions.map((sess) => (
+                {filteredSessions.slice((page - 1) * 10, page * 10).map((sess) => (
                   <tr key={sess.id} className="hover:bg-slate-50/70 transition">
                     <td className="py-3.5 px-4 font-bold text-slate-900 whitespace-nowrap">
                       <div>{sess.date}</div>
@@ -409,6 +415,13 @@ export default function AttendanceHistoryPage() {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={page}
+              totalItems={filteredSessions.length}
+              pageSize={10}
+              onPageChange={setPage}
+              itemLabel="attendance sessions"
+            />
           </div>
         )}
       </div>

@@ -14,6 +14,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { alumniApi, TeacherAlumniItem, getScholarStatusInfo } from '../../services/api';
+import Pagination from '../../components/common/Pagination';
 
 export const TeacherAlumniPage: React.FC = () => {
   const [alumni, setAlumni] = useState<TeacherAlumniItem[]>([]);
@@ -24,6 +25,11 @@ export const TeacherAlumniPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBatch, setSelectedBatch] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, selectedBatch, selectedStatus]);
 
   // Modal
   const [activeProfile, setActiveProfile] = useState<TeacherAlumniItem | null>(null);
@@ -170,8 +176,9 @@ export const TeacherAlumniPage: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((item) => {
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filtered.slice((page - 1) * 9, page * 9).map((item) => {
             const initials = item.fullName
               .split(' ')
               .filter(Boolean)
@@ -291,6 +298,15 @@ export const TeacherAlumniPage: React.FC = () => {
             );
           })}
         </div>
+        <Pagination
+          currentPage={page}
+          totalItems={filtered.length}
+          pageSize={9}
+          onPageChange={setPage}
+          itemLabel="scholars"
+          className="mt-4 rounded-2xl border border-slate-200/90 shadow-2xs"
+        />
+      </>
       )}
 
       {/* Profile Modal */}

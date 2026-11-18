@@ -31,6 +31,7 @@ import {
 } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
+import Pagination from '../../components/common/Pagination';
 import { UsbScannerInput } from '../../components/attendance/UsbScannerInput';
 import { CameraScannerView } from '../../components/attendance/CameraScannerView';
 import {
@@ -66,6 +67,11 @@ export default function StudentAttendancePage() {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    setPage(1);
+  }, [categoryFilter, selectedClassId, statusFilter, searchQuery]);
 
   // Roster & Stats State
   const [roster, setRoster] = useState<DailyStudentItem[]>([]);
@@ -854,7 +860,7 @@ export default function StudentAttendancePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredRoster.map((student) => {
+              {filteredRoster.slice((page - 1) * 10, page * 10).map((student) => {
                 const isPresent = student.status === 'PRESENT';
                 return (
                   <tr key={student.id} className="hover:bg-slate-50/70 transition">
@@ -940,6 +946,13 @@ export default function StudentAttendancePage() {
               })}
             </tbody>
           </table>
+          <Pagination
+            currentPage={page}
+            totalItems={filteredRoster.length}
+            pageSize={10}
+            onPageChange={setPage}
+            itemLabel="students"
+          />
         </div>
       </div>
 

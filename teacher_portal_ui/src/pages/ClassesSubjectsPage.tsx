@@ -15,14 +15,20 @@ import { classesApi } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
+import Pagination from '../components/common/Pagination';
 
 export default function ClassesSubjectsPage() {
   const [classes, setClasses] = useState<AssignedClass[]>([]);
   const [selectedClass, setSelectedClass] = useState<AssignedClass | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTabFilter, setActiveTabFilter] = useState<string>('All');
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, activeTabFilter]);
 
   const loadClasses = async () => {
     setIsLoading(true);
@@ -182,8 +188,9 @@ export default function ClassesSubjectsPage() {
           description="Once the administration assigns weekly timetable slots to your profile, your cohorts will appear here."
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
-          {filteredClasses.map((cls) => {
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
+            {filteredClasses.slice((page - 1) * 6, page * 6).map((cls) => {
             const hasAttendance =
               cls.attendanceRate !== null &&
               cls.attendanceRate !== undefined &&
@@ -281,6 +288,15 @@ export default function ClassesSubjectsPage() {
             );
           })}
         </div>
+        <Pagination
+          currentPage={page}
+          totalItems={filteredClasses.length}
+          pageSize={6}
+          onPageChange={setPage}
+          itemLabel="assigned classes"
+          className="mt-4 rounded-2xl border border-slate-200/90 shadow-2xs"
+        />
+      </>
       )}
 
       {/* 4. Student Roster Modal / Drawer */}

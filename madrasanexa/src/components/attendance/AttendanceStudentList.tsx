@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   CheckCircle2,
@@ -8,10 +8,9 @@ import {
   FileSpreadsheet,
   Save,
   Loader2,
-  ChevronLeft,
-  ChevronRight,
   User,
 } from 'lucide-react';
+import { Pagination } from '../common/Pagination';
 import type { DailyStudentItem } from '../../services/attendance.service';
 
 interface AttendanceStudentListProps {
@@ -28,7 +27,7 @@ interface AttendanceStudentListProps {
   isExportingCsv?: boolean;
 }
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 15;
 
 export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
   students,
@@ -46,6 +45,10 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PRESENT' | 'ABSENT' | 'UNMARKED'>('ALL');
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   // Filtered students
   const filteredStudents = useMemo(() => {
@@ -65,7 +68,6 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
   }, [students, searchTerm, statusFilter]);
 
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / PAGE_SIZE));
   const paginatedStudents = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredStudents.slice(start, start + PAGE_SIZE);
@@ -335,38 +337,14 @@ export const AttendanceStudentList: React.FC<AttendanceStudentListProps> = ({
       </div>
 
       {/* Pagination & Bottom Summary */}
-      <div className="p-4 border-t border-stone-200/80 bg-stone-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500">
-        <div>
-          Showing {paginatedStudents.length > 0 ? (currentPage - 1) * PAGE_SIZE + 1 : 0} to{' '}
-          {Math.min(currentPage * PAGE_SIZE, filteredStudents.length)} of {filteredStudents.length} students
-          {filteredStudents.length !== students.length ? ` (filtered from ${students.length})` : ''}
-        </div>
-
-        {/* Page navigation */}
-        {totalPages > 1 && (
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              className="p-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-white disabled:opacity-40"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <span className="px-3 font-semibold text-stone-700">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              type="button"
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              className="p-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-white disabled:opacity-40"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filteredStudents.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+        itemLabel="students"
+        className="border-t border-stone-200/80 bg-stone-50/50"
+      />
     </div>
   );
 };

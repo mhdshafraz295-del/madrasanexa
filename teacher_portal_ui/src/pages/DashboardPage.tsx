@@ -20,6 +20,7 @@ import type { TeacherProfile, AssignedClass } from '../mock/teacherMockData';
 import { dashboardApi, profileApi, classesApi, DashboardData, resolveAssetUrl } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
+import Pagination from '../components/common/Pagination';
 import InstitutionalLiveClock from '../components/dashboard/InstitutionalLiveClock';
 import TeacherLivePollWidget from '../components/polls/TeacherLivePollWidget';
 
@@ -58,6 +59,7 @@ export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [profile, setProfile] = useState<TeacherProfile>(initialProfile);
   const [assignedClasses, setAssignedClasses] = useState<AssignedClass[]>([]);
+  const [cohortsPage, setCohortsPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState(false);
@@ -555,7 +557,7 @@ export default function DashboardPage() {
                   </td>
                 </tr>
               ) : (
-                assignedClasses.map((cls) => (
+                assignedClasses.slice((cohortsPage - 1) * 5, cohortsPage * 5).map((cls) => (
                   <tr key={cls.id} className="hover:bg-[#F8F7F3]/70 transition">
                     <td className="py-3.5 px-4 font-bold text-[#111827]">
                       <div>{cls.name}</div>
@@ -599,6 +601,13 @@ export default function DashboardPage() {
               )}
             </tbody>
           </table>
+          <Pagination
+            currentPage={cohortsPage}
+            totalItems={assignedClasses.length}
+            pageSize={5}
+            onPageChange={setCohortsPage}
+            itemLabel="cohorts"
+          />
         </div>
       </div>
     </div>

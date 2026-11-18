@@ -14,6 +14,7 @@ import type { TeacherNotification } from '../mock/teacherMockData';
 import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { EmptyState } from '../components/common/EmptyState';
+import Pagination from '../components/common/Pagination';
 
 type CategoryFilter = 'All' | 'Unread' | 'Urgent' | 'General' | 'Schedule' | 'Exam' | 'Payroll' | 'Event';
 
@@ -22,7 +23,12 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('All');
+  const [page, setPage] = useState(1);
   const [selectedNotif, setSelectedNotif] = useState<TeacherNotification | null>(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [categoryFilter]);
 
   const loadNotifications = async () => {
     try {
@@ -179,7 +185,8 @@ export default function NotificationsPage() {
             />
           </div>
         ) : (
-          filteredNotifications.map((notif) => {
+          <>
+            {filteredNotifications.slice((page - 1) * 8, page * 8).map((notif) => {
             const normPriority = String(notif.priority || 'NORMAL').toUpperCase();
             const isUrgent = normPriority === 'URGENT' || normPriority === 'HIGH';
             const isImportant = normPriority === 'IMPORTANT';
@@ -258,7 +265,16 @@ export default function NotificationsPage() {
                 </div>
               </div>
             );
-          })
+          })}
+          <Pagination
+            currentPage={page}
+            totalItems={filteredNotifications.length}
+            pageSize={8}
+            onPageChange={setPage}
+            itemLabel="notices"
+            className="rounded-2xl border border-slate-200/90 shadow-2xs"
+          />
+        </>
         )}
       </div>
 

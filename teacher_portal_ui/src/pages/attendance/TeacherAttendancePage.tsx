@@ -28,6 +28,7 @@ import type {
 import { teacherAttendanceApi, attendanceHistoryApi, authApi } from '../../services/api';
 import LoadingState from '../../components/common/LoadingState';
 import ErrorState from '../../components/common/ErrorState';
+import Pagination from '../../components/common/Pagination';
 
 const STATIC_VENUE_PLAQUE_NOTICE =
   'Static Venue Plaque Notice: Classroom QR codes verify venue and schedule alignment within the approved timetable window. Static QR codes do not certify biometric physical presence or continuous attendance.';
@@ -136,6 +137,7 @@ export default function TeacherAttendancePage() {
   const [todaySchedule, setTodaySchedule] = useState<any[]>([]);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [logs, setLogs] = useState<TeacherAttendanceRecord[]>([]);
+  const [logsPage, setLogsPage] = useState(1);
 
   const storedUser = authApi.getStoredUser();
   const teacherName = storedUser?.name || 'Faculty Member';
@@ -941,7 +943,7 @@ export default function TeacherAttendancePage() {
                   </td>
                 </tr>
               ) : (
-                logs.map((log) => (
+                logs.slice((logsPage - 1) * 5, logsPage * 5).map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50/60 transition">
                   <td className="py-3 px-4">
                     <div className="font-bold text-slate-900">{log.date}</div>
@@ -977,6 +979,13 @@ export default function TeacherAttendancePage() {
               )))}
             </tbody>
           </table>
+          <Pagination
+            currentPage={logsPage}
+            totalItems={logs.length}
+            pageSize={5}
+            onPageChange={setLogsPage}
+            itemLabel="check-in logs"
+          />
         </div>
       </div>
 

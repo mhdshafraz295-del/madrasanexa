@@ -16,6 +16,7 @@ import {
   Layers,
   UserCheck,
 } from 'lucide-react';
+import { Pagination } from '../../components/common/Pagination';
 import {
   getStaffNotices,
   createStaffNotice,
@@ -45,6 +46,10 @@ export const StaffNoticesPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [priorityFilter, setPriorityFilter] = useState<string>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+
+  // Pagination State
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 8;
 
   // Modals State
   const [isComposeOpen, setIsComposeOpen] = useState<boolean>(false);
@@ -109,6 +114,15 @@ export const StaffNoticesPage: React.FC = () => {
       return matchesSearch && matchesPriority && matchesCategory;
     });
   }, [notices, searchQuery, priorityFilter, categoryFilter]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, priorityFilter, categoryFilter]);
+
+  const paginatedNotices = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filteredNotices.slice(start, start + pageSize);
+  }, [filteredNotices, page, pageSize]);
 
   // Recipient Count Preview in Compose Modal
   const recipientCountPreview = useMemo(() => {
@@ -393,7 +407,7 @@ export const StaffNoticesPage: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredNotices.map((notice) => {
+          {paginatedNotices.map((notice) => {
             const isUrgent = notice.priority === 'URGENT';
             const isImportant = notice.priority === 'IMPORTANT';
 
@@ -512,6 +526,15 @@ export const StaffNoticesPage: React.FC = () => {
               </div>
             );
           })}
+
+          <Pagination
+            currentPage={page}
+            totalItems={filteredNotices.length}
+            pageSize={pageSize}
+            onPageChange={setPage}
+            itemLabel="notices"
+            className="rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xs"
+          />
         </div>
       )}
 

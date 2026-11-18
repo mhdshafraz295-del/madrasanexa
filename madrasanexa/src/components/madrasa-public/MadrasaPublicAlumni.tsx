@@ -21,6 +21,7 @@ import {
   type AlumniScholarItem,
   getScholarStatusInfo,
 } from '../../services/scholar-alumni.service';
+import { Pagination } from '../common/Pagination';
 
 interface MadrasaPublicAlumniProps {
   madrasaCode: string;
@@ -44,6 +45,14 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
   const [selectedClass, setSelectedClass] = useState<string>('ALL');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Pagination state
+  const [page, setPage] = useState<number>(1);
+  const pageSize = 9;
+
+  useEffect(() => {
+    setPage(1);
+  }, [selectedBatch, selectedClass, selectedStatus, searchQuery]);
 
   // Expanded profile state for Mobile Tap / Desktop Hover
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -102,6 +111,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
     }
     return true;
   });
+
+  const paginatedAlumni = filteredAlumni.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <section id="alumni" className="public-section-enter scroll-mt-28" aria-label="Alumni & Scholars">
@@ -232,8 +243,9 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-          {filteredAlumni.map((item) => {
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+            {paginatedAlumni.map((item) => {
             const isExpanded = expandedId === item.id;
             const initials = item.fullName
               .split(' ')
@@ -490,6 +502,16 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             );
           })}
         </div>
+
+        <Pagination
+          currentPage={page}
+          totalItems={filteredAlumni.length}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          itemLabel="scholars"
+          className="mt-6 rounded-2xl border border-[#E5E5DF] shadow-2xs"
+        />
+      </>
       )}
     </section>
   );

@@ -22,6 +22,7 @@ import type {
 import { LoadingState } from '../../components/common/LoadingState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
+import Pagination from '../../components/common/Pagination';
 
 export default function PayslipsPage() {
   const [payslips, setPayslips] = useState<DetailedPayslip[]>([]);
@@ -31,6 +32,7 @@ export default function PayslipsPage() {
   const [error, setError] = useState<string | null>(null);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [page, setPage] = useState(1);
 
   const loadData = async () => {
     try {
@@ -222,7 +224,7 @@ export default function PayslipsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-              {payslips.map((ps) => {
+              {payslips.slice((page - 1) * 6, page * 6).map((ps) => {
                 const isSelected = selectedPayslip?.id === ps.id;
                 return (
                   <div
@@ -285,6 +287,14 @@ export default function PayslipsPage() {
                 );
               })}
             </div>
+            <Pagination
+              currentPage={page}
+              totalItems={payslips.length}
+              pageSize={6}
+              onPageChange={setPage}
+              itemLabel="statements"
+              className="mt-4 rounded-xl border border-slate-200/90 shadow-2xs"
+            />
           </div>
 
       {/* 3. Official A4 Payslip Document Container (Both Screen Preview & Single-Page Print) */}

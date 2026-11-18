@@ -23,6 +23,7 @@ import type {
 import { LoadingState } from '../../components/common/LoadingState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { EmptyState } from '../../components/common/EmptyState';
+import Pagination from '../../components/common/Pagination';
 
 type StatusFilter = 'All' | 'Paid' | 'Processing' | 'Pending';
 
@@ -33,7 +34,12 @@ export default function PaymentHistoryPage() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('All');
   const [yearFilter, setYearFilter] = useState('2026');
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedPaymentModal, setSelectedPaymentModal] = useState<PaymentHistoryRecord | null>(null);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, yearFilter, searchQuery]);
 
   const loadPaymentHistory = async () => {
     try {
@@ -224,7 +230,7 @@ export default function PaymentHistoryPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredPayments.map((p) => (
+                {filteredPayments.slice((page - 1) * 10, page * 10).map((p) => (
                   <tr key={p.id} className="hover:bg-slate-50/70 transition">
                     <td className="py-3.5 px-4 font-bold text-slate-900">
                       <div>{p.month}</div>
@@ -272,6 +278,13 @@ export default function PaymentHistoryPage() {
                 ))}
               </tbody>
             </table>
+            <Pagination
+              currentPage={page}
+              totalItems={filteredPayments.length}
+              pageSize={10}
+              onPageChange={setPage}
+              itemLabel="disbursements"
+            />
           </div>
         )}
       </div>

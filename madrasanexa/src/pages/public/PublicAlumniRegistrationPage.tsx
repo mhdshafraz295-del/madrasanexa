@@ -26,6 +26,10 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  // Photo Framing State & Raw Image reference
+  const [photoFraming, setPhotoFraming] = useState<'top' | 'center' | 'contain'>('top');
+  const rawImageRef = React.useRef<HTMLImageElement | null>(null);
+
   const [qualifications, setQualifications] = useState<QualificationEntry[]>([
     { degree: '', university: '', year: '' },
   ]);
@@ -82,6 +86,47 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [madrasaCode]);
 
+  const processAndSetFramedPhoto = (img: HTMLImageElement, framing: 'top' | 'center' | 'contain') => {
+    const canvas = document.createElement('canvas');
+    const size = 512;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const w = img.width;
+    const h = img.height;
+
+    if (framing === 'contain') {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      const scale = Math.min(size / w, size / h);
+      const dw = Math.round(w * scale);
+      const dh = Math.round(h * scale);
+      const dx = Math.round((size - dw) / 2);
+      const dy = Math.round((size - dh) / 2);
+      ctx.drawImage(img, dx, dy, dw, dh);
+    } else if (framing === 'center') {
+      const minDim = Math.min(w, h);
+      const sx = Math.round((w - minDim) / 2);
+      const sy = Math.round((h - minDim) / 2);
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+    } else {
+      // 'top' - Top / Face Focus
+      if (h >= w) {
+        // Portrait: anchor to top square where head/face is
+        ctx.drawImage(img, 0, 0, w, w, 0, 0, size, size);
+      } else {
+        // Landscape: center horizontally, anchor to top
+        const sx = Math.round((w - h) / 2);
+        ctx.drawImage(img, sx, 0, h, h, 0, 0, size, size);
+      }
+    }
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+    setFormData((prev) => ({ ...prev, photoUrl: dataUrl }));
+  };
+
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -95,34 +140,26 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 400;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          }
-        } else {
-          if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        setFormData((prev) => ({ ...prev, photoUrl: dataUrl }));
+        rawImageRef.current = img;
+        processAndSetFramedPhoto(img, photoFraming);
       };
       img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleFramingChange = (newFraming: 'top' | 'center' | 'contain') => {
+    setPhotoFraming(newFraming);
+    if (rawImageRef.current) {
+      processAndSetFramedPhoto(rawImageRef.current, newFraming);
+    } else if (formData.photoUrl) {
+      const img = new Image();
+      img.onload = () => {
+        rawImageRef.current = img;
+        processAndSetFramedPhoto(img, newFraming);
+      };
+      img.src = formData.photoUrl;
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -260,30 +297,113 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Photo Upload */}
-              <div className="flex items-center gap-4 p-4 bg-[#F5F5F1] rounded-2xl border border-[#E5E5DF]">
-                {formData.photoUrl ? (
-                  <img
-                    src={formData.photoUrl}
-                    alt="Preview"
-                    className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-white border border-[#E5E5DF] flex items-center justify-center text-[#85845C] shrink-0">
-                    <GraduationCap className="w-7 h-7" />
+              {/* Photo Upload & Live Framing Preview */}
+              <div className="p-4 sm:p-5 bg-[#F5F5F1] rounded-2xl border border-[#E5E5DF] space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="block font-semibold text-[#252525] text-xs">
+                      Profile Photograph (Optional)
+                    </label>
+                    <p className="text-[11px] text-[#666666]">
+                      High-clarity avatar (crisp 512px). Portrait photos are automatically anchored to the face.
+                    </p>
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <label className="block font-semibold text-[#252525] mb-1">
-                    Profile Photograph (Optional, Recommended 400x400)
-                  </label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handlePhotoUpload}
-                    className="text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#85845C] file:text-white hover:file:opacity-90 cursor-pointer"
+                    className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#85845C] file:text-white hover:file:opacity-90 cursor-pointer"
                   />
                 </div>
+
+                {formData.photoUrl ? (
+                  <div className="pt-2 border-t border-[#E5E5DF] space-y-3">
+                    <div className="flex flex-wrap items-center gap-4">
+                      {/* Live Circular Card Preview */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-300 ring-4 ring-emerald-50 shadow-sm shrink-0 bg-white flex items-center justify-center">
+                          <img
+                            src={formData.photoUrl}
+                            alt="Circular Avatar Preview"
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-block mb-0.5">
+                            Circular Card Preview
+                          </span>
+                          <p className="text-[10px] text-[#666666]">Live website appearance</p>
+                        </div>
+                      </div>
+
+                      {/* Square Full Preview */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-[#E5E5DF] shadow-2xs shrink-0 bg-white flex items-center justify-center">
+                          <img
+                            src={formData.photoUrl}
+                            alt="Square Preview"
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-[#252525] bg-white border border-[#E5E5DF] px-2 py-0.5 rounded-full inline-block mb-0.5">
+                            Square Preview
+                          </span>
+                          <p className="text-[10px] text-[#666666]">512x512 canvas</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Framing Selector */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
+                      <span className="text-[11px] font-semibold text-[#252525] shrink-0">
+                        Framing Focus:
+                      </span>
+                      <div className="inline-flex rounded-xl p-0.5 bg-[#E5E5DF]/70 border border-[#E5E5DF] text-xs">
+                        <button
+                          type="button"
+                          onClick={() => handleFramingChange('top')}
+                          className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                            photoFraming === 'top'
+                              ? 'bg-[#85845C] text-white shadow-xs'
+                              : 'text-[#252525] hover:text-black'
+                          }`}
+                        >
+                          Top / Face Focus
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFramingChange('center')}
+                          className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                            photoFraming === 'center'
+                              ? 'bg-[#85845C] text-white shadow-xs'
+                              : 'text-[#252525] hover:text-black'
+                          }`}
+                        >
+                          Center
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFramingChange('contain')}
+                          className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                            photoFraming === 'contain'
+                              ? 'bg-[#85845C] text-white shadow-xs'
+                              : 'text-[#252525] hover:text-black'
+                          }`}
+                        >
+                          Fit Full Image
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 pt-1 text-[#666666]">
+                    <div className="w-12 h-12 rounded-full bg-white border border-[#E5E5DF] text-[#85845C] flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs">No photograph selected yet.</span>
+                  </div>
+                )}
               </div>
 
               {/* Name & Batch */}

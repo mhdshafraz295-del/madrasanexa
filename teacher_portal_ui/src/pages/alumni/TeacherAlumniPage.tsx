@@ -198,7 +198,7 @@ export const TeacherAlumniPage: React.FC = () => {
                         <img
                           src={item.photoUrl}
                           alt={item.fullName}
-                          className="w-13 h-13 rounded-full object-cover border-2 border-slate-100 shadow-xs shrink-0"
+                          className="w-13 h-13 rounded-full object-cover object-top border-2 border-slate-100 shadow-xs shrink-0"
                         />
                       ) : (
                         <div className="w-13 h-13 rounded-full bg-emerald-600 text-white font-bold text-base flex items-center justify-center shrink-0">
@@ -319,7 +319,7 @@ export const TeacherAlumniPage: React.FC = () => {
                   <img
                     src={activeProfile.photoUrl}
                     alt={activeProfile.fullName}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-xs"
+                    className="w-12 h-12 rounded-full object-cover object-top border-2 border-white shadow-xs"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center">

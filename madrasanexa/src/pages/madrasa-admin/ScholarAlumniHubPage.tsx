@@ -70,6 +70,10 @@ export const ScholarAlumniHubPage: React.FC = () => {
   const [activeDetailItem, setActiveDetailItem] = useState<AlumniScholarItem | null>(null);
   const [actionProcessingId, setActionProcessingId] = useState<string | null>(null);
 
+  // Photo Framing State & Raw Image reference
+  const [photoFraming, setPhotoFraming] = useState<'top' | 'center' | 'contain'>('top');
+  const rawImageRef = React.useRef<HTMLImageElement | null>(null);
+
   // Editor Form State
   const [editorForm, setEditorForm] = useState<ScholarCreatePayload>({
     fullName: '',
@@ -168,6 +172,8 @@ export const ScholarAlumniHubPage: React.FC = () => {
   const openCreateModal = () => {
     setEditingItem(null);
     setEditorError(null);
+    setPhotoFraming('top');
+    rawImageRef.current = null;
     setEditorQualifications([{ degree: '', university: '', year: '' }]);
     setEditorForm({
       fullName: '',
@@ -196,6 +202,15 @@ export const ScholarAlumniHubPage: React.FC = () => {
   const openEditModal = (item: AlumniScholarItem) => {
     setEditingItem(item);
     setEditorError(null);
+    setPhotoFraming('top');
+    rawImageRef.current = null;
+    if (item.photoUrl) {
+      const img = new Image();
+      img.onload = () => {
+        rawImageRef.current = img;
+      };
+      img.src = item.photoUrl;
+    }
     const qualList = (item.qualificationsList && item.qualificationsList.length > 0)
       ? item.qualificationsList.map((q) => ({ degree: q.degree || '', university: q.university || '', year: q.year || '' }))
       : [{ degree: item.qualification || '', university: item.university || '', year: item.batchYear || '' }];
@@ -224,6 +239,47 @@ export const ScholarAlumniHubPage: React.FC = () => {
     setIsEditorModalOpen(true);
   };
 
+  const processAndSetFramedPhoto = (img: HTMLImageElement, framing: 'top' | 'center' | 'contain') => {
+    const canvas = document.createElement('canvas');
+    const size = 512;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const w = img.width;
+    const h = img.height;
+
+    if (framing === 'contain') {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      const scale = Math.min(size / w, size / h);
+      const dw = Math.round(w * scale);
+      const dh = Math.round(h * scale);
+      const dx = Math.round((size - dw) / 2);
+      const dy = Math.round((size - dh) / 2);
+      ctx.drawImage(img, dx, dy, dw, dh);
+    } else if (framing === 'center') {
+      const minDim = Math.min(w, h);
+      const sx = Math.round((w - minDim) / 2);
+      const sy = Math.round((h - minDim) / 2);
+      ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, size, size);
+    } else {
+      // 'top' - Top / Face Focus
+      if (h >= w) {
+        // Portrait: anchor to top square where face is
+        ctx.drawImage(img, 0, 0, w, w, 0, 0, size, size);
+      } else {
+        // Landscape: center horizontally, anchor to top
+        const sx = Math.round((w - h) / 2);
+        ctx.drawImage(img, sx, 0, h, h, 0, 0, size, size);
+      }
+    }
+
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+    setEditorForm((prev) => ({ ...prev, photoUrl: dataUrl }));
+  };
+
   const handleEditorPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -232,34 +288,26 @@ export const ScholarAlumniHubPage: React.FC = () => {
     reader.onload = (event) => {
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 400;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          }
-        } else {
-          if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        setEditorForm((prev) => ({ ...prev, photoUrl: dataUrl }));
+        rawImageRef.current = img;
+        processAndSetFramedPhoto(img, photoFraming);
       };
       img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleFramingChange = (newFraming: 'top' | 'center' | 'contain') => {
+    setPhotoFraming(newFraming);
+    if (rawImageRef.current) {
+      processAndSetFramedPhoto(rawImageRef.current, newFraming);
+    } else if (editorForm.photoUrl) {
+      const img = new Image();
+      img.onload = () => {
+        rawImageRef.current = img;
+        processAndSetFramedPhoto(img, newFraming);
+      };
+      img.src = editorForm.photoUrl;
+    }
   };
 
   const handleSaveEditor = async (e: React.FormEvent) => {
@@ -550,60 +598,68 @@ export const ScholarAlumniHubPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Secondary Batch & Class Dropdowns */}
-        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-500">Batch Year:</span>
-            <select
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 focus:outline-hidden"
-            >
-              <option value="ALL">All Batches</option>
-              {hubData?.availableBatchYears.map((by) => (
-                <option key={by} value={by}>
-                  Batch {by}
-                </option>
-              ))}
-            </select>
+        {/* Secondary Batch, Class & Status Filter Grid */}
+        <div className="pt-3 border-t border-slate-100 space-y-2.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs text-slate-600">
+            {/* Batch Year */}
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-1.5 focus-within:ring-1 focus-within:ring-emerald-500 focus-within:bg-white transition-all">
+              <span className="font-semibold text-slate-500 shrink-0 text-xs">Batch:</span>
+              <select
+                value={selectedBatch}
+                onChange={(e) => setSelectedBatch(e.target.value)}
+                className="bg-transparent w-full text-xs text-slate-800 font-medium focus:outline-hidden cursor-pointer"
+              >
+                <option value="ALL">All Batches</option>
+                {hubData?.availableBatchYears.map((by) => (
+                  <option key={by} value={by}>
+                    Batch {by}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Class / Division */}
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-1.5 focus-within:ring-1 focus-within:ring-emerald-500 focus-within:bg-white transition-all">
+              <span className="font-semibold text-slate-500 shrink-0 text-xs">Class:</span>
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="bg-transparent w-full text-xs text-slate-800 font-medium focus:outline-hidden cursor-pointer"
+              >
+                <option value="ALL">All Classes & Divisions</option>
+                {hubData?.availableClassOrDivisions.map((cd) => (
+                  <option key={cd} value={cd}>
+                    {cd}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Academic Status */}
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200/90 rounded-xl px-3 py-1.5 focus-within:ring-1 focus-within:ring-emerald-500 focus-within:bg-white transition-all sm:col-span-2 lg:col-span-1">
+              <span className="font-semibold text-slate-500 shrink-0 text-xs">Status:</span>
+              <select
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+                className="bg-transparent w-full text-xs text-slate-800 font-medium focus:outline-hidden cursor-pointer"
+              >
+                <option value="ALL">All Academic Statuses</option>
+                <option value="UNDERGRADUATE">Undergraduates</option>
+                <option value="GRADUATE">Graduates</option>
+                <option value="POSTGRADUATE">Postgraduates</option>
+                <option value="WORKING_SCHOLAR">Working Scholars</option>
+                <option value="HAFIL">Hafil</option>
+                <option value="AL_AALIM">Al Aalim</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-500">Class / Division:</span>
-            <select
-              value={selectedClass}
-              onChange={(e) => setSelectedClass(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 focus:outline-hidden"
-            >
-              <option value="ALL">All Classes & Divisions</option>
-              {hubData?.availableClassOrDivisions.map((cd) => (
-                <option key={cd} value={cd}>
-                  {cd}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-slate-500">Status:</span>
-            <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 focus:outline-hidden"
-            >
-              <option value="ALL">All Academic Statuses</option>
-              <option value="UNDERGRADUATE">Undergraduates</option>
-              <option value="GRADUATE">Graduates</option>
-              <option value="POSTGRADUATE">Postgraduates</option>
-              <option value="WORKING_SCHOLAR">Working Scholars</option>
-              <option value="HAFIL">Hafil</option>
-              <option value="AL_AALIM">Al Aalim</option>
-              <option value="OTHER">Other</option>
-            </select>
-          </div>
-
-          <div className="ml-auto text-[11px] text-slate-400">
-            Showing <strong className="text-slate-700">{currentList.length}</strong> scholars
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-slate-400 pt-0.5">
+            <span>Filter by graduation year, class division, or academic status</span>
+            <span>
+              Showing <strong className="text-slate-700 font-semibold">{currentList.length}</strong> scholars
+            </span>
           </div>
         </div>
       </div>
@@ -666,7 +722,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
                         <img
                           src={item.photoUrl}
                           alt={item.fullName}
-                          className="w-13 h-13 rounded-full object-cover border-2 border-slate-100 shadow-xs shrink-0"
+                          className="w-13 h-13 rounded-full object-cover object-top border-2 border-slate-100 shadow-xs shrink-0"
                         />
                       ) : (
                         <div className="w-13 h-13 rounded-full bg-slate-900 text-emerald-400 font-bold text-base flex items-center justify-center shrink-0">
@@ -846,30 +902,113 @@ export const ScholarAlumniHubPage: React.FC = () => {
                 </div>
               )}
 
-              {/* Photo Upload & Preview */}
-              <div className="flex items-center gap-4 p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-                {editorForm.photoUrl ? (
-                  <img
-                    src={editorForm.photoUrl}
-                    alt="Preview"
-                    className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center shrink-0">
-                    <GraduationCap className="w-7 h-7" />
+              {/* Photo Upload & Live Framing Preview */}
+              <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <label className="block font-semibold text-slate-800 text-xs">
+                      Scholar Profile Photograph
+                    </label>
+                    <p className="text-[11px] text-slate-400">
+                      High clarity avatar (crisp 512px). Portrait photos are automatically anchored to the face.
+                    </p>
                   </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <label className="block font-semibold text-slate-800 mb-1">
-                    Profile Photograph (Square recommended)
-                  </label>
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleEditorPhotoUpload}
-                    className="text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:opacity-90 cursor-pointer"
+                    className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:opacity-90 cursor-pointer"
                   />
                 </div>
+
+                {editorForm.photoUrl ? (
+                  <div className="pt-2 border-t border-slate-200/70 space-y-3">
+                    <div className="flex flex-wrap items-center gap-4">
+                      {/* Live Circular Card Preview */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-300 ring-4 ring-emerald-50 shadow-sm shrink-0 bg-slate-100 flex items-center justify-center">
+                          <img
+                            src={editorForm.photoUrl}
+                            alt="Circular Avatar Preview"
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-block mb-0.5">
+                            Circular Card Preview
+                          </span>
+                          <p className="text-[10px] text-slate-500">Live roster appearance</p>
+                        </div>
+                      </div>
+
+                      {/* Square File Preview */}
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shadow-2xs shrink-0 bg-slate-100 flex items-center justify-center">
+                          <img
+                            src={editorForm.photoUrl}
+                            alt="Square Preview"
+                            className="w-full h-full object-cover object-top"
+                          />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-full inline-block mb-0.5">
+                            Square Preview
+                          </span>
+                          <p className="text-[10px] text-slate-400">512x512 canvas</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Framing Selector */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
+                      <span className="text-[11px] font-semibold text-slate-600 shrink-0">
+                        Framing Focus:
+                      </span>
+                      <div className="inline-flex rounded-xl p-0.5 bg-slate-200/70 border border-slate-200 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => handleFramingChange('top')}
+                          className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                            photoFraming === 'top'
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'text-slate-700 hover:text-slate-900'
+                          }`}
+                        >
+                          Top / Face Focus
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFramingChange('center')}
+                          className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                            photoFraming === 'center'
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'text-slate-700 hover:text-slate-900'
+                          }`}
+                        >
+                          Center
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleFramingChange('contain')}
+                          className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
+                            photoFraming === 'contain'
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'text-slate-700 hover:text-slate-900'
+                          }`}
+                        >
+                          Fit Full Image
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 pt-1 text-slate-400">
+                    <div className="w-12 h-12 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-6 h-6" />
+                    </div>
+                    <span className="text-xs">No photograph selected yet (optional).</span>
+                  </div>
+                )}
               </div>
 
               {/* Full Name & Batch */}
@@ -1160,7 +1299,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
                   <img
                     src={activeDetailItem.photoUrl}
                     alt={activeDetailItem.fullName}
-                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-xs"
+                    className="w-12 h-12 rounded-full object-cover object-top border-2 border-white shadow-xs"
                   />
                 ) : (
                   <div className="w-12 h-12 rounded-full bg-slate-900 text-emerald-400 font-bold flex items-center justify-center">

@@ -285,7 +285,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                           src={item.photoUrl}
                           alt={item.fullName}
                           loading="lazy"
-                          className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
+                          className="w-14 h-14 rounded-full object-cover object-top border-2 border-white shadow-xs shrink-0"
                         />
                       ) : (
                         <div

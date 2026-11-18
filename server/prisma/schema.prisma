@@ -291,6 +291,7 @@ model User {
   staffNoticesCreated           StaffNotice[]                   @relation("StaffNoticesCreated")
   createdPolls                  PlatformPoll[]                  @relation("CreatedPolls")
   pollVotes                     PlatformPollVote[]              @relation("UserPollVotes")
+  reviewedAlumniScholars        AlumniScholar[]                 @relation("ScholarReviewedByUser")
 
   @@unique([id, madrasaId])
   @@index([madrasaId])
@@ -383,6 +384,8 @@ model Madrasa {
   staffNotices                   StaffNotice[]
   staffNoticeReads               StaffNoticeRead[]
   pollVotes                      PlatformPollVote[]              @relation("MadrasaPollVotes")
+  showAlumniOnWebsite            Boolean                         @default(false)
+  alumniScholars                 AlumniScholar[]                 @relation("MadrasaAlumniScholars")
 
   @@index([status])
   @@map("madrasas")
@@ -2874,6 +2877,43 @@ model PlatformPollVote {
   @@index([pollId, userId])
   @@index([madrasaId])
   @@map("platform_poll_votes")
+}
+
+/// Class/Batch-wise Undergraduate & Alumni Hub Directory
+model AlumniScholar {
+  id                     String    @id @default(cuid())
+  madrasaId              String
+  fullName               String
+  photoUrl               String?   @db.Text
+  batchYear              String
+  classOrDivision        String?
+  classId                String?
+  academicStatus         String    @default("UNDERGRADUATE") // "UNDERGRADUATE" | "GRADUATE" | "POSTGRADUATE" | "WORKING_SCHOLAR"
+  qualification          String
+  university             String
+  facultyOrDepartment    String?
+  currentRole            String?
+  cityCountry            String?
+  bio                    String?   @db.Text
+  email                  String?
+  phone                  String?
+  linkedinUrl            String?
+  showContactPublicly    Boolean   @default(false)
+  availableForMentorship Boolean   @default(true)
+  approvalStatus         String    @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  isFeatured             Boolean   @default(false)
+  reviewedByUserId       String?
+  reviewedAt             DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  madrasa        Madrasa @relation("MadrasaAlumniScholars", fields: [madrasaId], references: [id], onDelete: Cascade)
+  reviewedByUser User?   @relation("ScholarReviewedByUser", fields: [reviewedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([madrasaId, approvalStatus])
+  @@index([madrasaId, batchYear])
+  @@index([madrasaId, isFeatured])
+  @@map("alumni_scholars")
 }
 
 

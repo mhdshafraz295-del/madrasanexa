@@ -39,6 +39,7 @@ const activeNavItems = [
   { to: '/madrasa-admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/madrasa-admin/admissions', label: 'Admissions & Intake', icon: UserPlus },
   { to: '/madrasa-admin/students', label: 'Students', icon: GraduationCap },
+  { to: '/madrasa-admin/alumni', label: 'Alumni & Scholars', icon: GraduationCap },
   { to: '/madrasa-admin/alumni-network', label: 'Alumni Network & Verification', icon: ShieldCheck },
   { to: '/madrasa-admin/classes', label: 'Classes', icon: BookOpen },
   { to: '/madrasa-admin/attendance', label: 'Attendance', icon: CalendarCheck },

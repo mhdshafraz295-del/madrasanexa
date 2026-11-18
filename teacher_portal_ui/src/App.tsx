@@ -19,6 +19,7 @@ import AttendanceHistoryPage from './pages/attendance/AttendanceHistoryPage';
 import MySalaryPage from './pages/salary/MySalaryPage';
 import PaymentHistoryPage from './pages/salary/PaymentHistoryPage';
 import PayslipsPage from './pages/salary/PayslipsPage';
+import TeacherAlumniPage from './pages/alumni/TeacherAlumniPage';
 
 export default function App() {
   return (
@@ -51,6 +52,9 @@ export default function App() {
         <Route path="salary" element={<MySalaryPage />} />
         <Route path="salary/history" element={<PaymentHistoryPage />} />
         <Route path="salary/payslips" element={<PayslipsPage />} />
+
+        {/* Phase 4: Alumni & Scholar Directory */}
+        <Route path="alumni" element={<TeacherAlumniPage />} />
 
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="settings" element={<SettingsPage />} />

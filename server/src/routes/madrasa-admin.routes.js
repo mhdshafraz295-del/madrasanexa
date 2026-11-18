@@ -300,6 +300,14 @@ import {
   streamAlumniCertificate,
   uploadConsentFileMiddleware,
 } from '../controllers/alumni.controller.js';
+import {
+  getAdminAlumniHub,
+  toggleWebsiteVisibility,
+  createAdminScholar,
+  updateAdminScholar,
+  updateAdminScholarStatus,
+  deleteAdminScholar,
+} from '../controllers/scholar-alumni.controller.js';
 import { createRateLimiter } from '../middleware/rate-limiter.js';
 
 // Rate limiter instances for Alumni Network
@@ -698,5 +706,18 @@ router.post('/alumni-network/verifications/:requestId/respond', respondToVerific
 
 // 4. Secure Backend Streaming Proxy for Certificates
 router.get('/alumni-network/:alumniId/qualifications/:qualificationId/certificate/stream', streamAlumniCertificate);
+
+// ==========================================
+// 5. Undergraduate & Alumni Hub (Directory, Visibility & Verification)
+// ==========================================
+router.get('/alumni-hub', getAdminAlumniHub);
+router.patch('/alumni-hub/website-visibility', toggleWebsiteVisibility);
+router.patch('/alumni/website-visibility', toggleWebsiteVisibility);
+router.post('/alumni-hub', createAdminScholar);
+router.patch('/alumni-hub/:id/status', updateAdminScholarStatus);
+router.patch('/alumni/:id/status', updateAdminScholarStatus);
+router.patch('/alumni-hub/:id', updateAdminScholar);
+router.delete('/alumni-hub/:id', deleteAdminScholar);
+router.delete('/alumni/:id', deleteAdminScholar);
 
 export default router;

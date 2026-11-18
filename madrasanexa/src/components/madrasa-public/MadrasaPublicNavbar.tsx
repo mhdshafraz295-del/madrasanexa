@@ -25,6 +25,7 @@ interface MadrasaPublicNavbarProps {
   hasEvents?: boolean;
   hasNotices?: boolean;
   hasStaff?: boolean;
+  hasAlumni?: boolean;
   activeIntakeCount?: number;
 }
 
@@ -38,6 +39,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
   hasEvents = false,
   hasNotices = false,
   hasStaff = false,
+  hasAlumni = false,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickLinksOpen, setQuickLinksOpen] = useState(false);
@@ -103,6 +105,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
     { label: 'About', href: '#about', icon: Building2 },
     { label: 'Curriculum & Rules', href: '#curriculum', icon: BookOpen },
     ...(hasStaff ? [{ label: 'Faculty', href: '#staff', icon: Users }] : []),
+    ...(hasAlumni ? [{ label: 'Alumni & Scholars', href: '#alumni', icon: GraduationCap }] : []),
     ...(hasEvents ? [{ label: 'Events', href: '#events', icon: Calendar }] : []),
     ...(hasNotices ? [{ label: 'Notices', href: '#notices', icon: BellRing }] : []),
     { label: 'Contact', href: '#contact', icon: Phone },
@@ -112,6 +115,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
     { label: 'Institutional Profile', href: '#about', icon: Building2, desc: 'History, foundation, & vision' },
     { label: 'Academic Curriculum', href: '#curriculum', icon: BookOpen, desc: 'Syllabus, subjects & code of conduct' },
     ...(hasStaff ? [{ label: 'Faculty & Scholars', href: '#staff', icon: Users, desc: 'Academic leadership directory' }] : []),
+    ...(hasAlumni ? [{ label: 'Alumni & Scholars', href: '#alumni', icon: GraduationCap, desc: 'Class & batch-wise scholar directory' }] : []),
     ...(hasEvents ? [{ label: 'Campus Events', href: '#events', icon: Calendar, desc: 'Programs & upcoming schedules' }] : []),
     ...(hasNotices ? [{ label: 'Circulars & Notices', href: '#notices', icon: BellRing, desc: 'Official administrative bulletins' }] : []),
     { label: 'Admissions Portal', href: `/madrasa/${slug}/admissions`, icon: GraduationCap, desc: 'Online application & enrollment' },

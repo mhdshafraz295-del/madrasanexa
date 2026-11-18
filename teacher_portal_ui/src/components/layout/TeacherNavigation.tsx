@@ -9,6 +9,7 @@ import {
   Banknote,
   Bell,
   User,
+  GraduationCap,
 } from 'lucide-react';
 
 export interface TeacherNavItem {
@@ -26,6 +27,7 @@ export const TEACHER_NAV_ITEMS: TeacherNavItem[] = [
   { to: '/attendance/students', label: 'Student Attendance', icon: ScanLine },
   { to: '/attendance/history', label: 'Attendance History', icon: History },
   { to: '/salary', label: 'My Salary & Payslips', icon: Banknote },
+  { to: '/alumni', label: 'Alumni & Scholars', icon: GraduationCap },
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/profile', label: 'My Profile', icon: User },
 ];

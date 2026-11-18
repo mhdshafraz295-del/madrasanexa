@@ -40,6 +40,8 @@ import MadrasaAdminAnnouncementsPage from './pages/madrasa-admin/AnnouncementsPa
 import SubscriptionRequiredPage from './pages/madrasa-admin/SubscriptionRequiredPage';
 import MadrasaHomepageCmsPage from './pages/madrasa-admin/MadrasaHomepageCmsPage';
 import AlumniManagementPage from './pages/madrasa-admin/AlumniManagementPage';
+import ScholarAlumniHubPage from './pages/madrasa-admin/ScholarAlumniHubPage';
+import PublicAlumniRegistrationPage from './pages/public/PublicAlumniRegistrationPage';
 import ClassesPage from './pages/madrasa-admin/ClassesPage';
 import AdmissionsManagementPage from './pages/madrasa-admin/AdmissionsManagementPage';
 import StudentsPage from './pages/madrasa-admin/StudentsPage';
@@ -76,6 +78,7 @@ export default function App() {
           <Route path="/about" element={<Navigate to="/about-us" replace />} />
           <Route path="/madrasa/:slug" element={<MadrasaPublicPage />} />
           <Route path="/madrasa/:slug/admissions" element={<MadrasaAdmissionsPage />} />
+          <Route path="/alumni/:madrasaCode" element={<PublicAlumniRegistrationPage />} />
 
           {/* Standalone Super Admin Website Content Preview */}
           <Route
@@ -170,6 +173,7 @@ export default function App() {
               <Route path="activity" element={<MadrasaAdminActivityPage />} />
               <Route path="portal-cms" element={<MadrasaHomepageCmsPage />} />
               <Route path="alumni-network" element={<AlumniManagementPage />} />
+              <Route path="alumni" element={<ScholarAlumniHubPage />} />
             </Route>
 
             {/* Subscription Overview Route (Auth + Role only, exempt from subscription gate) */}

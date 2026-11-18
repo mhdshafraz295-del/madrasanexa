@@ -836,6 +836,7 @@ export async function getPublicProfileBySlug(slug) {
       logoFileId: madrasa.logoFileId,
       logoUrl,
       initials: generateInitials(madrasa.name),
+      showAlumniOnWebsite: Boolean(madrasa.showAlumniOnWebsite),
     },
     heroTitle: madrasa.profile.heroTitle,
     heroSubtitle: madrasa.profile.heroSubtitle,

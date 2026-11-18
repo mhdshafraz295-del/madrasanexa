@@ -1,0 +1,455 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import {
+  GraduationCap,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  ArrowLeft,
+} from 'lucide-react';
+import {
+  getPublicAlumni,
+  submitPublicAlumni,
+  type AcademicStatus,
+} from '../../services/scholar-alumni.service';
+
+export const PublicAlumniRegistrationPage: React.FC = () => {
+  const { madrasaCode } = useParams<{ madrasaCode: string }>();
+  const [madrasa, setMadrasa] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const [submitting, setSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    fullName: '',
+    photoUrl: '',
+    batchYear: '',
+    classOrDivision: '',
+    academicStatus: 'UNDERGRADUATE' as AcademicStatus,
+    qualification: '',
+    university: '',
+    facultyOrDepartment: '',
+    currentRole: '',
+    cityCountry: '',
+    bio: '',
+    email: '',
+    phone: '',
+    linkedinUrl: '',
+    showContactPublicly: false,
+    availableForMentorship: true,
+  });
+
+  useEffect(() => {
+    if (!madrasaCode) return;
+    setLoading(true);
+    getPublicAlumni(madrasaCode)
+      .then((res) => {
+        setMadrasa(res.madrasa);
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message || 'Madrasa not found.');
+      })
+      .finally(() => setLoading(false));
+  }, [madrasaCode]);
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WEBP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setFormData((prev) => ({ ...prev, photoUrl: dataUrl }));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!madrasaCode) return;
+
+    if (
+      !formData.fullName.trim() ||
+      !formData.batchYear.trim() ||
+      !formData.qualification.trim() ||
+      !formData.university.trim()
+    ) {
+      setSubmitError('Please complete all required fields (Name, Batch Year, Qualification, University).');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
+      await submitPublicAlumni(madrasaCode, formData);
+      setSubmitSuccess(true);
+    } catch (err: any) {
+      setSubmitError(err.response?.data?.message || err.message || 'Failed to submit profile.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#F7F6F1] flex flex-col items-center justify-center p-6 text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-[#85845C] mb-3" />
+        <p className="text-xs text-[#666666] font-medium">Loading institution details...</p>
+      </div>
+    );
+  }
+
+  if (error || !madrasa) {
+    return (
+      <div className="min-h-screen bg-[#F7F6F1] flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-[#E5E5DF] p-8 text-center space-y-4">
+          <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
+          <h2 className="text-xl font-serif font-bold text-[#252525]">Institution Not Found</h2>
+          <p className="text-xs text-[#666666]">{error || 'Invalid madrasa code or URL.'}</p>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center px-4 py-2 bg-[#252525] text-white rounded-xl text-xs font-semibold"
+          >
+            Return to MadrasaNexa Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F7F6F1] text-[#252525] py-10 px-4 sm:px-6">
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Back Link */}
+        <Link
+          to={`/madrasa/${madrasa.slug || madrasaCode}`}
+          className="inline-flex items-center gap-1.5 text-xs text-[#666666] hover:text-[#252525] transition"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to {madrasa.name} Portal</span>
+        </Link>
+
+        {/* Header Card */}
+        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E5E5DF] shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+            {madrasa.logoUrl ? (
+              <img
+                src={madrasa.logoUrl}
+                alt={madrasa.name}
+                className="w-12 h-12 object-contain rounded-xl border border-[#E5E5DF] bg-white p-1"
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-[#85845C] text-white font-serif font-bold flex items-center justify-center text-lg">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+            )}
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#85845C] block">
+                Official Scholar Directory
+              </span>
+              <h1 className="font-serif font-bold text-xl sm:text-2xl text-[#252525]">
+                {madrasa.name}
+              </h1>
+            </div>
+          </div>
+          <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">
+            Welcome to the Madrasa Undergraduate & Alumni Hub registration. Please share your higher education
+            journey, university degree, and accomplishments to inspire junior students and stay connected with your alma mater.
+          </p>
+        </div>
+
+        {/* Main Submission Form */}
+        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E5E5DF] shadow-sm">
+          {submitSuccess ? (
+            <div className="py-12 text-center space-y-4">
+              <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h2 className="font-serif font-bold text-xl text-[#252525]">
+                Profile Submitted Successfully!
+              </h2>
+              <p className="text-xs sm:text-sm text-[#666666] max-w-md mx-auto leading-relaxed">
+                JazakAllah Khair! Your academic submission has been safely recorded and will be verified by the
+                madrasa administration before publishing to the alumni directory.
+              </p>
+              <div className="pt-4 flex justify-center gap-3">
+                <Link
+                  to={`/madrasa/${madrasa.slug || madrasaCode}`}
+                  className="px-5 py-2.5 bg-[#85845C] text-white font-semibold text-xs rounded-xl hover:opacity-95 transition"
+                >
+                  Visit Madrasa Website
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleFormSubmit} className="space-y-5 text-xs">
+              {submitError && (
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs">
+                  {submitError}
+                </div>
+              )}
+
+              {/* Photo Upload */}
+              <div className="flex items-center gap-4 p-4 bg-[#F5F5F1] rounded-2xl border border-[#E5E5DF]">
+                {formData.photoUrl ? (
+                  <img
+                    src={formData.photoUrl}
+                    alt="Preview"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-white border border-[#E5E5DF] flex items-center justify-center text-[#85845C] shrink-0">
+                    <GraduationCap className="w-7 h-7" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <label className="block font-semibold text-[#252525] mb-1">
+                    Profile Photograph (Optional, Recommended 400x400)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#85845C] file:text-white hover:file:opacity-90 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              {/* Name & Batch */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    placeholder="e.g. Mohamed Safras"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Batch Year *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.batchYear}
+                    onChange={(e) => setFormData({ ...formData, batchYear: e.target.value })}
+                    placeholder="e.g. 2021"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                  />
+                </div>
+              </div>
+
+              {/* Class & Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Class / Division</label>
+                  <input
+                    type="text"
+                    value={formData.classOrDivision}
+                    onChange={(e) => setFormData({ ...formData, classOrDivision: e.target.value })}
+                    placeholder="e.g. Alim Final Year / Hifz"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Academic Status</label>
+                  <select
+                    value={formData.academicStatus}
+                    onChange={(e) => setFormData({ ...formData, academicStatus: e.target.value as AcademicStatus })}
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                  >
+                    <option value="UNDERGRADUATE">Undergraduate</option>
+                    <option value="GRADUATE">Graduate</option>
+                    <option value="POSTGRADUATE">Postgraduate</option>
+                    <option value="WORKING_SCHOLAR">Working Scholar</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Qualification & University */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Degree / Qualification *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.qualification}
+                    onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
+                    placeholder="e.g. B.A. (Hons) in Arabic"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">University / Institution *</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.university}
+                    onChange={(e) => setFormData({ ...formData, university: e.target.value })}
+                    placeholder="e.g. SEUSL / University of Peradeniya"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                  />
+                </div>
+              </div>
+
+              {/* Current Role & Location */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Current Role / Job Title</label>
+                  <input
+                    type="text"
+                    value={formData.currentRole}
+                    onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
+                    placeholder="e.g. Final Year Undergraduate / Lecturer"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">City & Country</label>
+                  <input
+                    type="text"
+                    value={formData.cityCountry}
+                    onChange={(e) => setFormData({ ...formData, cityCountry: e.target.value })}
+                    placeholder="e.g. Oluvil, Sri Lanka"
+                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Bio */}
+              <div>
+                <label className="block font-semibold text-[#252525] mb-1">
+                  Academic Journey & Personal Bio
+                </label>
+                <textarea
+                  rows={3}
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                  placeholder="Share a short summary of your studies, research interests, or aspirations..."
+                  className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                />
+              </div>
+
+              {/* Contact Information */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="scholar@example.com"
+                    className="w-full px-3.5 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="+94 77 ..."
+                    className="w-full px-3.5 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-[#252525] mb-1">LinkedIn Profile</label>
+                  <input
+                    type="url"
+                    value={formData.linkedinUrl}
+                    onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
+                    placeholder="https://linkedin.com/in/..."
+                    className="w-full px-3.5 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Checkboxes */}
+              <div className="space-y-2 pt-3 border-t border-[#E5E5DF]">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.availableForMentorship}
+                    onChange={(e) => setFormData({ ...formData, availableForMentorship: e.target.checked })}
+                    className="rounded text-[#85845C]"
+                  />
+                  <span className="text-[#252525] font-medium">
+                    I am willing to mentor younger madrasa students entering university
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={formData.showContactPublicly}
+                    onChange={(e) => setFormData({ ...formData, showContactPublicly: e.target.checked })}
+                    className="rounded text-[#85845C]"
+                  />
+                  <span className="text-[#666666]">
+                    Allow my contact email/phone to be shown publicly on the directory
+                  </span>
+                </label>
+              </div>
+
+              {/* Submit CTA */}
+              <div className="pt-4 border-t border-[#E5E5DF]">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full py-3 bg-[#85845C] hover:bg-[#706f4e] text-white font-semibold rounded-xl text-sm transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Submitting Profile...</span>
+                    </>
+                  ) : (
+                    <span>Submit Profile for Verification</span>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PublicAlumniRegistrationPage;

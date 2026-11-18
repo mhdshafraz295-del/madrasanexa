@@ -34,6 +34,7 @@ import {
   updateTeacherPreferences,
 } from '../controllers/teacher.controller.js';
 import * as pollController from '../controllers/poll.controller.js';
+import { getTeacherAlumniList } from '../controllers/scholar-alumni.controller.js';
 import multer from 'multer';
 
 const upload = multer({
@@ -149,5 +150,10 @@ router.put('/settings/preferences', updateTeacherPreferences);
 // =============================================================================
 router.get('/polls', pollController.getUserPolls);
 router.post('/polls/:id/vote', pollController.submitVote);
+
+// =============================================================================
+// Module 14: Alumni & Scholar Directory (Read-only)
+// =============================================================================
+router.get('/alumni', getTeacherAlumniList);
 
 export default router;

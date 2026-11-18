@@ -13,6 +13,7 @@ import { MadrasaPublicNotices } from '../../components/madrasa-public/MadrasaPub
 import { MadrasaPublicEvents } from '../../components/madrasa-public/MadrasaPublicEvents';
 import { MadrasaPublicStats } from '../../components/madrasa-public/MadrasaPublicStats';
 import { MadrasaPublicStaff } from '../../components/madrasa-public/MadrasaPublicStaff';
+import { MadrasaPublicAlumni } from '../../components/madrasa-public/MadrasaPublicAlumni';
 import { MadrasaPublicAdmissionsCTA } from '../../components/madrasa-public/MadrasaPublicAdmissionsCTA';
 import { MadrasaPublicContact } from '../../components/madrasa-public/MadrasaPublicContact';
 import { MadrasaPublicFooter } from '../../components/madrasa-public/MadrasaPublicFooter';
@@ -101,6 +102,7 @@ export const MadrasaPublicPage: React.FC = () => {
   const hasEvents = Boolean(profile.events && profile.events.length > 0);
   const hasNotices = Boolean(profile.notices && profile.notices.length > 0);
   const hasStaff = Boolean(profile.staff && profile.staff.isEnabled && profile.staff.members && profile.staff.members.length > 0);
+  const hasAlumni = Boolean((madrasa as any).showAlumniOnWebsite);
 
   return (
     <div
@@ -121,6 +123,7 @@ export const MadrasaPublicPage: React.FC = () => {
         hasEvents={hasEvents}
         hasNotices={hasNotices}
         hasStaff={hasStaff}
+        hasAlumni={hasAlumni}
         activeIntakeCount={profile.activeAdmissionPeriods?.length || 0}
       />
 
@@ -175,6 +178,15 @@ export const MadrasaPublicPage: React.FC = () => {
         {hasStaff && profile.staff ? (
           <MadrasaPublicStaff
             staff={profile.staff}
+            theme={theme}
+          />
+        ) : null}
+
+        {/* 7.5. Undergraduate & Alumni Hub */}
+        {hasAlumni ? (
+          <MadrasaPublicAlumni
+            madrasaCode={madrasa.code || slug!}
+            madrasaName={madrasa.name}
             theme={theme}
           />
         ) : null}

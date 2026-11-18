@@ -759,3 +759,34 @@ export const pollsApi = {
     });
   },
 };
+
+// =============================================================================
+// 15. Alumni & Scholar Directory API (Read-only)
+// =============================================================================
+export interface TeacherAlumniItem {
+  id: string;
+  fullName: string;
+  photoUrl?: string | null;
+  batchYear: string;
+  classOrDivision?: string | null;
+  academicStatus: 'UNDERGRADUATE' | 'GRADUATE' | 'POSTGRADUATE' | 'WORKING_SCHOLAR';
+  qualification: string;
+  university: string;
+  facultyOrDepartment?: string | null;
+  currentRole?: string | null;
+  cityCountry?: string | null;
+  bio?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  linkedinUrl?: string | null;
+  showContactPublicly: boolean;
+  availableForMentorship: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+}
+
+export const alumniApi = {
+  getAlumniList(): Promise<TeacherAlumniItem[]> {
+    return request<TeacherAlumniItem[]>('/teacher/alumni', { method: 'GET' });
+  },
+};

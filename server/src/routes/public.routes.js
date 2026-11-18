@@ -9,6 +9,10 @@ import {
   submitApplication,
 } from '../controllers/admission.controller.js';
 import { admissionsUploadRateLimiter } from '../middleware/rateLimiter.js';
+import {
+  getPublicAlumniList,
+  submitPublicAlumniProfile,
+} from '../controllers/scholar-alumni.controller.js';
 
 const router = Router();
 
@@ -25,5 +29,9 @@ router.get('/madrasa/:slug', getPublicMadrasaProfile);
 router.get('/madrasa/:slug/admissions', getPublicAdmissions);
 router.post('/madrasa/:slug/admissions/upload-document', admissionsUploadRateLimiter, uploadDocumentMiddleware, uploadPublicDocument);
 router.post('/madrasa/:slug/admissions/apply', submitApplication);
+
+// Per-Madrasa Public Alumni & Scholar Directory
+router.get('/alumni/:madrasaCode', getPublicAlumniList);
+router.post('/alumni/:madrasaCode/submit', submitPublicAlumniProfile);
 
 export default router;

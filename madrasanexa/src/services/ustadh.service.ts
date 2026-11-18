@@ -71,6 +71,10 @@ export interface StaffDailySessionItem {
   status: 'PRESENT' | 'ABSENT' | null;
   isSaved: boolean;
   updatedAt?: string;
+  createdAt?: string;
+  checkInMethod?: 'QR' | 'MANUAL' | 'QR_SCAN' | string | null;
+  checkInTime?: string | null;
+  markedAt?: string | null;
 }
 
 export interface StaffDailyAttendanceData {

@@ -119,7 +119,14 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
   const schedules = await prisma.ustadhSchedule.findMany({
     where: { madrasaId, ustadhId, isActive: true },
     include: {
-      class: true,
+      class: {
+        include: {
+          students: {
+            where: { status: 'ACTIVE' },
+            select: { id: true },
+          },
+        },
+      },
       subject: true,
       classroom: true,
     },
@@ -189,7 +196,7 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
       subject: s.subject?.name || 'General Subject',
       room: roomLabel,
       roomId: s.classroomId || s.classId,
-      studentsCount: 25,
+      studentsCount: s.class?.students?.length || 0,
       status,
     };
   });
@@ -693,7 +700,15 @@ export async function getTimetable({ madrasaId, ustadhId, day }) {
   const schedules = await prisma.ustadhSchedule.findMany({
     where: whereClause,
     include: {
-      class: true,
+      class: {
+        include: {
+          academicSection: true,
+          students: {
+            where: { status: 'ACTIVE' },
+            select: { id: true },
+          },
+        },
+      },
       subject: true,
       classroom: true,
     },
@@ -714,10 +729,12 @@ export async function getTimetable({ madrasaId, ustadhId, day }) {
     }
 
     const roomLabel = s.classroom
-      ? `${s.classroom.name} (Room ${s.classroom.roomNumber})`
+      ? (s.classroom.roomNumber ? `${s.classroom.name} (Room ${s.classroom.roomNumber})` : s.classroom.name)
       : s.class?.name
         ? `Classroom ${s.class.code || s.class.name}`
         : 'Main Lecture Room';
+
+    const enrolledStudents = s.class?.students?.length || 0;
 
     return {
       id: s.id,
@@ -728,13 +745,15 @@ export async function getTimetable({ madrasaId, ustadhId, day }) {
       endMinutes: s.endMinutes,
       className: s.class?.name || 'Class',
       classId: s.classId,
+      academicSection: s.class?.academicSection?.name || 'General Academic',
       subject: s.subject?.name || 'Subject',
       subjectId: s.subjectId,
       room: roomLabel,
       roomId: s.classroomId || s.classId,
-      studentsCount: 28,
+      studentsCount: enrolledStudents,
+      enrolledCount: enrolledStudents,
       status,
-      notes: 'Scheduled academic recitation & lecture slot',
+      notes: (s.notes && typeof s.notes === 'string' && s.notes.trim()) ? s.notes.trim() : null,
     };
   });
 }
@@ -749,9 +768,10 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
     include: {
       class: {
         include: {
+          academicSection: true,
           students: {
             where: { status: 'ACTIVE' },
-            select: { id: true },
+            select: { id: true, gender: true },
           },
         },
       },
@@ -762,27 +782,14 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
 
   const distinctClassIds = [...new Set(schedules.filter((s) => s.classId).map((s) => s.classId))];
 
-  // Compute each class's real attendance rate from ClassPeriodAttendanceRecord for sessions taught by this ustadhId in that classId
+  // Compute each class's real attendance rate from ClassPeriodAttendanceRecord or AttendanceRecord
   const classAttendanceMap = new Map();
-  if (distinctClassIds.length > 0 && prisma.classPeriodAttendanceRecord) {
+  if (distinctClassIds.length > 0) {
     try {
       for (const cid of distinctClassIds) {
-        const totalClassRecords = await prisma.classPeriodAttendanceRecord.count({
-          where: {
-            madrasaId,
-            session: {
-              teacherId: ustadhId,
-              madrasaId,
-              schedule: {
-                classId: cid,
-                madrasaId,
-              },
-            },
-          },
-        });
-
-        if (totalClassRecords > 0) {
-          const presentClassRecords = await prisma.classPeriodAttendanceRecord.count({
+        let rate = null;
+        if (prisma.classPeriodAttendanceRecord) {
+          const totalRecords = await prisma.classPeriodAttendanceRecord.count({
             where: {
               madrasaId,
               session: {
@@ -793,13 +800,48 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
                   madrasaId,
                 },
               },
-              status: { in: ['PRESENT', 'LATE'] },
             },
           });
-          classAttendanceMap.set(cid, Math.round((presentClassRecords / totalClassRecords) * 1000) / 10);
-        } else {
-          classAttendanceMap.set(cid, 0);
+
+          if (totalRecords > 0) {
+            const presentRecords = await prisma.classPeriodAttendanceRecord.count({
+              where: {
+                madrasaId,
+                session: {
+                  teacherId: ustadhId,
+                  madrasaId,
+                  schedule: {
+                    classId: cid,
+                    madrasaId,
+                  },
+                },
+                status: { in: ['PRESENT', 'LATE'] },
+              },
+            });
+            rate = Math.round((presentRecords / totalRecords) * 1000) / 10;
+          }
         }
+
+        if (rate === null && prisma.attendanceRecord) {
+          const totalDaily = await prisma.attendanceRecord.count({
+            where: {
+              madrasaId,
+              session: { classId: cid, madrasaId },
+            },
+          });
+          if (totalDaily > 0) {
+            const presentDaily = await prisma.attendanceRecord.count({
+              where: {
+                madrasaId,
+                session: { classId: cid, madrasaId },
+                status: { in: ['PRESENT', 'LATE'] },
+              },
+            });
+            rate = Math.round((presentDaily / totalDaily) * 1000) / 10;
+          }
+        }
+
+        classAttendanceMap.set(cid, rate);
       }
     } catch (_) {
       // Table may not exist yet or offline mock DB
@@ -811,27 +853,34 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
   for (const s of schedules) {
     if (!s.class) continue;
     if (!classMap.has(s.classId)) {
-      const activeCount = s.class.students?.length || 0;
+      const activeStudents = s.class.students || [];
+      const activeCount = activeStudents.length;
+      const maleCount = activeStudents.filter((st) => st.gender === 'MALE').length;
+      const femaleCount = activeStudents.filter((st) => st.gender === 'FEMALE').length;
       const roomLabel = s.classroom
-        ? `${s.classroom.name} (Room ${s.classroom.roomNumber})`
+        ? (s.classroom.roomNumber ? `${s.classroom.name} (Room ${s.classroom.roomNumber})` : s.classroom.name)
         : `Classroom ${s.class.code || s.class.name}`;
+
+      const sectionName = s.class.academicSection?.name || 'General Academic';
 
       classMap.set(s.classId, {
         id: s.class.id,
         name: s.class.name,
         code: s.class.code || `CLS-${s.class.name.replace(/\s+/g, '').toUpperCase()}`,
-        stream: 'Islamic Shariah & Quranic Studies',
+        academicSection: sectionName,
+        academicSectionId: s.class.academicSectionId || null,
+        stream: sectionName,
         gradeLevel: s.class.name,
         totalStudents: activeCount,
-        maleStudents: activeCount,
-        femaleStudents: 0,
+        maleStudents: maleCount,
+        femaleStudents: femaleCount,
         subjectTaught: s.subject?.name || 'General Subject',
-        classMonitor: 'Designated Senior Student',
+        classMonitor: null,
         room: roomLabel,
         roomId: s.classroomId || s.class.id,
-        syllabusProgress: 70,
-        attendanceRate: classAttendanceMap.get(s.classId) ?? 0,
-        meetingSchedule: `${s.dayOfWeek} (${formatMinutesToTime(s.startMinutes)})`,
+        syllabusProgress: null,
+        attendanceRate: classAttendanceMap.get(s.classId) ?? null,
+        meetingSchedule: `${s.dayOfWeek.charAt(0) + s.dayOfWeek.slice(1).toLowerCase()} (${formatMinutesToTime(s.startMinutes)})`,
       });
     }
   }
@@ -852,6 +901,7 @@ export async function getClassDetail({ madrasaId, ustadhId, classId }) {
   const cls = await prisma.class.findFirst({
     where: { id: classId, madrasaId },
     include: {
+      academicSection: true,
       students: {
         where: { status: 'ACTIVE' },
         orderBy: { admissionNo: 'asc' },
@@ -901,17 +951,20 @@ export async function getClassDetail({ madrasaId, ustadhId, classId }) {
     barcodeId: st.admissionNo,
     name: st.fullName,
     guardianPhone: st.guardianPhone || '',
-    attendanceRate: studentAttendanceMap.get(st.id) ?? 0,
+    attendanceRate: studentAttendanceMap.get(st.id) ?? null,
     lastScore: '—',
     status: 'Present',
     qrToken: st.scanTokens?.[0]?.tokenHint ? `MNX1_...${st.scanTokens[0].tokenHint}` : null,
   }));
 
+  const sectionName = cls.academicSection?.name || 'General Academic';
+
   return {
     id: cls.id,
     name: cls.name,
     code: cls.code || cls.name,
-    stream: 'Islamic Shariah & Quranic Studies',
+    stream: sectionName,
+    academicSection: sectionName,
     gradeLevel: cls.name,
     totalStudents: studentList.length,
     maleStudents: studentList.length,

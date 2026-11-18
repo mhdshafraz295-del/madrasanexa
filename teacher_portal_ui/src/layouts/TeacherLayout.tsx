@@ -21,13 +21,7 @@ import type {
   TeacherProfile,
 } from '../mock/teacherMockData';
 import { authApi, profileApi, notificationsApi, resolveAssetUrl } from '../services/api';
-
-interface NavItem {
-  to: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  end?: boolean;
-}
+import { TEACHER_NAV_ITEMS, type TeacherNavItem as NavItem } from '../components/layout/TeacherNavigation';
 
 export default function TeacherLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -123,16 +117,7 @@ export default function TeacherLayout() {
     navigate('/login');
   };
 
-  const activeNavItems: NavItem[] = [
-    { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
-    { to: '/attendance/my', label: 'Attendance Check-In', icon: QrCode },
-    { to: '/timetable', label: 'Timetable', icon: Calendar },
-    { to: '/classes', label: 'Classes & Subjects', icon: BookOpen },
-    { to: '/attendance/students', label: 'Student Attendance', icon: ScanLine },
-    { to: '/attendance/history', label: 'Attendance History', icon: History },
-    { to: '/salary', label: 'My Salary & Payslips', icon: Banknote },
-    { to: '/notifications', label: 'Notifications', icon: Bell },
-  ];
+  const activeNavItems: NavItem[] = TEACHER_NAV_ITEMS;
 
   const profileAny = profile as any;
   const madrasaName = profileAny?.institution?.name || profileAny?.madrasa?.name || 'MadrasaNexa';

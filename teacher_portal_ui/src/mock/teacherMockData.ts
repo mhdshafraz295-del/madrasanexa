@@ -85,6 +85,8 @@ export interface TimetableSlot {
   room: string;
   roomId: string;
   studentsCount: number;
+  enrolledCount?: number;
+  academicSection?: string;
   status: 'Completed' | 'In Progress' | 'Upcoming';
   notes?: string;
 }
@@ -107,8 +109,10 @@ export interface AssignedClass {
   name: string;
   code: string;
   stream: string;
+  academicSection?: string;
   gradeLevel: string;
   totalStudents: number;
+  enrolledCount?: number;
   maleStudents?: number;
   femaleStudents?: number;
   subjectTaught: string;
@@ -116,7 +120,7 @@ export interface AssignedClass {
   room?: string;
   roomId?: string;
   syllabusProgress?: number; // 0 - 100
-  attendanceRate?: number; // 0 - 100
+  attendanceRate?: number | null; // 0 - 100 or null
   meetingSchedule?: string;
   students: AssignedStudent[];
 }

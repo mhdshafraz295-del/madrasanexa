@@ -8,6 +8,12 @@ export type AcademicStatus =
 
 export type ScholarApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
+export interface QualificationEntry {
+  degree: string;
+  university: string;
+  year?: string | null;
+}
+
 export interface AlumniScholarItem {
   id: string;
   madrasaId?: string;
@@ -19,6 +25,7 @@ export interface AlumniScholarItem {
   academicStatus: AcademicStatus;
   qualification: string;
   university: string;
+  qualificationsList?: QualificationEntry[] | null;
   facultyOrDepartment?: string | null;
   currentRole?: string | null;
   cityCountry?: string | null;
@@ -80,8 +87,9 @@ export interface ScholarCreatePayload {
   classOrDivision?: string | null;
   classId?: string | null;
   academicStatus: AcademicStatus;
-  qualification: string;
-  university: string;
+  qualification?: string;
+  university?: string;
+  qualificationsList?: QualificationEntry[] | null;
   facultyOrDepartment?: string | null;
   currentRole?: string | null;
   cityCountry?: string | null;

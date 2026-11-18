@@ -6,11 +6,14 @@ import {
   AlertCircle,
   Loader2,
   ArrowLeft,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import {
   getPublicAlumni,
   submitPublicAlumni,
   type AcademicStatus,
+  type QualificationEntry,
 } from '../../services/scholar-alumni.service';
 
 export const PublicAlumniRegistrationPage: React.FC = () => {
@@ -22,6 +25,29 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const [qualifications, setQualifications] = useState<QualificationEntry[]>([
+    { degree: '', university: '', year: '' },
+  ]);
+
+  const handleQualificationChange = (index: number, field: 'degree' | 'university' | 'year', value: string) => {
+    setQualifications((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const handleAddQualification = () => {
+    setQualifications((prev) => [...prev, { degree: '', university: '', year: '' }]);
+  };
+
+  const handleRemoveQualification = (index: number) => {
+    setQualifications((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
+  };
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -102,20 +128,29 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
     e.preventDefault();
     if (!madrasaCode) return;
 
+    const validQuals = qualifications.filter((q) => q.degree.trim() || q.university.trim());
     if (
       !formData.fullName.trim() ||
       !formData.batchYear.trim() ||
-      !formData.qualification.trim() ||
-      !formData.university.trim()
+      validQuals.length === 0 ||
+      !validQuals[0].degree.trim() ||
+      !validQuals[0].university.trim()
     ) {
-      setSubmitError('Please complete all required fields (Name, Batch Year, Qualification, University).');
+      setSubmitError('Please complete all required fields (Name, Batch Year, and at least one Degree / University pair).');
       return;
     }
+
+    const payloadToSubmit = {
+      ...formData,
+      qualification: validQuals[0].degree.trim(),
+      university: validQuals[0].university.trim(),
+      qualificationsList: validQuals,
+    };
 
     try {
       setSubmitting(true);
       setSubmitError(null);
-      await submitPublicAlumni(madrasaCode, formData);
+      await submitPublicAlumni(madrasaCode, payloadToSubmit);
       setSubmitSuccess(true);
     } catch (err: any) {
       setSubmitError(err.response?.data?.message || err.message || 'Failed to submit profile.');
@@ -302,30 +337,81 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Qualification & University */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block font-semibold text-[#252525] mb-1">Degree / Qualification *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.qualification}
-                    onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
-                    placeholder="e.g. B.A. (Hons) in Arabic"
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                  />
+              {/* Dynamic Qualifications List */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block font-semibold text-[#252525] text-xs">
+                    Degrees & Universities *
+                  </label>
+                  <span className="text-[10px] text-[#666666]">Add undergraduate, graduate or alim degrees</span>
                 </div>
-                <div>
-                  <label className="block font-semibold text-[#252525] mb-1">University / Institution *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.university}
-                    onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-                    placeholder="e.g. SEUSL / University of Peradeniya"
-                    className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                  />
+                <div className="space-y-2.5">
+                  {qualifications.map((item, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-1 sm:grid-cols-12 gap-2 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 items-end"
+                    >
+                      <div className="sm:col-span-5">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#666666] mb-1">
+                          Degree / Qualification *
+                        </label>
+                        <input
+                          type="text"
+                          required={index === 0}
+                          value={item.degree}
+                          onChange={(e) => handleQualificationChange(index, 'degree', e.target.value)}
+                          placeholder="e.g. Alim / B.A. (Hons)"
+                          className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                        />
+                      </div>
+                      <div className="sm:col-span-5">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#666666] mb-1">
+                          University / Institution *
+                        </label>
+                        <input
+                          type="text"
+                          required={index === 0}
+                          value={item.university}
+                          onChange={(e) => handleQualificationChange(index, 'university', e.target.value)}
+                          placeholder="e.g. South Eastern University"
+                          className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                        />
+                      </div>
+                      <div className="sm:col-span-2 flex items-center gap-1.5">
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-[#666666] mb-1">
+                            Year
+                          </label>
+                          <input
+                            type="text"
+                            value={item.year || ''}
+                            onChange={(e) => handleQualificationChange(index, 'year', e.target.value)}
+                            placeholder="e.g. 2024"
+                            className="w-full px-2.5 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
+                          />
+                        </div>
+                        {qualifications.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveQualification(index)}
+                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer self-end mb-0.5 shrink-0"
+                            title="Remove degree"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={handleAddQualification}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-2 rounded-xl transition cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add Another Degree / University</span>
+                </button>
               </div>
 
               {/* Current Role & Location */}

@@ -13,6 +13,12 @@ const approvalStatusEnum = z.enum([
   'REJECTED',
 ]);
 
+const qualificationItemSchema = z.object({
+  degree: z.string().max(191).optional().default(''),
+  university: z.string().max(191).optional().default(''),
+  year: z.string().max(50).optional().nullable().or(z.literal('')),
+});
+
 export const publicSubmitScholarSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters').max(191),
   photoUrl: z.string().url('Invalid photo URL').optional().nullable().or(z.literal('')),
@@ -20,8 +26,9 @@ export const publicSubmitScholarSchema = z.object({
   classOrDivision: z.string().max(191).optional().nullable(),
   classId: z.string().max(191).optional().nullable(),
   academicStatus: academicStatusEnum.default('UNDERGRADUATE'),
-  qualification: z.string().min(2, 'Qualification is required').max(191),
-  university: z.string().min(2, 'University / Institution is required').max(191),
+  qualification: z.string().max(191).optional().nullable().default(''),
+  university: z.string().max(191).optional().nullable().default(''),
+  qualificationsList: z.array(qualificationItemSchema).optional().nullable(),
   facultyOrDepartment: z.string().max(191).optional().nullable(),
   currentRole: z.string().max(191).optional().nullable(),
   cityCountry: z.string().max(191).optional().nullable(),

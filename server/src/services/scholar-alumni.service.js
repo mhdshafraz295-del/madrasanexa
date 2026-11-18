@@ -2,6 +2,48 @@ import { prisma } from '../lib/prisma.js';
 import { NotFoundError, BadRequestError } from '../utils/errors.js';
 
 /**
+ * Helper to normalize and synchronize multiple qualifications
+ */
+function normalizeQualifications(payload, isRequired = true) {
+  let qualificationsList = Array.isArray(payload.qualificationsList)
+    ? payload.qualificationsList
+        .filter((q) => q && (typeof q.degree === 'string' || typeof q.university === 'string'))
+        .map((q) => ({
+          degree: (q.degree || '').trim(),
+          university: (q.university || '').trim(),
+          year: q.year ? String(q.year).trim() : null,
+        }))
+        .filter((q) => q.degree || q.university)
+    : null;
+
+  let qualification = (payload.qualification || '').trim();
+  let university = (payload.university || '').trim();
+
+  if (qualificationsList && qualificationsList.length > 0) {
+    if (!qualification && qualificationsList[0].degree) {
+      qualification = qualificationsList[0].degree;
+    }
+    if (!university && qualificationsList[0].university) {
+      university = qualificationsList[0].university;
+    }
+  } else if (qualification || university) {
+    qualificationsList = [
+      {
+        degree: qualification,
+        university: university,
+        year: payload.batchYear ? String(payload.batchYear).trim() : null,
+      },
+    ];
+  }
+
+  if (isRequired && !qualification && !university) {
+    throw new BadRequestError('At least one Degree / Qualification and University is required.');
+  }
+
+  return { qualification, university, qualificationsList };
+}
+
+/**
  * Resolves madrasa by slug or code
  */
 async function resolveMadrasa(madrasaCode) {
@@ -81,6 +123,7 @@ export async function getPublicAlumniForMadrasa(madrasaCode) {
       academicStatus: item.academicStatus,
       qualification: item.qualification,
       university: item.university,
+      qualificationsList: item.qualificationsList,
       facultyOrDepartment: item.facultyOrDepartment,
       currentRole: item.currentRole,
       cityCountry: item.cityCountry,
@@ -116,6 +159,7 @@ export async function getPublicAlumniForMadrasa(madrasaCode) {
  */
 export async function submitPublicAlumni(madrasaCode, payload) {
   const madrasa = await resolveMadrasa(madrasaCode);
+  const { qualification, university, qualificationsList } = normalizeQualifications(payload, true);
 
   const created = await prisma.alumniScholar.create({
     data: {
@@ -126,8 +170,9 @@ export async function submitPublicAlumni(madrasaCode, payload) {
       classOrDivision: payload.classOrDivision ? payload.classOrDivision.trim() : null,
       classId: payload.classId ? payload.classId.trim() : null,
       academicStatus: payload.academicStatus || 'UNDERGRADUATE',
-      qualification: payload.qualification.trim(),
-      university: payload.university.trim(),
+      qualification,
+      university,
+      qualificationsList,
       facultyOrDepartment: payload.facultyOrDepartment ? payload.facultyOrDepartment.trim() : null,
       currentRole: payload.currentRole ? payload.currentRole.trim() : null,
       cityCountry: payload.cityCountry ? payload.cityCountry.trim() : null,
@@ -269,6 +314,8 @@ export async function toggleWebsiteVisibility(madrasaId, showAlumniOnWebsite) {
  * Madrasa Admin: Create Scholar Profile
  */
 export async function adminCreateScholar(madrasaId, payload, userId) {
+  const { qualification, university, qualificationsList } = normalizeQualifications(payload, true);
+
   const created = await prisma.alumniScholar.create({
     data: {
       madrasaId,
@@ -278,8 +325,9 @@ export async function adminCreateScholar(madrasaId, payload, userId) {
       classOrDivision: payload.classOrDivision ? payload.classOrDivision.trim() : null,
       classId: payload.classId ? payload.classId.trim() : null,
       academicStatus: payload.academicStatus || 'UNDERGRADUATE',
-      qualification: payload.qualification.trim(),
-      university: payload.university.trim(),
+      qualification,
+      university,
+      qualificationsList,
       facultyOrDepartment: payload.facultyOrDepartment ? payload.facultyOrDepartment.trim() : null,
       currentRole: payload.currentRole ? payload.currentRole.trim() : null,
       cityCountry: payload.cityCountry ? payload.cityCountry.trim() : null,
@@ -318,8 +366,22 @@ export async function adminUpdateScholar(madrasaId, id, payload) {
   if (payload.classOrDivision !== undefined) updateData.classOrDivision = payload.classOrDivision ? payload.classOrDivision.trim() : null;
   if (payload.classId !== undefined) updateData.classId = payload.classId ? payload.classId.trim() : null;
   if (payload.academicStatus !== undefined) updateData.academicStatus = payload.academicStatus;
-  if (payload.qualification !== undefined) updateData.qualification = payload.qualification.trim();
-  if (payload.university !== undefined) updateData.university = payload.university.trim();
+
+  if (payload.qualificationsList !== undefined || payload.qualification !== undefined || payload.university !== undefined) {
+    const { qualification, university, qualificationsList } = normalizeQualifications(
+      {
+        qualificationsList: payload.qualificationsList !== undefined ? payload.qualificationsList : existing.qualificationsList,
+        qualification: payload.qualification !== undefined ? payload.qualification : existing.qualification,
+        university: payload.university !== undefined ? payload.university : existing.university,
+        batchYear: payload.batchYear !== undefined ? payload.batchYear : existing.batchYear,
+      },
+      false
+    );
+    if (qualificationsList !== null) updateData.qualificationsList = qualificationsList;
+    if (qualification) updateData.qualification = qualification;
+    if (university) updateData.university = university;
+  }
+
   if (payload.facultyOrDepartment !== undefined) updateData.facultyOrDepartment = payload.facultyOrDepartment ? payload.facultyOrDepartment.trim() : null;
   if (payload.currentRole !== undefined) updateData.currentRole = payload.currentRole ? payload.currentRole.trim() : null;
   if (payload.cityCountry !== undefined) updateData.cityCountry = payload.cityCountry ? payload.cityCountry.trim() : null;

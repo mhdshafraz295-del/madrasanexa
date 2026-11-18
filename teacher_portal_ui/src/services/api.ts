@@ -772,6 +772,7 @@ export interface TeacherAlumniItem {
   academicStatus: 'UNDERGRADUATE' | 'GRADUATE' | 'POSTGRADUATE' | 'WORKING_SCHOLAR';
   qualification: string;
   university: string;
+  qualificationsList?: Array<{ degree: string; university: string; year?: string | null }> | null;
   facultyOrDepartment?: string | null;
   currentRole?: string | null;
   cityCountry?: string | null;

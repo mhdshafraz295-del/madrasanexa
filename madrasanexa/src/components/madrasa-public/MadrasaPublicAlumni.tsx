@@ -10,7 +10,6 @@ import {
   Search,
   CheckCircle2,
   X,
-  Plus,
   Mail,
   Phone,
   Filter,
@@ -19,9 +18,7 @@ import {
 import type { MadrasaThemeTokens } from '../../services/api';
 import {
   getPublicAlumni,
-  submitPublicAlumni,
   type AlumniScholarItem,
-  type AcademicStatus,
 } from '../../services/scholar-alumni.service';
 
 interface MadrasaPublicAlumniProps {
@@ -50,30 +47,6 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
   // Selected profile for Detail Modal
   const [activeModalProfile, setActiveModalProfile] = useState<AlumniScholarItem | null>(null);
 
-  // Self-submission modal
-  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
-    fullName: '',
-    photoUrl: '',
-    batchYear: '',
-    classOrDivision: '',
-    academicStatus: 'UNDERGRADUATE' as AcademicStatus,
-    qualification: '',
-    university: '',
-    facultyOrDepartment: '',
-    currentRole: '',
-    cityCountry: '',
-    bio: '',
-    email: '',
-    phone: '',
-    linkedinUrl: '',
-    showContactPublicly: false,
-    availableForMentorship: true,
-  });
-
   const primaryColor = theme.primaryBtnBg || '#85845C';
 
   const loadAlumni = async () => {
@@ -98,104 +71,29 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
     }
   }, [madrasaCode]);
 
-  // Handle client-side image compression for public submission
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Please select an image file (PNG, JPG, WEBP).');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const maxDim = 400;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxDim) {
-            height = Math.round((height * maxDim) / width);
-            width = maxDim;
-          }
-        } else {
-          if (height > maxDim) {
-            width = Math.round((width * maxDim) / height);
-            height = maxDim;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-        setFormData((prev) => ({ ...prev, photoUrl: dataUrl }));
-      };
-      img.src = event.target?.result as string;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.fullName.trim() || !formData.batchYear.trim() || !formData.qualification.trim() || !formData.university.trim()) {
-      setSubmitError('Please fill in all required fields (Name, Batch, Qualification, University).');
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      setSubmitError(null);
-      await submitPublicAlumni(madrasaCode, formData);
-      setSubmitSuccess(true);
-      setTimeout(() => {
-        setIsSubmitModalOpen(false);
-        setSubmitSuccess(false);
-        setFormData({
-          fullName: '',
-          photoUrl: '',
-          batchYear: '',
-          classOrDivision: '',
-          academicStatus: 'UNDERGRADUATE',
-          qualification: '',
-          university: '',
-          facultyOrDepartment: '',
-          currentRole: '',
-          cityCountry: '',
-          bio: '',
-          email: '',
-          phone: '',
-          linkedinUrl: '',
-          showContactPublicly: false,
-          availableForMentorship: true,
-        });
-      }, 2500);
-    } catch (err: any) {
-      setSubmitError(err.response?.data?.message || err.message || 'Failed to submit profile.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Filtered alumni list
+  // Client-side filtering
   const filteredAlumni = alumni.filter((item) => {
-    if (selectedBatch !== 'ALL' && item.batchYear !== selectedBatch) return false;
-    if (selectedClass !== 'ALL' && item.classOrDivision !== selectedClass) return false;
-    if (selectedStatus !== 'ALL' && item.academicStatus !== selectedStatus) return false;
+    if (selectedBatch !== 'ALL' && item.batchYear !== selectedBatch) {
+      return false;
+    }
+    if (selectedClass !== 'ALL' && item.classOrDivision !== selectedClass) {
+      return false;
+    }
+    if (selectedStatus !== 'ALL' && item.academicStatus !== selectedStatus) {
+      return false;
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const matchName = item.fullName.toLowerCase().includes(q);
-      const matchQual = item.qualification.toLowerCase().includes(q);
-      const matchUni = item.university.toLowerCase().includes(q);
-      const matchRole = (item.currentRole || '').toLowerCase().includes(q);
-      const matchLoc = (item.cityCountry || '').toLowerCase().includes(q);
-      if (!matchName && !matchQual && !matchUni && !matchRole && !matchLoc) return false;
+      const inName = item.fullName.toLowerCase().includes(q);
+      const inQual = item.qualification?.toLowerCase().includes(q);
+      const inUni = item.university?.toLowerCase().includes(q);
+      const inRole = item.currentRole?.toLowerCase().includes(q);
+      const inLoc = item.cityCountry?.toLowerCase().includes(q);
+      const inBatch = item.batchYear.toLowerCase().includes(q);
+      const inQualList = item.qualificationsList?.some(
+        (ql) => ql.degree.toLowerCase().includes(q) || ql.university.toLowerCase().includes(q)
+      );
+      return inName || inQual || inUni || inRole || inLoc || inBatch || inQualList;
     }
     return true;
   });
@@ -203,8 +101,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
   return (
     <section id="alumni" className="public-section-enter scroll-mt-28" aria-label="Alumni & Scholars">
       {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10 pb-6 border-b border-[#E5E5DF]">
-        <div className="max-w-2xl">
+      <div className="mb-10 pb-6 border-b border-[#E5E5DF]">
+        <div className="max-w-3xl">
           <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2.5 px-3 py-1 rounded-full bg-[#F5F5F1] border border-[#E5E5DF] text-[#85845C]">
             <GraduationCap className="w-3.5 h-3.5" style={{ color: primaryColor }} />
             <span>Undergraduate & Alumni Hub</span>
@@ -216,37 +114,28 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             Scholarly Alumni & Graduates
           </h2>
           <p className="mt-2 text-sm text-[#666666] leading-relaxed">
-            Celebrating our students pursuing higher academic degrees and leadership roles across universities and communities worldwide.
+            Celebrating {madrasaName} students pursuing higher academic degrees, research, and leadership roles across universities and communities worldwide.
           </p>
         </div>
-
-        <button
-          onClick={() => setIsSubmitModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white shadow-xs transition-transform hover:scale-102 cursor-pointer self-start sm:self-auto shrink-0"
-          style={{ backgroundColor: primaryColor }}
-        >
-          <Plus className="w-4 h-4" />
-          <span>Submit Your Profile</span>
-        </button>
       </div>
 
       {/* Filter Strip */}
       <div className="bg-[#F5F5F1]/70 border border-[#E5E5DF] rounded-2xl p-4 sm:p-5 mb-8 space-y-4">
-        {/* Search Row */}
-        <div className="relative">
+        {/* Row 1: Full-Width Search Input */}
+        <div className="relative w-full">
           <Search className="w-4 h-4 text-[#85845C] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by scholar name, degree, university, role or location..."
-            className="w-full pl-10 pr-4 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs sm:text-sm text-[#252525] focus:outline-hidden focus:ring-2 focus:ring-[#85845C]/30"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs sm:text-sm text-[#252525] focus:outline-hidden focus:ring-2 focus:ring-[#85845C]/30 shadow-2xs"
           />
         </div>
 
-        {/* Dynamic Filter Pills */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="font-semibold text-[#666666] mr-1 flex items-center gap-1">
+        {/* Row 2: Status Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span className="font-semibold text-[#666666] text-xs mr-1 flex items-center gap-1 shrink-0">
             <Filter className="w-3 h-3 text-[#85845C]" />
             Status:
           </span>
@@ -260,7 +149,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             <button
               key={st.id}
               onClick={() => setSelectedStatus(st.id)}
-              className={`px-3 py-1 rounded-full font-medium transition cursor-pointer ${
+              className={`h-8 px-3 text-xs font-medium rounded-full transition-all cursor-pointer flex items-center justify-center shrink-0 ${
                 selectedStatus === st.id
                   ? 'bg-[#252525] text-white shadow-2xs font-semibold'
                   : 'bg-white text-[#666666] hover:bg-[#E5E5DF]/60 border border-[#E5E5DF]'
@@ -271,47 +160,47 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
           ))}
         </div>
 
-        {/* Batch & Class/Division Secondary Filters */}
-        <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-[#E5E5DF]/70 text-xs text-[#666666]">
-          {batchYears.length > 0 && (
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-[#666666]">Batch:</span>
-              <select
-                value={selectedBatch}
-                onChange={(e) => setSelectedBatch(e.target.value)}
-                className="bg-white border border-[#E5E5DF] rounded-lg px-2.5 py-1 text-xs text-[#252525] focus:outline-hidden"
-              >
-                <option value="ALL">All Batches</option>
-                {batchYears.map((by) => (
-                  <option key={by} value={by}>
-                    Batch of {by}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+        {/* Row 3: Responsive Grid for Batch, Class/Division & Result Counter */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 items-end pt-3 border-t border-slate-100">
+          <div className="lg:col-span-4 space-y-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              BATCH YEAR
+            </label>
+            <select
+              value={selectedBatch}
+              onChange={(e) => setSelectedBatch(e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 focus:outline-hidden"
+            >
+              <option value="ALL">All Batches</option>
+              {batchYears.map((by) => (
+                <option key={by} value={by}>
+                  Batch of {by}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          {classOrDivisions.length > 0 && (
-            <div className="flex items-center gap-1.5">
-              <span className="font-semibold text-[#666666]">Class / Division:</span>
-              <select
-                value={selectedClass}
-                onChange={(e) => setSelectedClass(e.target.value)}
-                className="bg-white border border-[#E5E5DF] rounded-lg px-2.5 py-1 text-xs text-[#252525] focus:outline-hidden"
-              >
-                <option value="ALL">All Classes & Divisions</option>
-                {classOrDivisions.map((cd) => (
-                  <option key={cd} value={cd}>
-                    {cd}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="lg:col-span-5 space-y-1">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              CLASS / DIVISION
+            </label>
+            <select
+              value={selectedClass}
+              onChange={(e) => setSelectedClass(e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-800 focus:outline-hidden"
+            >
+              <option value="ALL">All Classes & Divisions</option>
+              {classOrDivisions.map((cd) => (
+                <option key={cd} value={cd}>
+                  {cd}
+                </option>
+              ))}
+            </select>
+          </div>
 
-          <div className="ml-auto text-[11px] text-[#666666]">
-            Showing <strong className="text-[#252525]">{filteredAlumni.length}</strong> of{' '}
-            <strong className="text-[#252525]">{alumni.length}</strong> scholars
+          <div className="lg:col-span-3 text-xs font-medium text-slate-500 lg:text-right pb-2">
+            Showing <strong className="text-slate-800">{filteredAlumni.length}</strong> of{' '}
+            <strong className="text-slate-800">{alumni.length}</strong> scholars
           </div>
         </div>
       </div>
@@ -421,6 +310,14 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                       </div>
                     </div>
 
+                    {item.qualificationsList && item.qualificationsList.length > 1 && (
+                      <div className="pt-0.5">
+                        <span className="inline-flex items-center text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                          +{item.qualificationsList.length - 1} more qualification{item.qualificationsList.length - 1 > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    )}
+
                     {item.currentRole && (
                       <div className="flex items-start gap-2 text-[#666666]">
                         <Award className="w-3.5 h-3.5 text-[#85845C] shrink-0 mt-0.5" />
@@ -509,44 +406,83 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-4 text-xs sm:text-sm text-[#252525]">
-              <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F5F5F1] rounded-xl border border-[#E5E5DF]">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-[#666666] block">
-                    Degree / Qualification
-                  </span>
-                  <span className="font-semibold text-xs mt-0.5 block">
-                    {activeModalProfile.qualification}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-[#666666] block">
-                    University / Institution
-                  </span>
-                  <span className="font-semibold text-xs mt-0.5 block">
-                    {activeModalProfile.university}
-                  </span>
-                </div>
-                {activeModalProfile.currentRole && (
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-[#666666] block">
-                      Current Role
-                    </span>
-                    <span className="font-medium text-xs mt-0.5 block">
-                      {activeModalProfile.currentRole}
-                    </span>
+              {/* Academic Credentials / Qualifications List */}
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase font-bold text-[#666666] block">
+                  Academic Credentials
+                </span>
+                {activeModalProfile.qualificationsList && activeModalProfile.qualificationsList.length > 0 ? (
+                  <div className="space-y-2">
+                    {activeModalProfile.qualificationsList.map((q, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-[#F5F5F1] rounded-xl border border-[#E5E5DF] flex items-start justify-between gap-3"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 font-bold text-[#252525] text-xs">
+                            <GraduationCap className="w-3.5 h-3.5 text-[#85845C] shrink-0" />
+                            <span>{q.degree || 'Degree / Qualification'}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[#666666] text-[11px] pl-5">
+                            <Building2 className="w-3 h-3 text-[#85845C]/70 shrink-0" />
+                            <span>{q.university || 'University / Institution'}</span>
+                          </div>
+                        </div>
+                        {q.year && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-[#E5E5DF] text-[#252525] shrink-0">
+                            {q.year}
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
-                {activeModalProfile.cityCountry && (
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-[#666666] block">
-                      Location
-                    </span>
-                    <span className="font-medium text-xs mt-0.5 block">
-                      {activeModalProfile.cityCountry}
-                    </span>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F5F5F1] rounded-xl border border-[#E5E5DF]">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-[#666666] block">
+                        Degree / Qualification
+                      </span>
+                      <span className="font-semibold text-xs mt-0.5 block">
+                        {activeModalProfile.qualification}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-[#666666] block">
+                        University / Institution
+                      </span>
+                      <span className="font-semibold text-xs mt-0.5 block">
+                        {activeModalProfile.university}
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {/* Current Role & Location */}
+              {(activeModalProfile.currentRole || activeModalProfile.cityCountry) && (
+                <div className="grid grid-cols-2 gap-3 p-3.5 bg-[#F5F5F1] rounded-xl border border-[#E5E5DF]">
+                  {activeModalProfile.currentRole && (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-[#666666] block">
+                        Current Role
+                      </span>
+                      <span className="font-medium text-xs mt-0.5 block">
+                        {activeModalProfile.currentRole}
+                      </span>
+                    </div>
+                  )}
+                  {activeModalProfile.cityCountry && (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-[#666666] block">
+                        Location
+                      </span>
+                      <span className="font-medium text-xs mt-0.5 block">
+                        {activeModalProfile.cityCountry}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {activeModalProfile.bio && (
                 <div>
@@ -611,302 +547,6 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                 Close
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Self-Submission Modal */}
-      {isSubmitModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-xl w-full border border-[#E5E5DF] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            {/* Header */}
-            <div className="p-5 border-b border-[#E5E5DF] flex items-center justify-between bg-[#F5F5F1]/60">
-              <div>
-                <h3 className="font-serif font-bold text-base sm:text-lg text-[#252525]">
-                  Alumni & Scholar Profile Submission
-                </h3>
-                <p className="text-xs text-[#666666]">
-                  Register your academic journey to appear in the official {madrasaName} alumni directory.
-                </p>
-              </div>
-              <button
-                onClick={() => setIsSubmitModalOpen(false)}
-                className="p-1.5 text-[#666666] hover:text-[#252525] rounded-lg hover:bg-white cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleFormSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
-              {submitSuccess ? (
-                <div className="py-12 text-center space-y-3">
-                  <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
-                    <CheckCircle2 className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-serif font-bold text-base text-[#252525]">
-                    Profile Submitted Successfully!
-                  </h4>
-                  <p className="text-xs text-[#666666] max-w-sm mx-auto">
-                    JazakAllah Khair! Your submission has been received and will be reviewed by the madrasa administration before going live.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {submitError && (
-                    <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs">
-                      {submitError}
-                    </div>
-                  )}
-
-                  {/* Profile Photo Uploader */}
-                  <div className="flex items-center gap-4 p-3 bg-[#F5F5F1] rounded-xl border border-[#E5E5DF]">
-                    {formData.photoUrl ? (
-                      <img
-                        src={formData.photoUrl}
-                        alt="Preview"
-                        className="w-16 h-16 rounded-full object-cover border-2 border-white shadow-xs shrink-0"
-                      />
-                    ) : (
-                      <div className="w-16 h-16 rounded-full bg-white border border-[#E5E5DF] flex items-center justify-center text-[#85845C] shrink-0 font-serif font-bold text-lg">
-                        <GraduationCap className="w-6 h-6" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        Profile Photo (Recommended 400x400)
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        className="text-xs file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#85845C] file:text-white hover:file:opacity-90 cursor-pointer"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Full Name & Batch */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        Full Name *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.fullName}
-                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                        placeholder="e.g. Mohamed Safras"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        Batch Year *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.batchYear}
-                        onChange={(e) => setFormData({ ...formData, batchYear: e.target.value })}
-                        placeholder="e.g. 2021"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Class / Division & Status */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        Class / Division at Madrasa
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.classOrDivision}
-                        onChange={(e) => setFormData({ ...formData, classOrDivision: e.target.value })}
-                        placeholder="e.g. Alim Final Year / Hifz"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        Current Academic Status
-                      </label>
-                      <select
-                        value={formData.academicStatus}
-                        onChange={(e) => setFormData({ ...formData, academicStatus: e.target.value as AcademicStatus })}
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      >
-                        <option value="UNDERGRADUATE">Undergraduate</option>
-                        <option value="GRADUATE">Graduate</option>
-                        <option value="POSTGRADUATE">Postgraduate</option>
-                        <option value="WORKING_SCHOLAR">Working Scholar</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Qualification & University */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        Degree / Qualification *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.qualification}
-                        onChange={(e) => setFormData({ ...formData, qualification: e.target.value })}
-                        placeholder="e.g. B.A. (Hons) in Arabic"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        University / Institution *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.university}
-                        onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-                        placeholder="e.g. SEUSL / University of Peradeniya"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Current Role & Location */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        Current Role / Title
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.currentRole}
-                        onChange={(e) => setFormData({ ...formData, currentRole: e.target.value })}
-                        placeholder="e.g. Final Year Student / Lecturer"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">
-                        City & Country
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.cityCountry}
-                        onChange={(e) => setFormData({ ...formData, cityCountry: e.target.value })}
-                        placeholder="e.g. Oluvil, Sri Lanka"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Bio */}
-                  <div>
-                    <label className="block font-semibold text-[#252525] mb-1">
-                      Academic Bio & Aspirations
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={formData.bio}
-                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                      placeholder="Briefly describe your field of study, research, or career aspirations..."
-                      className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
-                    />
-                  </div>
-
-                  {/* Contact Channels */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">Email</label>
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        placeholder="scholar@example.com"
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">Phone</label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        placeholder="+94 77 ..."
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-semibold text-[#252525] mb-1">LinkedIn URL</label>
-                      <input
-                        type="url"
-                        value={formData.linkedinUrl}
-                        onChange={(e) => setFormData({ ...formData, linkedinUrl: e.target.value })}
-                        placeholder="https://linkedin.com/in/..."
-                        className="w-full px-3 py-2 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Checkboxes */}
-                  <div className="space-y-2 pt-2 border-t border-[#E5E5DF]">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.availableForMentorship}
-                        onChange={(e) => setFormData({ ...formData, availableForMentorship: e.target.checked })}
-                        className="rounded text-[#85845C]"
-                      />
-                      <span className="text-[#252525] font-medium">
-                        I am open to mentoring current madrasa students entering university
-                      </span>
-                    </label>
-
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={formData.showContactPublicly}
-                        onChange={(e) => setFormData({ ...formData, showContactPublicly: e.target.checked })}
-                        className="rounded text-[#85845C]"
-                      />
-                      <span className="text-[#666666]">
-                        Display my email / phone publicly on the website (otherwise visible to admin only)
-                      </span>
-                    </label>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="pt-4 border-t border-[#E5E5DF] flex items-center justify-end gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setIsSubmitModalOpen(false)}
-                      className="px-4 py-2 bg-white border border-[#E5E5DF] hover:bg-[#E5E5DF] text-[#252525] font-semibold rounded-xl cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submitting}
-                      className="px-5 py-2 text-white font-semibold rounded-xl shadow-xs transition hover:opacity-95 cursor-pointer disabled:opacity-50 flex items-center gap-2"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {submitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Submitting...</span>
-                        </>
-                      ) : (
-                        <span>Submit for Verification</span>
-                      )}
-                    </button>
-                  </div>
-                </>
-              )}
-            </form>
           </div>
         </div>
       )}

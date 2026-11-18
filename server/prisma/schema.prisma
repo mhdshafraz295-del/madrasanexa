@@ -2891,6 +2891,7 @@ model AlumniScholar {
   academicStatus         String    @default("UNDERGRADUATE") // "UNDERGRADUATE" | "GRADUATE" | "POSTGRADUATE" | "WORKING_SCHOLAR"
   qualification          String
   university             String
+  qualificationsList     Json?
   facultyOrDepartment    String?
   currentRole            String?
   cityCountry            String?

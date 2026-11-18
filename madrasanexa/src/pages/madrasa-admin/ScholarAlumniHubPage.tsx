@@ -34,6 +34,7 @@ import {
   type AcademicStatus,
   type ScholarApprovalStatus,
   type ScholarCreatePayload,
+  type QualificationEntry,
 } from '../../services/scholar-alumni.service';
 
 export const ScholarAlumniHubPage: React.FC = () => {
@@ -130,9 +131,33 @@ export const ScholarAlumniHubPage: React.FC = () => {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
+  const [editorQualifications, setEditorQualifications] = useState<QualificationEntry[]>([
+    { degree: '', university: '', year: '' },
+  ]);
+
+  const handleQualificationChange = (index: number, field: 'degree' | 'university' | 'year', value: string) => {
+    setEditorQualifications((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const handleAddQualification = () => {
+    setEditorQualifications((prev) => [...prev, { degree: '', university: '', year: '' }]);
+  };
+
+  const handleRemoveQualification = (index: number) => {
+    setEditorQualifications((prev) => {
+      if (prev.length <= 1) return prev;
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
   const openCreateModal = () => {
     setEditingItem(null);
     setEditorError(null);
+    setEditorQualifications([{ degree: '', university: '', year: '' }]);
     setEditorForm({
       fullName: '',
       photoUrl: '',
@@ -159,6 +184,10 @@ export const ScholarAlumniHubPage: React.FC = () => {
   const openEditModal = (item: AlumniScholarItem) => {
     setEditingItem(item);
     setEditorError(null);
+    const qualList = (item.qualificationsList && item.qualificationsList.length > 0)
+      ? item.qualificationsList.map((q) => ({ degree: q.degree || '', university: q.university || '', year: q.year || '' }))
+      : [{ degree: item.qualification || '', university: item.university || '', year: item.batchYear || '' }];
+    setEditorQualifications(qualList);
     setEditorForm({
       fullName: item.fullName,
       photoUrl: item.photoUrl || '',
@@ -222,18 +251,26 @@ export const ScholarAlumniHubPage: React.FC = () => {
 
   const handleSaveEditor = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editorForm.fullName.trim() || !editorForm.batchYear.trim() || !editorForm.qualification.trim() || !editorForm.university.trim()) {
-      setEditorError('Please provide Full Name, Batch Year, Qualification, and University.');
+    const validQuals = editorQualifications.filter((q) => q.degree.trim() || q.university.trim());
+    if (!editorForm.fullName.trim() || !editorForm.batchYear.trim() || validQuals.length === 0 || !validQuals[0].degree.trim() || !validQuals[0].university.trim()) {
+      setEditorError('Please provide Full Name, Batch Year, and at least one Degree / University pair.');
       return;
     }
+
+    const payloadToSave: ScholarCreatePayload = {
+      ...editorForm,
+      qualification: validQuals[0].degree.trim(),
+      university: validQuals[0].university.trim(),
+      qualificationsList: validQuals,
+    };
 
     try {
       setSavingEditor(true);
       setEditorError(null);
       if (editingItem) {
-        await updateAdminScholar(editingItem.id, editorForm);
+        await updateAdminScholar(editingItem.id, payloadToSave);
       } else {
-        await createAdminScholar(editorForm);
+        await createAdminScholar(payloadToSave);
       }
       setIsEditorModalOpen(false);
       fetchHub();
@@ -670,6 +707,13 @@ export const ScholarAlumniHubPage: React.FC = () => {
                       <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                       <span className="line-clamp-1">{item.university}</span>
                     </div>
+                    {item.qualificationsList && item.qualificationsList.length > 1 && (
+                      <div className="pt-0.5">
+                        <span className="inline-flex items-center text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                          +{item.qualificationsList.length - 1} more qualification{item.qualificationsList.length - 1 > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    )}
                     {item.currentRole && (
                       <div className="flex items-center gap-2 text-slate-600 text-[11px]">
                         <span className="font-medium text-slate-400">Role:</span>
@@ -845,34 +889,81 @@ export const ScholarAlumniHubPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Qualification & University */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-800 mb-1">
-                    Degree / Qualification *
+              {/* Dynamic Qualifications List */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block font-semibold text-slate-800 text-xs">
+                    Degrees & Universities *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={editorForm.qualification}
-                    onChange={(e) => setEditorForm({ ...editorForm, qualification: e.target.value })}
-                    placeholder="e.g. B.A. (Hons) in Arabic"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                  />
+                  <span className="text-[10px] text-slate-400">Add undergraduate, graduate or alim degrees</span>
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-800 mb-1">
-                    University / Institution *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={editorForm.university}
-                    onChange={(e) => setEditorForm({ ...editorForm, university: e.target.value })}
-                    placeholder="e.g. SEUSL / University of Peradeniya"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
-                  />
+                <div className="space-y-2.5">
+                  {editorQualifications.map((item, index) => (
+                    <div
+                      key={index}
+                      className="grid grid-cols-1 sm:grid-cols-12 gap-2 p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 items-end"
+                    >
+                      <div className="sm:col-span-5">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          Degree / Qualification *
+                        </label>
+                        <input
+                          type="text"
+                          required={index === 0}
+                          value={item.degree}
+                          onChange={(e) => handleQualificationChange(index, 'degree', e.target.value)}
+                          placeholder="e.g. Alim / B.A. (Hons)"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <div className="sm:col-span-5">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                          University / Institution *
+                        </label>
+                        <input
+                          type="text"
+                          required={index === 0}
+                          value={item.university}
+                          onChange={(e) => handleQualificationChange(index, 'university', e.target.value)}
+                          placeholder="e.g. South Eastern University"
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                        />
+                      </div>
+                      <div className="sm:col-span-2 flex items-center gap-1.5">
+                        <div className="flex-1 min-w-0">
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            Year
+                          </label>
+                          <input
+                            type="text"
+                            value={item.year || ''}
+                            onChange={(e) => handleQualificationChange(index, 'year', e.target.value)}
+                            placeholder="e.g. 2024"
+                            className="w-full px-2.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden"
+                          />
+                        </div>
+                        {editorQualifications.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveQualification(index)}
+                            className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl cursor-pointer self-end mb-0.5 shrink-0"
+                            title="Remove degree"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
+                <button
+                  type="button"
+                  onClick={handleAddQualification}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-3 py-2 rounded-xl transition cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add Another Degree / University</span>
+                </button>
               </div>
 
               {/* Current Role & Location */}
@@ -1036,28 +1127,66 @@ export const ScholarAlumniHubPage: React.FC = () => {
             </div>
 
             <div className="p-5 overflow-y-auto space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Degree</span>
-                  <span className="font-semibold text-slate-800">{activeDetailItem.qualification}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">University</span>
-                  <span className="font-semibold text-slate-800">{activeDetailItem.university}</span>
-                </div>
-                {activeDetailItem.currentRole && (
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Role</span>
-                    <span className="font-medium text-slate-800">{activeDetailItem.currentRole}</span>
+              {/* Academic Credentials / Qualifications List */}
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                  Academic Credentials
+                </span>
+                {activeDetailItem.qualificationsList && activeDetailItem.qualificationsList.length > 0 ? (
+                  <div className="space-y-2">
+                    {activeDetailItem.qualificationsList.map((q, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/80 flex items-start justify-between gap-3"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                            <GraduationCap className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>{q.degree || 'Degree / Qualification'}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-slate-600 text-[11px] pl-5">
+                            <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span>{q.university || 'University / Institution'}</span>
+                          </div>
+                        </div>
+                        {q.year && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700 shrink-0">
+                            {q.year}
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
-                {activeDetailItem.cityCountry && (
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Location</span>
-                    <span className="font-medium text-slate-800">{activeDetailItem.cityCountry}</span>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Degree</span>
+                      <span className="font-semibold text-slate-800">{activeDetailItem.qualification}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">University</span>
+                      <span className="font-semibold text-slate-800">{activeDetailItem.university}</span>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {(activeDetailItem.currentRole || activeDetailItem.cityCountry) && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  {activeDetailItem.currentRole && (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Role</span>
+                      <span className="font-medium text-slate-800">{activeDetailItem.currentRole}</span>
+                    </div>
+                  )}
+                  {activeDetailItem.cityCountry && (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Location</span>
+                      <span className="font-medium text-slate-800">{activeDetailItem.cityCountry}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {activeDetailItem.bio && (
                 <div>

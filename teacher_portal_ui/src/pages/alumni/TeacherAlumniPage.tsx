@@ -59,7 +59,10 @@ export const TeacherAlumniPage: React.FC = () => {
       const matchQual = item.qualification.toLowerCase().includes(q);
       const matchUni = item.university.toLowerCase().includes(q);
       const matchRole = (item.currentRole || '').toLowerCase().includes(q);
-      if (!matchName && !matchQual && !matchUni && !matchRole) return false;
+      const matchQualList = item.qualificationsList?.some(
+        (ql) => ql.degree.toLowerCase().includes(q) || ql.university.toLowerCase().includes(q)
+      );
+      if (!matchName && !matchQual && !matchUni && !matchRole && !matchQualList) return false;
     }
     return true;
   });
@@ -232,6 +235,13 @@ export const TeacherAlumniPage: React.FC = () => {
                       <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
                       <span className="line-clamp-1">{item.university}</span>
                     </div>
+                    {item.qualificationsList && item.qualificationsList.length > 1 && (
+                      <div className="pt-0.5">
+                        <span className="inline-flex items-center text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                          +{item.qualificationsList.length - 1} more qualification{item.qualificationsList.length - 1 > 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    )}
                     {item.currentRole && (
                       <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
                         <span className="font-medium text-slate-400">Role:</span>
@@ -305,28 +315,66 @@ export const TeacherAlumniPage: React.FC = () => {
             </div>
 
             <div className="p-5 overflow-y-auto space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Degree</span>
-                  <span className="font-semibold text-slate-800">{activeProfile.qualification}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block">University</span>
-                  <span className="font-semibold text-slate-800">{activeProfile.university}</span>
-                </div>
-                {activeProfile.currentRole && (
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Role</span>
-                    <span className="font-medium text-slate-800">{activeProfile.currentRole}</span>
+              {/* Academic Credentials / Qualifications List */}
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                  Academic Credentials
+                </span>
+                {activeProfile.qualificationsList && activeProfile.qualificationsList.length > 0 ? (
+                  <div className="space-y-2">
+                    {activeProfile.qualificationsList.map((q, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/80 flex items-start justify-between gap-3"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
+                            <GraduationCap className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                            <span>{q.degree || 'Degree / Qualification'}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-slate-600 text-[11px] pl-5">
+                            <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span>{q.university || 'University / Institution'}</span>
+                          </div>
+                        </div>
+                        {q.year && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700 shrink-0">
+                            {q.year}
+                          </span>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                )}
-                {activeProfile.cityCountry && (
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Location</span>
-                    <span className="font-medium text-slate-800">{activeProfile.cityCountry}</span>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Degree</span>
+                      <span className="font-semibold text-slate-800">{activeProfile.qualification}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">University</span>
+                      <span className="font-semibold text-slate-800">{activeProfile.university}</span>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {(activeProfile.currentRole || activeProfile.cityCountry) && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  {activeProfile.currentRole && (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Role</span>
+                      <span className="font-medium text-slate-800">{activeProfile.currentRole}</span>
+                    </div>
+                  )}
+                  {activeProfile.cityCountry && (
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Location</span>
+                      <span className="font-medium text-slate-800">{activeProfile.cityCountry}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {activeProfile.bio && (
                 <div>

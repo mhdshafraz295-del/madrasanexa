@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Eye,
@@ -6,17 +6,36 @@ import {
   Loader2,
   AlertCircle,
   ShieldCheck,
+  Building2,
 } from 'lucide-react';
 import { authApi } from '../services/api';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState(import.meta.env.DEV ? 'abdullah.farooq@madrasanexa.lk' : '');
   const [password, setPassword] = useState(import.meta.env.DEV ? 'demo12345' : '');
+  const [madrasaCode, setMadrasaCode] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const navigate = useNavigate();
+
+  // Auto-prefill credentials from deep-link query parameters (?code=...&email=...)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const codeParam = params.get('code');
+      const emailParam = params.get('email') || params.get('user');
+      if (codeParam) {
+        setMadrasaCode(codeParam.trim().toUpperCase());
+      }
+      if (emailParam) {
+        setIdentifier(emailParam.trim());
+      }
+    } catch {
+      // Non-blocking fallback
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +44,7 @@ export default function LoginPage() {
 
     // Client validation
     if (!identifier.trim()) {
-      setErrorMessage('Please enter your email address.');
+      setErrorMessage('Please enter your email address or Staff ID.');
       setIsLoading(false);
       return;
     }
@@ -104,6 +123,12 @@ export default function LoginPage() {
           <p className="text-sm text-[#7C8A9A] mt-1">
             Sign in to access your Ustadh & Teacher workspace.
           </p>
+          {madrasaCode && (
+            <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold animate-in fade-in">
+              <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Institution Code: <span className="font-mono font-bold tracking-wider">{madrasaCode}</span></span>
+            </div>
+          )}
         </div>
 
         {/* Demo Credentials Pill in DEV */}
@@ -142,24 +167,24 @@ export default function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-5" noValidate>
-          {/* Email Address */}
+          {/* Email Address or Staff ID */}
           <div>
             <label
               htmlFor="email"
               className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider mb-2"
             >
-              Email Address
+              Email Address or Staff ID
             </label>
             <input
               id="email"
               name="email"
-              type="email"
-              autoComplete="email"
+              type="text"
+              autoComplete="username"
               required
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               disabled={isLoading}
-              placeholder="teacher@madrasanexa.lk"
+              placeholder="teacher@madrasanexa.lk or UST001"
               className="w-full px-4 py-3 text-sm text-[#0F172A] bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:border-transparent focus:bg-white transition placeholder-[#7C8A9A]/60"
             />
           </div>

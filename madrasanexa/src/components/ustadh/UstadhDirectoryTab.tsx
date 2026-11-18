@@ -395,10 +395,14 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
                               setSelectedUstadhForPortal(u);
                               setIsPortalModalOpen(true);
                             }}
-                            title="Provision Teacher Portal Login"
-                            className="p-1.5 text-slate-500 hover:text-teal-700 hover:bg-teal-50 rounded transition-colors cursor-pointer"
+                            title={u.hasPortalAccess ? 'Reset Portal Password / Dispatch Credentials' : 'Provision Teacher Portal Login'}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              u.hasPortalAccess
+                                ? 'text-teal-700 bg-teal-50 hover:bg-teal-100 hover:text-teal-900'
+                                : 'text-slate-500 hover:text-teal-700 hover:bg-teal-50'
+                            }`}
                           >
-                            <Key className="w-4 h-4 text-teal-600" />
+                            <Key className="w-4 h-4" />
                           </button>
                           <button
                             type="button"

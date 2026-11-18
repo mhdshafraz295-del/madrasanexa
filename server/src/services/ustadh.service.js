@@ -450,15 +450,53 @@ export async function linkUstadhToUser(madrasaId, ustadhId, targetUserId, adminU
 }
 
 /**
- * Creates a linked TEACHER portal user account for an existing Ustadh profile.
+ * Generates a readable 8-character OTP avoiding ambiguous characters (0, O, 1, l, I).
+ * Format: <Prefix>@<4-digits> (e.g. Mdx@7492).
+ *
+ * @param {string} [prefix='Mdx']
+ * @returns {string}
+ */
+export function generateReadableOtp(prefix = 'Mdx') {
+  let clean = (prefix || 'Mdx').replace(/[^a-zA-Z]/g, '').slice(0, 3);
+  if (!clean) clean = 'Mdx';
+  clean = clean.charAt(0).toUpperCase() + clean.slice(1).toLowerCase();
+
+  // Digits pool avoiding 0 and 1
+  const digitsPool = '23456789';
+  let digits = '';
+  for (let i = 0; i < 4; i++) {
+    digits += digitsPool.charAt(Math.floor(Math.random() * digitsPool.length));
+  }
+  return `${clean}@${digits}`;
+}
+
+/**
+ * Resolves the live Teacher Portal base URL with dynamic fallback.
+ *
+ * @param {string} [customUrl]
+ * @returns {string}
+ */
+export function resolveTeacherPortalUrl(customUrl = null) {
+  if (customUrl && typeof customUrl === 'string' && customUrl.trim()) {
+    return customUrl.trim().replace(/\/+$/, '');
+  }
+  if (process.env.TEACHER_PORTAL_URL && process.env.TEACHER_PORTAL_URL.trim()) {
+    return process.env.TEACHER_PORTAL_URL.trim().replace(/\/+$/, '');
+  }
+  return 'http://localhost:5174';
+}
+
+/**
+ * Creates or resets a linked TEACHER portal user account for an existing Ustadh profile.
+ * Supports auto-generating readable OTPs, dynamic deep-links, and institutional fallback emails.
  *
  * @param {string} madrasaId
  * @param {string} ustadhId
  * @param {string} adminUserId
- * @param {{ email: string, password?: string, mustChangePassword?: boolean }} data
+ * @param {{ email?: string, password?: string, mustChangePassword?: boolean, teacherPortalUrl?: string, isReset?: boolean }} data
  * @returns {Promise<object>}
  */
-export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUserId, data) {
+export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUserId, data = {}) {
   const ustadh = await prisma.ustadh.findFirst({
     where: { id: ustadhId, madrasaId },
   });
@@ -467,14 +505,114 @@ export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUse
     throw new NotFoundError('Ustadh not found.');
   }
 
+  // Fetch institution name & code
+  const madrasa = await prisma.madrasa.findUnique({
+    where: { id: madrasaId },
+    select: { id: true, name: true, code: true },
+  });
+
+  const madrasaCode = madrasa?.code || 'MDX';
+  const madrasaName = madrasa?.name || 'Madrasa';
+  const baseUrl = resolveTeacherPortalUrl(data.teacherPortalUrl);
+
+  // Case 1: Ustadh already has a linked portal account -> Reset / Re-provision credentials
   if (ustadh.userId) {
-    throw new ConflictError('This Ustadh already has a linked portal user account.');
+    const existingUser = await prisma.user.findUnique({
+      where: { id: ustadh.userId },
+    });
+
+    if (existingUser) {
+      const targetEmail = (data.email || existingUser.email || ustadh.email || '').trim().toLowerCase() ||
+        `${ustadh.ustadhCode.toLowerCase()}@${madrasaCode.toLowerCase()}.madrasanexa.local`;
+
+      // If updating email, check uniqueness
+      if (targetEmail !== existingUser.email) {
+        const emailTaken = await prisma.user.findFirst({
+          where: {
+            email: targetEmail,
+            id: { not: existingUser.id },
+          },
+        });
+        if (emailTaken) {
+          throw new ConflictError(`An account with email "${targetEmail}" already exists.`);
+        }
+      }
+
+      const rawPassword = data.password && data.password.trim()
+        ? data.password.trim()
+        : generateReadableOtp(madrasaCode);
+      const passwordHash = await bcrypt.hash(rawPassword, 10);
+      const mustChange = data.mustChangePassword !== undefined ? Boolean(data.mustChangePassword) : true;
+
+      const [updatedUser, updatedUstadh] = await prisma.$transaction(async (tx) => {
+        const uUser = await tx.user.update({
+          where: { id: existingUser.id },
+          data: {
+            email: targetEmail,
+            name: ustadh.fullName,
+            passwordHash,
+            mustChangePassword: mustChange,
+            isActive: true,
+            tokenVersion: { increment: 1 },
+          },
+        });
+
+        const uUstadh = await tx.ustadh.update({
+          where: { id: ustadh.id },
+          data: {
+            email: targetEmail,
+          },
+        });
+
+        return [uUser, uUstadh];
+      });
+
+      logTenantActivity({
+        madrasaId,
+        userId: adminUserId,
+        action: 'TEACHER_PORTAL_PASSWORD_RESET',
+        entityType: 'Ustadh',
+        entityId: updatedUstadh.id,
+        metadata: {
+          ustadhCode: updatedUstadh.ustadhCode,
+          userId: updatedUser.id,
+          email: targetEmail,
+          mustChangePassword: mustChange,
+        },
+      }).catch(() => {});
+
+      const loginUrl = `${baseUrl}/login?code=${encodeURIComponent(madrasaCode)}&email=${encodeURIComponent(updatedUser.email)}`;
+
+      return {
+        ustadh: formatUstadhResponse(updatedUstadh),
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          role: updatedUser.role,
+          mustChangePassword: updatedUser.mustChangePassword,
+          temporaryPassword: rawPassword,
+        },
+        credentials: {
+          madrasaName,
+          madrasaCode,
+          ustadhName: updatedUstadh.fullName,
+          ustadhCode: updatedUstadh.ustadhCode,
+          loginIdentifier: updatedUser.email,
+          temporaryPassword: rawPassword,
+          teacherPortalUrl: baseUrl,
+          loginUrl,
+          whatsappNumber: updatedUstadh.whatsappNumber || updatedUstadh.phoneNumber || null,
+          email: updatedUser.email,
+        },
+        isReset: true,
+      };
+    }
   }
 
-  const emailToUse = (data.email || ustadh.email || '').trim().toLowerCase();
-  if (!emailToUse) {
-    throw new BadRequestError('An email address is required to create a Teacher Portal login account.');
-  }
+  // Case 2: New Portal Account Provisioning
+  const emailToUse = (data.email || ustadh.email || '').trim().toLowerCase() ||
+    `${ustadh.ustadhCode.toLowerCase()}@${madrasaCode.toLowerCase()}.madrasanexa.local`;
 
   // Check if a User with this email already exists
   const existingUser = await prisma.user.findUnique({
@@ -482,16 +620,34 @@ export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUse
   });
 
   if (existingUser) {
-    // If the user already belongs to this madrasa and has TEACHER role and is not linked to any ustadh
     if (existingUser.madrasaId === madrasaId && existingUser.role === 'TEACHER') {
       const linkedAnother = await prisma.ustadh.findFirst({
         where: { userId: existingUser.id },
       });
       if (!linkedAnother) {
-        // Link to existing teacher user
-        const updated = await prisma.ustadh.update({
-          where: { id: ustadh.id },
-          data: { userId: existingUser.id, email: emailToUse },
+        // Link to existing unlinked teacher user and update password
+        const rawPassword = data.password && data.password.trim()
+          ? data.password.trim()
+          : generateReadableOtp(madrasaCode);
+        const passwordHash = await bcrypt.hash(rawPassword, 10);
+        const mustChange = data.mustChangePassword !== undefined ? Boolean(data.mustChangePassword) : true;
+
+        const [updatedUser, updatedUstadh] = await prisma.$transaction(async (tx) => {
+          const uUser = await tx.user.update({
+            where: { id: existingUser.id },
+            data: {
+              passwordHash,
+              mustChangePassword: mustChange,
+              tokenVersion: { increment: 1 },
+            },
+          });
+
+          const uUstadh = await tx.ustadh.update({
+            where: { id: ustadh.id },
+            data: { userId: existingUser.id, email: emailToUse },
+          });
+
+          return [uUser, uUstadh];
         });
 
         logTenantActivity({
@@ -499,30 +655,47 @@ export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUse
           userId: adminUserId,
           action: 'TEACHER_PORTAL_ACCOUNT_LINKED',
           entityType: 'Ustadh',
-          entityId: updated.id,
-          metadata: { ustadhCode: updated.ustadhCode, userId: existingUser.id, email: emailToUse },
+          entityId: updatedUstadh.id,
+          metadata: { ustadhCode: updatedUstadh.ustadhCode, userId: updatedUser.id, email: emailToUse },
         }).catch(() => {});
 
+        const loginUrl = `${baseUrl}/login?code=${encodeURIComponent(madrasaCode)}&email=${encodeURIComponent(updatedUser.email)}`;
+
         return {
-          ustadh: formatUstadhResponse(updated),
+          ustadh: formatUstadhResponse(updatedUstadh),
           user: {
-            id: existingUser.id,
-            email: existingUser.email,
-            name: existingUser.name,
-            role: existingUser.role,
-            mustChangePassword: existingUser.mustChangePassword,
-            isExistingUserLinked: true,
+            id: updatedUser.id,
+            email: updatedUser.email,
+            name: updatedUser.name,
+            role: updatedUser.role,
+            mustChangePassword: updatedUser.mustChangePassword,
+            temporaryPassword: rawPassword,
           },
+          credentials: {
+            madrasaName,
+            madrasaCode,
+            ustadhName: updatedUstadh.fullName,
+            ustadhCode: updatedUstadh.ustadhCode,
+            loginIdentifier: updatedUser.email,
+            temporaryPassword: rawPassword,
+            teacherPortalUrl: baseUrl,
+            loginUrl,
+            whatsappNumber: updatedUstadh.whatsappNumber || updatedUstadh.phoneNumber || null,
+            email: updatedUser.email,
+          },
+          isReset: false,
         };
       }
     }
     throw new ConflictError(`An account with email "${emailToUse}" already exists.`);
   }
 
-  // Generate or hash temporary password
-  const rawPassword = data.password && data.password.trim() ? data.password.trim() : `Ustadh@${Math.floor(100000 + Math.random() * 900000)}`;
+  // Generate readable OTP and hash
+  const rawPassword = data.password && data.password.trim()
+    ? data.password.trim()
+    : generateReadableOtp(madrasaCode);
   const passwordHash = await bcrypt.hash(rawPassword, 10);
-  const mustChange = data.mustChangePassword !== undefined ? data.mustChangePassword : true;
+  const mustChange = data.mustChangePassword !== undefined ? Boolean(data.mustChangePassword) : true;
 
   // Execute atomically in transaction
   const [createdUser, updatedUstadh] = await prisma.$transaction(async (tx) => {
@@ -564,6 +737,8 @@ export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUse
     },
   }).catch(() => {});
 
+  const loginUrl = `${baseUrl}/login?code=${encodeURIComponent(madrasaCode)}&email=${encodeURIComponent(createdUser.email)}`;
+
   return {
     ustadh: formatUstadhResponse(updatedUstadh),
     user: {
@@ -572,8 +747,21 @@ export async function createPortalAccountForUstadh(madrasaId, ustadhId, adminUse
       name: createdUser.name,
       role: createdUser.role,
       mustChangePassword: createdUser.mustChangePassword,
-      temporaryPassword: data.password ? undefined : rawPassword,
+      temporaryPassword: rawPassword,
     },
+    credentials: {
+      madrasaName,
+      madrasaCode,
+      ustadhName: updatedUstadh.fullName,
+      ustadhCode: updatedUstadh.ustadhCode,
+      loginIdentifier: createdUser.email,
+      temporaryPassword: rawPassword,
+      teacherPortalUrl: baseUrl,
+      loginUrl,
+      whatsappNumber: updatedUstadh.whatsappNumber || updatedUstadh.phoneNumber || null,
+      email: createdUser.email,
+    },
+    isReset: false,
   };
 }
 

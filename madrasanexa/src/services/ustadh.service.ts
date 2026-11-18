@@ -464,6 +464,21 @@ export interface CreatePortalAccountPayload {
   email?: string;
   password?: string;
   mustChangePassword?: boolean;
+  teacherPortalUrl?: string;
+  isReset?: boolean;
+}
+
+export interface PortalCredentialsData {
+  madrasaName: string;
+  madrasaCode: string;
+  ustadhName: string;
+  ustadhCode: string;
+  loginIdentifier: string;
+  temporaryPassword: string;
+  teacherPortalUrl: string;
+  loginUrl: string;
+  whatsappNumber?: string | null;
+  email?: string | null;
 }
 
 export interface CreatePortalAccountResponse {
@@ -479,6 +494,8 @@ export interface CreatePortalAccountResponse {
       mustChangePassword: boolean;
       temporaryPassword?: string;
     };
+    credentials?: PortalCredentialsData;
+    isReset?: boolean;
   };
 }
 

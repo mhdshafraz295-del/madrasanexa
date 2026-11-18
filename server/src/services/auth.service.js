@@ -38,7 +38,7 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
   const normalizedEmail = normalizeEmail(email);
 
   // Find user by normalized email with madrasa details
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { email: normalizedEmail },
     include: {
       madrasa: {
@@ -53,9 +53,36 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
     },
   });
 
+  // If not found by direct email, check if identifier is a staff code (e.g. UST001 or ust001)
+  if (!user) {
+    const ustadh = await prisma.ustadh.findFirst({
+      where: {
+        ustadhCode: { equals: normalizedEmail, mode: 'insensitive' },
+        userId: { not: null },
+      },
+      select: { userId: true },
+    });
+    if (ustadh?.userId) {
+      user = await prisma.user.findUnique({
+        where: { id: ustadh.userId },
+        include: {
+          madrasa: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+              status: true,
+              logoFileId: true,
+            },
+          },
+        },
+      });
+    }
+  }
+
   // Generic anti-enumeration error for missing user
   if (!user) {
-    const error = new Error('Invalid email or password.');
+    const error = new Error('Invalid email, staff ID or password.');
     error.statusCode = 401;
     throw error;
   }

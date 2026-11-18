@@ -201,7 +201,26 @@ export const sendSalaryEmailSchema = z.object({
 });
 
 export const createPortalAccountSchema = z.object({
-  email: z.string().trim().email('Valid email address is required.').max(150),
-  password: z.string().min(8, 'Temporary password must be at least 8 characters.').max(100).optional(),
+  email: z
+    .string()
+    .trim()
+    .email('Valid email address is required.')
+    .max(150)
+    .optional()
+    .or(z.literal('')),
+  password: z
+    .string()
+    .min(8, 'Temporary password must be at least 8 characters.')
+    .max(100)
+    .optional()
+    .or(z.literal('')),
   mustChangePassword: z.boolean().default(true),
+  teacherPortalUrl: z
+    .string()
+    .trim()
+    .url('Invalid Teacher Portal URL.')
+    .optional()
+    .or(z.literal('')),
+  isReset: z.boolean().optional(),
 });
+

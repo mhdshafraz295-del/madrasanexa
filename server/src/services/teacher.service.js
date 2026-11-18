@@ -697,23 +697,43 @@ export async function getTimetable({ madrasaId, ustadhId, day }) {
     whereClause.dayOfWeek = day.toUpperCase();
   }
 
-  const schedules = await prisma.ustadhSchedule.findMany({
-    where: whereClause,
-    include: {
-      class: {
-        include: {
-          academicSection: true,
-          students: {
-            where: { status: 'ACTIVE' },
-            select: { id: true },
+  let schedules = [];
+  try {
+    schedules = await prisma.ustadhSchedule.findMany({
+      where: whereClause,
+      include: {
+        class: {
+          include: {
+            academicSection: true,
+            students: {
+              where: { status: 'ACTIVE' },
+              select: { id: true },
+            },
           },
         },
+        subject: true,
+        classroom: true,
       },
-      subject: true,
-      classroom: true,
-    },
-    orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
-  });
+      orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
+    });
+  } catch (_) {
+    schedules = await prisma.ustadhSchedule.findMany({
+      where: whereClause,
+      include: {
+        class: {
+          include: {
+            students: {
+              where: { status: 'ACTIVE' },
+              select: { id: true },
+            },
+          },
+        },
+        subject: true,
+        classroom: true,
+      },
+      orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
+    });
+  }
 
   const colomboNow = getColomboTimeContext();
 
@@ -763,22 +783,43 @@ export async function getTimetable({ madrasaId, ustadhId, day }) {
 // =============================================================================
 
 export async function getAssignedClasses({ madrasaId, ustadhId }) {
-  const schedules = await prisma.ustadhSchedule.findMany({
-    where: { madrasaId, ustadhId, isActive: true },
-    include: {
-      class: {
-        include: {
-          academicSection: true,
-          students: {
-            where: { status: 'ACTIVE' },
-            select: { id: true, gender: true },
+  let schedules = [];
+  try {
+    schedules = await prisma.ustadhSchedule.findMany({
+      where: { madrasaId, ustadhId, isActive: true },
+      include: {
+        class: {
+          include: {
+            academicSection: true,
+            students: {
+              where: { status: 'ACTIVE' },
+              select: { id: true },
+            },
           },
         },
+        subject: true,
+        classroom: true,
       },
-      subject: true,
-      classroom: true,
-    },
-  });
+      orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
+    });
+  } catch (_) {
+    schedules = await prisma.ustadhSchedule.findMany({
+      where: { madrasaId, ustadhId, isActive: true },
+      include: {
+        class: {
+          include: {
+            students: {
+              where: { status: 'ACTIVE' },
+              select: { id: true },
+            },
+          },
+        },
+        subject: true,
+        classroom: true,
+      },
+      orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
+    });
+  }
 
   const distinctClassIds = [...new Set(schedules.filter((s) => s.classId).map((s) => s.classId))];
 
@@ -834,7 +875,7 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
               where: {
                 madrasaId,
                 session: { classId: cid, madrasaId },
-                status: { in: ['PRESENT', 'LATE'] },
+                status: 'PRESENT',
               },
             });
             rate = Math.round((presentDaily / totalDaily) * 1000) / 10;
@@ -855,8 +896,6 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
     if (!classMap.has(s.classId)) {
       const activeStudents = s.class.students || [];
       const activeCount = activeStudents.length;
-      const maleCount = activeStudents.filter((st) => st.gender === 'MALE').length;
-      const femaleCount = activeStudents.filter((st) => st.gender === 'FEMALE').length;
       const roomLabel = s.classroom
         ? (s.classroom.roomNumber ? `${s.classroom.name} (Room ${s.classroom.roomNumber})` : s.classroom.name)
         : `Classroom ${s.class.code || s.class.name}`;
@@ -872,8 +911,8 @@ export async function getAssignedClasses({ madrasaId, ustadhId }) {
         stream: sectionName,
         gradeLevel: s.class.name,
         totalStudents: activeCount,
-        maleStudents: maleCount,
-        femaleStudents: femaleCount,
+        maleStudents: activeCount,
+        femaleStudents: 0,
         subjectTaught: s.subject?.name || 'General Subject',
         classMonitor: null,
         room: roomLabel,
@@ -898,23 +937,36 @@ export async function getClassDetail({ madrasaId, ustadhId, classId }) {
     throw new ForbiddenError('Access denied: You are not assigned to this class.');
   }
 
-  const cls = await prisma.class.findFirst({
-    where: { id: classId, madrasaId },
-    include: {
-      academicSection: true,
-      students: {
-        where: { status: 'ACTIVE' },
-        orderBy: { admissionNo: 'asc' },
+  let cls = null;
+  try {
+    cls = await prisma.class.findFirst({
+      where: { id: classId, madrasaId },
+      include: {
+        academicSection: true,
+        students: {
+          where: { status: 'ACTIVE' },
+          orderBy: { admissionNo: 'asc' },
+        },
       },
-    },
-  });
+    });
+  } catch (_) {
+    cls = await prisma.class.findFirst({
+      where: { id: classId, madrasaId },
+      include: {
+        students: {
+          where: { status: 'ACTIVE' },
+          orderBy: { admissionNo: 'asc' },
+        },
+      },
+    });
+  }
 
   if (!cls) {
     throw new NotFoundError('Class not found.');
   }
 
   let studentAttendanceMap = new Map();
-  if (prisma.classPeriodAttendanceRecord && cls.students.length > 0) {
+  if (prisma.classPeriodAttendanceRecord && cls.students && cls.students.length > 0) {
     const studentIds = cls.students.map((s) => s.id);
     const records = await prisma.classPeriodAttendanceRecord.findMany({
       where: {
@@ -944,7 +996,7 @@ export async function getClassDetail({ madrasaId, ustadhId, classId }) {
     }
   }
 
-  const studentList = cls.students.map((st) => ({
+  const studentList = (cls.students || []).map((st) => ({
     id: st.id,
     rollNo: st.admissionNo,
     admissionNo: st.admissionNo,

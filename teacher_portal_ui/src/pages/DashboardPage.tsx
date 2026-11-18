@@ -21,6 +21,7 @@ import { dashboardApi, profileApi, classesApi, DashboardData, resolveAssetUrl } 
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import InstitutionalLiveClock from '../components/dashboard/InstitutionalLiveClock';
+import TeacherLivePollWidget from '../components/polls/TeacherLivePollWidget';
 
 const initialProfile: TeacherProfile = {
   id: '',
@@ -246,6 +247,9 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Active Multi-Tenant Community Poll Widget */}
+      <TeacherLivePollWidget />
 
       {/* 3. Assigned Classes & Key Metrics Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -717,3 +717,45 @@ export const settingsApi = {
     });
   },
 };
+
+// =============================================================================
+// 14. Community Polls & Governance API
+// =============================================================================
+export interface TeacherPollOption {
+  id: string;
+  label: string;
+  sortOrder: number;
+  voteCount: number;
+  percentage: number;
+  isUserChoice?: boolean;
+}
+
+export interface TeacherPollItem {
+  id: string;
+  title: string;
+  description?: string | null;
+  category: string;
+  targetAudience: string;
+  allowMultipleChoice: boolean;
+  isAnonymous: boolean;
+  status: string;
+  closesAt?: string | null;
+  createdAt: string;
+  hasVoted?: boolean;
+  userSelectedOptionIds?: string[];
+  totalVotes?: number;
+  options: TeacherPollOption[];
+}
+
+export const pollsApi = {
+  getActivePolls(): Promise<TeacherPollItem[]> {
+    return request<TeacherPollItem[]>('/teacher/polls', { method: 'GET' });
+  },
+
+  submitVote(pollId: string, optionIds: string[]): Promise<TeacherPollItem> {
+    return request<TeacherPollItem>(`/teacher/polls/${pollId}/vote`, {
+      method: 'POST',
+      body: JSON.stringify({ optionIds }),
+    });
+  },
+};

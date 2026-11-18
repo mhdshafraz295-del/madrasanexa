@@ -71,6 +71,7 @@ import {
   uploadHomepageImages,
   removeHomepageImage,
 } from '../controllers/homepage.controller.js';
+import * as pollController from '../controllers/poll.controller.js';
 
 const router = Router();
 
@@ -161,5 +162,11 @@ router.post('/website-content/homepage/publish', publishHomepage);
 router.post('/website-content/homepage/unpublish', unpublishHomepage);
 router.post('/website-content/homepage/images', uploadHomepageImagesMiddleware, uploadHomepageImages);
 router.delete('/website-content/homepage/images/:fileId', removeHomepageImage);
+
+// 12. Multi-Tenant Governance & Community Polls
+router.get('/polls', pollController.listSuperAdminPolls);
+router.post('/polls', pollController.createPoll);
+router.patch('/polls/:id/status', pollController.updatePollStatus);
+router.delete('/polls/:id', pollController.deletePoll);
 
 export default router;

@@ -19,6 +19,7 @@ import SubscriptionsPage from './pages/super-admin/SubscriptionsPage';
 import ActivityLogsPage from './pages/super-admin/ActivityLogsPage';
 import AboutUsCMSPage from './pages/super-admin/AboutUsCMSPage';
 import SuperAdminAnnouncementsPage from './pages/super-admin/AnnouncementsPage';
+import SuperAdminPollsPage from './pages/super-admin/PollsPage';
 import BankDetailsPage from './pages/super-admin/BankDetailsPage';
 import SubscriptionPaymentsPage from './pages/super-admin/SubscriptionPaymentsPage';
 import WebsiteContentPage from './pages/super-admin/WebsiteContentPage';
@@ -115,6 +116,7 @@ export default function App() {
             <Route path="subscription-payments" element={<SubscriptionPaymentsPage />} />
             <Route path="bank-details" element={<BankDetailsPage />} />
             <Route path="announcements" element={<SuperAdminAnnouncementsPage />} />
+            <Route path="polls" element={<SuperAdminPollsPage />} />
             <Route path="about-us" element={<AboutUsCMSPage />} />
             <Route path="website-content" element={<WebsiteContentPage />} />
             <Route path="activity-logs" element={<ActivityLogsPage />} />

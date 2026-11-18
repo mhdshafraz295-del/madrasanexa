@@ -18,6 +18,7 @@ import {
   Landmark,
   Receipt,
   Globe,
+  Vote,
 } from 'lucide-react';
 
 const navItems = [
@@ -29,6 +30,7 @@ const navItems = [
   { to: '/super-admin/subscription-payments', label: 'Subscription Payments', icon: Receipt },
   { to: '/super-admin/bank-details', label: 'Bank Details', icon: Landmark },
   { to: '/super-admin/announcements', label: 'Announcement Center', icon: Megaphone },
+  { to: '/super-admin/polls', label: 'Polls & Surveys', icon: Vote },
   { to: '/super-admin/about-us', label: 'About Us CMS', icon: FileText },
   { to: '/super-admin/website-content', label: 'Website Content', icon: Globe },
   { to: '/super-admin/activity-logs', label: 'Platform Activity', icon: History },

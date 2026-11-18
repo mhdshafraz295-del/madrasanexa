@@ -33,6 +33,7 @@ import {
   type MadrasaAnnouncementItem,
 } from '../../services/announcement.service';
 import InstitutionalLiveClock from '../../components/dashboard/InstitutionalLiveClock';
+import AdminLivePollWidget from '../../components/polls/AdminLivePollWidget';
 import {
   ResponsiveContainer,
   BarChart,
@@ -221,6 +222,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       )}
+
+      {/* Active Community Governance Poll */}
+      <AdminLivePollWidget />
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

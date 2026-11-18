@@ -33,6 +33,7 @@ import {
   changeTeacherPassword,
   updateTeacherPreferences,
 } from '../controllers/teacher.controller.js';
+import * as pollController from '../controllers/poll.controller.js';
 import multer from 'multer';
 
 const upload = multer({
@@ -142,5 +143,11 @@ router.patch('/notifications/read-all', markAllNotificationsRead);
 router.get('/settings', getTeacherSettings);
 router.put('/settings/password', changeTeacherPassword);
 router.put('/settings/preferences', updateTeacherPreferences);
+
+// =============================================================================
+// Module 13: Community Polls & Governance
+// =============================================================================
+router.get('/polls', pollController.getUserPolls);
+router.post('/polls/:id/vote', pollController.submitVote);
 
 export default router;

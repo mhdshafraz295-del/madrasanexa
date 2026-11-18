@@ -289,6 +289,8 @@ model User {
   ustadhProfile                 Ustadh?                         @relation("UserUstadhProfile")
   voidedPayslips                UstadhPayslipRecord[]           @relation("VoidedPayslips")
   staffNoticesCreated           StaffNotice[]                   @relation("StaffNoticesCreated")
+  createdPolls                  PlatformPoll[]                  @relation("CreatedPolls")
+  pollVotes                     PlatformPollVote[]              @relation("UserPollVotes")
 
   @@unique([id, madrasaId])
   @@index([madrasaId])
@@ -380,6 +382,7 @@ model Madrasa {
   ustadhPayslips                 UstadhPayslipRecord[]
   staffNotices                   StaffNotice[]
   staffNoticeReads               StaffNoticeRead[]
+  pollVotes                      PlatformPollVote[]              @relation("MadrasaPollVotes")
 
   @@index([status])
   @@map("madrasas")
@@ -2814,4 +2817,63 @@ model StaffNoticeRead {
   @@index([ustadhId])
   @@map("staff_notice_reads")
 }
+
+/// Super Admin Multi-Tenant Governance & Community Polls
+model PlatformPoll {
+  id                  String               @id @default(cuid())
+  createdByUserId     String
+  title               String               @db.VarChar(255)
+  description         String?              @db.Text
+  category            String               @default("GOVERNANCE") // GOVERNANCE | ACADEMIC | CALENDAR | CURRICULUM | FEEDBACK
+  targetAudience      String               @default("ALL") // MADRASA_ADMINS | TEACHERS | ALL
+  targetMadrasaIds    Json?
+  allowMultipleChoice Boolean              @default(false)
+  isAnonymous         Boolean              @default(false)
+  status              String               @default("ACTIVE") // ACTIVE | CLOSED
+  closesAt            DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  createdByUser       User                 @relation("CreatedPolls", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  options             PlatformPollOption[]
+  votes               PlatformPollVote[]
+
+  @@index([status, closesAt])
+  @@index([createdAt])
+  @@map("platform_polls")
+}
+
+model PlatformPollOption {
+  id        String             @id @default(cuid())
+  pollId    String
+  label     String             @db.VarChar(255)
+  sortOrder Int                @default(0)
+
+  poll      PlatformPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes     PlatformPollVote[]
+
+  @@index([pollId, sortOrder])
+  @@map("platform_poll_options")
+}
+
+model PlatformPollVote {
+  id        String             @id @default(cuid())
+  pollId    String
+  optionId  String
+  userId    String
+  madrasaId String
+  voterRole String             // MADRASA_ADMIN | TEACHER
+  createdAt DateTime           @default(now())
+
+  poll      PlatformPoll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  option    PlatformPollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  user      User               @relation("UserPollVotes", fields: [userId], references: [id], onDelete: Cascade)
+  madrasa   Madrasa            @relation("MadrasaPollVotes", fields: [madrasaId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, optionId, userId])
+  @@index([pollId, userId])
+  @@index([madrasaId])
+  @@map("platform_poll_votes")
+}
+
 

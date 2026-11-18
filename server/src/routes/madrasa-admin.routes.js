@@ -59,6 +59,7 @@ import {
 } from '../controllers/admission.controller.js';
 import * as interviewController from '../controllers/interview.controller.js';
 import * as staffNoticeController from '../controllers/staff-notice.controller.js';
+import * as pollController from '../controllers/poll.controller.js';
 import {
   listMadrasaAnnouncements,
   getMadrasaAnnouncement,
@@ -578,6 +579,10 @@ router.post('/ustadh-salaries/:id/send-email', sendSalaryEmail);
 router.post('/staff-notices', staffNoticeController.createNotice);
 router.get('/staff-notices', staffNoticeController.listAdminNotices);
 router.delete('/staff-notices/:id', staffNoticeController.deleteNotice);
+
+// Platform Community Polls & Governance
+router.get('/polls', pollController.getUserPolls);
+router.post('/polls/:id/vote', pollController.submitVote);
 
 // Unified Timetable Module
 router.get('/timetable/class', getClassTimetable);

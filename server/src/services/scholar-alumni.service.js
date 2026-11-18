@@ -1,4 +1,4 @@
-import prisma from '../config/prisma.js';
+import { prisma } from '../lib/prisma.js';
 import { NotFoundError, BadRequestError } from '../utils/errors.js';
 
 /**

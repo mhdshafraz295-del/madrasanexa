@@ -169,22 +169,29 @@ export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
     currentMadrasaCode
   )}&email=${encodeURIComponent(activeLoginId)}`;
 
-  // Unicode Left-to-Right Mark to prevent Arabic greeting from flipping subsequent English lines to RTL
-  const LTR = '\u200E';
+  // Pure ASCII String.fromCodePoint emoji constants (100% immune to file encoding corruption)
+  const MOSQUE = String.fromCodePoint(0x1F54C); // 🕌
+  const SCHOOL = String.fromCodePoint(0x1F3EB); // 🏫
+  const USER_ICON = String.fromCodePoint(0x1F464); // 👤
+  const MAIL_ICON = String.fromCodePoint(0x1F4E7); // 📧
+  const KEY_ICON = String.fromCodePoint(0x1F511); // 🔑
+  const LINK_ICON = String.fromCodePoint(0x1F517); // 🔗
+  const WARN_ICON = String.fromCodePoint(0x26A0, 0xFE0F); // ⚠️
 
-  // Formatted WhatsApp Welcome Message with clean bullets and unbolded email
+  // Formatted WhatsApp Welcome Message (starts with English/Emoji header to guarantee strict LTR bubble direction on Web & Mobile)
   const formattedWhatsAppMessage = [
-    `السلام عليكم ورحمة الله وبركاته`,
-    `${LTR}Welcome Ustadh *${ustadh.fullName}* to *${currentMadrasaName}* Teacher Portal.`,
-    `${LTR}`,
-    `${LTR}Here are your login credentials:`,
-    `${LTR}• *Madrasa Code:* ${currentMadrasaCode}`,
-    `${LTR}• *Staff ID:* ${ustadh.ustadhCode}`,
-    `${LTR}• *Login Email / ID:* ${activeLoginId}`,
-    `${LTR}• *Temporary Password:* *${activeOtp}*`,
-    `${LTR}• *Direct Login Link:* ${liveLoginUrl}`,
-    `${LTR}`,
-    `${LTR}_Please log in and update your password upon your first sign-in._`,
+    `${MOSQUE} *Assalamu Alaikum wa Rahmatullahi wa Barakatuh*`,
+    `Welcome Ustadh *${ustadh.fullName}* to *${currentMadrasaName}* Teacher Portal.`,
+    ``,
+    `Here are your login credentials:`,
+    `${SCHOOL} *Madrasa Code:* ${currentMadrasaCode}`,
+    `${USER_ICON} *Staff ID:* ${ustadh.ustadhCode}`,
+    `${MAIL_ICON} *Login Email / ID:* ${activeLoginId}`,
+    `${KEY_ICON} *Temporary Password:* *${activeOtp}*`,
+    `${LINK_ICON} *Direct Login Link:*`,
+    `${liveLoginUrl}`,
+    ``,
+    `${WARN_ICON} _Please log in and update your password upon your first sign-in._`,
   ].join('\n');
 
   // WhatsApp phone digits
@@ -476,11 +483,8 @@ export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
                   </span>
                 </div>
 
-                <div className="bg-emerald-950/90 text-emerald-50 rounded-2xl p-4 font-sans text-xs shadow-inner space-y-2 border border-emerald-900">
-                  <div className="text-emerald-300 font-serif text-sm font-semibold text-center border-b border-emerald-800/60 pb-1.5">
-                    السلام عليكم ورحمة الله وبركاته
-                  </div>
-                  <div className="text-emerald-100 text-[11px] leading-relaxed whitespace-pre-wrap font-mono">
+                <div className="bg-emerald-950/90 text-emerald-50 rounded-2xl p-4 font-sans text-xs shadow-inner border border-emerald-900 text-left">
+                  <div className="text-emerald-100 text-[11px] leading-relaxed whitespace-pre-wrap font-sans text-left">
                     {formattedWhatsAppMessage}
                   </div>
                 </div>

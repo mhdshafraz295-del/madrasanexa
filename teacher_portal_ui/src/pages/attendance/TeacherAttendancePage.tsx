@@ -163,6 +163,7 @@ export default function TeacherAttendancePage() {
   };
 
   const [scanState, setScanState] = useState<ScanState>('idle');
+  const [scanErrorMessage, setScanErrorMessage] = useState<string | null>(null);
   const [manualModalOpen, setManualModalOpen] = useState(false);
   const [manualRoomToken, setManualRoomToken] = useState('');
   const [manualReason, setManualReason] = useState('Camera Hardware Fault on Faculty Device');
@@ -219,6 +220,7 @@ export default function TeacherAttendancePage() {
   const handleVerifyToken = useCallback(async (token: string, method: string = 'Classroom QR') => {
     setIsLoading(true);
     setBackendNotice(null);
+    setScanErrorMessage(null);
     try {
       const scheduleId = activeSlot ? (activeSlot.scheduleId || activeSlot.id) : undefined;
       const result = await teacherAttendanceApi.verifyClassroomQr({
@@ -234,7 +236,7 @@ export default function TeacherAttendancePage() {
       const newRecord: TeacherAttendanceRecord = {
         id: result.id || `tlog-${Date.now()}`,
         date: new Date().toISOString().split('T')[0],
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        time: result.checkInTime || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         period: result.schedule?.period || activeSlot?.period || 1,
         periodTime: result.schedule?.timeSlot || activeSlot?.timeSlot || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         classId: activeSlot?.classId || 'cls',
@@ -256,9 +258,10 @@ export default function TeacherAttendancePage() {
       await loadData();
     } catch (err: any) {
       const msg = err.message || '';
+      setScanErrorMessage(msg);
       if (msg.includes('already recorded')) {
         setScanState('already_recorded');
-      } else if (msg.includes('window') || msg.includes('schedule') || msg.includes('timetable')) {
+      } else if (msg.includes('window') || msg.includes('timetable')) {
         setScanState('expired_window');
       } else {
         setScanState('invalid_room');
@@ -272,6 +275,7 @@ export default function TeacherAttendancePage() {
     setCameraError(null);
     setCameraPermission('prompt');
     setScanState('idle');
+    setScanErrorMessage(null);
 
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       setCameraPermission('unavailable');
@@ -332,6 +336,7 @@ export default function TeacherAttendancePage() {
   const triggerScan = async (state: ScanState) => {
     setScanState(state);
     setBackendNotice(null);
+    setScanErrorMessage(null);
 
     if (state === 'valid' && assignedRoom) {
       await handleVerifyToken(assignedRoom.qrPayload, 'Classroom QR');
@@ -573,10 +578,12 @@ export default function TeacherAttendancePage() {
                 <div className="z-10 p-5 rounded-2xl bg-rose-950/90 border border-rose-500 text-white max-w-sm animate-in zoom-in-95">
                   <XCircle className="w-12 h-12 text-rose-400 mx-auto mb-2" />
                   <h3 className="text-base font-bold text-white">
-                    Location Mismatch
+                    Wrong Classroom QR
                   </h3>
                   <p className="text-xs text-rose-200 mt-1">
-                    Scanned plaque belongs to <strong>Hall B-201</strong>, but your assigned venue for this lecture is <strong>{assignedRoom.name}</strong>.
+                    {scanErrorMessage || (
+                      <>Scanned plaque does not match your assigned venue for this lecture (<strong>{assignedRoom.name}</strong>).</>
+                    )}
                   </p>
                 </div>
               )}
@@ -589,7 +596,7 @@ export default function TeacherAttendancePage() {
                     Permitted Scan Window Expired
                   </h3>
                   <p className="text-xs text-amber-200 mt-1">
-                    The 15-minute start window for Period {activeSlot.period} has ended. Please request manual administrative fallback.
+                    {scanErrorMessage || `The 15-minute start window for Period ${activeSlot?.period ?? 1} has ended. Please request manual administrative fallback.`}
                   </p>
                 </div>
               )}
@@ -602,7 +609,7 @@ export default function TeacherAttendancePage() {
                     Already Recorded
                   </h3>
                   <p className="text-xs text-slate-300 mt-1">
-                    Your attendance for Period {activeSlot.period} was already registered at 08:58 AM.
+                    {scanErrorMessage || `Your attendance for Period ${activeSlot?.period ?? 1} was already registered${activeSlot?.checkInTime ? ` at ${activeSlot.checkInTime}` : ''}.`}
                   </p>
                 </div>
               )}

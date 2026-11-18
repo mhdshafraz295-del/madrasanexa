@@ -479,6 +479,10 @@ export const teacherAttendanceApi = {
     graceWindowMinutes: number;
     isActiveSlot?: boolean;
     isCurrentPeriod?: boolean;
+    checkInTime?: string | null;
+    capacity?: number;
+    studentsCount?: number;
+    roomId?: string;
   }>> {
     return request('/teacher/attendance/teacher/today', { method: 'GET' });
   },
@@ -494,6 +498,8 @@ export const teacherAttendanceApi = {
     method: string;
     verifiedAt: string;
     scheduleId: string;
+    checkInTime?: string;
+    markedAt?: string;
     schedule?: {
       id: string;
       period?: number;

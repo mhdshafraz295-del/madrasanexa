@@ -369,6 +369,58 @@ await testAsync('resolveActiveTodaySchedule matches currently active 5:30 PM slo
   assert.strictEqual(parseTimeToMinutes(420), 420);
 });
 
+await testAsync('recordTeacherClassroomCheckIn strictly rejects wrong classroom QR scan with 400', async () => {
+  const originalScheduleFind = prisma.ustadhSchedule.findFirst;
+  const originalClassroomFind = prisma.classroom ? prisma.classroom.findFirst : undefined;
+
+  const colomboNow = getColomboTimeContext();
+
+  prisma.ustadhSchedule.findFirst = async () => ({
+    id: 'sch_avval',
+    madrasaId: 'tenant_1',
+    ustadhId: 'ustadh_1',
+    dayOfWeek: colomboNow.weekday,
+    startMinutes: colomboNow.currentMinutes - 5,
+    endMinutes: colomboNow.currentMinutes + 35,
+    isActive: true,
+    classId: 'cls_avval',
+    classroomId: 'room_avval',
+    class: { id: 'cls_avval', name: 'Safful Avval' },
+    classroom: { id: 'room_avval', name: 'Classroom – Safful Avval', roomNumber: 'CR-SAFFULAVVAL', roomToken: 'PLAQUE-CR-SAFFULAVVAL', isActive: true },
+  });
+
+  if (!prisma.classroom) prisma.classroom = {};
+  prisma.classroom.findFirst = async () => ({
+    id: 'room_sani',
+    name: 'Classroom – Saffus Sani',
+    roomNumber: 'CR-SAFFUSSANI',
+    roomToken: 'PLAQUE-CR-SAFFUSSANI',
+    isActive: true,
+    classId: 'cls_sani',
+  });
+
+  try {
+    await recordTeacherClassroomCheckIn({
+      madrasaId: 'tenant_1',
+      ustadhId: 'ustadh_1',
+      userId: 'user_1',
+      payload: {
+        roomToken: 'PLAQUE-CR-SAFFUSSANI',
+        scheduleId: 'sch_avval',
+      },
+    });
+    assert.fail('Should have thrown BadRequestError (400) on wrong classroom QR');
+  } catch (err) {
+    assert.strictEqual(err.statusCode, 400);
+    assert.ok(err.message.includes('Wrong Classroom QR Scanned'));
+    assert.ok(err.message.includes('Classroom – Saffus Sani'));
+    assert.ok(err.message.includes('Classroom – Safful Avval'));
+  } finally {
+    prisma.ustadhSchedule.findFirst = originalScheduleFind;
+    if (originalClassroomFind) prisma.classroom.findFirst = originalClassroomFind;
+  }
+});
+
 // -----------------------------------------------------------------------------
 // Group 5: Option A Full Isolation & Period Attendance Sealing
 // -----------------------------------------------------------------------------

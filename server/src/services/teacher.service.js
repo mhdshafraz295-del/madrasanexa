@@ -37,6 +37,38 @@ async function resolveMadrasaLogoUrl(madrasaId, logoFileId) {
 // =============================================================================
 
 /**
+ * Normalizes any date input (string YYYY-MM-DD, Date object, or undefined)
+ * into authoritative Colombo calendar date string (YYYY-MM-DD) and UTC midnight Date object.
+ * Strictly aligned with attendance.service.js (parseDateOnly).
+ *
+ * @param {string|Date|undefined|null} dateInput
+ * @returns {{ dateStr: string, attendanceDate: Date, startOfDayUtc: Date, nextDayUtc: Date }}
+ */
+export function normalizeAttendanceDate(dateInput) {
+  const colomboNow = getColomboTimeContext();
+  const fallbackDateStr = colomboNow.localDateStr || colomboNow.date;
+  let dateStr;
+
+  if (typeof dateInput === 'string' && /^\d{4}-\d{2}-\d{2}/.test(dateInput)) {
+    dateStr = dateInput.slice(0, 10);
+  } else if (dateInput instanceof Date && !isNaN(dateInput.getTime())) {
+    const year = dateInput.getUTCFullYear();
+    const month = String(dateInput.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(dateInput.getUTCDate()).padStart(2, '0');
+    dateStr = `${year}-${month}-${day}`;
+  } else {
+    dateStr = fallbackDateStr;
+  }
+
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const attendanceDate = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  const startOfDayUtc = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+  const nextDayUtc = new Date(Date.UTC(year, month - 1, day + 1, 0, 0, 0, 0));
+
+  return { dateStr, attendanceDate, startOfDayUtc, nextDayUtc };
+}
+
+/**
  * Converts minutes from midnight (0..1439) into 12-hour AM/PM string.
  * @param {number} minutes
  * @returns {string}
@@ -210,18 +242,22 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
 
   // 10. Fetch madrasa details with dynamic logoUrl
   let madrasaInfo = null;
-  const madrasa = await prisma.madrasa.findUnique({
-    where: { id: madrasaId },
-    select: { id: true, name: true, code: true, logoFileId: true },
-  });
-  if (madrasa) {
-    const logoUrl = await resolveMadrasaLogoUrl(madrasaId, madrasa.logoFileId);
-    madrasaInfo = {
-      id: madrasa.id,
-      name: madrasa.name,
-      code: madrasa.code,
-      logoUrl,
-    };
+  try {
+    const madrasa = await prisma.madrasa.findUnique({
+      where: { id: madrasaId },
+      select: { id: true, name: true, code: true, logoFileId: true },
+    });
+    if (madrasa) {
+      const logoUrl = await resolveMadrasaLogoUrl(madrasaId, madrasa.logoFileId);
+      madrasaInfo = {
+        id: madrasa.id,
+        name: madrasa.name,
+        code: madrasa.code,
+        logoUrl,
+      };
+    }
+  } catch (_) {
+    // Non-blocking in offline mock DB
   }
 
   let teacherPhotoUrl = null;
@@ -1282,33 +1318,11 @@ export async function syncPeriodStatusToDailyAttendance(
   }
 
   try {
-    let attendanceDate;
-    if (date instanceof Date) {
-      attendanceDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 0, 0, 0, 0));
-    } else if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(date)) {
-      const parts = date.slice(0, 10).split('-').map(Number);
-      attendanceDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0));
-    } else {
-      const now = new Date();
-      attendanceDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
-    }
+    const { dateStr, attendanceDate, startOfDayUtc, nextDayUtc } = normalizeAttendanceDate(date);
 
-    // 1. Resolve academicYear from existing session, madrasa setting, or fallback
-    let academicYear = '2026-2027';
-    if (db.madrasaSetting) {
-      try {
-        const settings = await db.madrasaSetting.findUnique({
-          where: { madrasaId },
-          select: { academicYear: true },
-        });
-        if (settings?.academicYear) {
-          academicYear = settings.academicYear;
-        }
-      } catch (_) {}
-    }
-
-    // 2. Upsert AttendanceSession for (madrasaId, classId, attendanceDate)
-    const session = await db.attendanceSession.upsert({
+    // 1. Resolve or find existing AttendanceSession
+    // First: exact compound key lookup [madrasaId, classId, attendanceDate]
+    let session = await db.attendanceSession.findUnique({
       where: {
         madrasaId_classId_attendanceDate: {
           madrasaId,
@@ -1316,19 +1330,82 @@ export async function syncPeriodStatusToDailyAttendance(
           attendanceDate,
         },
       },
-      update: {}, // Invariant: preserve existing session fields
-      create: {
-        madrasaId,
-        classId,
-        attendanceDate,
-        academicYear,
-        createdById: markedByUserId || null,
-      },
     });
+
+    // Fallback: Check if session exists in date range for this class and date
+    if (!session) {
+      session = await db.attendanceSession.findFirst({
+        where: {
+          madrasaId,
+          classId,
+          attendanceDate: {
+            gte: startOfDayUtc,
+            lt: nextDayUtc,
+          },
+        },
+      });
+    }
+
+    // 2. Resolve academicYear and create session if none exists
+    if (!session) {
+      let academicYear = null;
+      try {
+        const recentSession = await db.attendanceSession.findFirst({
+          where: { madrasaId, classId },
+          orderBy: { attendanceDate: 'desc' },
+          select: { academicYear: true },
+        });
+        if (recentSession?.academicYear) {
+          academicYear = recentSession.academicYear;
+        }
+      } catch (_) {}
+
+      if (!academicYear && db.madrasaSetting) {
+        try {
+          const settings = await db.madrasaSetting.findUnique({
+            where: { madrasaId },
+            select: { academicYear: true },
+          });
+          if (settings?.academicYear) {
+            academicYear = settings.academicYear;
+          }
+        } catch (_) {}
+      }
+
+      if (!academicYear) {
+        const y = attendanceDate.getUTCFullYear();
+        academicYear = `${y}/${y + 1}`;
+      }
+
+      session = await db.attendanceSession.create({
+        data: {
+          madrasaId,
+          classId,
+          attendanceDate,
+          academicYear,
+          createdById: markedByUserId || null,
+        },
+      });
+    }
 
     // 3. Map period status to AttendanceStatus enum (PRESENT | ABSENT)
     const norm = String(status || 'PRESENT').toUpperCase();
     const dailyStatus = (norm === 'ABSENT' || norm === 'EXCUSED') ? 'ABSENT' : 'PRESENT';
+
+    // Check if record was already marked present
+    let wasAlreadyPresent = false;
+    try {
+      const existingRecord = await db.attendanceRecord.findUnique({
+        where: {
+          sessionId_studentId: {
+            sessionId: session.id,
+            studentId,
+          },
+        },
+        select: { id: true, status: true },
+      });
+      wasAlreadyPresent = existingRecord?.status === 'PRESENT';
+    } catch (_) {}
 
     // 4. Upsert AttendanceRecord within tenant boundary
     const record = await db.attendanceRecord.upsert({
@@ -1349,7 +1426,7 @@ export async function syncPeriodStatusToDailyAttendance(
       },
     });
 
-    return { session, record, dailyStatus };
+    return { session, record, dailyStatus, wasAlreadyPresent };
   } catch (err) {
     // Non-blocking for offline mock suites / unmigrated dev environments
     return null;
@@ -1642,18 +1719,8 @@ export async function getDailyStudentRoster({ madrasaId, ustadhId, query = {} })
     throw new BadRequestError('Tenant madrasaId and ustadhId are required.');
   }
 
-  const colomboNow = getColomboTimeContext();
-  const dateStr = query.date || colomboNow.date;
+  const { dateStr, attendanceDate, startOfDayUtc, nextDayUtc } = normalizeAttendanceDate(query.date);
   const { classId, category } = query;
-
-  let attendanceDate;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    const parts = dateStr.slice(0, 10).split('-').map(Number);
-    attendanceDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 0, 0, 0, 0));
-  } else {
-    const now = new Date();
-    attendanceDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0));
-  }
 
   const studentWhere = {
     madrasaId,
@@ -1683,24 +1750,38 @@ export async function getDailyStudentRoster({ madrasaId, ustadhId, query = {} })
   const attendanceRecordsMap = new Map();
   if (prisma.attendanceRecord && studentIds.length > 0) {
     try {
-      const records = await prisma.attendanceRecord.findMany({
+      // Find all AttendanceSessions for today (either exact attendanceDate or within day range)
+      const todaySessions = await prisma.attendanceSession.findMany({
         where: {
           madrasaId,
-          studentId: { in: studentIds },
-          session: {
-            attendanceDate,
-            madrasaId,
-          },
+          ...(classId ? { classId } : {}),
+          OR: [
+            { attendanceDate },
+            { attendanceDate: { gte: startOfDayUtc, lt: nextDayUtc } },
+          ],
         },
-        select: {
-          studentId: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: { id: true },
       });
-      for (const r of records) {
-        attendanceRecordsMap.set(r.studentId, r);
+
+      const sessionIds = todaySessions.map((s) => s.id);
+
+      if (sessionIds.length > 0) {
+        const records = await prisma.attendanceRecord.findMany({
+          where: {
+            madrasaId,
+            studentId: { in: studentIds },
+            sessionId: { in: sessionIds },
+          },
+          select: {
+            studentId: true,
+            status: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        });
+        for (const r of records) {
+          attendanceRecordsMap.set(r.studentId, r);
+        }
       }
     } catch (_) {}
   }
@@ -1709,22 +1790,22 @@ export async function getDailyStudentRoster({ madrasaId, ustadhId, query = {} })
   const gateEventsMap = new Map();
   if (prisma.studentGateEvent && studentIds.length > 0) {
     try {
-      const startOfDay = new Date(attendanceDate.getTime());
-      const endOfDay = new Date(attendanceDate.getTime() + 86399999);
-
       const events = await prisma.studentGateEvent.findMany({
         where: {
           madrasaId,
           studentId: { in: studentIds },
           scannedAt: {
-            gte: startOfDay,
-            lte: endOfDay,
+            gte: new Date(startOfDayUtc.getTime() - (6 * 3600 * 1000)),
+            lte: new Date(nextDayUtc.getTime() + (6 * 3600 * 1000)),
           },
         },
         orderBy: { scannedAt: 'asc' },
       });
 
       for (const ev of events) {
+        const evDateStr = getColomboTimeContext(ev.scannedAt).localDateStr;
+        if (evDateStr !== dateStr) continue;
+
         if (!gateEventsMap.has(ev.studentId)) {
           gateEventsMap.set(ev.studentId, { entry: null, exit: null, emailSent: false });
         }
@@ -1842,8 +1923,8 @@ export async function scanDailyStudentAttendance({
     throw new BadRequestError('Scan input cannot be empty.');
   }
 
-  const colomboNow = getColomboTimeContext();
-  const targetDate = date || colomboNow.date;
+  const { dateStr } = normalizeAttendanceDate(date);
+  const targetDate = dateStr;
   const eventDirection = direction === 'EXIT' ? 'EXIT' : 'ENTRY';
 
   // 1. Resolve student across the tenant
@@ -1923,8 +2004,8 @@ export async function scanDailyStudentAttendance({
         markedByUserId: userId,
         sourceNote: `Teacher Morning Unified Scan (${eventDirection})`,
       });
-      if (syncResult?.record) {
-        // Record was updated or created
+      if (syncResult?.wasAlreadyPresent) {
+        alreadyMarked = true;
       }
     } catch (_) {}
   }
@@ -2155,7 +2236,7 @@ export async function scanStudentPeriodAttendance({
   }
 
   // 4. Resolve or create ClassPeriodAttendanceSession
-  const sessionDate = new Date(`${date}T00:00:00.000Z`);
+  const { dateStr, attendanceDate: sessionDate } = normalizeAttendanceDate(date);
   let session = null;
 
   if (prisma.classPeriodAttendanceSession && prisma.classPeriodAttendanceRecord) {
@@ -2238,7 +2319,7 @@ export async function scanStudentPeriodAttendance({
           madrasaId,
           classId: schedule.classId || classId,
           studentId: student.id,
-          date,
+          date: dateStr,
           status: 'PRESENT',
           markedByUserId: userId,
           sourceNote: method === 'QR_SCAN' ? 'Teacher Period QR Scan' : 'Teacher Period Barcode Scan',
@@ -2314,7 +2395,7 @@ export async function scanStudentPeriodAttendance({
       madrasaId,
       classId: schedule.classId || classId,
       studentId: student.id,
-      date,
+      date: dateStr,
       status: 'PRESENT',
       markedByUserId: userId,
       sourceNote: method === 'QR_SCAN' ? 'Teacher Period QR Scan' : 'Teacher Period Barcode Scan',

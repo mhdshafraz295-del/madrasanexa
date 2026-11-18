@@ -2888,7 +2888,8 @@ model AlumniScholar {
   batchYear              String
   classOrDivision        String?
   classId                String?
-  academicStatus         String    @default("UNDERGRADUATE") // "UNDERGRADUATE" | "GRADUATE" | "POSTGRADUATE" | "WORKING_SCHOLAR"
+  academicStatus         String    @default("UNDERGRADUATE") // "UNDERGRADUATE" | "GRADUATE" | "POSTGRADUATE" | "WORKING_SCHOLAR" | "HAFIL" | "AL_AALIM" | "OTHER"
+  customStatusLabel      String?
   qualification          String
   university             String
   qualificationsList     Json?

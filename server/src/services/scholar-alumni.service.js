@@ -121,6 +121,7 @@ export async function getPublicAlumniForMadrasa(madrasaCode) {
       batchYear: item.batchYear,
       classOrDivision: item.classOrDivision,
       academicStatus: item.academicStatus,
+      customStatusLabel: item.customStatusLabel,
       qualification: item.qualification,
       university: item.university,
       qualificationsList: item.qualificationsList,
@@ -170,6 +171,7 @@ export async function submitPublicAlumni(madrasaCode, payload) {
       classOrDivision: payload.classOrDivision ? payload.classOrDivision.trim() : null,
       classId: payload.classId ? payload.classId.trim() : null,
       academicStatus: payload.academicStatus || 'UNDERGRADUATE',
+      customStatusLabel: payload.customStatusLabel ? payload.customStatusLabel.trim() : null,
       qualification,
       university,
       qualificationsList,
@@ -325,6 +327,7 @@ export async function adminCreateScholar(madrasaId, payload, userId) {
       classOrDivision: payload.classOrDivision ? payload.classOrDivision.trim() : null,
       classId: payload.classId ? payload.classId.trim() : null,
       academicStatus: payload.academicStatus || 'UNDERGRADUATE',
+      customStatusLabel: payload.customStatusLabel ? payload.customStatusLabel.trim() : null,
       qualification,
       university,
       qualificationsList,
@@ -366,6 +369,7 @@ export async function adminUpdateScholar(madrasaId, id, payload) {
   if (payload.classOrDivision !== undefined) updateData.classOrDivision = payload.classOrDivision ? payload.classOrDivision.trim() : null;
   if (payload.classId !== undefined) updateData.classId = payload.classId ? payload.classId.trim() : null;
   if (payload.academicStatus !== undefined) updateData.academicStatus = payload.academicStatus;
+  if (payload.customStatusLabel !== undefined) updateData.customStatusLabel = payload.customStatusLabel ? payload.customStatusLabel.trim() : null;
 
   if (payload.qualificationsList !== undefined || payload.qualification !== undefined || payload.university !== undefined) {
     const { qualification, university, qualificationsList } = normalizeQualifications(

@@ -1,10 +1,13 @@
 import { z } from 'zod';
 
-const academicStatusEnum = z.enum([
+export const academicStatusEnum = z.enum([
   'UNDERGRADUATE',
   'GRADUATE',
   'POSTGRADUATE',
   'WORKING_SCHOLAR',
+  'HAFIL',
+  'AL_AALIM',
+  'OTHER',
 ]);
 
 const approvalStatusEnum = z.enum([
@@ -26,6 +29,7 @@ export const publicSubmitScholarSchema = z.object({
   classOrDivision: z.string().max(191).optional().nullable(),
   classId: z.string().max(191).optional().nullable(),
   academicStatus: academicStatusEnum.default('UNDERGRADUATE'),
+  customStatusLabel: z.string().max(80, 'Custom status label cannot exceed 80 characters').optional().nullable().or(z.literal('')),
   qualification: z.string().max(191).optional().nullable().default(''),
   university: z.string().max(191).optional().nullable().default(''),
   qualificationsList: z.array(qualificationItemSchema).optional().nullable(),

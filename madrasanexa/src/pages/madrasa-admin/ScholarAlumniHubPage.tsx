@@ -35,6 +35,7 @@ import {
   type ScholarApprovalStatus,
   type ScholarCreatePayload,
   type QualificationEntry,
+  getScholarStatusInfo,
 } from '../../services/scholar-alumni.service';
 
 export const ScholarAlumniHubPage: React.FC = () => {
@@ -71,6 +72,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
     batchYear: '',
     classOrDivision: '',
     academicStatus: 'UNDERGRADUATE',
+    customStatusLabel: '',
     qualification: '',
     university: '',
     facultyOrDepartment: '',
@@ -164,6 +166,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
       batchYear: new Date().getFullYear().toString(),
       classOrDivision: '',
       academicStatus: 'UNDERGRADUATE',
+      customStatusLabel: '',
       qualification: '',
       university: '',
       facultyOrDepartment: '',
@@ -194,6 +197,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
       batchYear: item.batchYear,
       classOrDivision: item.classOrDivision || '',
       academicStatus: item.academicStatus,
+      customStatusLabel: item.customStatusLabel || '',
       qualification: item.qualification,
       university: item.university,
       facultyOrDepartment: item.facultyOrDepartment || '',
@@ -259,6 +263,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
 
     const payloadToSave: ScholarCreatePayload = {
       ...editorForm,
+      customStatusLabel: editorForm.academicStatus === 'OTHER' ? (editorForm.customStatusLabel?.trim() || null) : null,
       qualification: validQuals[0].degree.trim(),
       university: validQuals[0].university.trim(),
       qualificationsList: validQuals,
@@ -580,6 +585,9 @@ export const ScholarAlumniHubPage: React.FC = () => {
               <option value="GRADUATE">Graduates</option>
               <option value="POSTGRADUATE">Postgraduates</option>
               <option value="WORKING_SCHOLAR">Working Scholars</option>
+              <option value="HAFIL">Hafil</option>
+              <option value="AL_AALIM">Al Aalim</option>
+              <option value="OTHER">Other</option>
             </select>
           </div>
 
@@ -658,6 +666,14 @@ export const ScholarAlumniHubPage: React.FC = () => {
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                             Batch {item.batchYear}
                           </span>
+                          {(() => {
+                            const sInfo = getScholarStatusInfo(item.academicStatus, item.customStatusLabel);
+                            return (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sInfo.className}`}>
+                                {sInfo.label}
+                              </span>
+                            );
+                          })()}
                           {item.approvalStatus === 'APPROVED' ? (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                               Approved
@@ -885,8 +901,26 @@ export const ScholarAlumniHubPage: React.FC = () => {
                     <option value="GRADUATE">Graduate</option>
                     <option value="POSTGRADUATE">Postgraduate</option>
                     <option value="WORKING_SCHOLAR">Working Scholar</option>
+                    <option value="HAFIL">Hafil</option>
+                    <option value="AL_AALIM">Al Aalim</option>
+                    <option value="OTHER">Other</option>
                   </select>
                 </div>
+                {editorForm.academicStatus === 'OTHER' && (
+                  <div className="sm:col-span-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <label className="block font-semibold text-slate-800 mb-1 text-xs">
+                      Specify Position / Status *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editorForm.customStatusLabel || ''}
+                      onChange={(e) => setEditorForm({ ...editorForm, customStatusLabel: e.target.value })}
+                      placeholder="e.g., Businessman, Imam, Entrepreneur, Lecturer..."
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-emerald-500"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Dynamic Qualifications List */}
@@ -1112,7 +1146,17 @@ export const ScholarAlumniHubPage: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <h3 className="font-bold text-base text-slate-900">{activeDetailItem.fullName}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-base text-slate-900">{activeDetailItem.fullName}</h3>
+                    {(() => {
+                      const sInfo = getScholarStatusInfo(activeDetailItem.academicStatus, activeDetailItem.customStatusLabel);
+                      return (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sInfo.className}`}>
+                          {sInfo.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   <p className="text-xs text-slate-500">
                     Batch {activeDetailItem.batchYear} &bull; {activeDetailItem.classOrDivision || 'General'}
                   </p>

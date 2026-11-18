@@ -4,7 +4,10 @@ export type AcademicStatus =
   | 'UNDERGRADUATE'
   | 'GRADUATE'
   | 'POSTGRADUATE'
-  | 'WORKING_SCHOLAR';
+  | 'WORKING_SCHOLAR'
+  | 'HAFIL'
+  | 'AL_AALIM'
+  | 'OTHER';
 
 export type ScholarApprovalStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -23,6 +26,7 @@ export interface AlumniScholarItem {
   classOrDivision?: string | null;
   classId?: string | null;
   academicStatus: AcademicStatus;
+  customStatusLabel?: string | null;
   qualification: string;
   university: string;
   qualificationsList?: QualificationEntry[] | null;
@@ -87,6 +91,7 @@ export interface ScholarCreatePayload {
   classOrDivision?: string | null;
   classId?: string | null;
   academicStatus: AcademicStatus;
+  customStatusLabel?: string | null;
   qualification?: string;
   university?: string;
   qualificationsList?: QualificationEntry[] | null;
@@ -181,4 +186,25 @@ export async function deleteAdminScholar(id: string): Promise<{ success: boolean
     `/madrasa-admin/alumni-hub/${id}`
   );
   return response.data;
+}
+
+export function getScholarStatusInfo(status: string, customLabel?: string | null): { label: string; className: string } {
+  switch (status) {
+    case 'HAFIL':
+      return { label: 'Hafil', className: 'bg-emerald-50 text-emerald-800 border-emerald-300' };
+    case 'AL_AALIM':
+      return { label: 'Al Aalim', className: 'bg-amber-50 text-amber-800 border-amber-300' };
+    case 'UNDERGRADUATE':
+      return { label: 'Undergraduate', className: 'bg-blue-50 text-blue-700 border-blue-200' };
+    case 'GRADUATE':
+      return { label: 'Graduate', className: 'bg-purple-50 text-purple-700 border-purple-200' };
+    case 'POSTGRADUATE':
+      return { label: 'Postgraduate', className: 'bg-indigo-50 text-indigo-700 border-indigo-200' };
+    case 'WORKING_SCHOLAR':
+      return { label: 'Working Scholar', className: 'bg-teal-50 text-teal-700 border-teal-200' };
+    case 'OTHER':
+      return { label: customLabel?.trim() || 'Other', className: 'bg-slate-100 text-slate-800 border-slate-300' };
+    default:
+      return { label: customLabel?.trim() || status || 'Alumnus', className: 'bg-slate-100 text-slate-700 border-slate-200' };
+  }
 }

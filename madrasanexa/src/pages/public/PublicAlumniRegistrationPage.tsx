@@ -55,6 +55,7 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
     batchYear: '',
     classOrDivision: '',
     academicStatus: 'UNDERGRADUATE' as AcademicStatus,
+    customStatusLabel: '',
     qualification: '',
     university: '',
     facultyOrDepartment: '',
@@ -142,6 +143,7 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
 
     const payloadToSubmit = {
       ...formData,
+      customStatusLabel: formData.academicStatus === 'OTHER' ? (formData.customStatusLabel?.trim() || null) : null,
       qualification: validQuals[0].degree.trim(),
       university: validQuals[0].university.trim(),
       qualificationsList: validQuals,
@@ -333,8 +335,26 @@ export const PublicAlumniRegistrationPage: React.FC = () => {
                     <option value="GRADUATE">Graduate</option>
                     <option value="POSTGRADUATE">Postgraduate</option>
                     <option value="WORKING_SCHOLAR">Working Scholar</option>
+                    <option value="HAFIL">Hafil</option>
+                    <option value="AL_AALIM">Al Aalim</option>
+                    <option value="OTHER">Other</option>
                   </select>
                 </div>
+                {formData.academicStatus === 'OTHER' && (
+                  <div className="sm:col-span-2 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <label className="block font-semibold text-[#252525] mb-1 text-xs">
+                      Specify Position / Status *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.customStatusLabel || ''}
+                      onChange={(e) => setFormData({ ...formData, customStatusLabel: e.target.value })}
+                      placeholder="e.g., Businessman, Imam, Entrepreneur, Lecturer..."
+                      className="w-full px-3.5 py-2.5 bg-white border border-[#E5E5DF] rounded-xl text-xs text-[#252525] focus:outline-hidden focus:ring-1 focus:ring-[#85845C]"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Dynamic Qualifications List */}

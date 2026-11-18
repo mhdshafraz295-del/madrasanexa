@@ -19,6 +19,7 @@ import type { MadrasaThemeTokens } from '../../services/api';
 import {
   getPublicAlumni,
   type AlumniScholarItem,
+  getScholarStatusInfo,
 } from '../../services/scholar-alumni.service';
 
 interface MadrasaPublicAlumniProps {
@@ -145,6 +146,9 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             { id: 'GRADUATE', label: 'Graduates' },
             { id: 'POSTGRADUATE', label: 'Postgraduates' },
             { id: 'WORKING_SCHOLAR', label: 'Working Scholars' },
+            { id: 'HAFIL', label: 'Hafil' },
+            { id: 'AL_AALIM', label: 'Al Aalim' },
+            { id: 'OTHER', label: 'Other' },
           ].map((st) => (
             <button
               key={st.id}
@@ -261,6 +265,14 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#F5F5F1] text-[#252525] border border-[#E5E5DF]">
                             Batch {item.batchYear}
                           </span>
+                          {(() => {
+                            const sInfo = getScholarStatusInfo(item.academicStatus, item.customStatusLabel);
+                            return (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sInfo.className}`}>
+                                {sInfo.label}
+                              </span>
+                            );
+                          })()}
                           {item.isFeatured && (
                             <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-0.5">
                               <Sparkles className="w-2.5 h-2.5 text-amber-600" />
@@ -382,10 +394,20 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   </div>
                 )}
                 <div>
-                  <h3 className="font-serif font-bold text-base sm:text-lg text-[#252525]">
-                    {activeModalProfile.fullName}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-[#666666]">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-serif font-bold text-base sm:text-lg text-[#252525]">
+                      {activeModalProfile.fullName}
+                    </h3>
+                    {(() => {
+                      const sInfo = getScholarStatusInfo(activeModalProfile.academicStatus, activeModalProfile.customStatusLabel);
+                      return (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sInfo.className}`}>
+                          {sInfo.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+                  <div className="flex items-center gap-2 text-xs text-[#666666] mt-0.5">
                     <span>Batch {activeModalProfile.batchYear}</span>
                     {activeModalProfile.classOrDivision && (
                       <>

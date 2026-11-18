@@ -13,7 +13,7 @@ import {
   X,
   CheckCircle2,
 } from 'lucide-react';
-import { alumniApi, TeacherAlumniItem } from '../../services/api';
+import { alumniApi, TeacherAlumniItem, getScholarStatusInfo } from '../../services/api';
 
 export const TeacherAlumniPage: React.FC = () => {
   const [alumni, setAlumni] = useState<TeacherAlumniItem[]>([]);
@@ -131,6 +131,9 @@ export const TeacherAlumniPage: React.FC = () => {
               <option value="GRADUATE">Graduates</option>
               <option value="POSTGRADUATE">Postgraduates</option>
               <option value="WORKING_SCHOLAR">Working Scholars</option>
+              <option value="HAFIL">Hafil</option>
+              <option value="AL_AALIM">Al Aalim</option>
+              <option value="OTHER">Other</option>
             </select>
           </div>
         </div>
@@ -200,6 +203,14 @@ export const TeacherAlumniPage: React.FC = () => {
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
                             Batch {item.batchYear}
                           </span>
+                          {(() => {
+                            const sInfo = getScholarStatusInfo(item.academicStatus, item.customStatusLabel);
+                            return (
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sInfo.className}`}>
+                                {sInfo.label}
+                              </span>
+                            );
+                          })()}
                           {item.isFeatured && (
                             <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-0.5">
                               <Sparkles className="w-2.5 h-2.5 text-amber-600" />
@@ -300,7 +311,17 @@ export const TeacherAlumniPage: React.FC = () => {
                   </div>
                 )}
                 <div>
-                  <h3 className="font-bold text-base text-slate-900">{activeProfile.fullName}</h3>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-bold text-base text-slate-900">{activeProfile.fullName}</h3>
+                    {(() => {
+                      const sInfo = getScholarStatusInfo(activeProfile.academicStatus, activeProfile.customStatusLabel);
+                      return (
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sInfo.className}`}>
+                          {sInfo.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   <p className="text-xs text-slate-500">
                     Batch {activeProfile.batchYear} &bull; {activeProfile.classOrDivision || 'General'}
                   </p>

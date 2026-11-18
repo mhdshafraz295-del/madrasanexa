@@ -35,6 +35,12 @@ interface ProvisionPortalModalProps {
 const STORAGE_KEY_PORTAL_URL = 'madrasanexa_teacher_portal_base_url';
 const DEFAULT_PORTAL_URL = import.meta.env.VITE_TEACHER_PORTAL_URL || 'http://localhost:5174';
 
+function normalizeBaseUrl(url?: string | null): string {
+  if (!url || typeof url !== 'string') return DEFAULT_PORTAL_URL;
+  const cleaned = url.trim().replace(/\/+$/, '').replace(/\/login\/?$/i, '').replace(/\/+$/, '');
+  return cleaned || DEFAULT_PORTAL_URL;
+}
+
 export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
   isOpen,
   onClose,
@@ -46,7 +52,12 @@ export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
   const [customPassword, setCustomPassword] = useState('');
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [portalBaseUrl, setPortalBaseUrl] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY_PORTAL_URL) || DEFAULT_PORTAL_URL;
+    const saved = localStorage.getItem(STORAGE_KEY_PORTAL_URL);
+    const normalized = normalizeBaseUrl(saved || DEFAULT_PORTAL_URL);
+    if (saved && saved !== normalized) {
+      localStorage.setItem(STORAGE_KEY_PORTAL_URL, normalized);
+    }
+    return normalized;
   });
   const [showPassword, setShowPassword] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -86,16 +97,18 @@ export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
     user?.madrasa?.code ||
     'MDX';
 
-  const cleanBaseUrl = (portalBaseUrl || DEFAULT_PORTAL_URL).trim().replace(/\/+$/, '');
+  const cleanBaseUrl = normalizeBaseUrl(portalBaseUrl);
 
   const handleBaseUrlChange = (newUrl: string) => {
     setPortalBaseUrl(newUrl);
-    localStorage.setItem(STORAGE_KEY_PORTAL_URL, newUrl.trim());
+    const cleaned = normalizeBaseUrl(newUrl);
+    localStorage.setItem(STORAGE_KEY_PORTAL_URL, cleaned);
   };
 
   const resetBaseUrlToDefault = () => {
-    setPortalBaseUrl(DEFAULT_PORTAL_URL);
-    localStorage.setItem(STORAGE_KEY_PORTAL_URL, DEFAULT_PORTAL_URL);
+    const cleaned = normalizeBaseUrl(DEFAULT_PORTAL_URL);
+    setPortalBaseUrl(cleaned);
+    localStorage.setItem(STORAGE_KEY_PORTAL_URL, cleaned);
   };
 
   const handleProvision = async (e: React.FormEvent) => {
@@ -151,24 +164,27 @@ export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
     customPassword ||
     '********';
 
-  // Live deep link computed dynamically with whatever portalBaseUrl is set to
+  // Live deep link computed dynamically with normalized cleanBaseUrl
   const liveLoginUrl = `${cleanBaseUrl}/login?code=${encodeURIComponent(
     currentMadrasaCode
   )}&email=${encodeURIComponent(activeLoginId)}`;
 
-  // Formatted WhatsApp Welcome Message
+  // Unicode Left-to-Right Mark to prevent Arabic greeting from flipping subsequent English lines to RTL
+  const LTR = '\u200E';
+
+  // Formatted WhatsApp Welcome Message with clean bullets and unbolded email
   const formattedWhatsAppMessage = [
     `السلام عليكم ورحمة الله وبركاته`,
-    `Welcome Ustadh *${ustadh.fullName}* to *${currentMadrasaName}* Teacher Portal.`,
-    ``,
-    `Here are your login credentials:`,
-    `🏢 Madrasa Code: *${currentMadrasaCode}*`,
-    `👤 Staff ID: *${ustadh.ustadhCode}*`,
-    `📧 Login Email / ID: *${activeLoginId}*`,
-    `🔑 Temporary Password: *${activeOtp}*`,
-    `🔗 Direct Login Link: ${liveLoginUrl}`,
-    ``,
-    `_Please log in and update your password upon your first sign-in._`,
+    `${LTR}Welcome Ustadh *${ustadh.fullName}* to *${currentMadrasaName}* Teacher Portal.`,
+    `${LTR}`,
+    `${LTR}Here are your login credentials:`,
+    `${LTR}• *Madrasa Code:* ${currentMadrasaCode}`,
+    `${LTR}• *Staff ID:* ${ustadh.ustadhCode}`,
+    `${LTR}• *Login Email / ID:* ${activeLoginId}`,
+    `${LTR}• *Temporary Password:* *${activeOtp}*`,
+    `${LTR}• *Direct Login Link:* ${liveLoginUrl}`,
+    `${LTR}`,
+    `${LTR}_Please log in and update your password upon your first sign-in._`,
   ].join('\n');
 
   // WhatsApp phone digits
@@ -215,11 +231,11 @@ export const ProvisionPortalModal: React.FC<ProvisionPortalModalProps> = ({
       ``,
       `Your Teacher Portal login credentials for ${currentMadrasaName} have been generated:`,
       ``,
-      `Madrasa Code: ${currentMadrasaCode}`,
-      `Staff ID: ${ustadh.ustadhCode}`,
-      `Login Email / ID: ${activeLoginId}`,
-      `Temporary Password: ${activeOtp}`,
-      `Login Link: ${liveLoginUrl}`,
+      `• Madrasa Code: ${currentMadrasaCode}`,
+      `• Staff ID: ${ustadh.ustadhCode}`,
+      `• Login Email / ID: ${activeLoginId}`,
+      `• Temporary Password: ${activeOtp}`,
+      `• Direct Login Link: ${liveLoginUrl}`,
       ``,
       `Please log in and update your password on your first sign-in.`,
     ].join('\n');

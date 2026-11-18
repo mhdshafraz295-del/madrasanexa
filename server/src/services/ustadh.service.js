@@ -478,10 +478,10 @@ export function generateReadableOtp(prefix = 'Mdx') {
  */
 export function resolveTeacherPortalUrl(customUrl = null) {
   if (customUrl && typeof customUrl === 'string' && customUrl.trim()) {
-    return customUrl.trim().replace(/\/+$/, '');
+    return customUrl.trim().replace(/\/+$/, '').replace(/\/login\/?$/i, '').replace(/\/+$/, '');
   }
   if (process.env.TEACHER_PORTAL_URL && process.env.TEACHER_PORTAL_URL.trim()) {
-    return process.env.TEACHER_PORTAL_URL.trim().replace(/\/+$/, '');
+    return process.env.TEACHER_PORTAL_URL.trim().replace(/\/+$/, '').replace(/\/login\/?$/i, '').replace(/\/+$/, '');
   }
   return 'http://localhost:5174';
 }

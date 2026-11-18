@@ -57,6 +57,7 @@ import ExpenseAnalysisPage from './pages/madrasa-admin/ExpenseAnalysisPage';
 import MarkingHubPage from './pages/madrasa-admin/MarkingHubPage';
 import AttendancePage from './pages/madrasa-admin/AttendancePage';
 import UstadhManagementPage from './pages/madrasa-admin/UstadhManagementPage';
+import StaffNoticesPage from './pages/madrasa-admin/StaffNoticesPage';
 import TimetablePage from './pages/madrasa-admin/TimetablePage';
 import NotificationLogsPage from './pages/madrasa-admin/NotificationLogsPage';
 export default function App() {
@@ -147,6 +148,7 @@ export default function App() {
               <Route path="timetable" element={<TimetablePage />} />
               <Route path="marking-hub" element={<MarkingHubPage />} />
               <Route path="ustadh-management" element={<UstadhManagementPage />} />
+              <Route path="staff-notices" element={<StaffNoticesPage />} />
               <Route path="students" element={<StudentsPage />} />
               <Route path="admissions" element={<AdmissionsManagementPage />} />
               <Route path="students/new" element={<StudentAddPage />} />

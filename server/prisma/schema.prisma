@@ -288,6 +288,7 @@ model User {
   recordedGateEvents            StudentGateEvent[]              @relation("GateEventRecordedBy")
   ustadhProfile                 Ustadh?                         @relation("UserUstadhProfile")
   voidedPayslips                UstadhPayslipRecord[]           @relation("VoidedPayslips")
+  staffNoticesCreated           StaffNotice[]                   @relation("StaffNoticesCreated")
 
   @@unique([id, madrasaId])
   @@index([madrasaId])
@@ -377,6 +378,8 @@ model Madrasa {
   cpaRecords                     ClassPeriodAttendanceRecord[]
   ustadhSalaryComponents         UstadhSalaryComponent[]
   ustadhPayslips                 UstadhPayslipRecord[]
+  staffNotices                   StaffNotice[]
+  staffNoticeReads               StaffNoticeRead[]
 
   @@index([status])
   @@map("madrasas")
@@ -500,6 +503,7 @@ model Class {
   examPastPapers      ExamPastPaper[]
   curriculumResources CurriculumResource[]
   studentApplications StudentApplication[]
+  staffNotices        StaffNotice[]
 
   // Tenant-scoped uniqueness
   @@unique([id, madrasaId])
@@ -1370,6 +1374,7 @@ model Ustadh {
   reportedIncidents      StudentIncident[]              @relation("IncidentReportedByUstadh")
   studentMeetings        StudentMeeting[]               @relation("MeetingUstadh")
   assignedFollowUps      StudentFollowUp[]              @relation("FollowUpAssignedToUstadh")
+  staffNoticeReads       StaffNoticeRead[]
 
   @@unique([id, madrasaId])
   @@unique([userId, madrasaId])
@@ -2766,3 +2771,47 @@ model UstadhPayslipRecord {
   @@index([madrasaId, status])
   @@map("ustadh_payslip_records")
 }
+
+/// Madrasa Admin -> Teacher Real-Time Staff Notices
+model StaffNotice {
+  id              String            @id @default(cuid())
+  madrasaId       String
+  createdByUserId String
+  title           String            @db.VarChar(255)
+  message         String            @db.Text
+  priority        String            @default("NORMAL") // NORMAL | IMPORTANT | URGENT
+  category        String            @default("GENERAL") // GENERAL | SCHEDULE | EXAM | PAYROLL | EVENT
+  targetType      String            @default("ALL_TEACHERS") // ALL_TEACHERS | CLASS | SPECIFIC_USTADHS
+  targetClassId   String?
+  targetUstadhIds Json?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  madrasa         Madrasa           @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  createdByUser   User              @relation("StaffNoticesCreated", fields: [createdByUserId], references: [id], onDelete: Cascade)
+  targetClass     Class?            @relation(fields: [targetClassId], references: [id], onDelete: SetNull)
+  reads           StaffNoticeRead[]
+
+  @@unique([id, madrasaId])
+  @@index([madrasaId])
+  @@index([madrasaId, createdAt])
+  @@map("staff_notices")
+}
+
+model StaffNoticeRead {
+  id        String      @id @default(cuid())
+  madrasaId String
+  noticeId  String
+  ustadhId  String
+  readAt    DateTime    @default(now())
+
+  madrasa   Madrasa     @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  notice    StaffNotice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  ustadh    Ustadh      @relation(fields: [ustadhId], references: [id], onDelete: Cascade)
+
+  @@unique([noticeId, ustadhId])
+  @@index([madrasaId, ustadhId])
+  @@index([ustadhId])
+  @@map("staff_notice_reads")
+}
+

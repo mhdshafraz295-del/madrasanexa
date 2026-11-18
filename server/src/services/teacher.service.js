@@ -12,6 +12,7 @@ import { isR2Configured } from '../config/r2.js';
 import { hashToken, isValidTokenFormat } from '../utils/scan-token-crypto.js';
 import { dispatchEmail } from './email.service.js';
 import { renderGateEmailHtml } from '../jobs/gate-email-worker.job.js';
+import * as staffNoticeService from './staff-notice.service.js';
 
 /**
  * Resolves active dynamic logoUrl for a madrasa tenant.
@@ -3533,12 +3534,28 @@ export async function voidPayslipRecord({
 }
 
 // =============================================================================
-// Module 11: Notifications
+// Module 11: Notifications & Staff Notices
 // =============================================================================
 
 export async function getNotifications({ madrasaId, userId, query }) {
-  const { category, unreadOnly, page, limit } = query;
-  const skip = (page - 1) * limit;
+  // 1. Fetch institution Staff Notices targeted to this teacher
+  try {
+    const staffNoticesResult = await staffNoticeService.getTeacherStaffNotices({
+      madrasaId,
+      userId,
+      query,
+    });
+
+    if (staffNoticesResult && staffNoticesResult.data && staffNoticesResult.data.length > 0) {
+      return staffNoticesResult;
+    }
+  } catch (err) {
+    console.error('[getNotifications] Error fetching staff notices:', err.message);
+  }
+
+  // 2. Fallback to Super Admin platform announcements
+  const { category, unreadOnly, page = 1, limit = 50 } = query || {};
+  const skip = (Number(page) - 1) * Number(limit);
 
   const whereClause = {
     status: 'PUBLISHED',
@@ -3563,7 +3580,7 @@ export async function getNotifications({ madrasaId, userId, query }) {
       },
       orderBy: { createdAt: 'desc' },
       skip,
-      take: limit,
+      take: Number(limit),
     }),
   ]);
 
@@ -3585,74 +3602,25 @@ export async function getNotifications({ madrasaId, userId, query }) {
   return {
     totalCount,
     unreadCount: items.filter((i) => !i.isRead).length,
-    page,
-    limit,
+    page: Number(page),
+    limit: Number(limit),
     data: items,
   };
 }
 
-export async function markNotificationRead({ userId, announcementId }) {
-  const announcement = await prisma.announcement.findUnique({
-    where: { id: announcementId },
+export async function markNotificationRead({ madrasaId, userId, announcementId }) {
+  return staffNoticeService.markTeacherNoticeRead({
+    madrasaId,
+    userId,
+    noticeId: announcementId,
   });
-
-  if (!announcement) {
-    throw new NotFoundError('Notification not found.');
-  }
-
-  await prisma.announcementRead.upsert({
-    where: {
-      announcementId_userId: {
-        announcementId,
-        userId,
-      },
-    },
-    update: { readAt: new Date() },
-    create: {
-      announcementId,
-      userId,
-    },
-  });
-
-  return {
-    success: true,
-    announcementId,
-    isRead: true,
-  };
 }
 
 export async function markAllNotificationsRead({ madrasaId, userId }) {
-  const announcements = await prisma.announcement.findMany({
-    where: {
-      status: 'PUBLISHED',
-      OR: [
-        { audience: 'ALL_MADRASAS' },
-        { targets: { some: { madrasaId } } },
-      ],
-    },
-    select: { id: true },
+  return staffNoticeService.markAllTeacherNoticesRead({
+    madrasaId,
+    userId,
   });
-
-  for (const a of announcements) {
-    await prisma.announcementRead.upsert({
-      where: {
-        announcementId_userId: {
-          announcementId: a.id,
-          userId,
-        },
-      },
-      update: { readAt: new Date() },
-      create: {
-        announcementId: a.id,
-        userId,
-      },
-    });
-  }
-
-  return {
-    success: true,
-    message: 'All notifications marked as read.',
-  };
 }
 
 // =============================================================================

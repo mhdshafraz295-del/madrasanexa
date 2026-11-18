@@ -45,6 +45,7 @@ const activeNavItems = [
   { to: '/madrasa-admin/timetable', label: 'Weekly Timetable', icon: Calendar },
   { to: '/madrasa-admin/marking-hub', label: 'Marking Hub', icon: ClipboardCheck },
   { to: '/madrasa-admin/ustadh-management', label: 'Ustadh & Teacher Management', icon: UserCheck },
+  { to: '/madrasa-admin/staff-notices', label: 'Staff Notices', icon: Megaphone },
   { to: '/madrasa-admin/fee-pos', label: 'Fee POS', icon: Coins },
   { to: '/madrasa-admin/invoices', label: 'Invoices', icon: Receipt },
   { to: '/madrasa-admin/payments', label: 'Payments', icon: Banknote },

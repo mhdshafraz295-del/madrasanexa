@@ -58,6 +58,7 @@ import {
   convertApplication,
 } from '../controllers/admission.controller.js';
 import * as interviewController from '../controllers/interview.controller.js';
+import * as staffNoticeController from '../controllers/staff-notice.controller.js';
 import {
   listMadrasaAnnouncements,
   getMadrasaAnnouncement,
@@ -572,6 +573,11 @@ router.patch('/ustadh-salaries/:id', updateSalaryPayable);
 router.post('/ustadh-salaries/:id/pay', paySalary);
 router.get('/ustadh-salaries/:id/slip', exportSalarySlipPdf);
 router.post('/ustadh-salaries/:id/send-email', sendSalaryEmail);
+
+// Staff Notices Broadcast Center
+router.post('/staff-notices', staffNoticeController.createNotice);
+router.get('/staff-notices', staffNoticeController.listAdminNotices);
+router.delete('/staff-notices/:id', staffNoticeController.deleteNotice);
 
 // Unified Timetable Module
 router.get('/timetable/class', getClassTimetable);

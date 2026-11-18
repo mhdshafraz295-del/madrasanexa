@@ -22,12 +22,14 @@ import type {
 } from '../mock/teacherMockData';
 import { authApi, profileApi, notificationsApi, resolveAssetUrl } from '../services/api';
 import { TEACHER_NAV_ITEMS, type TeacherNavItem as NavItem } from '../components/layout/TeacherNavigation';
+import NotificationDrawer from '../components/notifications/NotificationDrawer';
 
 export default function TeacherLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [profile, setProfile] = useState<TeacherProfile | null>(null);
   const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [logoError, setLogoError] = useState(false);
   const [photoError, setPhotoError] = useState(false);
 
@@ -68,10 +70,29 @@ export default function TeacherLayout() {
       }).catch(() => {});
     };
 
+    const refreshNotifications = () => {
+      notificationsApi
+        .getNotifications()
+        .then((res) => {
+          if (isMounted && res) {
+            if (res.unreadCount !== undefined) setUnreadCount(res.unreadCount);
+          }
+        })
+        .catch(() => {});
+    };
+
     window.addEventListener('teacher:unauthorized', handleUnauthorized);
     window.addEventListener('teacher:logout', handleUnauthorized);
     window.addEventListener('teacher:profile-updated', handleProfileUpdated);
     window.addEventListener('teacher_user_updated', handleTeacherUserUpdated);
+    window.addEventListener('focus', refreshNotifications);
+    window.addEventListener('teacher:notifications-updated', refreshNotifications);
+
+    // Initial fetch
+    refreshNotifications();
+
+    // 30-second interval real-time polling
+    const pollTimer = setInterval(refreshNotifications, 30000);
 
     const stored = authApi.getStoredUser();
     if (stored) {
@@ -94,21 +115,15 @@ export default function TeacherLayout() {
       })
       .catch(() => {});
 
-    notificationsApi
-      .getNotifications()
-      .then((res) => {
-        if (isMounted && res) {
-          if (res.unreadCount !== undefined) setUnreadCount(res.unreadCount);
-        }
-      })
-      .catch(() => {});
-
     return () => {
       isMounted = false;
+      clearInterval(pollTimer);
       window.removeEventListener('teacher:unauthorized', handleUnauthorized);
       window.removeEventListener('teacher:logout', handleUnauthorized);
       window.removeEventListener('teacher:profile-updated', handleProfileUpdated);
       window.removeEventListener('teacher_user_updated', handleTeacherUserUpdated);
+      window.removeEventListener('focus', refreshNotifications);
+      window.removeEventListener('teacher:notifications-updated', refreshNotifications);
     };
   }, [navigate]);
 
@@ -173,16 +188,19 @@ export default function TeacherLayout() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          <NavLink
-            to="/notifications"
-            className="p-1.5 text-slate-500 hover:text-[#0F172A] rounded-lg border border-[#E7E9EE] bg-white relative"
-            aria-label="Notifications"
+          <button
+            type="button"
+            onClick={() => setIsDrawerOpen(true)}
+            className="p-1.5 text-slate-500 hover:text-[#0F172A] rounded-lg border border-[#E7E9EE] bg-white relative cursor-pointer"
+            aria-label="Staff Notices and Notifications"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#10B981]" />
+              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 text-[9px] font-bold text-white bg-rose-500 rounded-full min-w-4 text-center shadow-xs animate-pulse">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
             )}
-          </NavLink>
+          </button>
           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#37C6A3]/15 text-[#0F172A] border border-[#37C6A3]/30">
             TEACHER
           </span>
@@ -349,16 +367,19 @@ export default function TeacherLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap justify-end">
-            <NavLink
-              to="/notifications"
-              className="p-2 text-slate-500 hover:text-[#0F172A] hover:bg-[#F7F6F1] rounded-xl transition relative border border-[#E7E9EE]"
-              aria-label="Notifications"
+            <button
+              type="button"
+              onClick={() => setIsDrawerOpen(true)}
+              className="p-2 text-slate-500 hover:text-[#0F172A] hover:bg-[#F7F6F1] rounded-xl transition relative border border-[#E7E9EE] cursor-pointer"
+              aria-label="Staff Notices and Notifications"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#10B981]" />
+                <span className="absolute -top-1 -right-1 px-1.5 py-0.5 text-[10px] font-bold text-white bg-rose-500 rounded-full min-w-4 text-center shadow-xs animate-pulse">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
               )}
-            </NavLink>
+            </button>
             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#37C6A3]/15 text-[#0F172A] border border-[#37C6A3]/30 shrink-0">
               USTADH / TEACHER
             </span>
@@ -375,6 +396,13 @@ export default function TeacherLayout() {
           MadrasaNexa &copy; 2026 &bull; Production SaaS Platform for Islamic Educational Institutions
         </footer>
       </div>
+
+      {/* Staff Notices Real-Time Slide-over Drawer */}
+      <NotificationDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onCountChange={setUnreadCount}
+      />
     </div>
   );
 }

@@ -3,14 +3,11 @@ import {
   Bell,
   CheckCircle2,
   Trash2,
-  Filter,
-  Sparkles,
-  AlertCircle,
   Clock,
-  Building2,
-  GraduationCap,
   X,
   Check,
+  Megaphone,
+  AlertTriangle,
 } from 'lucide-react';
 import { notificationsApi } from '../services/api';
 import type { TeacherNotification } from '../mock/teacherMockData';
@@ -18,7 +15,7 @@ import { LoadingState } from '../components/common/LoadingState';
 import { ErrorState } from '../components/common/ErrorState';
 import { EmptyState } from '../components/common/EmptyState';
 
-type CategoryFilter = 'All' | 'Unread' | 'Exam' | 'Administrative' | 'Academic';
+type CategoryFilter = 'All' | 'Unread' | 'Urgent' | 'General' | 'Schedule' | 'Exam' | 'Payroll' | 'Event';
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<TeacherNotification[]>([]);
@@ -49,6 +46,7 @@ export default function NotificationsPage() {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     try {
       await notificationsApi.markAllRead();
+      window.dispatchEvent(new CustomEvent('teacher:notifications-updated'));
       window.dispatchEvent(new CustomEvent('teacher_profile_updated'));
     } catch (err) {
       console.warn('Offline mark-all-read fallback:', err);
@@ -64,10 +62,18 @@ export default function NotificationsPage() {
     if (willBeRead) {
       try {
         await notificationsApi.markRead(id);
+        window.dispatchEvent(new CustomEvent('teacher:notifications-updated'));
         window.dispatchEvent(new CustomEvent('teacher_profile_updated'));
       } catch (err) {
         console.warn('Offline mark-read fallback:', err);
       }
+    }
+  };
+
+  const handleCardClick = (notif: TeacherNotification) => {
+    setSelectedNotif(notif);
+    if (!notif.isRead) {
+      handleToggleRead(notif.id);
     }
   };
 
@@ -77,8 +83,12 @@ export default function NotificationsPage() {
 
   const filteredNotifications = notifications.filter((n) => {
     if (categoryFilter === 'Unread') return !n.isRead;
+    if (categoryFilter === 'Urgent') {
+      const p = String(n.priority || '').toUpperCase();
+      return p === 'URGENT' || p === 'HIGH';
+    }
     if (categoryFilter === 'All') return true;
-    return n.category === categoryFilter;
+    return String(n.category || '').toLowerCase() === categoryFilter.toLowerCase();
   });
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -89,8 +99,8 @@ export default function NotificationsPage() {
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-[#0D9488] uppercase tracking-wider mb-1">
-            <Bell className="w-4 h-4" />
-            <span>Faculty Announcements & Notices</span>
+            <Megaphone className="w-4 h-4" />
+            <span>Faculty Notices & Broadcasts</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
             Institutional Notifications
@@ -114,13 +124,18 @@ export default function NotificationsPage() {
       {/* 2. Category Filter Pills */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-2 shadow-xs">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-          {(['All', 'Unread', 'Exam', 'Administrative', 'Academic'] as const).map((filter) => {
+          {(['All', 'Unread', 'Urgent', 'General', 'Schedule', 'Exam', 'Payroll', 'Event'] as const).map((filter) => {
             const isSelected = categoryFilter === filter;
             const count = filter === 'All'
               ? notifications.length
               : filter === 'Unread'
               ? unreadCount
-              : notifications.filter((n) => n.category === filter).length;
+              : filter === 'Urgent'
+              ? notifications.filter((n) => {
+                  const p = String(n.priority || '').toUpperCase();
+                  return p === 'URGENT' || p === 'HIGH';
+                }).length
+              : notifications.filter((n) => String(n.category || '').toLowerCase() === filter.toLowerCase()).length;
 
             return (
               <button
@@ -160,75 +175,90 @@ export default function NotificationsPage() {
           <div className="bg-white rounded-2xl border border-slate-200 p-8">
             <EmptyState
               title="No Notices Found"
-              description="There are no announcements or circulars matching your active category filter."
+              description="There are no announcements or circulars matching your active filter."
             />
           </div>
         ) : (
-          filteredNotifications.map((notif) => (
-            <div
-              key={notif.id}
-              className={`bg-white rounded-2xl border p-4 sm:p-5 transition shadow-xs flex flex-col sm:flex-row sm:items-start justify-between gap-4 ${
-                !notif.isRead
-                  ? 'border-teal-300 bg-teal-50/20'
-                  : 'border-slate-200/90 hover:border-slate-300'
-              }`}
-            >
-              <div className="flex items-start gap-3.5 min-w-0">
-                <div
-                  className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${
-                    !notif.isRead ? 'bg-[#0D9488]' : 'bg-transparent'
-                  }`}
-                />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 uppercase">
-                      {notif.category}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        notif.priority === 'High'
-                          ? 'bg-rose-50 text-rose-800 border border-rose-200'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      {notif.priority} Priority
-                    </span>
-                    <span className="text-[11px] text-slate-400 font-mono">
-                      {notif.timestamp}
-                    </span>
-                    <span className="text-[11px] text-slate-400">• By {notif.sender}</span>
-                  </div>
+          filteredNotifications.map((notif) => {
+            const normPriority = String(notif.priority || 'NORMAL').toUpperCase();
+            const isUrgent = normPriority === 'URGENT' || normPriority === 'HIGH';
+            const isImportant = normPriority === 'IMPORTANT';
 
-                  <h3
-                    onClick={() => setSelectedNotif(notif)}
-                    className="text-sm font-bold text-slate-900 hover:text-[#0D9488] transition cursor-pointer"
+            return (
+              <div
+                key={notif.id}
+                className={`bg-white rounded-2xl border p-4 sm:p-5 transition shadow-xs flex flex-col sm:flex-row sm:items-start justify-between gap-4 cursor-pointer hover:shadow-sm ${
+                  isUrgent
+                    ? 'border-rose-300 bg-rose-50/20'
+                    : !notif.isRead
+                    ? 'border-teal-300 bg-teal-50/20'
+                    : 'border-slate-200/90 hover:border-slate-300'
+                }`}
+                onClick={() => handleCardClick(notif)}
+              >
+                <div className="flex items-start gap-3.5 min-w-0">
+                  <div
+                    className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${
+                      isUrgent
+                        ? 'bg-rose-500 animate-pulse'
+                        : !notif.isRead
+                        ? 'bg-[#0D9488]'
+                        : 'bg-transparent'
+                    }`}
+                  />
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 uppercase">
+                        {notif.category}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          isUrgent
+                            ? 'bg-rose-50 text-rose-800 border border-rose-200'
+                            : isImportant
+                            ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {notif.priority}
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        {notif.timestamp ? new Date(notif.timestamp).toLocaleString() : ''}
+                      </span>
+                      <span className="text-[11px] text-slate-400">• By {notif.sender || 'Administration'}</span>
+                    </div>
+
+                    <h3 className="text-sm font-bold text-slate-900 hover:text-[#0D9488] transition">
+                      {notif.title}
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">
+                      {notif.message}
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className="flex items-center gap-2 self-end sm:self-start shrink-0 pt-2 sm:pt-0"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    onClick={() => handleToggleRead(notif.id)}
+                    title={notif.isRead ? 'Mark as unread' : 'Mark as read'}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer text-xs"
                   >
-                    {notif.title}
-                  </h3>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed line-clamp-2">
-                    {notif.message}
-                  </p>
+                    <Check className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(notif.id)}
+                    title="Dismiss notification"
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition cursor-pointer text-xs"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 self-end sm:self-start shrink-0 pt-2 sm:pt-0">
-                <button
-                  onClick={() => handleToggleRead(notif.id)}
-                  title={notif.isRead ? 'Mark as unread' : 'Mark as read'}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer text-xs"
-                >
-                  <Check className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => handleDelete(notif.id)}
-                  title="Dismiss notification"
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition cursor-pointer text-xs"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -252,11 +282,11 @@ export default function NotificationsPage() {
                 {selectedNotif.title}
               </h2>
               <div className="flex items-center gap-3 text-xs text-slate-400 mb-4 font-mono">
-                <span>{selectedNotif.timestamp}</span>
+                <span>{selectedNotif.timestamp ? new Date(selectedNotif.timestamp).toLocaleString() : ''}</span>
                 <span>•</span>
-                <span>Sender: {selectedNotif.sender}</span>
+                <span>Sender: {selectedNotif.sender || 'Administration'}</span>
               </div>
-              <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+              <p className="text-xs text-slate-700 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 whitespace-pre-wrap">
                 {selectedNotif.message}
               </p>
             </div>

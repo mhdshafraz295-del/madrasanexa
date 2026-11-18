@@ -415,10 +415,12 @@ export async function getTeacherNotifications(req, res, next) {
 
 export async function markNotificationRead(req, res, next) {
   try {
+    const madrasaId = req.tenant?.madrasaId;
     const userId = req.auth.userId;
     const { id } = req.params;
 
     const data = await teacherService.markNotificationRead({
+      madrasaId,
       userId,
       announcementId: id,
     });

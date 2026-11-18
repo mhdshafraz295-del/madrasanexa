@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import type { TimetableSlot } from '../mock/teacherMockData';
-import { timetableApi } from '../services/api';
+import { timetableApi, profileApi, authApi, resolveAssetUrl, TeacherProfile } from '../services/api';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
@@ -19,21 +19,47 @@ type DayFilter = 'All' | 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Frid
 type ViewMode = 'cards' | 'grid';
 
 const DAYS: DayFilter[] = ['All', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const WEEK_DAYS: DayFilter[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 export default function TimetablePage() {
   const [selectedDay, setSelectedDay] = useState<DayFilter>('All');
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [selectedSession, setSelectedSession] = useState<TimetableSlot | null>(null);
   const [slots, setSlots] = useState<TimetableSlot[]>([]);
+  const [allSlots, setAllSlots] = useState<TimetableSlot[]>([]);
+  const [profile, setProfile] = useState<TeacherProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState(false);
 
   const loadTimetable = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await timetableApi.getTimetable(selectedDay === 'All' ? undefined : selectedDay);
-      if (data) setSlots(data);
+      const [dataRes, profileRes] = await Promise.allSettled([
+        timetableApi.getTimetable(),
+        profileApi.getProfile(),
+      ]);
+
+      if (dataRes.status === 'fulfilled' && dataRes.value) {
+        setAllSlots(dataRes.value);
+        setSlots(dataRes.value);
+      }
+      if (profileRes.status === 'fulfilled' && profileRes.value) {
+        setProfile(profileRes.value);
+      } else {
+        const stored = authApi.getStoredUser();
+        if (stored) {
+          setProfile({
+            id: stored.id,
+            fullName: stored.name,
+            email: stored.email,
+            employeeCode: stored.teacherProfile?.ustadhCode || 'UST',
+            status: 'Active',
+            madrasa: stored.madrasa,
+          } as any);
+        }
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load timetable.');
     } finally {
@@ -43,15 +69,24 @@ export default function TimetablePage() {
 
   useEffect(() => {
     loadTimetable();
-  }, [selectedDay]);
+  }, []);
 
   const filteredSlots = selectedDay === 'All'
-    ? slots
-    : slots.filter((s) => s.day.toLowerCase() === selectedDay.toLowerCase());
+    ? allSlots
+    : allSlots.filter((s) => s.day.toLowerCase() === selectedDay.toLowerCase());
 
   const handlePrint = () => {
     window.print();
   };
+
+  const storedUser = authApi.getStoredUser();
+  const teacherName = profile?.fullName || storedUser?.name || 'Ustadh';
+  const employeeCode = profile?.employeeCode || storedUser?.teacherProfile?.ustadhCode || '';
+  const madrasaName = (profile as any)?.institution?.name || (profile as any)?.madrasa?.name || storedUser?.madrasa?.name || 'MadrasaNexa Institutional Faculty';
+  const madrasaCode = (profile as any)?.institution?.code || (profile as any)?.madrasa?.code || storedUser?.madrasa?.code || 'MNX';
+  const rawLogoUrl = (profile as any)?.institution?.logoUrl || (profile as any)?.madrasa?.logoUrl || storedUser?.madrasa?.logoUrl;
+  const resolvedLogoUrl = resolveAssetUrl(rawLogoUrl);
+  const madrasaInitials = (madrasaCode || madrasaName.slice(0, 3)).toUpperCase();
 
   if (isLoading) {
     return <LoadingState message="Loading weekly timetable schedule..." className="my-8" />;
@@ -62,9 +97,213 @@ export default function TimetablePage() {
   }
 
   return (
-    <div className="space-y-6 overflow-x-hidden">
-      {/* 1. Header & Controls Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-6 overflow-x-hidden print:space-y-0 print:overflow-visible print:m-0 print:p-0">
+      {/* =========================================================================
+          0. DEDICATED PRINT-ONLY SINGLE-PAGE A4 LANDSCAPE TIMETABLE ROSTER
+          Hidden on screen (print:block), high-contrast, compact 1-page fit
+         ========================================================================= */}
+      <div
+        id="printable-timetable-sheet"
+        className="hidden print:block w-full bg-white text-slate-900 font-sans"
+        style={{
+          pageBreakInside: 'avoid',
+          breakInside: 'avoid',
+          pageBreakAfter: 'avoid',
+          breakAfter: 'avoid',
+        }}
+      >
+        <style>{`
+          @media print {
+            @page {
+              size: A4 landscape;
+              margin: 10mm;
+            }
+          }
+        `}</style>
+
+        {/* 1. Institutional Header Banner */}
+        <div className="border-b-2 border-slate-900 pb-2.5 mb-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              {resolvedLogoUrl && !logoError ? (
+                <div className="h-11 w-11 rounded-lg overflow-hidden bg-white border border-slate-300 shrink-0 p-0.5 flex items-center justify-center">
+                  <img
+                    src={resolvedLogoUrl}
+                    alt={madrasaName}
+                    onError={() => setLogoError(true)}
+                    className="w-full h-full object-cover rounded-md"
+                  />
+                </div>
+              ) : (
+                <div className="h-11 w-11 rounded-lg bg-slate-900 text-[#37C6A3] font-black text-xs flex items-center justify-center shrink-0">
+                  {madrasaInitials}
+                </div>
+              )}
+              <div>
+                <div className="text-[9px] font-extrabold uppercase tracking-widest text-[#0D9488]">
+                  {madrasaCode ? `${madrasaCode} • ` : ''}Faculty Academic Roster
+                </div>
+                <h1 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none mt-0.5">
+                  {madrasaName}
+                </h1>
+                <div className="text-[11px] font-bold text-slate-700 mt-0.5 flex items-center gap-1.5">
+                  <span>Weekly Teaching Timetable</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-slate-500 font-medium">Academic Year 2026</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-right space-y-0.5">
+              <div className="text-xs font-black text-slate-900">
+                Ustadh {teacherName}
+              </div>
+              {employeeCode && (
+                <div className="text-[10px] font-mono font-semibold text-slate-600">
+                  Staff ID: {employeeCode}
+                </div>
+              )}
+              <div className="text-[9px] font-semibold text-slate-500 flex items-center justify-end gap-1.5 pt-0.5">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold">
+                  {allSlots.length} Total Weekly Periods
+                </span>
+                <span className="text-slate-300">•</span>
+                <span>
+                  Printed: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Compact Structured Weekly Table (Monday through Saturday) */}
+        <table className="w-full border-collapse border border-slate-300 text-left text-[10px]">
+          <thead>
+            <tr className="bg-slate-900 text-white font-bold uppercase tracking-wider text-[8.5px]">
+              <th className="py-1 px-2 border border-slate-700 text-center w-24">Day</th>
+              <th className="py-1 px-1.5 border border-slate-700 text-center w-12">Period</th>
+              <th className="py-1 px-2 border border-slate-700 w-36">Time Slot</th>
+              <th className="py-1 px-2.5 border border-slate-700">Subject / Course Module</th>
+              <th className="py-1 px-2.5 border border-slate-700 w-52">Class & Division</th>
+              <th className="py-1 px-2 border border-slate-700 text-center w-24">Room</th>
+              <th className="py-1 px-1.5 border border-slate-700 text-center w-20">Enrolled</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allSlots.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="py-6 text-center text-slate-400 italic">
+                  No weekly classroom teaching periods currently scheduled.
+                </td>
+              </tr>
+            ) : (
+              WEEK_DAYS.map((dayName) => {
+                const daySlots = allSlots
+                  .filter((s) => s.day.toLowerCase() === dayName.toLowerCase())
+                  .sort((a, b) => a.period - b.period);
+
+                if (daySlots.length === 0) return null;
+
+                return daySlots.map((slot, idx) => (
+                  <tr
+                    key={slot.id}
+                    className={`border-b border-slate-200 ${
+                      idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'
+                    }`}
+                    style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                  >
+                    {idx === 0 && (
+                      <td
+                        rowSpan={daySlots.length}
+                        className="py-1 px-1.5 text-center font-bold text-slate-900 bg-slate-100/90 border border-slate-300 align-middle uppercase tracking-wider text-[9.5px]"
+                      >
+                        <div className="font-extrabold text-slate-900">{dayName}</div>
+                        <div className="text-[8.5px] text-[#0D9488] font-mono font-bold mt-0.5">
+                          {daySlots.length} Period{daySlots.length === 1 ? '' : 's'}
+                        </div>
+                      </td>
+                    )}
+                    <td className="py-1 px-1 text-center font-mono font-bold text-slate-800 border border-slate-200 text-[9.5px]">
+                      P{slot.period}
+                    </td>
+                    <td className="py-1 px-1.5 font-mono text-slate-700 whitespace-nowrap border border-slate-200 text-[9.5px]">
+                      {slot.timeSlot}
+                    </td>
+                    <td className="py-1 px-2 font-bold text-slate-900 border border-slate-200 font-sans text-[10px]">
+                      <span className="leading-tight">{slot.subject}</span>
+                      {slot.notes && (
+                        <span className="block text-[8px] font-normal text-slate-500 italic truncate max-w-xs">
+                          {slot.notes}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-1 px-2 font-semibold text-slate-800 border border-slate-200 text-[9.5px]">
+                      <span>{slot.className}</span>
+                      {slot.academicSection && (
+                        <span className="text-slate-500 font-normal text-[8.5px] block">
+                          {slot.academicSection}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-1 px-1.5 text-center font-medium text-slate-700 border border-slate-200 whitespace-nowrap text-[9.5px]">
+                      {slot.room}
+                    </td>
+                    <td className="py-1 px-1.5 text-center font-mono font-bold text-slate-900 border border-slate-200 whitespace-nowrap text-[9.5px]">
+                      {slot.studentsCount ?? slot.enrolledCount ?? 0}
+                    </td>
+                  </tr>
+                ));
+              })
+            )}
+          </tbody>
+          {allSlots.length > 0 && (
+            <tfoot>
+              <tr className="bg-slate-100 font-bold text-slate-800 text-[8.5px] border-t-2 border-slate-400">
+                <td colSpan={3} className="py-1 px-2 border border-slate-300 uppercase">
+                  Summary: {allSlots.length} Total Periods Allocated
+                </td>
+                <td colSpan={2} className="py-1 px-2 border border-slate-300 text-slate-600 font-medium">
+                  Active Days: {Array.from(new Set(allSlots.map((s) => s.day))).length} Days (Mon – Sat)
+                </td>
+                <td className="py-1 px-1.5 border border-slate-300 text-center uppercase text-slate-600">
+                  Total Enrolled
+                </td>
+                <td className="py-1 px-1.5 border border-slate-300 text-center font-mono font-black text-slate-900">
+                  {allSlots.reduce((acc, curr) => acc + (curr.studentsCount ?? curr.enrolledCount ?? 0), 0)}
+                </td>
+              </tr>
+            </tfoot>
+          )}
+        </table>
+
+        {/* 3. Formal Sign-Off Footer */}
+        <div className="mt-2.5 pt-2 border-t border-slate-300 flex items-end justify-between text-[8.5px] text-slate-600">
+          <div className="space-y-0.5">
+            <div className="font-semibold text-slate-700">
+              Faculty Timetable Administration &bull; MadrasaNexa Institutional Platform
+            </div>
+            <div className="text-slate-400 font-mono text-[8px]">
+              Document Ref: MNX-TT-{new Date().getFullYear()}-{employeeCode || 'UST'} &bull; Official Single-Page A4 Academic Roster
+            </div>
+          </div>
+
+          <div className="flex items-center gap-10">
+            <div className="text-center">
+              <div className="w-32 border-b border-slate-400 mb-0.5"></div>
+              <span className="font-medium">Ustadh / Teacher Signature</span>
+            </div>
+            <div className="text-center">
+              <div className="w-32 border-b border-slate-400 mb-0.5"></div>
+              <span className="font-medium">Academic Mudir / Stamp</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Screen Interactive Workspace (Hidden during Print) */}
+      <div className="space-y-6 print:hidden">
+        {/* 1. Header & Controls Card */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-[#0D9488] uppercase tracking-wider mb-1">
             <CalendarDays className="w-4 h-4" />
@@ -335,10 +574,11 @@ export default function TimetablePage() {
           </div>
         </div>
       )}
+      </div>
 
       {/* 5. Session Details Modal */}
       {selectedSession && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 print:hidden no-print">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>

@@ -159,9 +159,9 @@ export default function TeacherLayout() {
     : 'FA';
 
   return (
-    <div className="min-h-screen bg-[#F7F6F1] flex flex-col md:flex-row text-[#0F172A]">
+    <div className="min-h-screen bg-[#F7F6F1] flex flex-col md:flex-row text-[#0F172A] print:min-h-0 print:h-auto print:bg-white print:p-0 print:m-0">
       {/* 1. Mobile Header */}
-      <header className="md:hidden bg-white border-b border-[#E7E9EE] px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sticky top-0 z-30 shadow-xs print:hidden">
+      <header className="md:hidden bg-white border-b border-[#E7E9EE] px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sticky top-0 z-30 shadow-xs print:hidden no-print">
         <div className="flex items-center gap-2 min-w-0">
           {resolvedLogoUrl && !logoError ? (
             <div className="h-8 w-8 rounded-lg overflow-hidden bg-white border border-[#E7E9EE] shrink-0 p-0.5 shadow-xs flex items-center justify-center">
@@ -216,7 +216,7 @@ export default function TeacherLayout() {
 
       {/* 2. Left Sidebar Navigation (Matching Admin Layout) */}
       <aside
-        className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-[#E7E9EE] flex flex-col justify-between z-40 transition-transform duration-200 ease-in-out md:translate-x-0 print:hidden ${
+        className={`fixed md:sticky top-0 left-0 h-screen w-64 bg-white border-r border-[#E7E9EE] flex flex-col justify-between z-40 transition-transform duration-200 ease-in-out md:translate-x-0 print:hidden no-print ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -350,14 +350,14 @@ export default function TeacherLayout() {
       {mobileMenuOpen && (
         <div
           onClick={() => setMobileMenuOpen(false)}
-          className="fixed inset-0 bg-black/30 z-30 md:hidden backdrop-blur-xs print:hidden"
+          className="fixed inset-0 bg-black/30 z-30 md:hidden backdrop-blur-xs print:hidden no-print"
         />
       )}
 
       {/* 3. Main Workspace Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 print:w-full print:block">
         {/* Desktop Top Header Bar */}
-        <header className="hidden md:flex items-center justify-between bg-white border-b border-[#E7E9EE] px-4 lg:px-8 py-3.5 sticky top-0 z-30 shadow-xs print:hidden">
+        <header className="hidden md:flex items-center justify-between bg-white border-b border-[#E7E9EE] px-4 lg:px-8 py-3.5 sticky top-0 z-30 shadow-xs print:hidden no-print">
           <div className="min-w-0 pr-4">
             <h2 className="text-xs font-semibold text-[#7C8A9A] uppercase tracking-wider truncate">
               {madrasaName}
@@ -387,22 +387,24 @@ export default function TeacherLayout() {
         </header>
 
         {/* Page Content Outlet */}
-        <main className="flex-1 p-3 sm:p-5 md:p-8 max-w-7xl mx-auto w-full min-w-0 print:p-0 print:max-w-none">
+        <main className="flex-1 p-3 sm:p-5 md:p-8 max-w-7xl mx-auto w-full min-w-0 print:p-0 print:m-0 print:max-w-none print:w-full print:block print:border-none print:shadow-none">
           <Outlet />
         </main>
 
         {/* Institutional Footer */}
-        <footer className="p-4 sm:p-6 text-center text-xs text-[#7C8A9A] border-t border-[#E7E9EE] bg-white print:hidden">
+        <footer className="p-4 sm:p-6 text-center text-xs text-[#7C8A9A] border-t border-[#E7E9EE] bg-white print:hidden no-print">
           MadrasaNexa &copy; 2026 &bull; Production SaaS Platform for Islamic Educational Institutions
         </footer>
       </div>
 
       {/* Staff Notices Real-Time Slide-over Drawer */}
-      <NotificationDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        onCountChange={setUnreadCount}
-      />
+      <div className="print:hidden no-print">
+        <NotificationDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          onCountChange={setUnreadCount}
+        />
+      </div>
     </div>
   );
 }

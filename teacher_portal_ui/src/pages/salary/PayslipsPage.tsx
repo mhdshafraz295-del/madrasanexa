@@ -158,6 +158,14 @@ export default function PayslipsPage() {
 
   return (
     <div className="space-y-6 print:space-y-0 print:m-0">
+      <style>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 8mm 10mm;
+          }
+        }
+      `}</style>
       {/* 1. Header Banner (Hidden during Print) */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div>

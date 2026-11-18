@@ -72,48 +72,86 @@ body {
   background: #94A3B8;
 }
 
-/* Dedicated Print Styles for Single-Page Official A4 Payslips */
+/* Dedicated High-Contrast Single-Page Print Engine for MadrasaNexa Teacher Portal */
 @media print {
   @page {
-    size: A4 portrait;
+    size: A4 landscape;
     margin: 8mm 10mm;
   }
 
-  html, body {
+  html, body, #root {
+    background: #ffffff !important;
     background-color: #ffffff !important;
     color: #0f172a !important;
     margin: 0 !important;
     padding: 0 !important;
     height: auto !important;
     min-height: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+    width: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
-  body * {
-    visibility: hidden;
+  /* Reset layout containers and eliminate overflow truncation */
+  body, #root, div, main, aside, header, footer {
+    overflow: visible !important;
   }
 
+  /* Global no-print and screen-only elements */
+  .no-print,
+  .print\:hidden,
+  header.print\:hidden,
+  aside.print\:hidden,
+  footer.print\:hidden,
+  nav.print\:hidden {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+  }
+
+  /* Force display on designated print containers */
+  .print-only,
+  .print\:block {
+    display: block !important;
+    visibility: visible !important;
+  }
+
+  #printable-timetable-sheet,
+  #printable-timetable-sheet *,
   #printable-payslip-sheet,
   #printable-payslip-sheet *,
   .print-container,
   .print-container * {
-    visibility: visible;
+    visibility: visible !important;
   }
 
-  #printable-payslip-sheet,
-  .print-container {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100% !important;
-    background: white !important;
-    padding: 24px !important;
-    margin: 0 !important;
+  #printable-timetable-sheet {
     display: block !important;
-    z-index: 999999 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: static !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
-  .print\:hidden {
-    display: none !important;
+  #printable-payslip-sheet {
+    display: block !important;
+    width: 100% !important;
+    background: #ffffff !important;
+    margin: 0 auto !important;
+    position: static !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }
 

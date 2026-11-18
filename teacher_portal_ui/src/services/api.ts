@@ -461,6 +461,7 @@ export const classesApi = {
 export const teacherAttendanceApi = {
   getTodayTeacherAttendance(): Promise<Array<{
     scheduleId: string;
+    id?: string;
     period: number;
     timeSlot: string;
     startMinutes: number;
@@ -469,17 +470,22 @@ export const teacherAttendanceApi = {
     classId: string;
     subject: string;
     roomName: string;
+    roomCode?: string;
+    roomToken?: string;
+    classroomId?: string | null;
     status: string;
     method: string | null;
     verifiedAt: string | null;
     graceWindowMinutes: number;
+    isActiveSlot?: boolean;
+    isCurrentPeriod?: boolean;
   }>> {
     return request('/teacher/attendance/teacher/today', { method: 'GET' });
   },
 
   verifyClassroomQr(payload: {
     roomToken: string;
-    scheduleId: string;
+    scheduleId?: string;
     method?: string;
     notes?: string;
   }): Promise<{
@@ -488,6 +494,17 @@ export const teacherAttendanceApi = {
     method: string;
     verifiedAt: string;
     scheduleId: string;
+    schedule?: {
+      id: string;
+      period?: number;
+      startMinutes: number;
+      endMinutes: number;
+      timeSlot: string;
+      className: string;
+      subject: string;
+      roomName: string;
+      roomCode: string;
+    };
     roomTokenAccepted: string;
     notice: string;
   }> {

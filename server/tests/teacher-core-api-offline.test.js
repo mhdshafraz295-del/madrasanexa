@@ -34,6 +34,8 @@ import {
   getPayslipDetail,
   getNotifications,
   getTeacherSettings,
+  parseTimeToMinutes,
+  resolveActiveTodaySchedule,
 } from '../src/services/teacher.service.js';
 import { getColomboTimeContext } from '../src/utils/dateTime.js';
 import { prisma } from '../src/lib/prisma.js';
@@ -326,6 +328,45 @@ await testAsync('recordTeacherClassroomCheckIn strictly prevents duplicate check
     prisma.ustadhSchedule.findFirst = originalScheduleFind;
     prisma.ustadhAttendanceRecord.findFirst = originalAttendanceFind;
   }
+});
+
+await testAsync('resolveActiveTodaySchedule matches currently active 5:30 PM slot at 6:20 PM over 7:00 AM morning slot', async () => {
+  const morningSlot = {
+    id: 'sch_morning',
+    startTime: '7:00 AM',
+    endTime: '8:31 AM',
+    startMinutes: 420,
+    endMinutes: 511,
+  };
+  const eveningSlot = {
+    id: 'sch_evening',
+    startTime: '5:30 PM',
+    endTime: '7:34 PM',
+    startMinutes: 1050,
+    endMinutes: 1174,
+  };
+
+  // 1. Scanned at 6:20 PM (1100 minutes) -> Matches evening slot (1050 - 30 <= 1100 <= 1174 + 15)
+  const currentMinutesAt620 = 18 * 60 + 20;
+  const activeAt620 = resolveActiveTodaySchedule([morningSlot, eveningSlot], new Set(['sch_morning']), currentMinutesAt620);
+  assert.strictEqual(activeAt620.id, 'sch_evening', 'At 6:20 PM, evening slot MUST be matched over morning slot');
+
+  // 2. Scanned at 7:05 AM (425 minutes) -> Matches morning slot
+  const currentMinutesAt705 = 7 * 60 + 5;
+  const activeAt705 = resolveActiveTodaySchedule([morningSlot, eveningSlot], new Set(), currentMinutesAt705);
+  assert.strictEqual(activeAt705.id, 'sch_morning', 'At 7:05 AM, morning slot MUST be matched');
+
+  // 3. Scanned at 1:00 PM (780 minutes) -> Matches next upcoming unmarked evening slot
+  const currentMinutesAt100 = 13 * 60;
+  const activeAt100 = resolveActiveTodaySchedule([morningSlot, eveningSlot], new Set(['sch_morning']), currentMinutesAt100);
+  assert.strictEqual(activeAt100.id, 'sch_evening', 'At 1:00 PM, next upcoming unmarked slot MUST be matched');
+
+  // 4. Verify parseTimeToMinutes parses 12h, 24h, and numbers correctly
+  assert.strictEqual(parseTimeToMinutes('5:30 PM'), 1050);
+  assert.strictEqual(parseTimeToMinutes('17:30'), 1050);
+  assert.strictEqual(parseTimeToMinutes('7:00 AM'), 420);
+  assert.strictEqual(parseTimeToMinutes('07:00'), 420);
+  assert.strictEqual(parseTimeToMinutes(420), 420);
 });
 
 // -----------------------------------------------------------------------------

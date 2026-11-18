@@ -34,15 +34,125 @@ const STATIC_VENUE_PLAQUE_NOTICE =
 
 type ScanState = 'idle' | 'valid' | 'invalid_room' | 'expired_window' | 'already_recorded';
 
+function getCurrentColomboMinutes(): number {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Colombo',
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    }).formatToParts(new Date());
+    const h = parseInt(parts.find((p) => p.type === 'hour')?.value || '0', 10);
+    const m = parseInt(parts.find((p) => p.type === 'minute')?.value || '0', 10);
+    return (h === 24 ? 0 : h) * 60 + m;
+  } catch {
+    const d = new Date();
+    return d.getHours() * 60 + d.getMinutes();
+  }
+}
+
+function parseTimeToMinutes(val: any, isStart: boolean = true): number {
+  if (typeof val === 'number' && !isNaN(val)) return val;
+  if (typeof val === 'string' && val.trim()) {
+    const s = val.trim();
+    const match12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (match12) {
+      let h = parseInt(match12[1], 10);
+      const m = parseInt(match12[2], 10);
+      const period = match12[3].toUpperCase();
+      if (period === 'PM' && h < 12) h += 12;
+      if (period === 'AM' && h === 12) h = 0;
+      return h * 60 + m;
+    }
+    const match24 = s.match(/^([01]?\d|2[0-3]):([0-5]\d)/);
+    if (match24) {
+      return parseInt(match24[1], 10) * 60 + parseInt(match24[2], 10);
+    }
+    const splitParts = s.split(/[–\-]/);
+    const target = isStart ? splitParts[0] : splitParts[1];
+    if (target) {
+      const m12 = target.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+      if (m12) {
+        let h = parseInt(m12[1], 10);
+        const m = parseInt(m12[2], 10);
+        const period = m12[3].toUpperCase();
+        if (period === 'PM' && h < 12) h += 12;
+        if (period === 'AM' && h === 12) h = 0;
+        return h * 60 + m;
+      }
+    }
+  }
+  return 0;
+}
+
+function resolveActiveSlot(slots: any[]): any | null {
+  if (!slots || slots.length === 0) return null;
+
+  const currentMinutes = getCurrentColomboMinutes();
+
+  const parsed = slots.map((s) => {
+    const sMin = parseTimeToMinutes(s.startMinutes ?? s.startTime ?? s.timeSlot, true);
+    const eMin = parseTimeToMinutes(s.endMinutes ?? s.endTime ?? s.timeSlot, false);
+    const isMarked = s.status === 'Verified' || s.status === 'Late' || Boolean(s.verifiedAt);
+    return { raw: s, startMinutes: sMin, endMinutes: eMin, isMarked };
+  });
+
+  // 1. Active window: startMinutes - 30 <= currentMinutes <= endMinutes + 15
+  const activeCandidates = parsed.filter(
+    (s) => currentMinutes >= (s.startMinutes - 30) && currentMinutes <= (s.endMinutes + 15)
+  );
+
+  if (activeCandidates.length > 0) {
+    const unmarked = activeCandidates.filter((s) => !s.isMarked);
+    const pool = unmarked.length > 0 ? unmarked : activeCandidates;
+    pool.sort((a, b) => Math.abs(currentMinutes - a.startMinutes) - Math.abs(currentMinutes - b.startMinutes));
+    return pool[0].raw;
+  }
+
+  // 2. Next upcoming unmarked slot today (startMinutes > currentMinutes)
+  const upcomingUnmarked = parsed
+    .filter((s) => s.startMinutes > currentMinutes && !s.isMarked)
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+
+  if (upcomingUnmarked.length > 0) {
+    return upcomingUnmarked[0].raw;
+  }
+
+  // Next upcoming slot
+  const upcomingAny = parsed
+    .filter((s) => s.startMinutes > currentMinutes)
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+
+  if (upcomingAny.length > 0) {
+    return upcomingAny[0].raw;
+  }
+
+  // 3. Fall back to the most recent slot
+  const pastSchedules = [...parsed].sort((a, b) => b.endMinutes - a.endMinutes);
+  return pastSchedules[0]?.raw || slots[0];
+}
+
 export default function TeacherAttendancePage() {
   const [todaySchedule, setTodaySchedule] = useState<any[]>([]);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [logs, setLogs] = useState<TeacherAttendanceRecord[]>([]);
 
   const storedUser = authApi.getStoredUser();
   const teacherName = storedUser?.name || 'Faculty Member';
 
   const hasSchedule = todaySchedule.length > 0;
-  const activeSlot = hasSchedule ? todaySchedule[0] : null;
+
+  // Dynamically resolve activeSlot based on manual selection, backend flag, or Colombo wall-clock
+  const activeSlot = React.useMemo(() => {
+    if (!hasSchedule) return null;
+    if (selectedSlotId) {
+      const found = todaySchedule.find((s) => s.id === selectedSlotId || s.scheduleId === selectedSlotId);
+      if (found) return found;
+    }
+    const backendActive = todaySchedule.find((s) => s.isActiveSlot);
+    if (backendActive) return backendActive;
+    return resolveActiveSlot(todaySchedule);
+  }, [hasSchedule, todaySchedule, selectedSlotId]);
 
   const assignedRoom = {
     id: activeSlot?.roomId || activeSlot?.classroomId || 'rm-assigned',
@@ -93,6 +203,10 @@ export default function TeacherAttendancePage() {
       ]);
       if (todaySlots && Array.isArray(todaySlots)) {
         setTodaySchedule(todaySlots);
+        const resolved = todaySlots.find((s) => s.isActiveSlot) || resolveActiveSlot(todaySlots);
+        if (resolved) {
+          setSelectedSlotId((prev) => prev || (resolved.id || resolved.scheduleId));
+        }
       }
       if (hist?.data) {
         setLogs(hist.data);
@@ -106,22 +220,26 @@ export default function TeacherAttendancePage() {
     setIsLoading(true);
     setBackendNotice(null);
     try {
-      const scheduleId = activeSlot ? (activeSlot.scheduleId || activeSlot.id) : 'general';
+      const scheduleId = activeSlot ? (activeSlot.scheduleId || activeSlot.id) : undefined;
       const result = await teacherAttendanceApi.verifyClassroomQr({
         roomToken: token.trim(),
         scheduleId,
         method: method.toLowerCase().includes('manual') ? 'Manual Fallback' : 'Classroom QR',
       });
 
+      if (result.scheduleId) {
+        setSelectedSlotId(result.scheduleId);
+      }
+
       const newRecord: TeacherAttendanceRecord = {
         id: result.id || `tlog-${Date.now()}`,
         date: new Date().toISOString().split('T')[0],
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        period: activeSlot?.period || 1,
-        periodTime: activeSlot?.timeSlot || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        period: result.schedule?.period || activeSlot?.period || 1,
+        periodTime: result.schedule?.timeSlot || activeSlot?.timeSlot || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         classId: activeSlot?.classId || 'cls',
-        className: activeSlot?.className || 'Assigned Class Session',
-        subject: activeSlot?.subject || 'Class Lecture',
+        className: result.schedule?.className || activeSlot?.className || 'Assigned Class Session',
+        subject: result.schedule?.subject || activeSlot?.subject || 'Class Lecture',
         roomId: assignedRoom.id,
         roomName: assignedRoom.name,
         classroomQrScanned: token,
@@ -135,7 +253,7 @@ export default function TeacherAttendancePage() {
       setBackendNotice(result.notice);
       setScanState('valid');
       stopLiveCamera();
-      loadData();
+      await loadData();
     } catch (err: any) {
       const msg = err.message || '';
       if (msg.includes('already recorded')) {
@@ -618,9 +736,47 @@ export default function TeacherAttendancePage() {
             {hasSchedule && activeSlot ? (
               <>
                 <div className="pb-3 border-b border-slate-100">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#0D9488]">
-                    Allocated Teaching Schedule
-                  </span>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#0D9488]">
+                      Allocated Teaching Schedule
+                    </span>
+                    {activeSlot.isCurrentPeriod ? (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        Active Period
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold">
+                        Colombo Timetable
+                      </span>
+                    )}
+                  </div>
+
+                  {todaySchedule.length > 1 && (
+                    <div className="flex items-center gap-1.5 my-2.5 overflow-x-auto pb-1">
+                      {todaySchedule.map((slot) => {
+                        const isSelected = activeSlot?.id === slot.id || activeSlot?.scheduleId === slot.id;
+                        return (
+                          <button
+                            key={slot.id}
+                            type="button"
+                            onClick={() => setSelectedSlotId(slot.id)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                              isSelected
+                                ? 'bg-[#0D9488] text-white shadow-xs'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                            }`}
+                          >
+                            <span>P{slot.period}: {slot.timeSlot}</span>
+                            {slot.status === 'Verified' ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
+                            ) : null}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
                   <h3 className="text-base font-bold text-slate-900 mt-0.5">
                     Period {activeSlot.period}: {activeSlot.subject}
                   </h3>

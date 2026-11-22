@@ -498,30 +498,30 @@ export default function AiWorkspaceUnlocked({
   return (
     <div className="max-w-4xl mx-auto h-[calc(100dvh-5.5rem)] min-h-[520px] flex flex-col overflow-hidden pb-1 sm:pb-2 relative">
       {/* Top Workspace Header Bar (Responsive 2-Row Layout on 345px Mobile) */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3">
+      <div className="bg-white dark:bg-[#121614] rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] dark:border-[#222925] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3">
         {/* Row 1: Bot Avatar + Title + Active Tenant Badge */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#0F172A] dark:bg-[#1A1F1C] text-[#37C6A3] dark:text-[#10B981] flex items-center justify-center font-bold shadow-xs shrink-0">
             <AiRobotMascot variant="avatar" size={24} />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <h1 className="text-sm sm:text-base md:text-lg font-extrabold text-[#0F172A] tracking-tight truncate">
+              <h1 className="text-sm sm:text-base md:text-lg font-extrabold text-[#0F172A] dark:text-white tracking-tight truncate">
                 MadrasaNexa Smart AI Assistant
               </h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
                 {statusData?.madrasaName || 'Active Tenant'}
               </span>
             </div>
-            <p className="text-[10.5px] sm:text-[11px] text-[#7C8A9A] truncate hidden sm:block">
+            <p className="text-[10.5px] sm:text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF] truncate hidden sm:block">
               Isolated Copilot • 0 MB storage • In-memory RAM processing
             </p>
           </div>
         </div>
 
         {/* Row 2 on mobile: Subtitle & Aligned Action Buttons */}
-        <div className="flex items-center justify-between sm:justify-end gap-2 pt-1.5 sm:pt-0 border-t border-slate-100 sm:border-0">
-          <p className="text-[10.5px] text-[#7C8A9A] sm:hidden truncate flex-1">
+        <div className="flex items-center justify-between sm:justify-end gap-2 pt-1.5 sm:pt-0 border-t border-slate-100 dark:border-[#222925] sm:border-0">
+          <p className="text-[10.5px] text-[#7C8A9A] dark:text-[#9CA3AF] sm:hidden truncate flex-1">
             0 MB storage • In-memory RAM
           </p>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -529,7 +529,7 @@ export default function AiWorkspaceUnlocked({
               <button
                 type="button"
                 onClick={handleNewChat}
-                className="px-2.5 sm:px-3 py-1.5 min-h-[34px] sm:min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] transition flex items-center gap-1 cursor-pointer shrink-0"
+                className="px-2.5 sm:px-3 py-1.5 min-h-[34px] sm:min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1A1F1C] dark:hover:bg-[#222925] text-[#0F172A] dark:text-white border border-transparent dark:border-[#2A332E] transition flex items-center gap-1 cursor-pointer shrink-0"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>New Chat</span>
@@ -539,7 +539,7 @@ export default function AiWorkspaceUnlocked({
             {onRefresh && (
               <button
                 onClick={onRefresh}
-                className="p-1.5 sm:p-2 min-h-[34px] min-w-[34px] sm:min-h-[38px] sm:min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center shrink-0"
+                className="p-1.5 sm:p-2 min-h-[34px] min-w-[34px] sm:min-h-[38px] sm:min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] dark:text-[#9CA3AF] dark:hover:text-white rounded-xl border border-[#E7E9EE] dark:border-[#2A332E] bg-white dark:bg-[#1A1F1C] transition cursor-pointer flex items-center justify-center shrink-0"
                 title="Refresh Status"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -563,17 +563,17 @@ export default function AiWorkspaceUnlocked({
             </div>
 
             <div className="max-w-xl space-y-2">
-              <h2 className="text-lg sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
+              <h2 className="text-lg sm:text-2xl font-extrabold text-[#0F172A] dark:text-white tracking-tight">
                 Assalamu Alaikum! What can I help your Madrasa with today?
               </h2>
-              <p className="text-xs sm:text-sm text-[#7C8A9A] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#7C8A9A] dark:text-[#9CA3AF] leading-relaxed">
                 Synthesize zero-storage exam papers from PDFs, craft 30-minute lesson plans, design event posters, or draft parent notices in Tamil, English, and Arabic.
               </p>
             </div>
 
             {/* 8 Quick-Start Suggestion Pills */}
             <div className="w-full max-w-2xl pt-2">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C8A9A] mb-3 text-center">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C8A9A] dark:text-[#9CA3AF] mb-3 text-center">
                 Quick Islamic Copilot Actions
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2">
@@ -582,7 +582,7 @@ export default function AiWorkspaceUnlocked({
                     key={idx}
                     type="button"
                     onClick={(e) => pill.action(e)}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3] hover:shadow-sm transition cursor-pointer text-left"
+                    className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white dark:bg-[#1A1F1C] hover:bg-slate-50 dark:hover:bg-[#222925] text-[#0F172A] dark:text-white border border-[#E7E9EE] dark:border-[#2A332E] shadow-xs hover:border-[#37C6A3] dark:hover:border-[#10B981] hover:shadow-sm transition cursor-pointer text-left"
                   >
                     {pill.label}
                   </button>
@@ -599,9 +599,9 @@ export default function AiWorkspaceUnlocked({
             >
               {/* User Bubble */}
               {msg.sender === 'user' ? (
-                <div className="bg-[#0F172A] text-white rounded-3xl rounded-tr-md p-4 sm:p-5 max-w-[85%] sm:max-w-[78%] shadow-md space-y-2 text-left">
+                <div className="bg-[#0F172A] dark:bg-[#1A1F1C] text-white dark:text-gray-100 rounded-3xl rounded-tr-md p-4 sm:p-5 max-w-[85%] sm:max-w-[78%] shadow-md space-y-2 text-left border border-transparent dark:border-[#2A332E]">
                   {msg.file && (
-                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs text-emerald-300">
+                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800 text-xs text-emerald-300">
                       <FileText className="w-3.5 h-3.5 text-[#37C6A3]" />
                       <span className="font-mono truncate max-w-[200px]">{msg.file.name}</span>
                     </div>
@@ -627,14 +627,14 @@ export default function AiWorkspaceUnlocked({
                   <div className="flex-1 min-w-0 space-y-2 pt-0.5">
                     {/* Header meta */}
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#0F172A]">Madrasa Copilot</span>
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                      <span className="text-xs font-bold text-[#0F172A] dark:text-white">Madrasa Copilot</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1E2521] text-slate-700 dark:text-gray-200 border border-slate-200 dark:border-[#323D37]">
                         {modeLabels[msg.mode]?.label || 'General'}
                       </span>
                     </div>
 
                     {/* Formatted Content */}
-                    <div className="text-xs sm:text-sm leading-relaxed text-[#0F172A]">
+                    <div className="text-xs sm:text-sm leading-relaxed text-[#0F172A] dark:text-gray-100 bg-white dark:bg-[#121614] p-4 rounded-2xl border border-slate-200/80 dark:border-[#222925] shadow-xs">
                       {msg.posterData ? (
                         <PosterCanvasRenderer poster={msg.posterData} />
                       ) : (
@@ -648,11 +648,11 @@ export default function AiWorkspaceUnlocked({
                         <button
                           type="button"
                           onClick={() => handleCopyText(msg.content, msg.id)}
-                          className="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:text-[#0F172A] dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E2521] transition flex items-center gap-1 cursor-pointer"
                           title="Copy response"
                         >
                           {copiedId === msg.id ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -662,10 +662,10 @@ export default function AiWorkspaceUnlocked({
                         <button
                           type="button"
                           onClick={() => handleRegenerate()}
-                          className="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:text-[#0F172A] dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E2521] transition flex items-center gap-1 cursor-pointer"
                           title="Regenerate response"
                         >
-                          <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                          <RotateCcw className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400" />
                           <span>Regenerate</span>
                         </button>
                       </div>
@@ -690,7 +690,7 @@ export default function AiWorkspaceUnlocked({
               </div>
 
               <div className="flex items-center gap-1.5">
-                <span className="text-xs sm:text-sm font-bold text-[#0F172A]">Thinking</span>
+                <span className="text-xs sm:text-sm font-bold text-[#0F172A] dark:text-white">Thinking</span>
                 <span className="inline-flex gap-1 text-[#37C6A3] text-sm font-extrabold animate-pulse">
                   <span>.</span><span>.</span><span>.</span>
                 </span>
@@ -706,14 +706,14 @@ export default function AiWorkspaceUnlocked({
       {/* ========================================================================= */}
       {/* 3. PERMANENTLY PINNED BOTTOM CHAT INPUT COMPOSER BOX                       */}
       {/* ========================================================================= */}
-      <div className="shrink-0 pt-2 z-20 bg-gradient-to-t from-[#F7F6F1] via-[#F7F6F1] to-transparent">
-          <div className="bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
+      <div className="shrink-0 pt-2 z-20 bg-gradient-to-t from-[#F7F6F1] dark:from-[#0A0D0C] via-[#F7F6F1] dark:via-[#0A0D0C] to-transparent">
+          <div className="bg-white dark:bg-[#121614] rounded-3xl p-3 sm:p-4 border-2 border-slate-200 dark:border-[#222925] focus-within:border-[#37C6A3] dark:focus-within:border-[#10B981] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 dark:focus-within:ring-[#10B981]/20 shadow-xl transition-all">
             {attachedFile && (
-              <div className="mb-2 p-2 sm:p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900 shadow-2xs">
+              <div className="mb-2 p-2 sm:p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-2 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs">
                 <div className="flex items-center gap-2 truncate min-w-0">
                   <span className="text-sm shrink-0">📄</span>
-                  <span className="font-bold truncate text-[#0F172A]">{attachedFile.name}</span>
-                  <span className="text-[11px] text-emerald-700 font-mono shrink-0">
+                  <span className="font-bold truncate text-[#0F172A] dark:text-white">{attachedFile.name}</span>
+                  <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-mono shrink-0">
                     • {attachedFile.size < 1024 * 1024
                         ? `${(attachedFile.size / 1024).toFixed(0)} KB`
                         : `${(attachedFile.size / (1024 * 1024)).toFixed(2)} MB`}
@@ -726,7 +726,7 @@ export default function AiWorkspaceUnlocked({
                     e.stopPropagation();
                     setAttachedFile(null);
                   }}
-                  className="p-1 hover:bg-emerald-200/80 rounded-lg text-emerald-800 transition cursor-pointer shrink-0"
+                  className="p-1 hover:bg-emerald-200/80 dark:hover:bg-emerald-800/80 rounded-lg text-emerald-800 dark:text-emerald-200 transition cursor-pointer shrink-0"
                   title="Remove attached PDF"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -741,10 +741,10 @@ export default function AiWorkspaceUnlocked({
               value={inputPrompt}
               onChange={handleTextareaChange}
               onKeyDown={handleKeyDown}
-              className="w-full text-xs sm:text-sm text-[#0F172A] placeholder-[#7C8A9A] bg-transparent focus:outline-hidden resize-none leading-relaxed"
+              className="w-full text-xs sm:text-sm text-[#0F172A] dark:text-white placeholder-[#7C8A9A] dark:placeholder-[#7A857F] bg-transparent focus:outline-hidden resize-none leading-relaxed"
             />
 
-            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
+            <div className="mt-2 pt-2 border-t border-slate-100 dark:border-[#222925] flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
               <div className="flex items-center gap-1 min-w-0">
                 {/* Inline Hidden File Input for PDF uploads (zero focus-scroll) */}
                 <input
@@ -782,7 +782,7 @@ export default function AiWorkspaceUnlocked({
                   className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 shrink-0 cursor-pointer ${
                     attachedFile
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                      : 'bg-slate-50 hover:bg-slate-100 text-[#0F172A] border-slate-200'
+                      : 'bg-slate-50 dark:bg-[#1A1F1C] hover:bg-slate-100 dark:hover:bg-[#222925] text-[#0F172A] dark:text-white border-slate-200 dark:border-[#2A332E]'
                   }`}
                   title="Attach PDF"
                 >
@@ -793,7 +793,7 @@ export default function AiWorkspaceUnlocked({
                 <select
                   value={toolMode}
                   onChange={(e) => setToolMode(e.target.value as ToolMode)}
-                  className="h-8 px-1.5 sm:px-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3] shrink-0 max-w-[100px] sm:max-w-none truncate"
+                  className="h-8 px-1.5 sm:px-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-[#2A332E] bg-slate-50 dark:bg-[#1A1F1C] hover:bg-slate-100 dark:hover:bg-[#222925] text-[#0F172A] dark:text-white focus:outline-hidden focus:border-[#37C6A3] dark:focus:border-[#10B981] shrink-0 max-w-[100px] sm:max-w-none truncate"
                 >
                   <option value="auto">✨ Auto</option>
                   <option value="exam">📄 Exam</option>
@@ -809,7 +809,7 @@ export default function AiWorkspaceUnlocked({
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as any)}
-                  className="h-8 px-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden shrink-0 max-w-[70px] sm:max-w-none"
+                  className="h-8 px-1.5 text-xs font-semibold rounded-xl border border-slate-200 dark:border-[#2A332E] bg-slate-50 dark:bg-[#1A1F1C] hover:bg-slate-100 dark:hover:bg-[#222925] text-[#0F172A] dark:text-white focus:outline-hidden shrink-0 max-w-[70px] sm:max-w-none"
                 >
                   <option value="English">🇬🇧 EN</option>
                   <option value="Tamil">🇱🇰 தமிழ்</option>
@@ -823,7 +823,7 @@ export default function AiWorkspaceUnlocked({
                   <button
                     type="button"
                     onClick={handleNewChat}
-                    className="p-1.5 sm:px-2 sm:py-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer shrink-0"
+                    className="p-1.5 sm:px-2 sm:py-1.5 rounded-xl border border-slate-200 dark:border-[#2A332E] text-slate-500 hover:text-[#0F172A] dark:text-gray-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1E2521] transition flex items-center gap-1 cursor-pointer shrink-0"
                     title="Start New Chat"
                   >
                     <Plus className="w-3.5 h-3.5" />

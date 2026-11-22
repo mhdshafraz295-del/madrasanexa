@@ -4,6 +4,9 @@
   "description": "MadrasaNexa Backend Server",
   "main": "src/server.js",
   "type": "module",
+  "engines": {
+    "node": ">=20.11.0"
+  },
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "npx prisma migrate deploy && node src/server.js",

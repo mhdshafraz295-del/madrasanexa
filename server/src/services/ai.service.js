@@ -1,4 +1,6 @@
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const pdf = require('pdf-parse');
@@ -95,11 +97,88 @@ export async function validateAiReceiptBuffer(fileBuffer, originalName = '') {
   } else if (nameLower.endsWith('.pdf')) {
     ext = 'pdf';
     mimeType = 'application/pdf';
+  } else if (nameLower.endsWith('.jpg') || nameLower.endsWith('.jpeg')) {
+    ext = 'jpg';
+    mimeType = 'image/jpeg';
+  } else if (nameLower.endsWith('.png')) {
+    ext = 'png';
+    mimeType = 'image/png';
+  } else if (nameLower.endsWith('.webp')) {
+    ext = 'webp';
+    mimeType = 'image/webp';
   } else {
     throw new BadRequestError('Unsupported file format. Please upload a valid JPG, PNG, WebP image or PDF document.');
   }
 
   return { ext, mimeType };
+}
+
+/**
+ * Resolves the view/download URL for an AI bank payment receipt.
+ * Prefers Cloudflare R2 presigned download URL, falling back to authenticated local streaming endpoint.
+ */
+export async function resolveAiReceiptUrl(receiptKey, requestId) {
+  if (!receiptKey) return null;
+
+  if (isReceiptsR2Configured()) {
+    try {
+      const url = await getSecureReceiptDownloadUrl(receiptKey, 3600);
+      if (url) return url;
+    } catch {}
+  }
+
+  if (isR2Configured()) {
+    try {
+      const url = await resolveObjectAccessUrl(receiptKey, 3600);
+      if (url) return url;
+    } catch {}
+  }
+
+  return `/api/ai/subscription/receipt/${requestId}`;
+}
+
+/**
+ * Streams or redirects to the requested receipt file for authorized users (Super Admin or Tenant Admin)
+ */
+export async function getAiReceiptFileStream({ requestId, requesterRole, requesterMadrasaId }) {
+  const item = await prisma.aiSubscriptionRequest.findUnique({
+    where: { id: requestId },
+  });
+
+  if (!item) {
+    throw new NotFoundError('Subscription receipt not found.');
+  }
+
+  if (requesterRole !== 'SUPER_ADMIN' && requesterMadrasaId !== item.madrasaId) {
+    throw new ForbiddenError('Unauthorized to access this receipt.');
+  }
+
+  const key = item.receiptUrl;
+  const ext = (path.extname(key) || '').replace('.', '').toLowerCase();
+  const mimeType = ext === 'pdf' ? 'application/pdf' : ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+  const filename = path.basename(key);
+
+  // 1. If R2 is configured and returns a presigned URL
+  if (isReceiptsR2Configured()) {
+    try {
+      const signedUrl = await getSecureReceiptDownloadUrl(key, 900);
+      if (signedUrl) {
+        return { url: signedUrl };
+      }
+    } catch {}
+  }
+
+  // 2. Stream from local storage fallback
+  const localFilePath = path.join(process.cwd(), 'uploads', 'ai-receipts', item.madrasaId, filename);
+  if (fs.existsSync(localFilePath)) {
+    return {
+      stream: fs.createReadStream(localFilePath),
+      mimeType,
+      filename,
+    };
+  }
+
+  throw new NotFoundError('Receipt file content not found on server or cloud storage.');
 }
 
 /**
@@ -234,11 +313,7 @@ export async function getTenantAiStatus(madrasaId) {
   // Resolve receipt URL if pending
   let resolvedReceiptUrl = null;
   if (latestRequest?.receiptUrl) {
-    try {
-      resolvedReceiptUrl = await resolveObjectAccessUrl(latestRequest.receiptUrl);
-    } catch {
-      resolvedReceiptUrl = latestRequest.receiptUrl;
-    }
+    resolvedReceiptUrl = await resolveAiReceiptUrl(latestRequest.receiptUrl, latestRequest.id);
   }
 
   const settings = await getPlatformAiSettings();
@@ -329,15 +404,40 @@ export async function submitAiSubscriptionReceipt({
 
   const { ext, mimeType } = await validateAiReceiptBuffer(file.buffer, file.originalname);
 
-  // Upload to Cloudflare R2 bucket
+  // Upload to Cloudflare R2 bucket with local storage fallback
   const fileHash = crypto.randomBytes(8).toString('hex');
   const safeRef = transactionRef.trim().replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 20);
   const r2Key = `ai-receipts/${madrasaId}/${Date.now()}_${safeRef}_${fileHash}.${ext}`;
 
+  // Always write to local storage as fallback so file is NEVER lost
+  try {
+    const localDir = path.join(process.cwd(), 'uploads', 'ai-receipts', madrasaId);
+    await fs.promises.mkdir(localDir, { recursive: true });
+    await fs.promises.writeFile(path.join(localDir, path.basename(r2Key)), file.buffer);
+  } catch (diskErr) {
+    console.warn('[AI Service] Local disk write fallback warning:', diskErr.message);
+  }
+
+  // Upload to R2 if configured
   if (isReceiptsR2Configured()) {
-    await uploadReceiptBufferToR2(r2Key, file.buffer, mimeType);
+    try {
+      await uploadReceiptBufferToR2(r2Key, file.buffer, mimeType);
+    } catch (r2Err) {
+      console.warn('[AI Service] Receipts R2 upload warning:', r2Err.message);
+      if (isR2Configured()) {
+        try {
+          await uploadBufferToR2(r2Key, file.buffer, mimeType);
+        } catch (r2Err2) {
+          console.warn('[AI Service] Default R2 upload warning:', r2Err2.message);
+        }
+      }
+    }
   } else if (isR2Configured()) {
-    await uploadBufferToR2(r2Key, file.buffer, mimeType);
+    try {
+      await uploadBufferToR2(r2Key, file.buffer, mimeType);
+    } catch (r2Err) {
+      console.warn('[AI Service] Default R2 upload warning:', r2Err.message);
+    }
   }
 
   const newRequest = await prisma.aiSubscriptionRequest.create({
@@ -409,19 +509,7 @@ export async function listAllAiSubscriptionRequests({ status, page = 1, limit = 
   // Resolve presigned / access URLs for receipts
   const enrichedRequests = await Promise.all(
     requests.map(async (req) => {
-      let resolvedUrl = null;
-      if (req.receiptUrl) {
-        try {
-          if (isReceiptsR2Configured()) {
-            resolvedUrl = await getSecureReceiptDownloadUrl(req.receiptUrl, 3600);
-          }
-          if (!resolvedUrl) {
-            resolvedUrl = await resolveObjectAccessUrl(req.receiptUrl, 3600);
-          }
-        } catch {
-          resolvedUrl = req.receiptUrl;
-        }
-      }
+      const resolvedUrl = await resolveAiReceiptUrl(req.receiptUrl, req.id);
 
       return {
         id: req.id,
@@ -432,7 +520,7 @@ export async function listAllAiSubscriptionRequests({ status, page = 1, limit = 
         amount: Number(req.amount),
         transactionRef: req.transactionRef,
         receiptKey: req.receiptUrl,
-        receiptUrl: resolvedUrl || req.receiptUrl,
+        receiptUrl: resolvedUrl,
         status: req.status,
         adminNote: req.adminNote,
         createdAt: req.createdAt,

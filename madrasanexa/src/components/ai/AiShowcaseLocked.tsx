@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
   Lock,
@@ -45,6 +45,8 @@ export default function AiShowcaseLocked({
   const [customAmount, setCustomAmount] = useState<string>('');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [submitting, setSubmitting] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -79,29 +81,54 @@ export default function AiShowcaseLocked({
     }
   };
 
+  const processSelectedFile = (file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'application/pdf', 'application/x-pdf'];
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+    const fileNameLower = file.name.toLowerCase();
+    const isValidExt = allowedExts.some((ext) => fileNameLower.endsWith(ext));
+    const isValidType = allowedTypes.includes(file.type) || file.type.startsWith('image/') || isValidExt;
+
+    if (!isValidType) {
+      setErrorMsg('Invalid file type. Please upload a PNG, JPG, WebP image or PDF document.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg('File exceeds 5MB size limit. Please upload a smaller image or PDF receipt.');
+      return;
+    }
+
+    setReceiptFile(file);
+    setErrorMsg(null);
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-      const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
-      const fileNameLower = file.name.toLowerCase();
-      const isValidExt = allowedExts.some((ext) => fileNameLower.endsWith(ext));
-      const isValidType = allowedTypes.includes(file.type) || file.type.startsWith('image/') || isValidExt;
+      processSelectedFile(file);
+    }
+    e.target.value = '';
+  };
 
-      if (!isValidType) {
-        setErrorMsg('Invalid file type. Please upload a PNG, JPG, WebP image or PDF document.');
-        e.target.value = '';
-        return;
-      }
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
 
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMsg('File exceeds 5MB size limit. Please upload a smaller image or PDF receipt.');
-        e.target.value = '';
-        return;
-      }
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
 
-      setReceiptFile(file);
-      setErrorMsg(null);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processSelectedFile(file);
     }
   };
 
@@ -133,6 +160,7 @@ export default function AiShowcaseLocked({
       formData.append('amount', String(amountToSend));
       formData.append('transactionRef', transactionRef.trim());
       formData.append('receipt', receiptFile);
+      formData.append('file', receiptFile);
 
       await aiService.submitSubscriptionReceipt(formData);
       setSuccessMsg('Receipt submitted successfully! Super Admin will review and activate your subscription.');
@@ -1095,8 +1123,18 @@ export default function AiShowcaseLocked({
                   Bank Payment Receipt Slip (Image / PDF) <span className="text-red-500">*</span>
                 </label>
 
-                <div className="border-2 border-dashed border-[#E7E9EE] hover:border-[#37C6A3]/60 rounded-2xl p-4 sm:p-6 text-center transition bg-[#F7F6F1]/50">
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`border-2 border-dashed rounded-2xl p-4 sm:p-6 text-center transition ${
+                    isDragging
+                      ? 'border-[#37C6A3] bg-emerald-50/70 scale-[1.01]'
+                      : 'border-[#E7E9EE] hover:border-[#37C6A3]/60 bg-[#F7F6F1]/50'
+                  }`}
+                >
                   <input
+                    ref={fileInputRef}
                     type="file"
                     id="receipt-upload"
                     accept="image/png,image/jpeg,image/webp,application/pdf,.pdf"
@@ -1132,13 +1170,18 @@ export default function AiShowcaseLocked({
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                            <label
-                              htmlFor="receipt-upload"
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                fileInputRef.current?.click();
+                              }}
                               className="px-3 py-1.5 min-h-[38px] text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                             >
                               <Upload className="w-3.5 h-3.5" />
                               <span>Change</span>
-                            </label>
+                            </button>
                             <button
                               type="button"
                               onClick={(e) => {
@@ -1187,13 +1230,18 @@ export default function AiShowcaseLocked({
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
-                            <label
-                              htmlFor="receipt-upload"
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                fileInputRef.current?.click();
+                              }}
                               className="px-3 py-1.5 min-h-[38px] text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer flex items-center gap-1.5"
                             >
                               <Upload className="w-3.5 h-3.5" />
                               <span>Change</span>
-                            </label>
+                            </button>
                             <button
                               type="button"
                               onClick={(e) => {
@@ -1211,8 +1259,8 @@ export default function AiShowcaseLocked({
                       )}
                     </div>
                   ) : (
-                    <label
-                      htmlFor="receipt-upload"
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
                       className="cursor-pointer flex flex-col items-center justify-center min-h-[60px]"
                     >
                       <div className="w-12 h-12 rounded-2xl bg-white border border-[#E7E9EE] text-[#37C6A3] flex items-center justify-center mb-3 shadow-xs">
@@ -1224,7 +1272,7 @@ export default function AiShowcaseLocked({
                       <div className="text-[10px] text-[#7C8A9A] mt-1 font-medium">
                         Supports PNG, JPG, WebP, PDF (Max 5 MB)
                       </div>
-                    </label>
+                    </div>
                   )}
                 </div>
               </div>

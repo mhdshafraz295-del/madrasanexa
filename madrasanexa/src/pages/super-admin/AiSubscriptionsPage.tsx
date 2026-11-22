@@ -734,9 +734,17 @@ export default function SuperAdminAiSubscriptionsPage() {
 
             <div className="p-4 overflow-y-auto flex-1 flex flex-col items-center justify-center bg-slate-950/5">
               {(() => {
-                const url = selectedReceipt.receiptUrl || '';
+                const resolveFullUrl = (url?: string) => {
+                  if (!url) return '';
+                  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+                  return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+                };
+
+                const rawUrl = selectedReceipt.receiptUrl || '';
                 const key = (selectedReceipt as any).receiptKey || '';
-                const cleanUrl = url.split('?')[0].toLowerCase();
+                const fullUrl = resolveFullUrl(rawUrl);
+                const cleanUrl = rawUrl.split('?')[0].toLowerCase();
                 const isPdf = cleanUrl.endsWith('.pdf') || key.toLowerCase().endsWith('.pdf') || cleanUrl.includes('.pdf');
 
                 if (isPdf) {
@@ -744,13 +752,13 @@ export default function SuperAdminAiSubscriptionsPage() {
                     <div className="w-full flex flex-col items-center gap-3">
                       <div className="w-full h-[55vh] max-h-[500px] rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-xs">
                         <iframe
-                          src={selectedReceipt.receiptUrl}
+                          src={fullUrl}
                           title="PDF Bank Receipt Preview"
                           className="w-full h-full border-0"
                         />
                       </div>
                       <a
-                        href={selectedReceipt.receiptUrl}
+                        href={fullUrl}
                         target="_blank"
                         rel="noreferrer"
                         className="px-4 py-2.5 min-h-[44px] bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs font-bold rounded-xl inline-flex items-center gap-2 shadow-xs transition"
@@ -765,7 +773,7 @@ export default function SuperAdminAiSubscriptionsPage() {
 
                 return (
                   <img
-                    src={selectedReceipt.receiptUrl}
+                    src={fullUrl}
                     alt="Receipt Slip"
                     className="max-h-[60vh] w-auto max-w-full object-contain rounded-xl shadow-xs"
                   />
@@ -775,7 +783,12 @@ export default function SuperAdminAiSubscriptionsPage() {
 
             <div className="p-4 border-t border-[#E7E9EE] bg-[#F7F6F1] flex items-center justify-between gap-2">
               <a
-                href={selectedReceipt.receiptUrl}
+                href={(() => {
+                  const url = selectedReceipt.receiptUrl || '';
+                  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+                  const base = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+                  return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
+                })()}
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs font-semibold text-[#0F172A] hover:underline flex items-center gap-1.5 min-h-[44px]"

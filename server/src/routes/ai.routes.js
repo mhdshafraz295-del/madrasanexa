@@ -24,11 +24,16 @@ const receiptUpload = multer({
     files: 1,
   },
   fileFilter: (req, file, cb) => {
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+    const mime = (file.mimetype || '').toLowerCase();
     const originalName = (file.originalname || '').toLowerCase();
+    const allowedExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
     const hasValidExt = allowedExtensions.some((ext) => originalName.endsWith(ext));
-    if (allowedMimeTypes.includes(file.mimetype) || hasValidExt) {
+    if (
+      mime.startsWith('image/') ||
+      mime.includes('pdf') ||
+      mime === 'application/octet-stream' ||
+      hasValidExt
+    ) {
       cb(null, true);
     } else {
       cb(new BadRequestError('Invalid file type. Only JPG, PNG, WebP, and PDF receipt files are allowed.'));
@@ -37,11 +42,16 @@ const receiptUpload = multer({
 });
 
 /**
- * Express middleware to handle single receipt file upload and catch Multer errors gracefully
+ * Express middleware to handle single receipt file upload and catch Multer errors gracefully.
+ * Supports field names 'receipt', 'file', or 'slip' seamlessly.
  */
 const handleReceiptUpload = (req, res, next) => {
-  const singleUpload = receiptUpload.single('receipt');
-  singleUpload(req, res, (err) => {
+  const upload = receiptUpload.fields([
+    { name: 'receipt', maxCount: 1 },
+    { name: 'file', maxCount: 1 },
+    { name: 'slip', maxCount: 1 },
+  ]);
+  upload(req, res, (err) => {
     if (err instanceof multer.MulterError) {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({
@@ -58,6 +68,10 @@ const handleReceiptUpload = (req, res, next) => {
         success: false,
         message: err.message || 'File upload error.',
       });
+    }
+
+    if (req.files) {
+      req.file = req.files['receipt']?.[0] || req.files['file']?.[0] || req.files['slip']?.[0] || req.file;
     }
     next();
   });
@@ -80,6 +94,12 @@ router.post(
   requireRoles('MADRASA_ADMIN'),
   handleReceiptUpload,
   aiController.submitSubscriptionReceipt
+);
+
+router.get(
+  '/subscription/receipt/:id',
+  requireRoles('SUPER_ADMIN', 'MADRASA_ADMIN'),
+  aiController.getAiReceiptFile
 );
 
 // ==========================================

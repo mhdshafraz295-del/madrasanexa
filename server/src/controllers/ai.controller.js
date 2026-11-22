@@ -72,6 +72,30 @@ export async function submitSubscriptionReceipt(req, res, next) {
 }
 
 /**
+ * Stream / View Bank Payment Receipt (Super Admin or Tenant Admin)
+ */
+export async function getAiReceiptFile(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { stream, mimeType, filename, url } = await aiService.getAiReceiptFileStream({
+      requestId: id,
+      requesterRole: req.auth.role,
+      requesterMadrasaId: req.auth.madrasaId,
+    });
+
+    if (url) {
+      return res.redirect(url);
+    }
+
+    res.setHeader('Content-Type', mimeType);
+    res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+    return stream.pipe(res);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * AI Tool: Zero-Storage PDF Exam Paper Generator
  */
 export async function generateExamPaper(req, res, next) {

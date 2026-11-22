@@ -20,8 +20,12 @@ apiClient.interceptors.request.use(
     }
     // For FormData uploads, remove Content-Type header so the browser/Axios sets multipart/form-data with boundary
     if (config.data instanceof FormData && config.headers) {
-      delete config.headers['Content-Type'];
-      delete config.headers['content-type'];
+      if (typeof (config.headers as any).delete === 'function') {
+        (config.headers as any).delete('Content-Type');
+        (config.headers as any).delete('content-type');
+      }
+      delete (config.headers as any)['Content-Type'];
+      delete (config.headers as any)['content-type'];
     }
     return config;
   },

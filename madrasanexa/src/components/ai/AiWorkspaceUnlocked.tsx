@@ -14,6 +14,10 @@ import {
   AlertCircle,
   ArrowRightLeft,
   ChevronLeft,
+  Megaphone,
+  Mic,
+  Layers,
+  BookOpen,
 } from 'lucide-react';
 import { aiService, type AiStatusResponse } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
@@ -187,7 +191,9 @@ export default function AiWorkspaceUnlocked({
   statusData,
   onRefresh,
 }: AiWorkspaceUnlockedProps) {
-  const [activeTab, setActiveTab] = useState<'exam' | 'lesson' | 'poster' | 'translate'>('exam');
+  const [activeTab, setActiveTab] = useState<
+    'exam' | 'lesson' | 'poster' | 'translate' | 'circular' | 'hifz' | 'speech' | 'summarizer'
+  >('exam');
   const [mobileView, setMobileView] = useState<'config' | 'preview'>('config');
   const [copiedText, setCopiedText] = useState(false);
 
@@ -219,6 +225,34 @@ export default function AiWorkspaceUnlocked({
     'Preserving Islamic terminology (Du\'a, Hadith, Salah, Adab)...',
     'Translating grammatical structures across Tamil, English & Arabic...',
     'Polishing output for formal circular or lesson distribution...',
+  ];
+
+  const circularMessages = [
+    'Composing Islamic greeting & respectful opening (Bismillah, Assalamu Alaikum)...',
+    'Structuring Madrasa announcement details, key dates & venue...',
+    'Applying respectful Islamic etiquette & Du\'a for parents...',
+    'Polishing formatting ready for print and messaging distribution...',
+  ];
+
+  const hifzMessages = [
+    'Selecting Quranic portion for memorization & revision verification...',
+    'Formulating Tajweed rule drills (Makharij, Ghunnah, Idgham, Qalqalah)...',
+    'Building oral recitation rubric & evaluation metrics...',
+    'Generating complete Ustadh grading key with Ayah references...',
+  ];
+
+  const speechMessages = [
+    'Drafting speech opening: Khutbah al-Hajah, Hamd, and Salawat...',
+    'Synthesizing authentic Quranic Ayahs and Sahih Hadith citations...',
+    'Formulating structured speech body with inspiring practical lessons...',
+    'Composing memorable closing call-to-action & heartfelt Du\'a...',
+  ];
+
+  const summaryMessages = [
+    'Parsing PDF textbook chapters strictly in RAM (0 MB saved to disk)...',
+    'Extracting key learning objectives & Islamic core concepts...',
+    'Synthesizing concise study notes and Islamic glossary terms...',
+    'Compiling structured bullet points for Ustadh revision...',
   ];
 
   // Tool 1: Exam Generator State
@@ -267,6 +301,46 @@ export default function AiWorkspaceUnlocked({
   const [translating, setTranslating] = useState(false);
   const [translatedResult, setTranslatedResult] = useState<string | null>(null);
   const [translationError, setTranslationError] = useState<string | null>(null);
+
+  // Tool 5: Parent Circular & Notice Writer State
+  const [circularOccasion, setCircularOccasion] = useState('Jummah Reminder & Student Etiquette');
+  const [circularCustomTopic, setCircularCustomTopic] = useState('');
+  const [circularAudience, setCircularAudience] = useState('Parents of All Students');
+  const [circularLanguage, setCircularLanguage] = useState<'English' | 'Tamil' | 'Arabic' | 'Bilingual (Tamil + English)'>('English');
+  const [circularKeyDates, setCircularKeyDates] = useState('');
+  const [circularSender, setCircularSender] = useState('Madrasa Administration / Principal');
+  const [generatingCircular, setGeneratingCircular] = useState(false);
+  const [generatedCircular, setGeneratedCircular] = useState<string | null>(null);
+  const [circularError, setCircularError] = useState<string | null>(null);
+
+  // Tool 6: Hifz & Tajweed Worksheet Builder State
+  const [hifzPortion, setHifzPortion] = useState('Juz 30 (Amma) - Selected Surahs');
+  const [hifzFocus, setHifzFocus] = useState('Ayah Completion & Memorization Drill');
+  const [hifzGrade, setHifzGrade] = useState('Intermediate Hifz');
+  const [hifzLanguage, setHifzLanguage] = useState<'English' | 'Tamil' | 'Arabic'>('English');
+  const [hifzCount, setHifzCount] = useState(5);
+  const [generatingHifz, setGeneratingHifz] = useState(false);
+  const [generatedHifz, setGeneratedHifz] = useState<string | null>(null);
+  const [hifzError, setHifzError] = useState<string | null>(null);
+
+  // Tool 7: Bayan & Student Speech Writer State
+  const [speechTopic, setSpeechTopic] = useState('Respecting Parents in Islam (Birr al-Walidayn)');
+  const [speechOccasion, setSpeechOccasion] = useState('Morning Assembly Speech (3-5 mins)');
+  const [speechDuration, setSpeechDuration] = useState('5 Minutes');
+  const [speechAudience, setSpeechAudience] = useState('Madrasa Students (All Grades)');
+  const [speechLanguage, setSpeechLanguage] = useState<'English' | 'Tamil' | 'Arabic'>('English');
+  const [generatingSpeech, setGeneratingSpeech] = useState(false);
+  const [generatedSpeech, setGeneratedSpeech] = useState<string | null>(null);
+  const [speechError, setSpeechError] = useState<string | null>(null);
+
+  // Tool 8: PDF Syllabus & Chapter Summarizer State
+  const [summaryFile, setSummaryFile] = useState<File | null>(null);
+  const [summaryTitle, setSummaryTitle] = useState('');
+  const [summaryType, setSummaryType] = useState('Comprehensive Chapter Study Notes & Key Concepts');
+  const [summaryLanguage, setSummaryLanguage] = useState<'English' | 'Tamil' | 'Arabic'>('English');
+  const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [generatedSummary, setGeneratedSummary] = useState<string | null>(null);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   // Copy helper
   const handleCopy = (text: string) => {
@@ -380,6 +454,115 @@ export default function AiWorkspaceUnlocked({
       setTranslationError(err.response?.data?.message || err.message || 'Failed to translate text.');
     } finally {
       setTranslating(false);
+    }
+  };
+
+  // Submit Circular Writer
+  const handleGenerateCircular = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCircularError(null);
+    setGeneratingCircular(true);
+    setMobileView('preview');
+    try {
+      const formData = new FormData();
+      formData.append(
+        'topic',
+        `Official Madrasa Parent Circular on "${circularOccasion}". Key Dates/Deadlines: ${circularKeyDates || 'Standard school hours'}. Sender: ${circularSender}. Important notes: ${circularCustomTopic || 'Ensure students maintain strict Islamic punctuality and adab.'}. Format: Formal Madrasa letterhead with Bismillah, respectful opening, clear schedule, rules, and closing Du'a.`
+      );
+      formData.append('subject', 'Official Parent Notice & Circular');
+      formData.append('gradeLevel', circularAudience);
+      formData.append('durationMinutes', '0');
+      formData.append('language', circularLanguage);
+
+      const res = await aiService.generateLessonPlan(formData);
+      setGeneratedCircular(res.lessonPlan);
+    } catch (err: any) {
+      setCircularError(err.response?.data?.message || err.message || 'Failed to generate circular notice.');
+    } finally {
+      setGeneratingCircular(false);
+    }
+  };
+
+  // Submit Hifz Worksheet Builder
+  const handleGenerateHifz = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setHifzError(null);
+    setGeneratingHifz(true);
+    setMobileView('preview');
+    try {
+      const formData = new FormData();
+      formData.append(
+        'topic',
+        `Hifz & Tajweed Assessment Worksheet. Quran Portion: ${hifzPortion}. Evaluation Focus: ${hifzFocus}. Generate: 1. Complete the Ayah drills with missing words, 2. Tajweed rule identification (Ghunnah, Ikhfa, Idgham, Qalqalah), 3. Oral recitation evaluation rubric with marking checklist, 4. Full Ustadh answer key.`
+      );
+      formData.append('subject', 'Hifz & Tajweed Assessment');
+      formData.append('gradeLevel', hifzGrade);
+      formData.append('language', hifzLanguage);
+      formData.append('durationMinutes', '30');
+      formData.append('totalMarks', '50');
+      formData.append('mcqCount', '2');
+      formData.append('shortCount', String(hifzCount));
+      formData.append('essayCount', '1');
+
+      const res = await aiService.generateExamPaper(formData);
+      setGeneratedHifz(res.examContent);
+    } catch (err: any) {
+      setHifzError(err.response?.data?.message || err.message || 'Failed to generate Hifz worksheet.');
+    } finally {
+      setGeneratingHifz(false);
+    }
+  };
+
+  // Submit Speech Writer
+  const handleGenerateSpeech = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSpeechError(null);
+    setGeneratingSpeech(true);
+    setMobileView('preview');
+    try {
+      const formData = new FormData();
+      formData.append(
+        'topic',
+        `Islamic Speech & Bayan on "${speechTopic}". Occasion: ${speechOccasion}. Duration: ${speechDuration}. Target Audience: ${speechAudience}. Include: Proper Arabic Khutbah/Hamd opening, 2 authentic Quranic Ayahs with meaning, 1-2 Sahih Hadiths with context, 3 practical actionable takeaways for daily life, and inspiring closing Du'a.`
+      );
+      formData.append('subject', 'Islamic Speech & Bayan Oratory');
+      formData.append('gradeLevel', speechAudience);
+      formData.append('durationMinutes', speechDuration.split(' ')[0] || '5');
+      formData.append('language', speechLanguage);
+
+      const res = await aiService.generateLessonPlan(formData);
+      setGeneratedSpeech(res.lessonPlan);
+    } catch (err: any) {
+      setSpeechError(err.response?.data?.message || err.message || 'Failed to generate Islamic speech.');
+    } finally {
+      setGeneratingSpeech(false);
+    }
+  };
+
+  // Submit Summarizer
+  const handleGenerateSummary = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSummaryError(null);
+    setGeneratingSummary(true);
+    setMobileView('preview');
+    try {
+      const formData = new FormData();
+      if (summaryFile) formData.append('file', summaryFile);
+      formData.append(
+        'topic',
+        `Curriculum Chapter Study Summary & Revision Notes on "${summaryTitle || 'Uploaded Islamic Textbook Chapter'}". Focus: ${summaryType}. Extract: 1. Core Learning Objectives, 2. Islamic Glossary & Terminology, 3. Comprehensive Chapter Summary in structured bullet points, 4. 5 Essential revision questions for students.`
+      );
+      formData.append('subject', 'Islamic Textbook Chapter Summary');
+      formData.append('gradeLevel', 'All Levels');
+      formData.append('durationMinutes', '15');
+      formData.append('language', summaryLanguage);
+
+      const res = await aiService.generateLessonPlan(formData);
+      setGeneratedSummary(res.lessonPlan);
+    } catch (err: any) {
+      setSummaryError(err.response?.data?.message || err.message || 'Failed to generate chapter summary.');
+    } finally {
+      setGeneratingSummary(false);
     }
   };
 
@@ -572,6 +755,66 @@ export default function AiWorkspaceUnlocked({
         >
           <Languages className="w-4 h-4 text-teal-300" />
           <span>Multilingual Translator</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('circular');
+            setMobileView(generatedCircular ? 'preview' : 'config');
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+            activeTab === 'circular'
+              ? 'bg-[#0F172A] text-white shadow-xs'
+              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
+          }`}
+        >
+          <Megaphone className="w-4 h-4 text-indigo-400" />
+          <span>Parent Circular Writer</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('hifz');
+            setMobileView(generatedHifz ? 'preview' : 'config');
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+            activeTab === 'hifz'
+              ? 'bg-[#0F172A] text-white shadow-xs'
+              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 text-amber-400" />
+          <span>Hifz & Tajweed Builder</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('speech');
+            setMobileView(generatedSpeech ? 'preview' : 'config');
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+            activeTab === 'speech'
+              ? 'bg-[#0F172A] text-white shadow-xs'
+              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
+          }`}
+        >
+          <Mic className="w-4 h-4 text-[#37C6A3]" />
+          <span>Bayan & Speech Writer</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('summarizer');
+            setMobileView(generatedSummary ? 'preview' : 'config');
+          }}
+          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+            activeTab === 'summarizer'
+              ? 'bg-[#0F172A] text-white shadow-xs'
+              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
+          }`}
+        >
+          <Layers className="w-4 h-4 text-emerald-400" />
+          <span>PDF Syllabus Summarizer</span>
         </button>
       </div>
 
@@ -1420,6 +1663,866 @@ export default function AiWorkspaceUnlocked({
         </div>
       )}
 
+      {/* ========================================================================= */}
+      {/* TAB 5: PARENT CIRCULAR & NOTICE WRITER                                     */}
+      {/* ========================================================================= */}
+      {activeTab === 'circular' && (
+        <div>
+          {/* Mobile Segmented Switch (< 1024px) */}
+          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileView('config')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'config'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>⚙️ Configuration</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileView('preview')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'preview'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>📄 Generated Circular</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Form Left Panel */}
+            <div
+              className={`${
+                mobileView === 'config' ? 'block' : 'hidden'
+              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Megaphone className="w-5 h-5 text-indigo-500" />
+                <h2 className="text-base font-bold text-[#0F172A]">Parent Circular & Notice Writer</h2>
+              </div>
+              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
+                Draft professional, Islamic-compliant circulars with Bismillah, respectful greetings, key dates, and parent adab reminders.
+              </p>
+
+              {circularError && (
+                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{circularError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleGenerateCircular} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Notice Occasion / Purpose
+                  </label>
+                  <select
+                    value={circularOccasion}
+                    onChange={(e) => setCircularOccasion(e.target.value)}
+                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3] font-semibold"
+                  >
+                    <option value="Jummah Reminder & Student Etiquette">Jummah Reminder & Student Etiquette</option>
+                    <option value="Ramadan Schedule & Taraweeh Attendance">Ramadan Schedule & Taraweeh Attendance</option>
+                    <option value="Eid-ul-Fitr / Eid-ul-Adha Vacation Notice">Eid Vacation Notice & Reopening Date</option>
+                    <option value="Term Examination Timetable & Rules">Term Examination Timetable & Rules</option>
+                    <option value="Monthly Madrasa Fee Due Notice">Monthly Madrasa Fee Due Notice</option>
+                    <option value="Annual Jalsa & Graduation Ceremony">Annual Jalsa & Graduation Ceremony Invitation</option>
+                    <option value="Parent-Teacher Meeting (PTM) Invitation">Parent-Teacher Meeting (PTM) Invitation</option>
+                    <option value="Student Discipline, Uniform & Adab Notice">Student Discipline, Uniform & Adab Notice</option>
+                    <option value="General Madrasa Announcement">General Madrasa Announcement</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                      Target Audience
+                    </label>
+                    <select
+                      value={circularAudience}
+                      onChange={(e) => setCircularAudience(e.target.value)}
+                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                    >
+                      <option value="Parents of All Students">Parents of All Students</option>
+                      <option value="Primary Section Parents">Primary Section Parents</option>
+                      <option value="Hifz Department Parents">Hifz Department Parents</option>
+                      <option value="Alim / Kitab Section Parents">Alim / Kitab Section Parents</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Language</label>
+                    <select
+                      value={circularLanguage}
+                      onChange={(e) => setCircularLanguage(e.target.value as any)}
+                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                    >
+                      <option value="English">English</option>
+                      <option value="Tamil">Tamil (தமிழ்)</option>
+                      <option value="Arabic">Arabic (العربية)</option>
+                      <option value="Bilingual (Tamil + English)">Bilingual (Tamil + English)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Key Dates, Timings & Venue
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 15th Ramadan, 8:00 AM - 1:00 PM at Main Hall"
+                    value={circularKeyDates}
+                    onChange={(e) => setCircularKeyDates(e.target.value)}
+                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Sign-off / Sender Title
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Madrasa Administration / Principal Ustadh"
+                    value={circularSender}
+                    onChange={(e) => setCircularSender(e.target.value)}
+                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Specific Instructions or Special Notes (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="e.g. Ensure boys wear clean white thobe; bring Quran notebooks; late arrivals will not be permitted."
+                    value={circularCustomTopic}
+                    onChange={(e) => setCircularCustomTopic(e.target.value)}
+                    className="w-full p-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={generatingCircular}
+                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  {generatingCircular ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
+                      <span>Composing Parent Notice...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
+                      <span>Draft Parent Circular</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* Generated Output Preview Right Panel */}
+            <div
+              className={`${
+                mobileView === 'preview' ? 'block' : 'hidden'
+              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMobileView('config')}
+                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
+                      title="Back to Configuration"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h3 className="text-sm font-bold text-[#0F172A]">Notice Preview</h3>
+                  </div>
+
+                  {generatedCircular && (
+                    <div className="flex items-center gap-2 print:hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(generatedCircular)}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={printExamPaper}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
+                        <span>Print</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {generatingCircular ? (
+                  <AiSparkleLoader title="Madrasa Copilot is composing notice..." messages={circularMessages} />
+                ) : generatedCircular ? (
+                  <AiStreamedText text={generatedCircular} />
+                ) : (
+                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
+                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
+                      <Megaphone className="w-7 h-7 text-indigo-400 opacity-60" />
+                    </div>
+                    <p className="text-sm font-bold text-[#0F172A]">No Circular Generated Yet</p>
+                    <p className="text-xs mt-1 max-w-xs">
+                      Select your notice occasion and click &quot;Draft Parent Circular&quot; to synthesize an official letter ready for WhatsApp and printing.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 6: HIFZ & TAJWEED WORKSHEET BUILDER                                     */}
+      {/* ========================================================================= */}
+      {activeTab === 'hifz' && (
+        <div>
+          {/* Mobile Segmented Switch (< 1024px) */}
+          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileView('config')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'config'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>⚙️ Configuration</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileView('preview')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'preview'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>📖 Generated Worksheet</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Form Left Panel */}
+            <div
+              className={`${
+                mobileView === 'config' ? 'block' : 'hidden'
+              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="w-5 h-5 text-amber-500" />
+                <h2 className="text-base font-bold text-[#0F172A]">Hifz & Tajweed Worksheet Builder</h2>
+              </div>
+              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
+                Build Surah drills, Makharij & Tajweed rule tests, and oral recitation grading rubrics with answer keys.
+              </p>
+
+              {hifzError && (
+                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{hifzError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleGenerateHifz} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Quran Portion / Surah Range
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Juz 30 (Surah An-Naba to An-Nas) or Surah Al-Mulk"
+                    value={hifzPortion}
+                    onChange={(e) => setHifzPortion(e.target.value)}
+                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Assessment Focus
+                  </label>
+                  <select
+                    value={hifzFocus}
+                    onChange={(e) => setHifzFocus(e.target.value)}
+                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  >
+                    <option value="Ayah Completion & Memorization Drill">Ayah Completion & Memorization Drill</option>
+                    <option value="Tajweed Rules (Makharij, Ghunnah, Idgham, Ikhfa)">Tajweed Rules (Makharij, Ghunnah, Idgham, Ikhfa)</option>
+                    <option value="Mutashabihat (Similar Ayahs) Identification">Mutashabihat (Similar Ayahs) Identification</option>
+                    <option value="Oral Recitation Rubric & Ustadh Scorecard">Oral Recitation Rubric & Ustadh Scorecard</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Hifz Level</label>
+                    <select
+                      value={hifzGrade}
+                      onChange={(e) => setHifzGrade(e.target.value)}
+                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                    >
+                      <option value="Beginner (Noorani / Qaida)">Beginner (Noorani / Qaida)</option>
+                      <option value="Intermediate Hifz (5 - 15 Juz)">Intermediate Hifz (5 - 15 Juz)</option>
+                      <option value="Advanced Sanad / Complete Hafiz">Advanced Sanad / Complete Hafiz</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Language</label>
+                    <select
+                      value={hifzLanguage}
+                      onChange={(e) => setHifzLanguage(e.target.value as any)}
+                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                    >
+                      <option value="English">English</option>
+                      <option value="Tamil">Tamil (தமிழ்)</option>
+                      <option value="Arabic">Arabic (العربية)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Number of Drill Questions: {hifzCount}
+                  </label>
+                  <input
+                    type="range"
+                    min="3"
+                    max="10"
+                    value={hifzCount}
+                    onChange={(e) => setHifzCount(Number(e.target.value))}
+                    className="w-full accent-[#37C6A3]"
+                  />
+                  <div className="flex justify-between text-[10px] text-[#7C8A9A]">
+                    <span>3 Drills</span>
+                    <span>5 Standard</span>
+                    <span>10 Intensive</span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={generatingHifz || !hifzPortion.trim()}
+                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  {generatingHifz ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
+                      <span>Synthesizing Hifz Worksheet...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
+                      <span>Build Hifz Worksheet</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* Generated Output Preview Right Panel */}
+            <div
+              className={`${
+                mobileView === 'preview' ? 'block' : 'hidden'
+              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMobileView('config')}
+                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
+                      title="Back to Configuration"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h3 className="text-sm font-bold text-[#0F172A]">Hifz Worksheet & Rubric Preview</h3>
+                  </div>
+
+                  {generatedHifz && (
+                    <div className="flex items-center gap-2 print:hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(generatedHifz)}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={printExamPaper}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
+                        <span>Print</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {generatingHifz ? (
+                  <AiSparkleLoader title="Generating Hifz Drills & Tajweed Rules..." messages={hifzMessages} />
+                ) : generatedHifz ? (
+                  <AiStreamedText text={generatedHifz} />
+                ) : (
+                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
+                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
+                      <BookOpen className="w-7 h-7 text-amber-500 opacity-60" />
+                    </div>
+                    <p className="text-sm font-bold text-[#0F172A]">No Hifz Worksheet Generated</p>
+                    <p className="text-xs mt-1 max-w-xs">
+                      Enter a Surah or Juz range and click &quot;Build Hifz Worksheet&quot; to synthesize completion tests and oral scoring rubrics.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 7: BAYAN & STUDENT SPEECH WRITER                                       */}
+      {/* ========================================================================= */}
+      {activeTab === 'speech' && (
+        <div>
+          {/* Mobile Segmented Switch (< 1024px) */}
+          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileView('config')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'config'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>⚙️ Configuration</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileView('preview')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'preview'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>🎙️ Generated Speech</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Form Left Panel */}
+            <div
+              className={`${
+                mobileView === 'config' ? 'block' : 'hidden'
+              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Mic className="w-5 h-5 text-[#37C6A3]" />
+                <h2 className="text-base font-bold text-[#0F172A]">Bayan & Student Speech Writer</h2>
+              </div>
+              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
+                Draft timed speeches with authentic Quranic Ayahs, Hadith proofs, practical life lessons, and inspiring closing Du&apos;a.
+              </p>
+
+              {speechError && (
+                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{speechError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleGenerateSpeech} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Speech Topic / Theme
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Respecting Parents in Islam (Birr al-Walidayn)"
+                    value={speechTopic}
+                    onChange={(e) => setSpeechTopic(e.target.value)}
+                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Occasion / Event Type
+                  </label>
+                  <select
+                    value={speechOccasion}
+                    onChange={(e) => setSpeechOccasion(e.target.value)}
+                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  >
+                    <option value="Morning Assembly Speech (3-5 mins)">Morning Assembly Speech (3-5 mins)</option>
+                    <option value="Friday Bayan / Jumu'ah Sermon">Friday Bayan / Jumu&apos;ah Sermon</option>
+                    <option value="Madrasa Public Speech Competition">Madrasa Public Speech Competition</option>
+                    <option value="Annual Day / Prize Giving Jalsa">Annual Day / Prize Giving Jalsa</option>
+                    <option value="Youth Character Building & Akhlaaq Talk">Youth Character Building & Akhlaaq Talk</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Speech Duration</label>
+                    <select
+                      value={speechDuration}
+                      onChange={(e) => setSpeechDuration(e.target.value)}
+                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                    >
+                      <option value="3 Minutes">3 Minutes (Quick Talk)</option>
+                      <option value="5 Minutes">5 Minutes (Assembly Standard)</option>
+                      <option value="10 Minutes">10 Minutes (Comprehensive)</option>
+                      <option value="15 Minutes">15 Minutes (Formal Bayan)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Language</label>
+                    <select
+                      value={speechLanguage}
+                      onChange={(e) => setSpeechLanguage(e.target.value as any)}
+                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                    >
+                      <option value="English">English</option>
+                      <option value="Tamil">Tamil (தமிழ்)</option>
+                      <option value="Arabic">Arabic (العربية)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Target Audience
+                  </label>
+                  <select
+                    value={speechAudience}
+                    onChange={(e) => setSpeechAudience(e.target.value)}
+                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  >
+                    <option value="Madrasa Students (All Grades)">Madrasa Students (All Grades)</option>
+                    <option value="Youth & Teenagers">Youth & Teenagers</option>
+                    <option value="General Madrasa Community & Parents">General Madrasa Community & Parents</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={generatingSpeech || !speechTopic.trim()}
+                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  {generatingSpeech ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
+                      <span>Drafting Inspiring Bayan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
+                      <span>Draft Islamic Speech</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* Generated Output Preview Right Panel */}
+            <div
+              className={`${
+                mobileView === 'preview' ? 'block' : 'hidden'
+              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMobileView('config')}
+                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
+                      title="Back to Configuration"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h3 className="text-sm font-bold text-[#0F172A]">Speech Script Preview</h3>
+                  </div>
+
+                  {generatedSpeech && (
+                    <div className="flex items-center gap-2 print:hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(generatedSpeech)}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={printExamPaper}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
+                        <span>Print</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {generatingSpeech ? (
+                  <AiSparkleLoader title="Madrasa Copilot is drafting your speech..." messages={speechMessages} />
+                ) : generatedSpeech ? (
+                  <AiStreamedText text={generatedSpeech} />
+                ) : (
+                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
+                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
+                      <Mic className="w-7 h-7 text-[#37C6A3] opacity-60" />
+                    </div>
+                    <p className="text-sm font-bold text-[#0F172A]">No Speech Drafted Yet</p>
+                    <p className="text-xs mt-1 max-w-xs">
+                      Enter a topic and occasion, then click &quot;Draft Islamic Speech&quot; to synthesize an authentic, time-calibrated oratory talk.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 8: PDF SYLLABUS & CHAPTER SUMMARIZER                                   */}
+      {/* ========================================================================= */}
+      {activeTab === 'summarizer' && (
+        <div>
+          {/* Mobile Segmented Switch (< 1024px) */}
+          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileView('config')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'config'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>⚙️ Configuration</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileView('preview')}
+              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                mobileView === 'preview'
+                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
+                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
+              }`}
+            >
+              <span>⚡ Study Summary</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Form Left Panel */}
+            <div
+              className={`${
+                mobileView === 'config' ? 'block' : 'hidden'
+              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Layers className="w-5 h-5 text-emerald-500" />
+                <h2 className="text-base font-bold text-[#0F172A]">PDF Syllabus & Chapter Summarizer</h2>
+              </div>
+              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
+                Parse syllabus or book chapters in volatile RAM to extract key learning takeaways, Islamic glossary, and revision bullet points.
+              </p>
+
+              {summaryError && (
+                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{summaryError}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleGenerateSummary} className="space-y-4">
+                {/* Zero-Storage RAM-Only PDF Upload */}
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Upload Syllabus Chapter PDF (RAM-Only, 0 MB Stored)
+                  </label>
+                  <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-[#E7E9EE] hover:border-[#37C6A3] rounded-2xl cursor-pointer bg-[#F7F6F1]/50 hover:bg-[#F7F6F1] transition">
+                    <div className="flex flex-col items-center justify-center text-center p-2">
+                      <Upload className="w-5 h-5 text-[#37C6A3] mb-1" />
+                      <p className="text-xs font-bold text-[#0F172A]">
+                        {summaryFile ? summaryFile.name : 'Select or drop chapter PDF'}
+                      </p>
+                      <p className="text-[10px] text-[#7C8A9A]">Parsed in RAM & discarded (max 10MB)</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => setSummaryFile(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Book / Subject & Chapter Title
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Kitab at-Tawheed - Chapter 3: Virtues of Tawheed"
+                    value={summaryTitle}
+                    onChange={(e) => setSummaryTitle(e.target.value)}
+                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
+                    Summary Structure & Depth
+                  </label>
+                  <select
+                    value={summaryType}
+                    onChange={(e) => setSummaryType(e.target.value)}
+                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  >
+                    <option value="Comprehensive Chapter Study Notes & Key Concepts">Comprehensive Chapter Notes & Key Concepts</option>
+                    <option value="Executive Ustadh Teaching Summary & Glossary">Executive Ustadh Teaching Summary & Glossary</option>
+                    <option value="Revision Flashcard & Quick-Review Bullets">Revision Flashcards & Quick-Review Bullets</option>
+                    <option value="Exam Preparation Summary with Key Questions">Exam Preparation Summary with Key Questions</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Output Language</label>
+                  <select
+                    value={summaryLanguage}
+                    onChange={(e) => setSummaryLanguage(e.target.value as any)}
+                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
+                  >
+                    <option value="English">English</option>
+                    <option value="Tamil">Tamil (தமிழ்)</option>
+                    <option value="Arabic">Arabic (العربية)</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={generatingSummary || (!summaryFile && !summaryTitle.trim())}
+                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+                >
+                  {generatingSummary ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
+                      <span>Synthesizing Chapter Summary in RAM...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
+                      <span>Synthesize Chapter Summary</span>
+                    </>
+                  )}
+                </button>
+
+                <p className="text-[10px] text-[#7C8A9A] text-center">
+                  🔒 Zero-Storage: PDF is parsed strictly in server RAM and immediately discarded.
+                </p>
+              </form>
+            </div>
+
+            {/* Generated Output Preview Right Panel */}
+            <div
+              className={`${
+                mobileView === 'preview' ? 'block' : 'hidden'
+              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
+            >
+              <div>
+                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setMobileView('config')}
+                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
+                      title="Back to Configuration"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <h3 className="text-sm font-bold text-[#0F172A]">Chapter Summary & Notes Preview</h3>
+                  </div>
+
+                  {generatedSummary && (
+                    <div className="flex items-center gap-2 print:hidden">
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(generatedSummary)}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={printExamPaper}
+                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
+                        <span>Print</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {generatingSummary ? (
+                  <AiSparkleLoader title="Reading in RAM & Synthesizing Chapter Notes..." messages={summaryMessages} />
+                ) : generatedSummary ? (
+                  <AiStreamedText text={generatedSummary} />
+                ) : (
+                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
+                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
+                      <Layers className="w-7 h-7 text-emerald-500 opacity-60" />
+                    </div>
+                    <p className="text-sm font-bold text-[#0F172A]">No Chapter Summary Generated</p>
+                    <p className="text-xs mt-1 max-w-xs">
+                      Upload a PDF syllabus chapter or provide a book title to extract structured study notes and revision flashcards.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Floating Bottom-Right Round AI Orb / Quick-Action Button */}
       <div className="fixed bottom-5 right-5 z-40 print:hidden">
         <div className="relative group">
@@ -1430,7 +2533,7 @@ export default function AiWorkspaceUnlocked({
               <div className="text-left">
                 <div className="text-xs font-bold leading-none text-white">Ask AI Copilot</div>
                 <div className="text-[10px] text-slate-400 mt-0.5 leading-none">
-                  Exam, Lesson, Poster & Translate
+                  8 Active Islamic AI Tools
                 </div>
               </div>
               <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />

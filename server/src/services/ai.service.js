@@ -196,8 +196,9 @@ export async function getTenantAiStatus(madrasaId) {
   }
 
   const now = new Date();
-  const isExpired = Boolean(madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) < now);
-  const effectiveAiEnabled = Boolean(madrasa.aiEnabled && !isExpired);
+  const isExpired = Boolean(madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) <= now);
+  const isActive = Boolean(madrasa.aiEnabled && (!madrasa.aiExpiresAt || new Date(madrasa.aiExpiresAt) > now));
+  const effectiveAiEnabled = isActive;
 
   let daysRemaining = null;
   if (madrasa.aiExpiresAt && !isExpired) {
@@ -236,6 +237,7 @@ export async function getTenantAiStatus(madrasaId) {
     madrasaId: madrasa.id,
     madrasaName: madrasa.name,
     madrasaCode: madrasa.code,
+    isActive,
     aiEnabled: effectiveAiEnabled,
     rawAiEnabled: madrasa.aiEnabled,
     aiExpiresAt: madrasa.aiExpiresAt,
@@ -617,7 +619,10 @@ export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adm
     },
   });
 
-  return updated;
+  return {
+    ...updated,
+    isActive: Boolean(updated.aiEnabled && (!updated.aiExpiresAt || new Date(updated.aiExpiresAt) > new Date())),
+  };
 }
 
 /**

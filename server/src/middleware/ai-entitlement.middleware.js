@@ -8,7 +8,7 @@ import { UnauthorizedError, ForbiddenError } from '../utils/errors.js';
  * - MADRASA_ADMIN (must have active tenant subscription)
  * - TEACHER (must have active tenant subscription)
  */
-export const requireAiEnabled = async (req, res, next) => {
+export const requireActiveAiSubscription = async (req, res, next) => {
   try {
     if (!req.auth || !req.auth.userId) {
       throw new UnauthorizedError('Authentication token is required to access AI Assistant.');
@@ -45,15 +45,14 @@ export const requireAiEnabled = async (req, res, next) => {
     }
 
     const now = new Date();
-    const isExpired = Boolean(madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) < now);
+    const isExpired = Boolean(madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) <= now);
+    const isActive = Boolean(madrasa.aiEnabled && !isExpired);
 
-    if (!madrasa.aiEnabled || isExpired) {
+    if (!isActive) {
       return res.status(403).json({
         success: false,
-        code: 'AI_SUBSCRIPTION_REQUIRED',
-        message: isExpired
-          ? 'Your Madrasa AI Assistant subscription has expired. Please renew to continue using AI tools.'
-          : 'MadrasaNexa Smart AI Assistant is locked for your Madrasa. Please activate your subscription.',
+        code: 'AI_LOCKED',
+        message: 'AI Assistant is currently disabled or expired for this Madrasa.',
         isExpired,
         aiExpiresAt: madrasa.aiExpiresAt,
       });
@@ -71,3 +70,5 @@ export const requireAiEnabled = async (req, res, next) => {
     next(error);
   }
 };
+
+export const requireAiEnabled = requireActiveAiSubscription;

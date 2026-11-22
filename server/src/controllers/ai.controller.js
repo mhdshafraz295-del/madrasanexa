@@ -6,6 +6,11 @@ import { BadRequestError } from '../utils/errors.js';
  */
 export async function getAiStatus(req, res, next) {
   try {
+    // Explicit no-cache headers to ensure clients, proxies, and webviews never serve stale AI entitlement status
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     const madrasaId = req.auth.role === 'SUPER_ADMIN'
       ? (req.query.madrasaId || null)
       : req.auth.madrasaId;
@@ -16,6 +21,7 @@ export async function getAiStatus(req, res, next) {
         return res.json({
           success: true,
           data: {
+            isActive: true,
             aiEnabled: true,
             isSuperAdmin: true,
             settings,

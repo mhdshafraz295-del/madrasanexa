@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { authenticateToken } from '../middleware/auth.middleware.js';
 import { requireRoles } from '../middleware/role.middleware.js';
-import { requireAiEnabled } from '../middleware/ai-entitlement.middleware.js';
+import { requireActiveAiSubscription, requireAiEnabled } from '../middleware/ai-entitlement.middleware.js';
 import * as aiController from '../controllers/ai.controller.js';
 
 const router = Router();
@@ -45,38 +45,38 @@ router.post(
 
 // ==========================================
 // Unlocked AI Assistant Workspace Tools
-// (Guarded by requireAiEnabled: Admin + Teacher)
+// (Guarded by requireActiveAiSubscription: Admin + Teacher)
 // ==========================================
 router.post(
   '/tools/chat',
-  requireAiEnabled,
+  requireActiveAiSubscription,
   memoryUpload.single('file'),
   aiController.chatWithCopilot
 );
 
 router.post(
   '/tools/exam-paper',
-  requireAiEnabled,
+  requireActiveAiSubscription,
   memoryUpload.single('file'),
   aiController.generateExamPaper
 );
 
 router.post(
   '/tools/lesson-plan',
-  requireAiEnabled,
+  requireActiveAiSubscription,
   memoryUpload.single('file'),
   aiController.generateLessonPlan
 );
 
 router.post(
   '/tools/poster',
-  requireAiEnabled,
+  requireActiveAiSubscription,
   aiController.generatePoster
 );
 
 router.post(
   '/tools/translate',
-  requireAiEnabled,
+  requireActiveAiSubscription,
   aiController.translateContent
 );
 

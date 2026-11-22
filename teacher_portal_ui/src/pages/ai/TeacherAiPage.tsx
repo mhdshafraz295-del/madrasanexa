@@ -260,6 +260,13 @@ export default function TeacherAiPage() {
 
   useEffect(() => {
     loadStatus();
+
+    // Re-check live status on window focus (e.g., when Super Admin disables AI in another tab)
+    const handleFocus = () => {
+      loadStatus();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -493,6 +500,13 @@ export default function TeacherAiPage() {
         ]);
       }
     } catch (err: any) {
+      if (
+        err.response?.status === 403 &&
+        (err.response?.data?.code === 'AI_LOCKED' || err.response?.data?.code === 'AI_SUBSCRIPTION_REQUIRED')
+      ) {
+        loadStatus();
+        return;
+      }
       const errorMsg = err.response?.data?.message || err.message || 'Generation failed. Please try again.';
       setMessages((prev) => [
         ...prev,
@@ -631,10 +645,16 @@ export default function TeacherAiPage() {
     );
   }
 
+  const isAiActive = Boolean(
+    statusData.isActive !== undefined
+      ? statusData.isActive
+      : (statusData.aiEnabled && !statusData.isExpired)
+  );
+
   // ==========================================
   // VIEW A: LOCKED PREVIEW (AI DISABLED)
   // ==========================================
-  if (!statusData.aiEnabled) {
+  if (!isAiActive) {
     return (
       <div className="p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-8 relative">
         {/* Component-scoped GPU-accelerated Keyframe Styles */}

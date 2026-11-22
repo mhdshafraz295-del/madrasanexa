@@ -1131,3 +1131,5 @@ export default function AiShowcaseLocked({
     </div>
   );
 }
+
+export { AiShowcaseLocked as AiWorkspaceLocked };

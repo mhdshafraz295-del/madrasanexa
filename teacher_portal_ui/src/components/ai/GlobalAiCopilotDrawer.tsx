@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   X,
@@ -142,23 +142,33 @@ export default function GlobalAiCopilotDrawer() {
     }, 120);
   };
 
+  const fetchStatus = useCallback(async () => {
+    try {
+      const data = await teacherAiService.getAiStatus();
+      setStatusData(data);
+      setLoadingStatus(false);
+    } catch {
+      setLoadingStatus(false);
+    }
+  }, []);
+
   useEffect(() => {
-    let isMounted = true;
-    teacherAiService
-      .getAiStatus()
-      .then((data) => {
-        if (isMounted) {
-          setStatusData(data);
-          setLoadingStatus(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) setLoadingStatus(false);
-      });
-    return () => {
-      isMounted = false;
+    fetchStatus();
+
+    // Re-check live AI status on window focus (e.g., when Super Admin disabled AI in another tab)
+    const handleFocus = () => {
+      fetchStatus();
     };
-  }, [location.pathname]);
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchStatus, location.pathname]);
+
+  // Re-check AI entitlement whenever the slide-over Copilot drawer opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchStatus();
+    }
+  }, [isOpen, fetchStatus]);
 
   useEffect(() => {
     if (messages.length > 0 && isOpen) {
@@ -421,6 +431,25 @@ export default function GlobalAiCopilotDrawer() {
         ]);
       }
     } catch (err: any) {
+      const isLocked =
+        err.response?.status === 403 &&
+        (err.response?.data?.code === 'AI_LOCKED' ||
+          err.response?.data?.code === 'AI_SUBSCRIPTION_REQUIRED');
+      if (isLocked) {
+        setStatusData((prev) =>
+          prev
+            ? { ...prev, isActive: false, aiEnabled: false }
+            : ({
+                isActive: false,
+                aiEnabled: false,
+                isExpired: false,
+                settings: {} as any,
+                latestRequest: null,
+                daysRemaining: 0,
+                aiExpiresAt: null,
+              } as AiStatusResponse)
+        );
+      }
       const errorMsg = err.response?.data?.message || err.message || 'Generation failed. Please try again.';
       setMessages((prev) => [
         ...prev,
@@ -481,7 +510,11 @@ export default function GlobalAiCopilotDrawer() {
     summarizer: { label: '⚡ PDF Summary', icon: <Layers className="w-3.5 h-3.5 text-teal-400" /> },
   };
 
-  const isUnlocked = Boolean(statusData?.aiEnabled);
+  const isUnlocked = Boolean(
+    statusData?.isActive !== undefined
+      ? statusData.isActive
+      : (statusData?.aiEnabled && !statusData?.isExpired)
+  );
 
   return (
     <>

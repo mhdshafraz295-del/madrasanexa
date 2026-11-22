@@ -380,6 +380,13 @@ export default function AiWorkspaceUnlocked({
         ]);
       }
     } catch (err: any) {
+      if (
+        err.response?.status === 403 &&
+        (err.response?.data?.code === 'AI_LOCKED' || err.response?.data?.code === 'AI_SUBSCRIPTION_REQUIRED')
+      ) {
+        onRefresh?.();
+        return;
+      }
       const errorMsg = err.response?.data?.message || err.message || 'Generation failed. Please try again.';
       setMessages((prev) => [
         ...prev,

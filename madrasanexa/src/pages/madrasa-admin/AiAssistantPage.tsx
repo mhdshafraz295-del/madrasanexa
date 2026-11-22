@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { aiService, type AiStatusResponse } from '../../services/ai.service';
-import AiShowcaseLocked from '../../components/ai/AiShowcaseLocked';
+import { AiWorkspaceLocked } from '../../components/ai/AiShowcaseLocked';
 import AiWorkspaceUnlocked from '../../components/ai/AiWorkspaceUnlocked';
 import { RefreshCw, AlertCircle } from 'lucide-react';
 
@@ -9,7 +9,7 @@ export default function AiAssistantPage() {
   const [error, setError] = useState<string | null>(null);
   const [statusData, setStatusData] = useState<AiStatusResponse | null>(null);
 
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -21,11 +21,18 @@ export default function AiAssistantPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadStatus();
-  }, []);
+
+    // Re-check live status immediately whenever tab or window regains focus
+    const handleFocus = () => {
+      loadStatus();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [loadStatus]);
 
   if (loading) {
     return (
@@ -54,12 +61,18 @@ export default function AiAssistantPage() {
     );
   }
 
+  const isAiActive = Boolean(
+    statusData.isActive !== undefined
+      ? statusData.isActive
+      : (statusData.aiEnabled && !statusData.isExpired)
+  );
+
   return (
     <div className="p-3 sm:p-6 lg:p-8">
-      {statusData.aiEnabled ? (
+      {isAiActive ? (
         <AiWorkspaceUnlocked statusData={statusData} onRefresh={loadStatus} />
       ) : (
-        <AiShowcaseLocked statusData={statusData} onRefresh={loadStatus} />
+        <AiWorkspaceLocked statusData={statusData} onRefresh={loadStatus} />
       )}
     </div>
   );

@@ -45,6 +45,7 @@ export interface AiStatusResponse {
   madrasaId?: string;
   madrasaName?: string;
   madrasaCode?: string;
+  isActive: boolean;
   aiEnabled: boolean;
   rawAiEnabled?: boolean;
   aiExpiresAt: string | null;
@@ -116,10 +117,18 @@ export const aiService = {
     );
     return res.data.data;
   },
-  // Status check for tenant or super admin
+  // Status check for tenant or super admin (strictly real-time, zero stale cache)
   async getAiStatus(madrasaId?: string): Promise<AiStatusResponse> {
     const res = await apiClient.get<{ success: boolean; data: AiStatusResponse }>('/ai/status', {
-      params: madrasaId ? { madrasaId } : undefined,
+      params: {
+        ...(madrasaId ? { madrasaId } : {}),
+        _t: Date.now(),
+      },
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
+      },
     });
     return res.data.data;
   },

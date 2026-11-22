@@ -17,6 +17,7 @@ export interface AiStatusResponse {
   madrasaId?: string;
   madrasaName?: string;
   madrasaCode?: string;
+  isActive: boolean;
   aiEnabled: boolean;
   rawAiEnabled?: boolean;
   aiExpiresAt: string | null;
@@ -72,6 +73,18 @@ function getAuthHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function handleResponse<T>(res: Response, defaultMessage: string): Promise<T> {
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    const error: any = new Error(errData.message || defaultMessage);
+    error.status = res.status;
+    error.response = { status: res.status, data: errData };
+    throw error;
+  }
+  const json = await res.json();
+  return json.data;
+}
+
 export const teacherAiService = {
   async chatWithCopilot(data: FormData | {
     message: string;
@@ -90,27 +103,20 @@ export const teacherAiService = {
       },
       body: isFormData ? data : JSON.stringify(data),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to generate response.');
-    }
-    const json = await res.json();
-    return json.data;
+    return handleResponse<ChatResult>(res, 'Failed to generate response.');
   },
 
   async getAiStatus(): Promise<AiStatusResponse> {
-    const res = await fetch(`${BASE_URL}/ai/status`, {
+    const res = await fetch(`${BASE_URL}/ai/status?_t=${Date.now()}`, {
       headers: {
         ...getAuthHeader(),
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        Pragma: 'no-cache',
+        Expires: '0',
       },
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to fetch AI Assistant status.');
-    }
-    const json = await res.json();
-    return json.data;
+    return handleResponse<AiStatusResponse>(res, 'Failed to fetch AI Assistant status.');
   },
 
   async generateExamPaper(formData: FormData): Promise<ExamGenerationResult> {
@@ -121,12 +127,7 @@ export const teacherAiService = {
       },
       body: formData,
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to generate exam paper.');
-    }
-    const json = await res.json();
-    return json.data;
+    return handleResponse<ExamGenerationResult>(res, 'Failed to generate exam paper.');
   },
 
   async generateLessonPlan(formData: FormData): Promise<LessonPlanResult> {
@@ -137,12 +138,7 @@ export const teacherAiService = {
       },
       body: formData,
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to generate lesson plan.');
-    }
-    const json = await res.json();
-    return json.data;
+    return handleResponse<LessonPlanResult>(res, 'Failed to generate lesson plan.');
   },
 
   async generatePoster(data: {
@@ -161,12 +157,7 @@ export const teacherAiService = {
       },
       body: JSON.stringify(data),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to generate poster.');
-    }
-    const json = await res.json();
-    return json.data;
+    return handleResponse<PosterGenerationResult>(res, 'Failed to generate poster.');
   },
 
   async translateContent(data: {
@@ -183,12 +174,7 @@ export const teacherAiService = {
       },
       body: JSON.stringify(data),
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Failed to translate content.');
-    }
-    const json = await res.json();
-    return json.data;
+    return handleResponse<TranslationResult>(res, 'Failed to translate content.');
   },
 };
 

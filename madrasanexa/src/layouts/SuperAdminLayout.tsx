@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import logoUrl from '../assets/logo/madrasanexa-logo.png';
+import ThemeToggle from '../components/common/ThemeToggle';
 import {
   LayoutDashboard,
   ClipboardList,
@@ -58,12 +59,15 @@ export default function SuperAdminLayout() {
             Super Admin
           </span>
         </div>
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="p-2 text-[#7C8A9A] hover:text-[#0F172A] rounded-lg border border-[#E7E9EE] bg-white cursor-pointer"
-        >
-          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle compact />
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 text-[#7C8A9A] hover:text-[#0F172A] rounded-lg border border-[#E7E9EE] bg-white cursor-pointer"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
       </header>
 
       {/* Sidebar for Desktop & Mobile Drawer */}
@@ -143,6 +147,22 @@ export default function SuperAdminLayout() {
 
       {/* Main Content Area */}
       <main className="flex-1 min-w-0 flex flex-col min-h-screen">
+        {/* Desktop Top Header Bar */}
+        <header className="hidden md:flex items-center justify-between bg-white border-b border-[#E7E9EE] px-4 lg:px-8 py-3.5 sticky top-0 z-30 shadow-xs print:hidden">
+          <div className="min-w-0 pr-4">
+            <h2 className="text-xs font-semibold text-[#7C8A9A] uppercase tracking-wider truncate">
+              Multi-Tenant Governance
+            </h2>
+            <div className="text-sm font-bold text-[#0F172A] truncate">Super Admin Operations Center</div>
+          </div>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap justify-end">
+            <ThemeToggle />
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-bold bg-[#0F172A] text-white shrink-0">
+              SUPER_ADMIN
+            </span>
+          </div>
+        </header>
+
         <div className="flex-1 p-3 sm:p-5 md:p-8 max-w-7xl w-full mx-auto min-w-0 print:p-0 print:max-w-none">
           <Outlet />
         </div>

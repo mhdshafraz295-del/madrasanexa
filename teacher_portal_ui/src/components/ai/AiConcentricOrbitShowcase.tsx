@@ -266,7 +266,7 @@ export default function AiConcentricOrbitShowcase({
           {/* 1. OUTER ORBITAL RING (Diameter: ~88% of container)                 */}
           {/* =================================================================== */}
           <div
-            className="absolute inset-0 m-auto rounded-full border border-dashed border-slate-300/85 anim-orbit-ccw-outer pointer-events-none"
+            className="absolute inset-0 m-auto rounded-full border border-dashed border-slate-300/85 dark:border-slate-700/80 anim-orbit-ccw-outer pointer-events-none"
             style={{
               width: '88%',
               height: '88%',
@@ -300,8 +300,8 @@ export default function AiConcentricOrbitShowcase({
                     }}
                     className={`group relative flex items-center gap-1 sm:gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-full sm:rounded-2xl border transition-all duration-300 cursor-pointer shadow-md anim-counter-ccw-outer ${
                       isSelected
-                        ? 'bg-emerald-50 text-emerald-950 border-emerald-500 ring-2 ring-emerald-500/25 scale-110 shadow-lg shadow-emerald-500/15 z-30'
-                        : 'bg-white text-slate-700 border-slate-200/90 hover:border-emerald-400 hover:text-slate-900 hover:shadow-md hover:scale-105 z-10'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-200 border-emerald-500 ring-2 ring-emerald-500/25 scale-110 shadow-lg shadow-emerald-500/15 z-30'
+                        : 'bg-white dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 border-slate-200/90 dark:border-slate-700/90 hover:border-emerald-400 dark:hover:border-emerald-400 hover:text-slate-900 dark:hover:text-white hover:shadow-md hover:scale-105 z-10'
                     }`}
                     style={{
                       animationPlayState: isPaused ? 'paused' : 'running',
@@ -313,7 +313,7 @@ export default function AiConcentricOrbitShowcase({
                     </span>
 
                     <span className={`text-[10px] sm:text-xs font-bold whitespace-nowrap transition-colors ${
-                      isSelected ? 'text-emerald-800' : 'text-slate-700 group-hover:text-slate-900'
+                      isSelected ? 'text-emerald-800 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white'
                     } ${isSelected ? 'inline-block' : 'hidden sm:inline-block'}`}>
                       {tool.shortName}
                     </span>
@@ -334,7 +334,7 @@ export default function AiConcentricOrbitShowcase({
           {/* 2. INNER ORBITAL RING (Diameter: ~58% of container)                 */}
           {/* =================================================================== */}
           <div
-            className="absolute inset-0 m-auto rounded-full border border-dashed border-emerald-400/70 anim-orbit-cw-inner pointer-events-none"
+            className="absolute inset-0 m-auto rounded-full border border-dashed border-emerald-400/70 dark:border-emerald-500/50 anim-orbit-cw-inner pointer-events-none"
             style={{
               width: '58%',
               height: '58%',
@@ -368,8 +368,8 @@ export default function AiConcentricOrbitShowcase({
                     }}
                     className={`group relative flex items-center gap-1 sm:gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-full sm:rounded-2xl border transition-all duration-300 cursor-pointer shadow-md anim-counter-cw-inner ${
                       isSelected
-                        ? 'bg-emerald-50 text-emerald-950 border-emerald-500 ring-2 ring-emerald-500/25 scale-110 shadow-lg shadow-emerald-500/15 z-30'
-                        : 'bg-white text-slate-700 border-slate-200/90 hover:border-emerald-400 hover:text-slate-900 hover:shadow-md hover:scale-105 z-10'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-200 border-emerald-500 ring-2 ring-emerald-500/25 scale-110 shadow-lg shadow-emerald-500/15 z-30'
+                        : 'bg-white dark:bg-slate-900/95 text-slate-700 dark:text-slate-200 border-slate-200/90 dark:border-slate-700/90 hover:border-emerald-400 dark:hover:border-emerald-400 hover:text-slate-900 dark:hover:text-white hover:shadow-md hover:scale-105 z-10'
                     }`}
                     style={{
                       animationPlayState: isPaused ? 'paused' : 'running',
@@ -380,7 +380,7 @@ export default function AiConcentricOrbitShowcase({
                       {tool.emoji}
                     </span>
                     <span className={`text-[10px] sm:text-xs font-bold whitespace-nowrap transition-colors ${
-                      isSelected ? 'text-emerald-800' : 'text-slate-700 group-hover:text-slate-900'
+                      isSelected ? 'text-emerald-800 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white'
                     } ${isSelected ? 'inline-block' : 'hidden sm:inline-block'}`}>
                       {tool.shortName}
                     </span>
@@ -398,19 +398,19 @@ export default function AiConcentricOrbitShowcase({
           </div>
 
           {/* =================================================================== */}
-          {/* 3. CENTER HUB: 3D AI ROBOT MASCOT IN GLOWING CORE (LIGHT THEME)     */}
+          {/* 3. CENTER HUB: 3D AI ROBOT MASCOT IN GLOWING CORE                   */}
           {/* =================================================================== */}
           <div className="relative z-20 flex flex-col items-center justify-center pointer-events-none">
-            <div className="absolute w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-emerald-400/20 blur-xl pointer-events-none" />
+            <div className="absolute w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-emerald-400/20 dark:bg-emerald-500/25 blur-xl pointer-events-none" />
             
-            <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-28 sm:h-28 rounded-full bg-white border-2 border-emerald-400 shadow-xl flex items-center justify-center relative overflow-hidden">
-              <span className="absolute inset-0 bg-radial from-emerald-100/60 to-transparent pointer-events-none" />
+            <div className="w-16 h-16 xs:w-20 xs:h-20 sm:w-28 sm:h-28 rounded-full bg-white dark:bg-slate-900 border-2 border-emerald-400 dark:border-emerald-500 shadow-xl flex items-center justify-center relative overflow-hidden">
+              <span className="absolute inset-0 bg-radial from-emerald-100/60 dark:from-emerald-950/60 to-transparent pointer-events-none" />
               <div className="w-11 xs:w-13 sm:w-18 drop-shadow-md">
                 <AiRobotMascot variant="wave" className="w-full h-auto" />
               </div>
             </div>
 
-            <div className="mt-1.5 px-2.5 py-0.5 rounded-full bg-white border border-emerald-200 text-[9px] sm:text-[10px] font-bold text-emerald-700 shadow-xs">
+            <div className="mt-1.5 px-2.5 py-0.5 rounded-full bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800 text-[9px] sm:text-[10px] font-bold text-emerald-700 dark:text-emerald-300 shadow-xs">
               ⚡ In-Memory RAM
             </div>
           </div>
@@ -418,10 +418,10 @@ export default function AiConcentricOrbitShowcase({
       </div>
 
       {/* ========================================================================= */}
-      {/* INTERACTIVE ACTIVE TOOL DETAIL CARD (LIGHT THEME)                         */}
+      {/* INTERACTIVE ACTIVE TOOL DETAIL CARD                                       */}
       {/* ========================================================================= */}
-      <div className="mt-6 pt-5 border-t border-slate-200/80 relative z-10 max-w-2xl mx-auto">
-        <div className="bg-slate-50/90 rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm transition-all">
+      <div className="mt-6 pt-5 border-t border-slate-200/80 dark:border-slate-800 relative z-10 max-w-2xl mx-auto">
+        <div className="bg-slate-50/90 dark:bg-slate-900/90 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-800 shadow-sm transition-all">
           <div className="flex items-start justify-between gap-3 flex-wrap sm:flex-nowrap">
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-lg sm:text-xl shrink-0 bg-gradient-to-br ${selectedTool.badgeBg} text-white shadow-md`}>
@@ -429,17 +429,17 @@ export default function AiConcentricOrbitShowcase({
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-sm sm:text-base font-extrabold text-[#0F172A]">
+                  <h3 className="text-sm sm:text-base font-extrabold text-[#0F172A] dark:text-white">
                     {selectedTool.name}
                   </h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                     {selectedTool.category}
                   </span>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                     {selectedTool.ring === 'inner' ? 'Inner Orbit • Core Engine' : 'Outer Orbit • Extension'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
                   {selectedTool.description}
                 </p>
               </div>
@@ -447,20 +447,20 @@ export default function AiConcentricOrbitShowcase({
           </div>
 
           {/* Quick-Scan Capability Pills */}
-          <div className="mt-3.5 pt-3 border-t border-slate-200/80 flex flex-wrap gap-1.5">
+          <div className="mt-3.5 pt-3 border-t border-slate-200/80 dark:border-slate-800 flex flex-wrap gap-1.5">
             {selectedTool.pills.map((pill, i) => (
               <span
                 key={i}
-                className="text-[10.5px] font-semibold px-2.5 py-1 rounded-lg bg-white text-slate-700 border border-slate-200 flex items-center gap-1 shadow-2xs"
+                className="text-[10.5px] font-semibold px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 flex items-center gap-1 shadow-2xs"
               >
                 {pill}
               </span>
             ))}
           </div>
 
-          <div className="mt-2.5 text-[11px] text-slate-500 flex items-center justify-between">
+          <div className="mt-2.5 text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span>💡 Tip: Click or tap any badge along the orbital rings to inspect each tool</span>
-            <span className="text-emerald-700 font-semibold hidden sm:inline">Active Feature</span>
+            <span className="text-emerald-700 dark:text-emerald-400 font-semibold hidden sm:inline">Active Feature</span>
           </div>
         </div>
       </div>
@@ -470,7 +470,7 @@ export default function AiConcentricOrbitShowcase({
         <button
           type="button"
           onClick={() => setShowAllGrid(!showAllGrid)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 border border-slate-200 transition cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition cursor-pointer"
         >
           <span>{showAllGrid ? 'Hide 8-Tool Grid' : 'View All 8 Tools in Grid'}</span>
           {showAllGrid ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -478,7 +478,7 @@ export default function AiConcentricOrbitShowcase({
       </div>
 
       {/* ========================================================================= */}
-      {/* EXPANDABLE ALL 8 TOOLS COMPREHENSIVE GRID VIEW (LIGHT THEME)               */}
+      {/* EXPANDABLE ALL 8 TOOLS COMPREHENSIVE GRID VIEW                             */}
       {/* ========================================================================= */}
       {showAllGrid && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 pt-6 animate-fade-in">
@@ -486,10 +486,10 @@ export default function AiConcentricOrbitShowcase({
             <div
               key={tool.id}
               onClick={() => setSelectedTool(tool)}
-              className={`bg-white rounded-3xl p-5 border transition-all duration-300 group flex flex-col justify-between cursor-pointer ${
+              className={`bg-white dark:bg-slate-900 rounded-3xl p-5 border transition-all duration-300 group flex flex-col justify-between cursor-pointer ${
                 selectedTool.id === tool.id
                   ? 'border-emerald-500 ring-2 ring-emerald-500/20 shadow-md -translate-y-1'
-                  : 'border-[#E7E9EE] shadow-xs hover:border-emerald-400 hover:shadow-md hover:-translate-y-1'
+                  : 'border-[#E7E9EE] dark:border-slate-800 shadow-xs hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md hover:-translate-y-1'
               }`}
             >
               <div>
@@ -500,25 +500,25 @@ export default function AiConcentricOrbitShowcase({
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-1 flex-wrap">
-                      <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
+                      <h3 className="text-sm font-bold text-[#0F172A] dark:text-white leading-snug">
                         {tool.name}
                       </h3>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                         {tool.category}
                       </span>
                     </div>
-                    <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
+                    <p className="text-xs text-[#7C8A9A] dark:text-slate-400 mt-1 leading-relaxed">
                       {tool.description}
                     </p>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
+              <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 dark:border-slate-800 flex flex-wrap gap-1.5">
                 {tool.pills.map((pill, pi) => (
                   <span
                     key={pi}
-                    className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200/60"
+                    className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700"
                   >
                     {pill}
                   </span>

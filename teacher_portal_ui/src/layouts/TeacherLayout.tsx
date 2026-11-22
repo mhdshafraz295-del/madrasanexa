@@ -25,6 +25,7 @@ import { authApi, profileApi, notificationsApi, resolveAssetUrl } from '../servi
 import { teacherAiService } from '../services/ai.service';
 import { TEACHER_NAV_ITEMS, type TeacherNavItem as NavItem } from '../components/layout/TeacherNavigation';
 import NotificationDrawer from '../components/notifications/NotificationDrawer';
+import ThemeToggle from '../components/common/ThemeToggle';
 import AiRobotMascot from '../components/ai/AiRobotMascot';
 import GlobalAiCopilotDrawer from '../components/ai/GlobalAiCopilotDrawer';
 
@@ -196,6 +197,7 @@ export default function TeacherLayout() {
         </div>
 
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <ThemeToggle compact />
           <button
             type="button"
             onClick={() => setIsDrawerOpen(true)}
@@ -391,6 +393,7 @@ export default function TeacherLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap justify-end">
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => setIsDrawerOpen(true)}

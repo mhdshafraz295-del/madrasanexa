@@ -36,6 +36,7 @@ import {
   Lock,
 } from 'lucide-react';
 import AnnouncementBell from '../components/announcement/AnnouncementBell';
+import ThemeToggle from '../components/common/ThemeToggle';
 import { aiService } from '../services/ai.service';
 import AiRobotMascot from '../components/ai/AiRobotMascot';
 import GlobalAiCopilotDrawer from '../components/ai/GlobalAiCopilotDrawer';
@@ -127,6 +128,7 @@ export default function MadrasaAdminLayout() {
           </div>
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <ThemeToggle compact />
           <AnnouncementBell />
           {isExpiringSoon && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
@@ -353,6 +355,7 @@ export default function MadrasaAdminLayout() {
             <div className="text-sm font-bold text-[#0F172A] truncate">Madrasa Administrative Workspace</div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0 flex-wrap justify-end">
+            <ThemeToggle />
             <AnnouncementBell />
             {isExpiringSoon && (
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200 shrink-0">

@@ -80,9 +80,10 @@ export default function SuperAdminAiSubscriptionsPage() {
     try {
       setLoadingMadrasas(true);
       const res = await apiClient.get('/super-admin/madrasas', {
-        params: { limit: 100 },
+        params: { limit: 100, pageSize: 100 },
       });
-      setMadrasas(res.data?.data?.madrasas || res.data?.data || []);
+      const list = res.data?.data?.madrasas || res.data?.data || [];
+      setMadrasas(list);
     } catch (err) {
       console.error('Failed to load madrasas:', err);
     } finally {
@@ -157,16 +158,49 @@ export default function SuperAdminAiSubscriptionsPage() {
     }
   };
 
-  // Handle Direct Madrasa AI Toggle
+  // Handle Direct Madrasa AI Toggle with Optimistic State Update
   const handleToggleMadrasa = async (madrasa: any, enabled: boolean) => {
     setTogglingId(madrasa.id);
+    const expectedExpiry = enabled
+      ? (madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) > new Date()
+          ? madrasa.aiExpiresAt
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
+      : madrasa.aiExpiresAt;
+
+    // 1. Optimistic UI Update immediately reflected in table
+    setMadrasas((prev) =>
+      prev.map((m) =>
+        m.id === madrasa.id
+          ? {
+              ...m,
+              aiEnabled: enabled,
+              aiExpiresAt: expectedExpiry,
+            }
+          : m
+      )
+    );
+
     try {
-      await aiService.toggleMadrasaAi(madrasa.id, {
+      const res = await aiService.toggleMadrasaAi(madrasa.id, {
         enabled,
         note: `Manual toggle by Super Admin on ${new Date().toLocaleDateString()}`,
       });
-      loadMadrasas();
+      // 2. Sync with server data
+      if (res?.data) {
+        setMadrasas((prev) =>
+          prev.map((m) => (m.id === madrasa.id ? { ...m, ...res.data } : m))
+        );
+      }
+      await loadMadrasas();
     } catch (err: any) {
+      // Revert optimistic update on error
+      setMadrasas((prev) =>
+        prev.map((m) =>
+          m.id === madrasa.id
+            ? { ...m, aiEnabled: madrasa.aiEnabled, aiExpiresAt: madrasa.aiExpiresAt }
+            : m
+        )
+      );
       alert(err.response?.data?.message || err.message || 'Failed to update AI access.');
     } finally {
       setTogglingId(null);

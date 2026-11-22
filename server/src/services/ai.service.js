@@ -617,11 +617,7 @@ export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adm
     },
   });
 
-  return {
-    ...updated,
-    monthlyPrice: Number(updated.monthlyPrice),
-    yearlyPrice: Number(updated.yearlyPrice),
-  };
+  return updated;
 }
 
 /**
@@ -889,15 +885,16 @@ export async function generatePoster({
     throw new Error('Cloudflare Workers AI credentials are not configured.');
   }
 
-  // Construct visual prompt
+  // Construct clean textless Islamic background visual prompt
   const cleanTitle = title.trim();
   const visualPrompt = [
-    `Professional Islamic event announcement poster`,
-    `Title: "${cleanTitle}"`,
-    category ? `Category: ${category}` : '',
-    madrasaName ? `Institution: ${madrasaName}` : '',
-    themePrompt ? `Style theme: ${themePrompt}` : 'Elegant emerald green and gold Islamic geometric ornamentation, dignified typography, archway arabesque motifs, warm ambient lighting, highly detailed vector poster, 8k resolution, photorealistic masterpiece',
-    'High contrast, clean composition, Islamic cultural dignity',
+    'Clean textless ornate Islamic event background poster artwork',
+    'Luxurious emerald green, royal navy and gold Islamic geometric border frame',
+    'Grand architectural Islamic horseshoe archway and intricate arabesque filigree',
+    'Open soft central copy-safe space for typography overlay',
+    'Subtle ambient mosque minaret silhouettes in distant background, majestic spiritual lighting, soft specular golden glows',
+    themePrompt ? `Custom style: ${themePrompt}` : 'High-end Islamic cultural aesthetics, ultra-detailed 8k vector finish, symmetrical composition',
+    'STRICTLY NO TEXT, NO LETTERS, NO TYPOGRAPHY, NO WORDS, NO WATERMARKS, NO CALLIGRAPHY, text-free background template',
   ]
     .filter(Boolean)
     .join(', ');
@@ -969,12 +966,17 @@ export async function generatePoster({
 
   return {
     imageDataUrl: base64Image,
+    backgroundDataUrl: base64Image,
     modelUsed,
     title: cleanTitle,
-    category,
-    dateText,
-    venue,
-    madrasaName,
+    eventTitle: cleanTitle,
+    category: category || 'Islamic Event',
+    dateText: dateText || '',
+    dateTime: dateText || '',
+    venue: venue || '',
+    madrasaName: madrasaName || 'MadrasaNexa Islamic Academy',
+    bismillahLine: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+    language: language || 'English',
   };
 }
 

@@ -42,12 +42,17 @@ export interface LessonPlanResult {
 
 export interface PosterGenerationResult {
   imageDataUrl: string;
+  backgroundDataUrl?: string;
   modelUsed: string;
   title: string;
+  eventTitle?: string;
   category: string;
   dateText?: string;
+  dateTime?: string;
   venue?: string;
   madrasaName?: string;
+  bismillahLine?: string;
+  language?: string;
 }
 
 export interface TranslationResult {

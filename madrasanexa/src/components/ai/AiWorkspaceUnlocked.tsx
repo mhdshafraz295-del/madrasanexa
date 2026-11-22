@@ -1,26 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Sparkles,
+  Paperclip,
+  ArrowUp,
   FileText,
   Clock,
   Image as ImageIcon,
   Languages,
-  Upload,
   Printer,
   Copy,
   Check,
-  Download,
   RefreshCw,
-  AlertCircle,
-  ArrowRightLeft,
-  ChevronLeft,
+  Plus,
+  X,
   Megaphone,
+  BookOpen,
   Mic,
   Layers,
-  BookOpen,
 } from 'lucide-react';
-import { aiService, type AiStatusResponse } from '../../services/ai.service';
+import { aiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
+import PosterCanvasRenderer from './PosterCanvasRenderer';
+
+export type ToolMode =
+  | 'auto'
+  | 'exam'
+  | 'lesson'
+  | 'poster'
+  | 'translate'
+  | 'circular'
+  | 'hifz'
+  | 'speech'
+  | 'summarizer';
+
+interface ChatMessage {
+  id: string;
+  sender: 'user' | 'assistant';
+  timestamp: Date;
+  content: string;
+  mode: ToolMode;
+  file?: {
+    name: string;
+    size: number;
+  };
+  posterData?: PosterGenerationResult;
+  isStreaming?: boolean;
+}
 
 interface AiWorkspaceUnlockedProps {
   statusData: AiStatusResponse;
@@ -28,70 +53,8 @@ interface AiWorkspaceUnlockedProps {
   isTeacher?: boolean;
 }
 
-// =========================================================================
-// AI Pulsing Sparkle Loader with Rotating Status Messages
-// =========================================================================
-function AiSparkleLoader({
-  title,
-  messages,
-}: {
-  title: string;
-  messages: string[];
-}) {
-  const [msgIndex, setMsgIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMsgIndex((prev) => (prev + 1) % messages.length);
-    }, 2400);
-    return () => clearInterval(interval);
-  }, [messages.length]);
-
-  return (
-    <div className="py-12 px-4 flex flex-col items-center justify-center text-center">
-      {/* 3D Thinking AI Robot Mascot with Pulsing Emerald Aura */}
-      <div className="relative mb-5 flex flex-col items-center">
-        <div className="absolute -inset-4 rounded-full bg-[#37C6A3]/20 blur-xl animate-pulse pointer-events-none" />
-        <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
-          <AiRobotMascot variant="thinking" className="w-full h-full drop-shadow-xl" />
-        </div>
-        <span className="absolute bottom-1 right-2 flex h-4 w-4">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
-          <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white" />
-        </span>
-      </div>
-
-      <h4 className="text-sm sm:text-base font-extrabold text-[#0F172A] tracking-tight">{title}</h4>
-
-      {/* Rotating Status Message */}
-      <div className="h-6 mt-2 flex items-center justify-center overflow-hidden">
-        <p key={msgIndex} className="text-xs font-semibold text-emerald-700 animate-fade-in transition-all">
-          ✨ {messages[msgIndex]}
-        </p>
-      </div>
-
-      {/* Indeterminate Gradient Progress Bar */}
-      <div className="w-56 bg-slate-100 rounded-full h-1.5 mt-4 overflow-hidden border border-slate-200">
-        <div className="h-full bg-gradient-to-r from-emerald-500 via-[#37C6A3] to-teal-400 rounded-full animate-pulse" />
-      </div>
-
-      <span className="text-[10px] text-[#7C8A9A] mt-3">
-        Zero Cloud Storage • Powered by Cloudflare Workers AI
-      </span>
-    </div>
-  );
-}
-
-// =========================================================================
 // Smooth Typewriter / Streamed Text Renderer with Skip Option
-// =========================================================================
-function AiStreamedText({
-  text,
-  onFinished,
-}: {
-  text: string;
-  onFinished?: () => void;
-}) {
+function AiStreamedText({ text, onFinished }: { text: string; onFinished?: () => void }) {
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
@@ -107,7 +70,7 @@ function AiStreamedText({
     }
 
     setDisplayedLength(0);
-    const chunkSize = Math.max(30, Math.floor(text.length / 75));
+    const chunkSize = Math.max(25, Math.floor(text.length / 80));
     const interval = setInterval(() => {
       setDisplayedLength((prev) => {
         const next = prev + chunkSize;
@@ -118,7 +81,7 @@ function AiStreamedText({
         }
         return next;
       });
-    }, 22);
+    }, 20);
 
     return () => clearInterval(interval);
   }, [text, isSkipped, prefersReducedMotion, onFinished]);
@@ -128,7 +91,7 @@ function AiStreamedText({
   return (
     <div className="relative">
       {!isComplete && !isSkipped && !prefersReducedMotion && (
-        <div className="sticky top-2 z-20 flex justify-end mb-3 print:hidden">
+        <div className="sticky top-2 z-20 flex justify-end mb-2 print:hidden">
           <button
             type="button"
             onClick={() => {
@@ -136,9 +99,9 @@ function AiStreamedText({
               setDisplayedLength(text.length);
               onFinished?.();
             }}
-            className="px-3 py-1.5 min-h-[36px] text-xs font-bold bg-[#0F172A] text-white rounded-xl shadow-md hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
+            className="px-2.5 py-1 text-[11px] font-bold bg-[#0F172A] text-white rounded-lg shadow-sm hover:bg-[#1E293B] flex items-center gap-1 transition cursor-pointer"
           >
-            <span>⏩ Skip to Full Output</span>
+            <span>⏩ Skip to End</span>
           </button>
         </div>
       )}
@@ -153,2415 +116,720 @@ function AiStreamedText({
   );
 }
 
-// =========================================================================
-// Blur-to-Sharp Fade-in Reveal for Generated Posters
-// =========================================================================
-function AiPosterReveal({
-  src,
-  alt,
-}: {
-  src: string;
-  alt: string;
-}) {
-  const [loaded, setLoaded] = useState(false);
-  const prefersReducedMotion =
-    typeof window !== 'undefined' &&
-    window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-
-  return (
-    <div className="relative rounded-2xl overflow-hidden shadow-xl border border-slate-200 max-h-[550px] max-w-md w-full bg-slate-900 mx-auto">
-      <img
-        src={src}
-        alt={alt}
-        onLoad={() => setLoaded(true)}
-        className={`w-full h-auto object-contain transform-gpu transition-all duration-700 ease-out ${
-          loaded || prefersReducedMotion
-            ? 'filter-none opacity-100 scale-100'
-            : 'blur-md opacity-0 scale-95'
-        }`}
-      />
-    </div>
-  );
-}
-
-// =========================================================================
-// Main Workspace Component
-// =========================================================================
 export default function AiWorkspaceUnlocked({
-  statusData,
   onRefresh,
 }: AiWorkspaceUnlockedProps) {
-  const [activeTab, setActiveTab] = useState<
-    'exam' | 'lesson' | 'poster' | 'translate' | 'circular' | 'hifz' | 'speech' | 'summarizer'
-  >('exam');
-  const [mobileView, setMobileView] = useState<'config' | 'preview'>('config');
-  const [copiedText, setCopiedText] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputPrompt, setInputPrompt] = useState('');
+  const [toolMode, setToolMode] = useState<ToolMode>('auto');
+  const [language, setLanguage] = useState<'English' | 'Tamil' | 'Arabic' | 'Bilingual (Tamil + English)'>('English');
+  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Status cycling messages
-  const examMessages = [
-    'Parsing PDF syllabus strictly in RAM memory (0 MB saved)...',
-    'Analyzing curriculum objectives & Islamic concepts...',
-    'Generating multiple choice questions with authentic options...',
-    'Drafting structured short questions & essay rubrics...',
-    'Synthesizing comprehensive answer keys with Quran/Hadith references...',
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const cyclingMessages = [
+    'Synthesizing Islamic curriculum & authentic proofs...',
+    'Analyzing requirements strictly in RAM memory (0 MB stored)...',
+    'Drafting pedagogical Islamic content with structured headings...',
+    'Polishing typography & terminology (Tamil, English & Arabic)...',
   ];
+  const [msgIdx, setMsgIdx] = useState(0);
 
-  const lessonMessages = [
-    'Structuring 30-minute Islamic lesson pedagogy...',
-    'Crafting 5-minute engaging Starter Hook...',
-    'Designing 15-minute Core Instruction with authentic proofs...',
-    'Creating 7-minute interactive student activity...',
-    'Synthesizing blackboard summary flow and plenary...',
-  ];
+  useEffect(() => {
+    if (!isGenerating) return;
+    const interval = setInterval(() => {
+      setMsgIdx((prev) => (prev + 1) % cyclingMessages.length);
+    }, 2400);
+    return () => clearInterval(interval);
+  }, [isGenerating, cyclingMessages.length]);
 
-  const posterMessages = [
-    'Analyzing event details & title typography...',
-    'Composing Islamic geometric patterns & ornamental arches...',
-    'Rendering calligraphy & aesthetic palette with Flux 1 Schnell...',
-    'Synthesizing crisp visual artwork directly in memory...',
-  ];
+  useEffect(() => {
+    if (messages.length > 0) {
+      chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isGenerating]);
 
-  const translateMessages = [
-    'Preserving Islamic terminology (Du\'a, Hadith, Salah, Adab)...',
-    'Translating grammatical structures across Tamil, English & Arabic...',
-    'Polishing output for formal circular or lesson distribution...',
-  ];
+  // Handle textarea auto-resize
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputPrompt(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 180)}px`;
+  };
 
-  const circularMessages = [
-    'Composing Islamic greeting & respectful opening (Bismillah, Assalamu Alaikum)...',
-    'Structuring Madrasa announcement details, key dates & venue...',
-    'Applying respectful Islamic etiquette & Du\'a for parents...',
-    'Polishing formatting ready for print and messaging distribution...',
-  ];
-
-  const hifzMessages = [
-    'Selecting Quranic portion for memorization & revision verification...',
-    'Formulating Tajweed rule drills (Makharij, Ghunnah, Idgham, Qalqalah)...',
-    'Building oral recitation rubric & evaluation metrics...',
-    'Generating complete Ustadh grading key with Ayah references...',
-  ];
-
-  const speechMessages = [
-    'Drafting speech opening: Khutbah al-Hajah, Hamd, and Salawat...',
-    'Synthesizing authentic Quranic Ayahs and Sahih Hadith citations...',
-    'Formulating structured speech body with inspiring practical lessons...',
-    'Composing memorable closing call-to-action & heartfelt Du\'a...',
-  ];
-
-  const summaryMessages = [
-    'Parsing PDF textbook chapters strictly in RAM (0 MB saved to disk)...',
-    'Extracting key learning objectives & Islamic core concepts...',
-    'Synthesizing concise study notes and Islamic glossary terms...',
-    'Compiling structured bullet points for Ustadh revision...',
-  ];
-
-  // Tool 1: Exam Generator State
-  const [examFile, setExamFile] = useState<File | null>(null);
-  const [examTopic, setExamTopic] = useState('');
-  const [examSubject, setExamSubject] = useState('Islamic Studies');
-  const [examGrade, setExamGrade] = useState('Grade 6-8 (Middle)');
-  const [examLanguage, setExamLanguage] = useState<'English' | 'Tamil' | 'Arabic' | 'Bilingual (English + Tamil)'>('English');
-  const [examDuration, setExamDuration] = useState('60');
-  const [examMarks, setExamMarks] = useState('50');
-  const [mcqCount, setMcqCount] = useState(5);
-  const [shortCount, setShortCount] = useState(4);
-  const [essayCount, setEssayCount] = useState(2);
-  const [generatingExam, setGeneratingExam] = useState(false);
-  const [generatedExam, setGeneratedExam] = useState<string | null>(null);
-  const [examError, setExamError] = useState<string | null>(null);
-
-  // Tool 2: Ustadh Lesson Planner State
-  const [lessonTopic, setLessonTopic] = useState('');
-  const [lessonSubject, setLessonSubject] = useState('Fiqh & Ahkam');
-  const [lessonGrade, setLessonGrade] = useState('Intermediate');
-  const [lessonDuration, setLessonDuration] = useState('30');
-  const [lessonLanguage, setLessonLanguage] = useState<'English' | 'Tamil' | 'Arabic'>('English');
-  const [generatingLesson, setGeneratingLesson] = useState(false);
-  const [generatedLesson, setGeneratedLesson] = useState<string | null>(null);
-  const [lessonError, setLessonError] = useState<string | null>(null);
-
-  // Tool 3: Poster Maker State
-  const [posterTitle, setPosterTitle] = useState('');
-  const [posterCategory, setPosterCategory] = useState('Hifz Convocation');
-  const [posterDate, setPosterDate] = useState('');
-  const [posterVenue, setPosterVenue] = useState('');
-  const [posterTheme, setPosterTheme] = useState('Classic Emerald Green & Gold Calligraphy Arabesque');
-  const [generatingPoster, setGeneratingPoster] = useState(false);
-  const [generatedPoster, setGeneratedPoster] = useState<{
-    imageDataUrl: string;
-    title: string;
-    modelUsed: string;
-  } | null>(null);
-  const [posterError, setPosterError] = useState<string | null>(null);
-
-  // Tool 4: Multilingual Translator State
-  const [sourceLang, setSourceLang] = useState<'English' | 'Tamil' | 'Arabic'>('English');
-  const [targetLang, setTargetLang] = useState<'Tamil' | 'English' | 'Arabic'>('Tamil');
-  const [inputText, setInputText] = useState('');
-  const [translating, setTranslating] = useState(false);
-  const [translatedResult, setTranslatedResult] = useState<string | null>(null);
-  const [translationError, setTranslationError] = useState<string | null>(null);
-
-  // Tool 5: Parent Circular & Notice Writer State
-  const [circularOccasion, setCircularOccasion] = useState('Jummah Reminder & Student Etiquette');
-  const [circularCustomTopic, setCircularCustomTopic] = useState('');
-  const [circularAudience, setCircularAudience] = useState('Parents of All Students');
-  const [circularLanguage, setCircularLanguage] = useState<'English' | 'Tamil' | 'Arabic' | 'Bilingual (Tamil + English)'>('English');
-  const [circularKeyDates, setCircularKeyDates] = useState('');
-  const [circularSender, setCircularSender] = useState('Madrasa Administration / Principal');
-  const [generatingCircular, setGeneratingCircular] = useState(false);
-  const [generatedCircular, setGeneratedCircular] = useState<string | null>(null);
-  const [circularError, setCircularError] = useState<string | null>(null);
-
-  // Tool 6: Hifz & Tajweed Worksheet Builder State
-  const [hifzPortion, setHifzPortion] = useState('Juz 30 (Amma) - Selected Surahs');
-  const [hifzFocus, setHifzFocus] = useState('Ayah Completion & Memorization Drill');
-  const [hifzGrade, setHifzGrade] = useState('Intermediate Hifz');
-  const [hifzLanguage, setHifzLanguage] = useState<'English' | 'Tamil' | 'Arabic'>('English');
-  const [hifzCount, setHifzCount] = useState(5);
-  const [generatingHifz, setGeneratingHifz] = useState(false);
-  const [generatedHifz, setGeneratedHifz] = useState<string | null>(null);
-  const [hifzError, setHifzError] = useState<string | null>(null);
-
-  // Tool 7: Bayan & Student Speech Writer State
-  const [speechTopic, setSpeechTopic] = useState('Respecting Parents in Islam (Birr al-Walidayn)');
-  const [speechOccasion, setSpeechOccasion] = useState('Morning Assembly Speech (3-5 mins)');
-  const [speechDuration, setSpeechDuration] = useState('5 Minutes');
-  const [speechAudience, setSpeechAudience] = useState('Madrasa Students (All Grades)');
-  const [speechLanguage, setSpeechLanguage] = useState<'English' | 'Tamil' | 'Arabic'>('English');
-  const [generatingSpeech, setGeneratingSpeech] = useState(false);
-  const [generatedSpeech, setGeneratedSpeech] = useState<string | null>(null);
-  const [speechError, setSpeechError] = useState<string | null>(null);
-
-  // Tool 8: PDF Syllabus & Chapter Summarizer State
-  const [summaryFile, setSummaryFile] = useState<File | null>(null);
-  const [summaryTitle, setSummaryTitle] = useState('');
-  const [summaryType, setSummaryType] = useState('Comprehensive Chapter Study Notes & Key Concepts');
-  const [summaryLanguage, setSummaryLanguage] = useState<'English' | 'Tamil' | 'Arabic'>('English');
-  const [generatingSummary, setGeneratingSummary] = useState(false);
-  const [generatedSummary, setGeneratedSummary] = useState<string | null>(null);
-  const [summaryError, setSummaryError] = useState<string | null>(null);
-
-  // Copy helper
-  const handleCopy = (text: string) => {
+  const handleCopyText = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedText(true);
-    setTimeout(() => setCopiedText(false), 2000);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // Print helper for exam paper
-  const printExamPaper = () => {
-    window.print();
-  };
-
-  // Swap translation languages
-  const handleSwapLanguages = () => {
-    const temp = sourceLang;
-    setSourceLang(targetLang as any);
-    setTargetLang(temp as any);
-    if (translatedResult) {
-      setInputText(translatedResult);
-      setTranslatedResult('');
+  const handleNewChat = () => {
+    setMessages([]);
+    setInputPrompt('');
+    setAttachedFile(null);
+    setToolMode('auto');
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
     }
   };
 
-  // Submit Exam Generator
-  const handleGenerateExam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setExamError(null);
-    setGeneratingExam(true);
-    setMobileView('preview');
-    try {
-      const formData = new FormData();
-      if (examFile) formData.append('file', examFile);
-      formData.append('topic', examTopic);
-      formData.append('subject', examSubject);
-      formData.append('gradeLevel', examGrade);
-      formData.append('language', examLanguage);
-      formData.append('durationMinutes', examDuration);
-      formData.append('totalMarks', examMarks);
-      formData.append('mcqCount', String(mcqCount));
-      formData.append('shortCount', String(shortCount));
-      formData.append('essayCount', String(essayCount));
+  const handleSubmitPrompt = async (promptOverride?: string, modeOverride?: ToolMode, fileOverride?: File | null) => {
+    const query = (promptOverride !== undefined ? promptOverride : inputPrompt).trim();
+    const file = fileOverride !== undefined ? fileOverride : attachedFile;
+    const currentMode = modeOverride || toolMode;
 
-      const res = await aiService.generateExamPaper(formData);
-      setGeneratedExam(res.examContent);
+    if (!query && !file) return;
+
+    const userMsgId = Date.now().toString();
+    const userMsg: ChatMessage = {
+      id: userMsgId,
+      sender: 'user',
+      timestamp: new Date(),
+      content: query || (file ? `Attached file: ${file.name}` : ''),
+      mode: currentMode,
+      file: file ? { name: file.name, size: file.size } : undefined,
+    };
+
+    const assistantMsgId = (Date.now() + 1).toString();
+    const assistantMsg: ChatMessage = {
+      id: assistantMsgId,
+      sender: 'assistant',
+      timestamp: new Date(),
+      content: '',
+      mode: currentMode,
+      isStreaming: true,
+    };
+
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setInputPrompt('');
+    setAttachedFile(null);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+    }
+    setIsGenerating(true);
+
+    try {
+      let resolvedMode = currentMode;
+      if (resolvedMode === 'auto') {
+        const lower = query.toLowerCase();
+        if (file || lower.includes('exam') || lower.includes('question paper') || lower.includes('test') || lower.includes('mcq')) {
+          resolvedMode = 'exam';
+        } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner') || lower.includes('jalsa poster')) {
+          resolvedMode = 'poster';
+        } else if (lower.startsWith('translate') || lower.includes('translate to')) {
+          resolvedMode = 'translate';
+        } else if (lower.includes('circular') || lower.includes('notice') || lower.includes('parent announcement')) {
+          resolvedMode = 'circular';
+        } else if (lower.includes('hifz') || lower.includes('tajweed') || lower.includes('quran drill')) {
+          resolvedMode = 'hifz';
+        } else if (lower.includes('speech') || lower.includes('bayan') || lower.includes('khutbah') || lower.includes('assembly talk')) {
+          resolvedMode = 'speech';
+        } else if (lower.includes('summar') || lower.includes('study notes')) {
+          resolvedMode = 'summarizer';
+        } else {
+          resolvedMode = 'lesson';
+        }
+      }
+
+      if (resolvedMode === 'poster') {
+        const res = await aiService.generatePoster({
+          title: query || 'Annual Madrasa Event',
+          category: 'Madrasa Event',
+          language,
+        });
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId
+              ? {
+                  ...m,
+                  isStreaming: false,
+                  posterData: res,
+                  content: `Islamic Event Poster Synthesized: "${res.title}"`,
+                }
+              : m
+          )
+        );
+      } else if (resolvedMode === 'exam') {
+        const formData = new FormData();
+        if (file) formData.append('file', file);
+        formData.append('topic', query || 'Islamic Curriculum Examination');
+        formData.append('subject', 'Islamic Studies');
+        formData.append('gradeLevel', 'Standard');
+        formData.append('language', language);
+        formData.append('durationMinutes', '60');
+        formData.append('totalMarks', '50');
+        formData.append('mcqCount', '5');
+        formData.append('shortCount', '4');
+        formData.append('essayCount', '2');
+
+        const res = await aiService.generateExamPaper(formData);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.examContent } : m
+          )
+        );
+      } else if (resolvedMode === 'hifz') {
+        const formData = new FormData();
+        if (file) formData.append('file', file);
+        formData.append(
+          'topic',
+          `Hifz & Tajweed Assessment Worksheet. Context: ${query}. Output sections: 1. Complete the Ayah drill with missing words, 2. Tajweed rule identification, 3. Oral recitation evaluation rubric, 4. Answer key.`
+        );
+        formData.append('subject', 'Hifz & Tajweed Assessment');
+        formData.append('gradeLevel', 'Intermediate');
+        formData.append('language', language);
+        formData.append('durationMinutes', '30');
+        formData.append('totalMarks', '50');
+        formData.append('mcqCount', '2');
+        formData.append('shortCount', '5');
+        formData.append('essayCount', '1');
+
+        const res = await aiService.generateExamPaper(formData);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.examContent } : m
+          )
+        );
+      } else if (resolvedMode === 'translate') {
+        const targetLang = language.includes('Tamil') ? 'Tamil' : language.includes('Arabic') ? 'Arabic' : 'Tamil';
+        const res = await aiService.translateContent({
+          text: query,
+          sourceLanguage: 'English',
+          targetLanguage: targetLang,
+        });
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.translatedText } : m
+          )
+        );
+      } else {
+        const formData = new FormData();
+        if (file) formData.append('file', file);
+
+        let subjectCategory = 'Ustadh 30-Min Lesson Planner';
+        if (resolvedMode === 'circular') subjectCategory = 'Official Madrasa Parent Notice & Circular';
+        else if (resolvedMode === 'speech') subjectCategory = 'Islamic Speech & Bayan Oratory Guide';
+        else if (resolvedMode === 'summarizer') subjectCategory = 'Curriculum Chapter Study Summary & Revision Notes';
+
+        formData.append('topic', query);
+        formData.append('subject', subjectCategory);
+        formData.append('gradeLevel', 'Standard');
+        formData.append('durationMinutes', '30');
+        formData.append('language', language);
+
+        const res = await aiService.generateLessonPlan(formData);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.lessonPlan } : m
+          )
+        );
+      }
     } catch (err: any) {
-      setExamError(err.response?.data?.message || err.message || 'Failed to generate exam paper.');
-    } finally {
-      setGeneratingExam(false);
-    }
-  };
-
-  // Submit Lesson Planner
-  const handleGenerateLesson = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLessonError(null);
-    setGeneratingLesson(true);
-    setMobileView('preview');
-    try {
-      const formData = new FormData();
-      formData.append('topic', lessonTopic);
-      formData.append('subject', lessonSubject);
-      formData.append('gradeLevel', lessonGrade);
-      formData.append('durationMinutes', lessonDuration);
-      formData.append('language', lessonLanguage);
-
-      const res = await aiService.generateLessonPlan(formData);
-      setGeneratedLesson(res.lessonPlan);
-    } catch (err: any) {
-      setLessonError(err.response?.data?.message || err.message || 'Failed to generate lesson plan.');
-    } finally {
-      setGeneratingLesson(false);
-    }
-  };
-
-  // Submit Poster Maker
-  const handleGeneratePoster = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPosterError(null);
-    setGeneratingPoster(true);
-    setMobileView('preview');
-    try {
-      const res = await aiService.generatePoster({
-        title: posterTitle,
-        category: posterCategory,
-        dateText: posterDate,
-        venue: posterVenue,
-        themePrompt: posterTheme,
-      });
-      setGeneratedPoster(res);
-    } catch (err: any) {
-      setPosterError(err.response?.data?.message || err.message || 'Failed to generate poster.');
-    } finally {
-      setGeneratingPoster(false);
-    }
-  };
-
-  // Submit Translator
-  const handleTranslate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTranslationError(null);
-    setTranslating(true);
-    try {
-      const res = await aiService.translateContent({
-        text: inputText,
-        sourceLanguage: sourceLang,
-        targetLanguage: targetLang,
-      });
-      setTranslatedResult(res.translatedText);
-    } catch (err: any) {
-      setTranslationError(err.response?.data?.message || err.message || 'Failed to translate text.');
-    } finally {
-      setTranslating(false);
-    }
-  };
-
-  // Submit Circular Writer
-  const handleGenerateCircular = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setCircularError(null);
-    setGeneratingCircular(true);
-    setMobileView('preview');
-    try {
-      const formData = new FormData();
-      formData.append(
-        'topic',
-        `Official Madrasa Parent Circular on "${circularOccasion}". Key Dates/Deadlines: ${circularKeyDates || 'Standard school hours'}. Sender: ${circularSender}. Important notes: ${circularCustomTopic || 'Ensure students maintain strict Islamic punctuality and adab.'}. Format: Formal Madrasa letterhead with Bismillah, respectful opening, clear schedule, rules, and closing Du'a.`
+      const errorMsg = err.response?.data?.message || err.message || 'Generation failed. Please try again.';
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMsgId
+            ? { ...m, isStreaming: false, content: `⚠️ Request failed: ${errorMsg}` }
+            : m
+        )
       );
-      formData.append('subject', 'Official Parent Notice & Circular');
-      formData.append('gradeLevel', circularAudience);
-      formData.append('durationMinutes', '0');
-      formData.append('language', circularLanguage);
-
-      const res = await aiService.generateLessonPlan(formData);
-      setGeneratedCircular(res.lessonPlan);
-    } catch (err: any) {
-      setCircularError(err.response?.data?.message || err.message || 'Failed to generate circular notice.');
     } finally {
-      setGeneratingCircular(false);
+      setIsGenerating(false);
     }
   };
 
-  // Submit Hifz Worksheet Builder
-  const handleGenerateHifz = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setHifzError(null);
-    setGeneratingHifz(true);
-    setMobileView('preview');
-    try {
-      const formData = new FormData();
-      formData.append(
-        'topic',
-        `Hifz & Tajweed Assessment Worksheet. Quran Portion: ${hifzPortion}. Evaluation Focus: ${hifzFocus}. Generate: 1. Complete the Ayah drills with missing words, 2. Tajweed rule identification (Ghunnah, Ikhfa, Idgham, Qalqalah), 3. Oral recitation evaluation rubric with marking checklist, 4. Full Ustadh answer key.`
-      );
-      formData.append('subject', 'Hifz & Tajweed Assessment');
-      formData.append('gradeLevel', hifzGrade);
-      formData.append('language', hifzLanguage);
-      formData.append('durationMinutes', '30');
-      formData.append('totalMarks', '50');
-      formData.append('mcqCount', '2');
-      formData.append('shortCount', String(hifzCount));
-      formData.append('essayCount', '1');
-
-      const res = await aiService.generateExamPaper(formData);
-      setGeneratedHifz(res.examContent);
-    } catch (err: any) {
-      setHifzError(err.response?.data?.message || err.message || 'Failed to generate Hifz worksheet.');
-    } finally {
-      setGeneratingHifz(false);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmitPrompt();
     }
   };
 
-  // Submit Speech Writer
-  const handleGenerateSpeech = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSpeechError(null);
-    setGeneratingSpeech(true);
-    setMobileView('preview');
-    try {
-      const formData = new FormData();
-      formData.append(
-        'topic',
-        `Islamic Speech & Bayan on "${speechTopic}". Occasion: ${speechOccasion}. Duration: ${speechDuration}. Target Audience: ${speechAudience}. Include: Proper Arabic Khutbah/Hamd opening, 2 authentic Quranic Ayahs with meaning, 1-2 Sahih Hadiths with context, 3 practical actionable takeaways for daily life, and inspiring closing Du'a.`
-      );
-      formData.append('subject', 'Islamic Speech & Bayan Oratory');
-      formData.append('gradeLevel', speechAudience);
-      formData.append('durationMinutes', speechDuration.split(' ')[0] || '5');
-      formData.append('language', speechLanguage);
+  const quickPills = [
+    {
+      label: '📝 Exam Paper from PDF',
+      action: () => {
+        setToolMode('exam');
+        fileInputRef.current?.click();
+      },
+    },
+    {
+      label: '⏱️ 30-Min Lesson Plan',
+      action: () => {
+        setToolMode('lesson');
+        handleSubmitPrompt(
+          'Create a 30-minute structured Islamic lesson plan on Fiqh of Taharah and Salah with classroom hook, exercises, and blackboard summary.',
+          'lesson'
+        );
+      },
+    },
+    {
+      label: '🎨 Hifz Graduation Event Poster',
+      action: () => {
+        setToolMode('poster');
+        handleSubmitPrompt(
+          'Annual Hifz Convocation Ceremony and Quran Graduation Celebration on Friday 15th Ramadan at Madrasa Main Auditorium Hall.',
+          'poster'
+        );
+      },
+    },
+    {
+      label: '📢 Parent Notice for Ramadan',
+      action: () => {
+        setToolMode('circular');
+        handleSubmitPrompt(
+          'Draft an official parent circular announcing Madrasa Ramadan school timings, Taraweeh attendance guidelines, and Eid vacation schedule.',
+          'circular'
+        );
+      },
+    },
+    {
+      label: '📖 Hifz & Tajweed Quiz (Juz 30)',
+      action: () => {
+        setToolMode('hifz');
+        handleSubmitPrompt(
+          'Create a Hifz & Tajweed assessment drill worksheet for Juz 30 (Surah An-Naba to An-Nas) with missing Ayah words and recitation rubric.',
+          'hifz'
+        );
+      },
+    },
+    {
+      label: '🎙️ Assembly Speech on Parents',
+      action: () => {
+        setToolMode('speech');
+        handleSubmitPrompt(
+          'Write an inspiring 5-minute Madrasa morning assembly speech on Respecting Parents (Birr al-Walidayn) with authentic Quran and Hadith citations.',
+          'speech'
+        );
+      },
+    },
+    {
+      label: '⚡ Summarize Textbook Chapter',
+      action: () => {
+        setToolMode('summarizer');
+        fileInputRef.current?.click();
+      },
+    },
+    {
+      label: '🌐 Translate to Tamil & Arabic',
+      action: () => {
+        setToolMode('translate');
+        handleSubmitPrompt(
+          'Translate this Madrasa notice into Tamil and Arabic preserving Islamic terminology: Assalamu Alaikum, please be informed that school fees are due before the 10th of this month.',
+          'translate'
+        );
+      },
+    },
+  ];
 
-      const res = await aiService.generateLessonPlan(formData);
-      setGeneratedSpeech(res.lessonPlan);
-    } catch (err: any) {
-      setSpeechError(err.response?.data?.message || err.message || 'Failed to generate Islamic speech.');
-    } finally {
-      setGeneratingSpeech(false);
-    }
-  };
-
-  // Submit Summarizer
-  const handleGenerateSummary = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSummaryError(null);
-    setGeneratingSummary(true);
-    setMobileView('preview');
-    try {
-      const formData = new FormData();
-      if (summaryFile) formData.append('file', summaryFile);
-      formData.append(
-        'topic',
-        `Curriculum Chapter Study Summary & Revision Notes on "${summaryTitle || 'Uploaded Islamic Textbook Chapter'}". Focus: ${summaryType}. Extract: 1. Core Learning Objectives, 2. Islamic Glossary & Terminology, 3. Comprehensive Chapter Summary in structured bullet points, 4. 5 Essential revision questions for students.`
-      );
-      formData.append('subject', 'Islamic Textbook Chapter Summary');
-      formData.append('gradeLevel', 'All Levels');
-      formData.append('durationMinutes', '15');
-      formData.append('language', summaryLanguage);
-
-      const res = await aiService.generateLessonPlan(formData);
-      setGeneratedSummary(res.lessonPlan);
-    } catch (err: any) {
-      setSummaryError(err.response?.data?.message || err.message || 'Failed to generate chapter summary.');
-    } finally {
-      setGeneratingSummary(false);
-    }
-  };
-
-  const scrollToWorkspaceTop = () => {
-    const el = document.getElementById('ai-workspace-top');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  const modeLabels: Record<ToolMode, { label: string; icon: React.ReactNode }> = {
+    auto: { label: '✨ Auto Copilot', icon: <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" /> },
+    exam: { label: '📄 PDF Exam Paper', icon: <FileText className="w-3.5 h-3.5 text-emerald-400" /> },
+    lesson: { label: '⏱️ 30-Min Lesson Plan', icon: <Clock className="w-3.5 h-3.5 text-teal-400" /> },
+    poster: { label: '🎨 Event Poster (Flux)', icon: <ImageIcon className="w-3.5 h-3.5 text-cyan-400" /> },
+    translate: { label: '🌐 3-Language Translator', icon: <Languages className="w-3.5 h-3.5 text-indigo-400" /> },
+    circular: { label: '📢 Parent Circular', icon: <Megaphone className="w-3.5 h-3.5 text-indigo-400" /> },
+    hifz: { label: '📖 Hifz & Tajweed Quiz', icon: <BookOpen className="w-3.5 h-3.5 text-amber-400" /> },
+    speech: { label: '🎙️ Bayan / Speech', icon: <Mic className="w-3.5 h-3.5 text-emerald-400" /> },
+    summarizer: { label: '⚡ PDF Summarizer', icon: <Layers className="w-3.5 h-3.5 text-teal-400" /> },
   };
 
   return (
-    <div id="ai-workspace-top" className="max-w-7xl mx-auto space-y-6 pb-12 relative">
-      {/* Component-scoped GPU-accelerated Keyframe Styles */}
-      <style>{`
-        @keyframes orb-halo-ripple {
-          0% { transform: scale(0.92); opacity: 0.8; }
-          50% { transform: scale(1.28); opacity: 0.25; }
-          100% { transform: scale(1.48); opacity: 0; }
-        }
-        @keyframes orb-float-gentle {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-4px); }
-        }
-        .animate-orb-halo {
-          animation: orb-halo-ripple 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-        .animate-orb-float {
-          animation: orb-float-gentle 4s ease-in-out infinite;
-        }
-        /* 3D AI Robot Mascot Keyframe Animations */
-        @keyframes robot-float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-7px); }
-        }
-        @keyframes robot-wave {
-          0% { transform: rotate(0deg); }
-          20% { transform: rotate(14deg); }
-          40% { transform: rotate(-8deg); }
-          60% { transform: rotate(12deg); }
-          80% { transform: rotate(-4deg); }
-          100% { transform: rotate(0deg); }
-        }
-        @keyframes robot-think {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-3px) rotate(2deg); }
-        }
-        @keyframes robot-blink {
-          0%, 92%, 96%, 100% { transform: scaleY(1); }
-          94% { transform: scaleY(0.1); }
-        }
-        @keyframes robot-pulse {
-          0%, 100% { transform: scale(1); opacity: 0.8; }
-          50% { transform: scale(1.15); opacity: 1; }
-        }
-        .animate-robot-float {
-          animation: robot-float 3.5s ease-in-out infinite;
-        }
-        .animate-robot-wave {
-          animation: robot-wave 2.2s ease-in-out infinite;
-        }
-        .animate-robot-think {
-          animation: robot-think 3s ease-in-out infinite;
-        }
-        .animate-robot-blink {
-          animation: robot-blink 4.5s ease-in-out infinite;
-        }
-        .animate-robot-pulse {
-          animation: robot-pulse 2s ease-in-out infinite;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .animate-orb-halo,
-          .animate-orb-float,
-          .animate-robot-float,
-          .animate-robot-wave,
-          .animate-robot-think,
-          .animate-robot-blink,
-          .animate-robot-pulse {
-            animation: none !important;
+    <div className="max-w-4xl mx-auto space-y-6 pb-20 relative min-h-[calc(100vh-140px)] flex flex-col justify-between">
+      {/* Hidden File Input for PDF uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".pdf"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) {
+            setAttachedFile(f);
+            if (toolMode === 'auto') setToolMode('exam');
           }
-        }
-      `}</style>
+        }}
+      />
 
-      {/* Workspace Header */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
-            <Sparkles className="w-6 h-6 text-[#37C6A3]" />
+      {/* Top Workspace Header Bar */}
+      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-[#E7E9EE] shadow-xs flex items-center justify-between gap-3 print:hidden">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
+            <AiRobotMascot variant="avatar" size={26} />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-lg sm:text-xl font-extrabold text-[#0F172A] tracking-tight">
+              <h1 className="text-base sm:text-lg font-extrabold text-[#0F172A] tracking-tight">
                 MadrasaNexa Smart AI Assistant
               </h1>
-              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
-                Active Subscription
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                Active Tenant
               </span>
             </div>
-            <p className="text-xs text-[#7C8A9A] mt-0.5">
-              Isolated Islamic Copilot • Zero database queries • In-memory RAM processing
+            <p className="text-[11px] text-[#7C8A9A]">
+              Isolated Copilot • 0 MB storage • In-memory RAM processing
             </p>
           </div>
         </div>
 
-        {/* Expiry Pill & Refresh */}
-        <div className="flex items-center gap-3">
-          {statusData.aiExpiresAt && (
-            <div className="text-right">
-              <div className="text-[10px] text-[#7C8A9A] uppercase tracking-wider font-bold">Expires On</div>
-              <div className="text-xs font-mono font-bold text-[#0F172A]">
-                {new Date(statusData.aiExpiresAt).toLocaleDateString()}
-                {statusData.daysRemaining !== null && (
-                  <span className="text-[#37C6A3] ml-1">({statusData.daysRemaining}d left)</span>
-                )}
-              </div>
-            </div>
+        <div className="flex items-center gap-2">
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] transition flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>New Chat</span>
+            </button>
           )}
+
           {onRefresh && (
             <button
               onClick={onRefresh}
-              className="p-2.5 min-h-[44px] min-w-[44px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center"
-              title="Refresh AI Status"
-              aria-label="Refresh AI Status"
+              className="p-2 min-h-[38px] min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center"
+              title="Refresh Status"
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-2 overflow-x-auto print:hidden">
-        <button
-          onClick={() => {
-            setActiveTab('exam');
-            setMobileView(generatedExam ? 'preview' : 'config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'exam'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <FileText className="w-4 h-4 text-[#37C6A3]" />
-          <span>Zero-Storage PDF Exam Generator</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab('lesson');
-            setMobileView(generatedLesson ? 'preview' : 'config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'lesson'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Clock className="w-4 h-4 text-teal-400" />
-          <span>Ustadh 30-Min Lesson Planner</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab('poster');
-            setMobileView(generatedPoster ? 'preview' : 'config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'poster'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <ImageIcon className="w-4 h-4 text-emerald-400" />
-          <span>Madrasa Poster Maker (Flux)</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab('translate');
-            setMobileView('config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'translate'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Languages className="w-4 h-4 text-teal-300" />
-          <span>Multilingual Translator</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab('circular');
-            setMobileView(generatedCircular ? 'preview' : 'config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'circular'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Megaphone className="w-4 h-4 text-indigo-400" />
-          <span>Parent Circular Writer</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab('hifz');
-            setMobileView(generatedHifz ? 'preview' : 'config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'hifz'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <BookOpen className="w-4 h-4 text-amber-400" />
-          <span>Hifz & Tajweed Builder</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab('speech');
-            setMobileView(generatedSpeech ? 'preview' : 'config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'speech'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Mic className="w-4 h-4 text-[#37C6A3]" />
-          <span>Bayan & Speech Writer</span>
-        </button>
-
-        <button
-          onClick={() => {
-            setActiveTab('summarizer');
-            setMobileView(generatedSummary ? 'preview' : 'config');
-          }}
-          className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-2xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
-            activeTab === 'summarizer'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Layers className="w-4 h-4 text-emerald-400" />
-          <span>PDF Syllabus Summarizer</span>
-        </button>
-      </div>
-
       {/* ========================================================================= */}
-      {/* TAB 1: ZERO-STORAGE PDF EXAM GENERATOR                                     */}
+      {/* 1. WELCOME HERO STATE (WHEN NO MESSAGES YET)                                */}
       {/* ========================================================================= */}
-      {activeTab === 'exam' && (
-        <div>
-          {/* Mobile Segemented Switch (< 1024px) */}
-          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileView('config')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'config'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚙️ Configuration</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'preview'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>📄 Exam Preview</span>
-              {generatingExam && (
-                <span className="w-2 h-2 rounded-full bg-[#37C6A3] animate-pulse" />
-              )}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Controls Column */}
-            <div
-              className={`${
-                mobileView === 'config' ? 'block' : 'hidden'
-              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-sm space-y-4 print:hidden`}
-            >
-              <div className="border-b border-[#E7E9EE] pb-3">
-                <h2 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#37C6A3]" />
-                  <span>Exam Configuration</span>
-                </h2>
-                <p className="text-[11px] text-[#7C8A9A] mt-0.5">
-                  Upload book/syllabus PDF (RAM only, 0 MB saved) or enter topic
-                </p>
-              </div>
-
-              {examError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                  <span>{examError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleGenerateExam} className="space-y-4">
-                {/* PDF Upload */}
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1">
-                    Upload Syllabus / Textbook PDF (Optional)
-                  </label>
-                  <div className="border border-dashed border-[#E7E9EE] hover:border-[#37C6A3] rounded-2xl p-4 text-center bg-[#F7F6F1]/50 cursor-pointer transition">
-                    <input
-                      type="file"
-                      id="exam-pdf"
-                      accept="application/pdf"
-                      onChange={(e) => setExamFile(e.target.files?.[0] || null)}
-                      className="hidden"
-                    />
-                    <label htmlFor="exam-pdf" className="cursor-pointer block min-h-[44px]">
-                      <Upload className="w-5 h-5 text-[#37C6A3] mx-auto mb-1" />
-                      {examFile ? (
-                        <div className="text-xs font-bold text-[#0F172A] truncate">
-                          {examFile.name} ({(examFile.size / 1024).toFixed(0)} KB)
-                        </div>
-                      ) : (
-                        <div>
-                          <div className="text-xs font-semibold text-[#0F172A]">Choose Syllabus PDF</div>
-                          <div className="text-[10px] text-[#7C8A9A]">RAM In-Memory extraction only</div>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-                </div>
-
-                {/* Topic / Scope */}
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1">
-                    Exam Topic / Scope <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Surah Al-Kahf Tafseer, Pillars of Islam, Janazah Fiqh"
-                    value={examTopic}
-                    onChange={(e) => setExamTopic(e.target.value)}
-                    required={!examFile}
-                    className="w-full px-3.5 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                  />
-                </div>
-
-                {/* Subject & Grade Level */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Subject</label>
-                    <select
-                      value={examSubject}
-                      onChange={(e) => setExamSubject(e.target.value)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                    >
-                      <option value="Islamic Studies">Islamic Studies</option>
-                      <option value="Quran & Tajweed">Quran & Tajweed</option>
-                      <option value="Fiqh & Hadith">Fiqh & Hadith</option>
-                      <option value="Arabic Language">Arabic Language</option>
-                      <option value="Seerah & Islamic History">Seerah</option>
-                      <option value="Aqeedah & Akhlaq">Aqeedah & Akhlaq</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Grade / Level</label>
-                    <select
-                      value={examGrade}
-                      onChange={(e) => setExamGrade(e.target.value)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                    >
-                      <option value="Primary (Grade 1-5)">Primary (Gr 1-5)</option>
-                      <option value="Grade 6-8 (Middle)">Middle (Gr 6-8)</option>
-                      <option value="Senior (Grade 9-11)">Senior (Gr 9-11)</option>
-                      <option value="Hifz Program">Hifz Program</option>
-                      <option value="Alim / Alimah Course">Alim / Alimah</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Output Language */}
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1">Target Language</label>
-                  <select
-                    value={examLanguage}
-                    onChange={(e) => setExamLanguage(e.target.value as any)}
-                    className="w-full px-3.5 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-bold text-[#0F172A]"
-                  >
-                    <option value="English">English</option>
-                    <option value="Tamil">Tamil (தமிழ்)</option>
-                    <option value="Arabic">Arabic (العربية)</option>
-                    <option value="Bilingual (English + Tamil)">Bilingual (English + Tamil)</option>
-                  </select>
-                </div>
-
-                {/* Duration & Marks */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#7C8A9A] mb-1">Time (Minutes)</label>
-                    <input
-                      type="number"
-                      min={15}
-                      max={180}
-                      value={examDuration}
-                      onChange={(e) => setExamDuration(e.target.value)}
-                      className="w-full px-3 py-2 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] text-center font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#7C8A9A] mb-1">Total Marks</label>
-                    <input
-                      type="number"
-                      min={10}
-                      max={100}
-                      value={examMarks}
-                      onChange={(e) => setExamMarks(e.target.value)}
-                      className="w-full px-3 py-2 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] text-center font-bold"
-                    />
-                  </div>
-                </div>
-
-                {/* Counts */}
-                <div className="grid grid-cols-3 gap-2 pt-1">
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#7C8A9A] mb-1">MCQs</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={25}
-                      value={mcqCount}
-                      onChange={(e) => setMcqCount(Number(e.target.value))}
-                      className="w-full px-2.5 py-2 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] text-center font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#7C8A9A] mb-1">Short Qs</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={15}
-                      value={shortCount}
-                      onChange={(e) => setShortCount(Number(e.target.value))}
-                      className="w-full px-2.5 py-2 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] text-center font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-[#7C8A9A] mb-1">Essays</label>
-                    <input
-                      type="number"
-                      min={0}
-                      max={10}
-                      value={essayCount}
-                      onChange={(e) => setEssayCount(Number(e.target.value))}
-                      className="w-full px-2.5 py-2 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] text-center font-bold"
-                    />
-                  </div>
-                </div>
-
-                {/* Generate Button */}
-                <button
-                  type="submit"
-                  disabled={generatingExam}
-                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {generatingExam ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                      <span>Generating Exam & Answer Key...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Generate Structured Exam Paper</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            {/* Output Preview Column */}
-            <div
-              className={`${
-                mobileView === 'preview' ? 'block' : 'hidden'
-              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 print:hidden gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMobileView('config')}
-                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
-                      title="Back to Configuration"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <h3 className="text-sm font-bold text-[#0F172A]">A4 Exam Paper & Answer Key</h3>
-                  </div>
-
-                  {generatedExam && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(generatedExam)}
-                        className="px-3 py-2 min-h-[40px] text-xs font-semibold rounded-xl border border-[#E7E9EE] hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer"
-                      >
-                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedText ? 'Copied' : 'Copy Text'}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={printExamPaper}
-                        className="px-3.5 py-2 min-h-[40px] text-xs font-bold text-white bg-[#0F172A] hover:bg-[#1E293B] rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-xs"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
-                        <span>Print / PDF</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {generatingExam ? (
-                  <AiSparkleLoader
-                    title="Synthesizing Madrasa Exam Paper & Answer Key"
-                    messages={examMessages}
-                  />
-                ) : generatedExam ? (
-                  <AiStreamedText text={generatedExam} />
-                ) : (
-                  <div className="h-96 flex flex-col items-center justify-center text-center p-6 text-[#7C8A9A]">
-                    <div className="w-16 h-16 rounded-3xl bg-[#F7F6F1] flex items-center justify-center text-[#7C8A9A] mb-3">
-                      <FileText className="w-8 h-8 text-slate-400" />
-                    </div>
-                    <h4 className="text-sm font-bold text-[#0F172A]">No Exam Paper Generated Yet</h4>
-                    <p className="text-xs max-w-sm mt-1 leading-relaxed">
-                      Configure your exam parameters on the left or upload a syllabus PDF. Your complete examination paper with MCQ choices,
-                      rubrics, and full answer keys will appear here.
-                    </p>
-                  </div>
-                )}
-              </div>
+      {messages.length === 0 ? (
+        <div className="my-auto py-8 sm:py-12 flex flex-col items-center text-center px-4 space-y-6">
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-full bg-[#37C6A3]/15 blur-2xl pointer-events-none" />
+            <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+              <AiRobotMascot variant="wave" className="w-full h-full drop-shadow-xl" />
             </div>
           </div>
-        </div>
-      )}
 
-      {/* ========================================================================= */}
-      {/* TAB 2: USTADH 30-MIN LESSON PLANNER                                        */}
-      {/* ========================================================================= */}
-      {activeTab === 'lesson' && (
-        <div>
-          {/* Mobile Segemented Switch (< 1024px) */}
-          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileView('config')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'config'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚙️ Configuration</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'preview'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>📄 Lesson Plan</span>
-              {generatingLesson && (
-                <span className="w-2 h-2 rounded-full bg-[#37C6A3] animate-pulse" />
-              )}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div
-              className={`${
-                mobileView === 'config' ? 'block' : 'hidden'
-              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-sm space-y-4 print:hidden`}
-            >
-              <div className="border-b border-[#E7E9EE] pb-3">
-                <h2 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-teal-500" />
-                  <span>Ustadh Lesson Planner</span>
-                </h2>
-                <p className="text-[11px] text-[#7C8A9A] mt-0.5">
-                  Generate 30-minute structured Islamic lessons with blackboard diagrams
-                </p>
-              </div>
-
-              {lessonError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                  <span>{lessonError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleGenerateLesson} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1">
-                    Lesson Topic <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Adab of Eating in Islam, Conditions of Wudu, Treaty of Hudaybiyyah"
-                    value={lessonTopic}
-                    onChange={(e) => setLessonTopic(e.target.value)}
-                    required
-                    className="w-full px-3.5 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Subject</label>
-                    <select
-                      value={lessonSubject}
-                      onChange={(e) => setLessonSubject(e.target.value)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                    >
-                      <option value="Fiqh & Ahkam">Fiqh & Ahkam</option>
-                      <option value="Aqeedah & Tawheed">Aqeedah & Tawheed</option>
-                      <option value="Seerah & Hadith">Seerah & Hadith</option>
-                      <option value="Adab & Akhlaq">Adab & Akhlaq</option>
-                      <option value="Quranic Studies">Quranic Studies</option>
-                      <option value="Arabic Grammar">Arabic Grammar</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Class Level</label>
-                    <select
-                      value={lessonGrade}
-                      onChange={(e) => setLessonGrade(e.target.value)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                    >
-                      <option value="Beginner / Maktab">Beginner / Maktab</option>
-                      <option value="Intermediate">Intermediate</option>
-                      <option value="Senior Madrasa">Senior Madrasa</option>
-                      <option value="Hifz Students">Hifz Students</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Duration</label>
-                    <select
-                      value={lessonDuration}
-                      onChange={(e) => setLessonDuration(e.target.value)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                    >
-                      <option value="30">30 Minutes (Standard)</option>
-                      <option value="45">45 Minutes</option>
-                      <option value="60">60 Minutes</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Language</label>
-                    <select
-                      value={lessonLanguage}
-                      onChange={(e) => setLessonLanguage(e.target.value as any)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-bold"
-                    >
-                      <option value="English">English</option>
-                      <option value="Tamil">Tamil (தமிழ்)</option>
-                      <option value="Arabic">Arabic (العربية)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={generatingLesson}
-                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {generatingLesson ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                      <span>Crafting 30-Min Lesson Plan...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Generate Structured Lesson Plan</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            <div
-              className={`${
-                mobileView === 'preview' ? 'block' : 'hidden'
-              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px]`}
-            >
-              <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setMobileView('config')}
-                    className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
-                    title="Back to Configuration"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <h3 className="text-sm font-bold text-[#0F172A]">Lesson Plan & Whiteboard Flow</h3>
-                </div>
-
-                {generatedLesson && (
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(generatedLesson)}
-                    className="px-3 py-2 min-h-[40px] text-xs font-semibold rounded-xl border border-[#E7E9EE] hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer"
-                  >
-                    {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedText ? 'Copied' : 'Copy Plan'}</span>
-                  </button>
-                )}
-              </div>
-
-              {generatingLesson ? (
-                <AiSparkleLoader
-                  title="Crafting Pedagogical Lesson Flow & Whiteboard Notes"
-                  messages={lessonMessages}
-                />
-              ) : generatedLesson ? (
-                <AiStreamedText text={generatedLesson} />
-              ) : (
-                <div className="h-96 flex flex-col items-center justify-center text-center p-6 text-[#7C8A9A]">
-                  <Clock className="w-12 h-12 mb-3 opacity-30 text-teal-600" />
-                  <h4 className="text-sm font-bold text-[#0F172A]">No Lesson Plan Generated Yet</h4>
-                  <p className="text-xs max-w-sm mt-1 leading-relaxed">
-                    Enter your topic and let the Ustadh Copilot break down a 30-minute pedagogical flow with Starter Hook, Core Instruction, Student Activity, and Blackboard Layout.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 3: MADRASA EVENT POSTER & FLYER MAKER                                   */}
-      {/* ========================================================================= */}
-      {activeTab === 'poster' && (
-        <div>
-          {/* Mobile Segemented Switch (< 1024px) */}
-          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileView('config')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'config'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚙️ Configuration</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'preview'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>🖼️ Poster Preview</span>
-              {generatingPoster && (
-                <span className="w-2 h-2 rounded-full bg-[#37C6A3] animate-pulse" />
-              )}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <div
-              className={`${
-                mobileView === 'config' ? 'block' : 'hidden'
-              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-sm space-y-4`}
-            >
-              <div className="border-b border-[#E7E9EE] pb-3">
-                <h2 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
-                  <ImageIcon className="w-4 h-4 text-[#37C6A3]" />
-                  <span>Event Poster Generator</span>
-                </h2>
-                <p className="text-[11px] text-[#7C8A9A] mt-0.5">
-                  Generate high-res Islamic posters powered by Cloudflare Flux 1 Schnell
-                </p>
-              </div>
-
-              {posterError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-                  <span>{posterError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleGeneratePoster} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1">
-                    Event Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Annual Hifz Convocation & Khatm-ul-Quran"
-                    value={posterTitle}
-                    onChange={(e) => setPosterTitle(e.target.value)}
-                    required
-                    className="w-full px-3.5 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1">Event Category</label>
-                  <select
-                    value={posterCategory}
-                    onChange={(e) => setPosterCategory(e.target.value)}
-                    className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                  >
-                    <option value="Hifz Convocation">Hifz Graduation / Convocation</option>
-                    <option value="Admissions Open">Admissions Open 2026</option>
-                    <option value="Annual Jalsa">Annual Madrasa Jalsa / Prize Giving</option>
-                    <option value="Special Islamic Lecture">Special Bayaan / Islamic Lecture</option>
-                    <option value="Ramadan Program">Ramadan & Taraweeh Program</option>
-                    <option value="Youth Workshop">Youth Islamic Workshop</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Date & Time</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Sunday, Dec 15 at 9 AM"
-                      value={posterDate}
-                      onChange={(e) => setPosterDate(e.target.value)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1">Venue</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Main Auditorium"
-                      value={posterVenue}
-                      onChange={(e) => setPosterVenue(e.target.value)}
-                      className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1">Theme / Artistic Style</label>
-                  <select
-                    value={posterTheme}
-                    onChange={(e) => setPosterTheme(e.target.value)}
-                    className="w-full px-3 py-2.5 min-h-[44px] text-xs rounded-xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-white font-medium"
-                  >
-                    <option value="Classic Emerald Green & Gold Calligraphy Arabesque">Classic Emerald Green & Gold</option>
-                    <option value="Midnight Royal Blue & Silver Crescent Archway">Midnight Royal Blue & Silver</option>
-                    <option value="Warm Terracotta & Moroccan Geometric Patterns">Warm Terracotta & Moroccan Mosaic</option>
-                    <option value="Clean Minimalist Modern Islamic Typography">Minimalist Modern Islamic</option>
-                  </select>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={generatingPoster}
-                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {generatingPoster ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                      <span>Rendering Poster with Flux 1 Schnell...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Generate Poster Image</span>
-                    </>
-                  )}
-                </button>
-
-                <p className="text-[10px] text-[#7C8A9A] text-center">
-                  Zero Cloud Storage: Generated image is delivered directly as high-res download to your device.
-                </p>
-              </form>
-            </div>
-
-            <div
-              className={`${
-                mobileView === 'preview' ? 'block' : 'hidden'
-              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMobileView('config')}
-                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
-                      title="Back to Configuration"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <h3 className="text-sm font-bold text-[#0F172A]">Rendered Poster Preview</h3>
-                  </div>
-
-                  {generatedPoster && (
-                    <a
-                      href={generatedPoster.imageDataUrl}
-                      download={`madrasa_poster_${Date.now()}.jpg`}
-                      className="px-4 py-2 min-h-[40px] text-xs font-bold text-white bg-[#0F172A] hover:bg-[#1E293B] rounded-xl transition flex items-center gap-2 cursor-pointer shadow-sm"
-                    >
-                      <Download className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Download Image</span>
-                    </a>
-                  )}
-                </div>
-
-                {generatingPoster ? (
-                  <AiSparkleLoader
-                    title="Synthesizing High-Resolution Islamic Poster"
-                    messages={posterMessages}
-                  />
-                ) : generatedPoster ? (
-                  <div className="flex flex-col items-center">
-                    <AiPosterReveal
-                      src={generatedPoster.imageDataUrl}
-                      alt={generatedPoster.title}
-                    />
-                    <div className="mt-3 text-center">
-                      <span className="text-[10px] font-mono text-[#7C8A9A]">
-                        Generated via {generatedPoster.modelUsed} • Direct In-Memory Stream
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="h-96 flex flex-col items-center justify-center text-center p-6 text-[#7C8A9A]">
-                    <ImageIcon className="w-12 h-12 mb-3 opacity-30 text-emerald-600" />
-                    <h4 className="text-sm font-bold text-[#0F172A]">No Poster Rendered Yet</h4>
-                    <p className="text-xs max-w-sm mt-1 leading-relaxed">
-                      Enter event details and click generate to create a custom Islamic flyer with Cloudflare Workers AI.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 4: MULTILINGUAL TRANSLATOR                                             */}
-      {/* ========================================================================= */}
-      {activeTab === 'translate' && (
-        <div className="bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm space-y-6">
-          <div className="border-b border-[#E7E9EE] pb-4">
-            <h2 className="text-sm font-bold text-[#0F172A] flex items-center gap-2">
-              <Languages className="w-4 h-4 text-teal-500" />
-              <span>3-Language Islamic Translator</span>
+          <div className="max-w-xl space-y-2">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
+              Assalamu Alaikum! What can I help your Madrasa with today?
             </h2>
-            <p className="text-xs text-[#7C8A9A] mt-0.5">
-              High-accuracy translation between Tamil, English, and Arabic preserving Islamic terminology
+            <p className="text-xs sm:text-sm text-[#7C8A9A] leading-relaxed">
+              Synthesize zero-storage exam papers from PDFs, craft 30-minute lesson plans, design event posters, or draft parent notices in Tamil, English, and Arabic.
             </p>
           </div>
 
-          {translationError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-              <span>{translationError}</span>
+          {/* Centered Omni-Prompt Input Box */}
+          <div className="w-full max-w-2xl bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
+            {/* Attached PDF Preview Chip */}
+            {attachedFile && (
+              <div className="mb-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900">
+                <div className="flex items-center gap-2 truncate">
+                  <FileText className="w-4 h-4 text-[#37C6A3] shrink-0" />
+                  <span className="font-semibold truncate">{attachedFile.name}</span>
+                  <span className="text-[10px] text-emerald-700">({(attachedFile.size / 1024).toFixed(0)} KB)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAttachedFile(null)}
+                  className="p-1 hover:bg-emerald-200 rounded-lg text-emerald-800 transition cursor-pointer"
+                  title="Remove attachment"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            <textarea
+              ref={textareaRef}
+              rows={2}
+              placeholder="Ask anything — paste a syllabus topic, write a circular, or describe an event poster..."
+              value={inputPrompt}
+              onChange={handleTextareaChange}
+              onKeyDown={handleKeyDown}
+              className="w-full text-xs sm:text-sm text-[#0F172A] placeholder-[#7C8A9A] bg-transparent focus:outline-hidden resize-none leading-relaxed"
+            />
+
+            {/* Bottom Controls Bar inside Input Box */}
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {/* PDF Attach Button */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 cursor-pointer ${
+                    attachedFile
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      : 'bg-slate-50 hover:bg-slate-100 text-[#0F172A] border-slate-200'
+                  }`}
+                  title="Upload Syllabus PDF (in-memory RAM only)"
+                >
+                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3]" />
+                  <span className="hidden sm:inline">{attachedFile ? 'PDF Attached' : 'Attach PDF'}</span>
+                </button>
+
+                {/* Mode Selector Pill */}
+                <select
+                  value={toolMode}
+                  onChange={(e) => setToolMode(e.target.value as ToolMode)}
+                  className="h-8 px-2.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3]"
+                >
+                  <option value="auto">✨ Auto Copilot</option>
+                  <option value="exam">📄 PDF Exam Paper</option>
+                  <option value="lesson">⏱️ 30-Min Lesson Plan</option>
+                  <option value="poster">🎨 Event Poster (Flux)</option>
+                  <option value="circular">📢 Parent Circular</option>
+                  <option value="hifz">📖 Hifz & Tajweed Quiz</option>
+                  <option value="speech">🎙️ Bayan / Speech</option>
+                  <option value="summarizer">⚡ PDF Summarizer</option>
+                  <option value="translate">🌐 3-Language Translator</option>
+                </select>
+
+                {/* Language Quick Pill */}
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as any)}
+                  className="h-8 px-2 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden"
+                >
+                  <option value="English">🇬🇧 English</option>
+                  <option value="Tamil">🇱🇰/🇮🇳 தமிழ்</option>
+                  <option value="Arabic">🇸🇦 العربية</option>
+                  <option value="Bilingual (Tamil + English)">Bilingual</option>
+                </select>
+              </div>
+
+              {/* Glowing Send Button */}
+              <button
+                type="button"
+                disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
+                onClick={() => handleSubmitPrompt()}
+                className="w-9 h-9 min-h-[36px] min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group"
+                title="Send Prompt (Enter)"
+              >
+                <ArrowUp className="w-4 h-4 text-[#37C6A3] group-hover:-translate-y-0.5 transition-transform" />
+              </button>
             </div>
-          )}
-
-          <div className="flex items-center justify-center gap-3 sm:gap-4 py-2 flex-wrap">
-            <select
-              value={sourceLang}
-              onChange={(e) => setSourceLang(e.target.value as any)}
-              className="px-4 py-2.5 min-h-[44px] rounded-xl border border-[#E7E9EE] text-xs font-bold text-[#0F172A] bg-white cursor-pointer"
-            >
-              <option value="English">English</option>
-              <option value="Tamil">Tamil (தமிழ்)</option>
-              <option value="Arabic">Arabic (العربية)</option>
-            </select>
-
-            <button
-              type="button"
-              onClick={handleSwapLanguages}
-              className="p-2.5 min-h-[44px] min-w-[44px] rounded-xl border border-[#E7E9EE] hover:bg-slate-50 transition cursor-pointer text-[#7C8A9A] hover:text-[#0F172A] flex items-center justify-center"
-              title="Swap Languages"
-              aria-label="Swap Source and Target Languages"
-            >
-              <ArrowRightLeft className="w-4 h-4" />
-            </button>
-
-            <select
-              value={targetLang}
-              onChange={(e) => setTargetLang(e.target.value as any)}
-              className="px-4 py-2.5 min-h-[44px] rounded-xl border border-[#E7E9EE] text-xs font-bold text-[#0F172A] bg-white cursor-pointer"
-            >
-              <option value="Tamil">Tamil (தமிழ்)</option>
-              <option value="English">English</option>
-              <option value="Arabic">Arabic (العربية)</option>
-            </select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Input Box */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-[#0F172A]">
-                <span>Source Text ({sourceLang})</span>
-                <span className="text-[10px] text-[#7C8A9A] font-normal">{inputText.length} characters</span>
-              </div>
-              <textarea
-                rows={8}
-                placeholder="Enter circular, announcement, or lesson text to translate..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                className="w-full p-4 text-xs sm:text-sm rounded-2xl border border-[#E7E9EE] focus:outline-hidden focus:border-[#37C6A3] bg-[#F7F6F1]/50 font-sans leading-relaxed"
-              />
+          {/* 8 Quick-Start Suggestion Pills */}
+          <div className="w-full max-w-2xl pt-2">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C8A9A] mb-3 text-center">
+              Quick Islamic Copilot Actions
             </div>
-
-            {/* Output Box */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-[#0F172A]">
-                <span>Translated Output ({targetLang})</span>
-                {translatedResult && (
-                  <button
-                    type="button"
-                    onClick={() => handleCopy(translatedResult)}
-                    className="text-[11px] font-semibold text-[#37C6A3] hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedText ? 'Copied' : 'Copy'}</span>
-                  </button>
-                )}
-              </div>
-              <div className="w-full h-[190px] sm:h-[200px] p-4 text-xs sm:text-sm rounded-2xl border border-[#E7E9EE] bg-white overflow-y-auto leading-relaxed whitespace-pre-wrap">
-                {translating ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center">
-                    <RefreshCw className="w-5 h-5 text-[#37C6A3] animate-spin mb-2" />
-                    <span className="text-xs text-[#7C8A9A] font-medium animate-pulse">
-                      {translateMessages[0]}
-                    </span>
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              {quickPills.map((pill, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={pill.action}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3] hover:shadow-sm transition cursor-pointer text-left"
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ========================================================================= */
+        /* 2. ACTIVE CONVERSATION THREAD STATE                                       */
+        /* ========================================================================= */
+        <div className="flex-1 space-y-6 px-1 sm:px-2">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+            >
+              {/* User Bubble */}
+              {msg.sender === 'user' ? (
+                <div className="bg-[#0F172A] text-white rounded-3xl rounded-tr-md p-4 sm:p-5 max-w-2xl shadow-md space-y-2 text-left">
+                  {msg.file && (
+                    <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs text-emerald-300">
+                      <FileText className="w-3.5 h-3.5 text-[#37C6A3]" />
+                      <span className="font-mono">{msg.file.name}</span>
+                    </div>
+                  )}
+                  <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
+                    {msg.content}
+                  </p>
+                  <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 pt-1">
+                    <span>{modeLabels[msg.mode]?.label || 'Copilot'}</span>
+                    <span>•</span>
+                    <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
-                ) : translatedResult ? (
-                  <span className="text-[#0F172A]">{translatedResult}</span>
-                ) : (
-                  <span className="text-[#7C8A9A] italic">Translation will appear here...</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end pt-2">
-            <button
-              type="button"
-              onClick={handleTranslate}
-              disabled={translating || !inputText.trim()}
-              className="w-full sm:w-auto py-3.5 min-h-[48px] px-6 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-            >
-              {translating ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                  <span>Translating Text...</span>
-                </>
+                </div>
               ) : (
-                <>
-                  <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                  <span>Translate to {targetLang}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 5: PARENT CIRCULAR & NOTICE WRITER                                     */}
-      {/* ========================================================================= */}
-      {activeTab === 'circular' && (
-        <div>
-          {/* Mobile Segmented Switch (< 1024px) */}
-          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileView('config')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'config'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚙️ Configuration</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'preview'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>📄 Generated Circular</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Form Left Panel */}
-            <div
-              className={`${
-                mobileView === 'config' ? 'block' : 'hidden'
-              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Megaphone className="w-5 h-5 text-indigo-500" />
-                <h2 className="text-base font-bold text-[#0F172A]">Parent Circular & Notice Writer</h2>
-              </div>
-              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
-                Draft professional, Islamic-compliant circulars with Bismillah, respectful greetings, key dates, and parent adab reminders.
-              </p>
-
-              {circularError && (
-                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{circularError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleGenerateCircular} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Notice Occasion / Purpose
-                  </label>
-                  <select
-                    value={circularOccasion}
-                    onChange={(e) => setCircularOccasion(e.target.value)}
-                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3] font-semibold"
-                  >
-                    <option value="Jummah Reminder & Student Etiquette">Jummah Reminder & Student Etiquette</option>
-                    <option value="Ramadan Schedule & Taraweeh Attendance">Ramadan Schedule & Taraweeh Attendance</option>
-                    <option value="Eid-ul-Fitr / Eid-ul-Adha Vacation Notice">Eid Vacation Notice & Reopening Date</option>
-                    <option value="Term Examination Timetable & Rules">Term Examination Timetable & Rules</option>
-                    <option value="Monthly Madrasa Fee Due Notice">Monthly Madrasa Fee Due Notice</option>
-                    <option value="Annual Jalsa & Graduation Ceremony">Annual Jalsa & Graduation Ceremony Invitation</option>
-                    <option value="Parent-Teacher Meeting (PTM) Invitation">Parent-Teacher Meeting (PTM) Invitation</option>
-                    <option value="Student Discipline, Uniform & Adab Notice">Student Discipline, Uniform & Adab Notice</option>
-                    <option value="General Madrasa Announcement">General Madrasa Announcement</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                      Target Audience
-                    </label>
-                    <select
-                      value={circularAudience}
-                      onChange={(e) => setCircularAudience(e.target.value)}
-                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                    >
-                      <option value="Parents of All Students">Parents of All Students</option>
-                      <option value="Primary Section Parents">Primary Section Parents</option>
-                      <option value="Hifz Department Parents">Hifz Department Parents</option>
-                      <option value="Alim / Kitab Section Parents">Alim / Kitab Section Parents</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Language</label>
-                    <select
-                      value={circularLanguage}
-                      onChange={(e) => setCircularLanguage(e.target.value as any)}
-                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                    >
-                      <option value="English">English</option>
-                      <option value="Tamil">Tamil (தமிழ்)</option>
-                      <option value="Arabic">Arabic (العربية)</option>
-                      <option value="Bilingual (Tamil + English)">Bilingual (Tamil + English)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Key Dates, Timings & Venue
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 15th Ramadan, 8:00 AM - 1:00 PM at Main Hall"
-                    value={circularKeyDates}
-                    onChange={(e) => setCircularKeyDates(e.target.value)}
-                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Sign-off / Sender Title
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Madrasa Administration / Principal Ustadh"
-                    value={circularSender}
-                    onChange={(e) => setCircularSender(e.target.value)}
-                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Specific Instructions or Special Notes (Optional)
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="e.g. Ensure boys wear clean white thobe; bring Quran notebooks; late arrivals will not be permitted."
-                    value={circularCustomTopic}
-                    onChange={(e) => setCircularCustomTopic(e.target.value)}
-                    className="w-full p-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={generatingCircular}
-                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {generatingCircular ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                      <span>Composing Parent Notice...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Draft Parent Circular</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            {/* Generated Output Preview Right Panel */}
-            <div
-              className={`${
-                mobileView === 'preview' ? 'block' : 'hidden'
-              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMobileView('config')}
-                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
-                      title="Back to Configuration"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <h3 className="text-sm font-bold text-[#0F172A]">Notice Preview</h3>
-                  </div>
-
-                  {generatedCircular && (
-                    <div className="flex items-center gap-2 print:hidden">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(generatedCircular)}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={printExamPaper}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
-                        <span>Print</span>
-                      </button>
+                /* Assistant Bubble */
+                <div className="w-full bg-white rounded-3xl rounded-tl-md p-5 sm:p-7 border border-[#E7E9EE] shadow-sm space-y-4 text-left">
+                  <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3 gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-[#0F172A] flex items-center justify-center shrink-0">
+                        <AiRobotMascot variant="avatar" size={20} />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
+                          <span>Madrasa Copilot</span>
+                          <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                            {modeLabels[msg.mode]?.label || 'General'}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
 
-                {generatingCircular ? (
-                  <AiSparkleLoader title="Madrasa Copilot is composing notice..." messages={circularMessages} />
-                ) : generatedCircular ? (
-                  <AiStreamedText text={generatedCircular} />
-                ) : (
-                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
-                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
-                      <Megaphone className="w-7 h-7 text-indigo-400 opacity-60" />
-                    </div>
-                    <p className="text-sm font-bold text-[#0F172A]">No Circular Generated Yet</p>
-                    <p className="text-xs mt-1 max-w-xs">
-                      Select your notice occasion and click &quot;Draft Parent Circular&quot; to synthesize an official letter ready for WhatsApp and printing.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                    {!msg.isStreaming && msg.content && (
+                      <div className="flex items-center gap-1.5 print:hidden">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyText(msg.content, msg.id)}
+                          className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 transition flex items-center gap-1 cursor-pointer"
+                        >
+                          {copiedId === msg.id ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                          <span className="hidden sm:inline">{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                        </button>
 
-      {/* ========================================================================= */}
-      {/* TAB 6: HIFZ & TAJWEED WORKSHEET BUILDER                                     */}
-      {/* ========================================================================= */}
-      {activeTab === 'hifz' && (
-        <div>
-          {/* Mobile Segmented Switch (< 1024px) */}
-          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileView('config')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'config'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚙️ Configuration</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'preview'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>📖 Generated Worksheet</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Form Left Panel */}
-            <div
-              className={`${
-                mobileView === 'config' ? 'block' : 'hidden'
-              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <BookOpen className="w-5 h-5 text-amber-500" />
-                <h2 className="text-base font-bold text-[#0F172A]">Hifz & Tajweed Worksheet Builder</h2>
-              </div>
-              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
-                Build Surah drills, Makharij & Tajweed rule tests, and oral recitation grading rubrics with answer keys.
-              </p>
-
-              {hifzError && (
-                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{hifzError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleGenerateHifz} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Quran Portion / Surah Range
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Juz 30 (Surah An-Naba to An-Nas) or Surah Al-Mulk"
-                    value={hifzPortion}
-                    onChange={(e) => setHifzPortion(e.target.value)}
-                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Assessment Focus
-                  </label>
-                  <select
-                    value={hifzFocus}
-                    onChange={(e) => setHifzFocus(e.target.value)}
-                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  >
-                    <option value="Ayah Completion & Memorization Drill">Ayah Completion & Memorization Drill</option>
-                    <option value="Tajweed Rules (Makharij, Ghunnah, Idgham, Ikhfa)">Tajweed Rules (Makharij, Ghunnah, Idgham, Ikhfa)</option>
-                    <option value="Mutashabihat (Similar Ayahs) Identification">Mutashabihat (Similar Ayahs) Identification</option>
-                    <option value="Oral Recitation Rubric & Ustadh Scorecard">Oral Recitation Rubric & Ustadh Scorecard</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Hifz Level</label>
-                    <select
-                      value={hifzGrade}
-                      onChange={(e) => setHifzGrade(e.target.value)}
-                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                    >
-                      <option value="Beginner (Noorani / Qaida)">Beginner (Noorani / Qaida)</option>
-                      <option value="Intermediate Hifz (5 - 15 Juz)">Intermediate Hifz (5 - 15 Juz)</option>
-                      <option value="Advanced Sanad / Complete Hafiz">Advanced Sanad / Complete Hafiz</option>
-                    </select>
+                        <button
+                          type="button"
+                          onClick={() => window.print()}
+                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#0F172A] text-white hover:bg-[#1E293B] transition flex items-center gap-1 cursor-pointer"
+                        >
+                          <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
+                          <span className="hidden sm:inline">Print</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Language</label>
-                    <select
-                      value={hifzLanguage}
-                      onChange={(e) => setHifzLanguage(e.target.value as any)}
-                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                    >
-                      <option value="English">English</option>
-                      <option value="Tamil">Tamil (தமிழ்)</option>
-                      <option value="Arabic">Arabic (العربية)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Number of Drill Questions: {hifzCount}
-                  </label>
-                  <input
-                    type="range"
-                    min="3"
-                    max="10"
-                    value={hifzCount}
-                    onChange={(e) => setHifzCount(Number(e.target.value))}
-                    className="w-full accent-[#37C6A3]"
-                  />
-                  <div className="flex justify-between text-[10px] text-[#7C8A9A]">
-                    <span>3 Drills</span>
-                    <span>5 Standard</span>
-                    <span>10 Intensive</span>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={generatingHifz || !hifzPortion.trim()}
-                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {generatingHifz ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                      <span>Synthesizing Hifz Worksheet...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Build Hifz Worksheet</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            {/* Generated Output Preview Right Panel */}
-            <div
-              className={`${
-                mobileView === 'preview' ? 'block' : 'hidden'
-              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMobileView('config')}
-                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
-                      title="Back to Configuration"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <h3 className="text-sm font-bold text-[#0F172A]">Hifz Worksheet & Rubric Preview</h3>
-                  </div>
-
-                  {generatedHifz && (
-                    <div className="flex items-center gap-2 print:hidden">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(generatedHifz)}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={printExamPaper}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
-                        <span>Print</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {generatingHifz ? (
-                  <AiSparkleLoader title="Generating Hifz Drills & Tajweed Rules..." messages={hifzMessages} />
-                ) : generatedHifz ? (
-                  <AiStreamedText text={generatedHifz} />
-                ) : (
-                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
-                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
-                      <BookOpen className="w-7 h-7 text-amber-500 opacity-60" />
-                    </div>
-                    <p className="text-sm font-bold text-[#0F172A]">No Hifz Worksheet Generated</p>
-                    <p className="text-xs mt-1 max-w-xs">
-                      Enter a Surah or Juz range and click &quot;Build Hifz Worksheet&quot; to synthesize completion tests and oral scoring rubrics.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 7: BAYAN & STUDENT SPEECH WRITER                                       */}
-      {/* ========================================================================= */}
-      {activeTab === 'speech' && (
-        <div>
-          {/* Mobile Segmented Switch (< 1024px) */}
-          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileView('config')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'config'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚙️ Configuration</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'preview'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>🎙️ Generated Speech</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Form Left Panel */}
-            <div
-              className={`${
-                mobileView === 'config' ? 'block' : 'hidden'
-              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Mic className="w-5 h-5 text-[#37C6A3]" />
-                <h2 className="text-base font-bold text-[#0F172A]">Bayan & Student Speech Writer</h2>
-              </div>
-              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
-                Draft timed speeches with authentic Quranic Ayahs, Hadith proofs, practical life lessons, and inspiring closing Du&apos;a.
-              </p>
-
-              {speechError && (
-                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{speechError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleGenerateSpeech} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Speech Topic / Theme
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Respecting Parents in Islam (Birr al-Walidayn)"
-                    value={speechTopic}
-                    onChange={(e) => setSpeechTopic(e.target.value)}
-                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Occasion / Event Type
-                  </label>
-                  <select
-                    value={speechOccasion}
-                    onChange={(e) => setSpeechOccasion(e.target.value)}
-                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  >
-                    <option value="Morning Assembly Speech (3-5 mins)">Morning Assembly Speech (3-5 mins)</option>
-                    <option value="Friday Bayan / Jumu'ah Sermon">Friday Bayan / Jumu&apos;ah Sermon</option>
-                    <option value="Madrasa Public Speech Competition">Madrasa Public Speech Competition</option>
-                    <option value="Annual Day / Prize Giving Jalsa">Annual Day / Prize Giving Jalsa</option>
-                    <option value="Youth Character Building & Akhlaaq Talk">Youth Character Building & Akhlaaq Talk</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Speech Duration</label>
-                    <select
-                      value={speechDuration}
-                      onChange={(e) => setSpeechDuration(e.target.value)}
-                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                    >
-                      <option value="3 Minutes">3 Minutes (Quick Talk)</option>
-                      <option value="5 Minutes">5 Minutes (Assembly Standard)</option>
-                      <option value="10 Minutes">10 Minutes (Comprehensive)</option>
-                      <option value="15 Minutes">15 Minutes (Formal Bayan)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Language</label>
-                    <select
-                      value={speechLanguage}
-                      onChange={(e) => setSpeechLanguage(e.target.value as any)}
-                      className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                    >
-                      <option value="English">English</option>
-                      <option value="Tamil">Tamil (தமிழ்)</option>
-                      <option value="Arabic">Arabic (العربية)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Target Audience
-                  </label>
-                  <select
-                    value={speechAudience}
-                    onChange={(e) => setSpeechAudience(e.target.value)}
-                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  >
-                    <option value="Madrasa Students (All Grades)">Madrasa Students (All Grades)</option>
-                    <option value="Youth & Teenagers">Youth & Teenagers</option>
-                    <option value="General Madrasa Community & Parents">General Madrasa Community & Parents</option>
-                  </select>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={generatingSpeech || !speechTopic.trim()}
-                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {generatingSpeech ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                      <span>Drafting Inspiring Bayan...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Draft Islamic Speech</span>
-                    </>
-                  )}
-                </button>
-              </form>
-            </div>
-
-            {/* Generated Output Preview Right Panel */}
-            <div
-              className={`${
-                mobileView === 'preview' ? 'block' : 'hidden'
-              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMobileView('config')}
-                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
-                      title="Back to Configuration"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <h3 className="text-sm font-bold text-[#0F172A]">Speech Script Preview</h3>
-                  </div>
-
-                  {generatedSpeech && (
-                    <div className="flex items-center gap-2 print:hidden">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(generatedSpeech)}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={printExamPaper}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
-                        <span>Print</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {generatingSpeech ? (
-                  <AiSparkleLoader title="Madrasa Copilot is drafting your speech..." messages={speechMessages} />
-                ) : generatedSpeech ? (
-                  <AiStreamedText text={generatedSpeech} />
-                ) : (
-                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
-                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
-                      <Mic className="w-7 h-7 text-[#37C6A3] opacity-60" />
-                    </div>
-                    <p className="text-sm font-bold text-[#0F172A]">No Speech Drafted Yet</p>
-                    <p className="text-xs mt-1 max-w-xs">
-                      Enter a topic and occasion, then click &quot;Draft Islamic Speech&quot; to synthesize an authentic, time-calibrated oratory talk.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* TAB 8: PDF SYLLABUS & CHAPTER SUMMARIZER                                   */}
-      {/* ========================================================================= */}
-      {activeTab === 'summarizer' && (
-        <div>
-          {/* Mobile Segmented Switch (< 1024px) */}
-          <div className="lg:hidden flex items-center p-1 bg-[#F7F6F1] rounded-2xl border border-[#E7E9EE] mb-4 print:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileView('config')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'config'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚙️ Configuration</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMobileView('preview')}
-              className={`flex-1 py-2.5 min-h-[44px] text-xs font-bold rounded-xl transition cursor-pointer flex items-center justify-center gap-1.5 ${
-                mobileView === 'preview'
-                  ? 'bg-white text-[#0F172A] shadow-xs border border-[#E7E9EE]'
-                  : 'text-[#7C8A9A] hover:text-[#0F172A]'
-              }`}
-            >
-              <span>⚡ Study Summary</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Form Left Panel */}
-            <div
-              className={`${
-                mobileView === 'config' ? 'block' : 'hidden'
-              } lg:block lg:col-span-5 bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs`}
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <Layers className="w-5 h-5 text-emerald-500" />
-                <h2 className="text-base font-bold text-[#0F172A]">PDF Syllabus & Chapter Summarizer</h2>
-              </div>
-              <p className="text-xs text-[#7C8A9A] mb-5 leading-relaxed">
-                Parse syllabus or book chapters in volatile RAM to extract key learning takeaways, Islamic glossary, and revision bullet points.
-              </p>
-
-              {summaryError && (
-                <div className="mb-4 p-3 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>{summaryError}</span>
-                </div>
-              )}
-
-              <form onSubmit={handleGenerateSummary} className="space-y-4">
-                {/* Zero-Storage RAM-Only PDF Upload */}
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Upload Syllabus Chapter PDF (RAM-Only, 0 MB Stored)
-                  </label>
-                  <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-[#E7E9EE] hover:border-[#37C6A3] rounded-2xl cursor-pointer bg-[#F7F6F1]/50 hover:bg-[#F7F6F1] transition">
-                    <div className="flex flex-col items-center justify-center text-center p-2">
-                      <Upload className="w-5 h-5 text-[#37C6A3] mb-1" />
-                      <p className="text-xs font-bold text-[#0F172A]">
-                        {summaryFile ? summaryFile.name : 'Select or drop chapter PDF'}
+                  {/* Body Content */}
+                  {msg.isStreaming ? (
+                    <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
+                      <div className="w-20 h-20 flex items-center justify-center">
+                        <AiRobotMascot variant="thinking" className="w-full h-full drop-shadow-md animate-pulse" />
+                      </div>
+                      <p className="text-xs font-bold text-[#0F172A] animate-fade-in">
+                        ✨ {cyclingMessages[msgIdx]}
                       </p>
-                      <p className="text-[10px] text-[#7C8A9A]">Parsed in RAM & discarded (max 10MB)</p>
+                      <span className="text-[10px] text-[#7C8A9A]">
+                        Zero Cloud Storage • RAM processing with Cloudflare Workers AI
+                      </span>
                     </div>
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={(e) => setSummaryFile(e.target.files?.[0] || null)}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Book / Subject & Chapter Title
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Kitab at-Tawheed - Chapter 3: Virtues of Tawheed"
-                    value={summaryTitle}
-                    onChange={(e) => setSummaryTitle(e.target.value)}
-                    className="w-full h-11 px-3.5 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">
-                    Summary Structure & Depth
-                  </label>
-                  <select
-                    value={summaryType}
-                    onChange={(e) => setSummaryType(e.target.value)}
-                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  >
-                    <option value="Comprehensive Chapter Study Notes & Key Concepts">Comprehensive Chapter Notes & Key Concepts</option>
-                    <option value="Executive Ustadh Teaching Summary & Glossary">Executive Ustadh Teaching Summary & Glossary</option>
-                    <option value="Revision Flashcard & Quick-Review Bullets">Revision Flashcards & Quick-Review Bullets</option>
-                    <option value="Exam Preparation Summary with Key Questions">Exam Preparation Summary with Key Questions</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-[#0F172A] mb-1.5">Output Language</label>
-                  <select
-                    value={summaryLanguage}
-                    onChange={(e) => setSummaryLanguage(e.target.value as any)}
-                    className="w-full h-11 px-3 text-xs rounded-xl border border-[#E7E9EE] bg-white focus:outline-hidden focus:border-[#37C6A3]"
-                  >
-                    <option value="English">English</option>
-                    <option value="Tamil">Tamil (தமிழ்)</option>
-                    <option value="Arabic">Arabic (العربية)</option>
-                  </select>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={generatingSummary || (!summaryFile && !summaryTitle.trim())}
-                  className="w-full py-3.5 min-h-[48px] px-4 rounded-2xl bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs sm:text-sm font-bold tracking-wide transition flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
-                >
-                  {generatingSummary ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin text-[#37C6A3]" />
-                      <span>Synthesizing Chapter Summary in RAM...</span>
-                    </>
+                  ) : msg.posterData ? (
+                    <PosterCanvasRenderer poster={msg.posterData} />
                   ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 text-[#37C6A3]" />
-                      <span>Synthesize Chapter Summary</span>
-                    </>
+                    <AiStreamedText text={msg.content} />
                   )}
+                </div>
+              )}
+            </div>
+          ))}
+          <div ref={chatEndRef} />
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 3. DOCKED BOTTOM PROMPT INPUT BAR (WHEN THREAD HAS MESSAGES)              */}
+      {/* ========================================================================= */}
+      {messages.length > 0 && (
+        <div className="sticky bottom-3 z-30 pt-3 bg-gradient-to-t from-[#F7F6F1] via-[#F7F6F1] to-transparent print:hidden">
+          <div className="bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
+            {attachedFile && (
+              <div className="mb-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900">
+                <div className="flex items-center gap-2 truncate">
+                  <FileText className="w-4 h-4 text-[#37C6A3] shrink-0" />
+                  <span className="font-semibold truncate">{attachedFile.name}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAttachedFile(null)}
+                  className="p-1 hover:bg-emerald-200 rounded-lg text-emerald-800 transition cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            <textarea
+              ref={textareaRef}
+              rows={2}
+              placeholder="Ask follow-up, request modifications, or paste a new topic..."
+              value={inputPrompt}
+              onChange={handleTextareaChange}
+              onKeyDown={handleKeyDown}
+              className="w-full text-xs sm:text-sm text-[#0F172A] placeholder-[#7C8A9A] bg-transparent focus:outline-hidden resize-none leading-relaxed"
+            />
+
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 hover:bg-slate-100 text-[#0F172A] border border-slate-200 transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3]" />
+                  <span className="hidden sm:inline">Attach PDF</span>
                 </button>
 
-                <p className="text-[10px] text-[#7C8A9A] text-center">
-                  🔒 Zero-Storage: PDF is parsed strictly in server RAM and immediately discarded.
-                </p>
-              </form>
-            </div>
+                <select
+                  value={toolMode}
+                  onChange={(e) => setToolMode(e.target.value as ToolMode)}
+                  className="h-8 px-2.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3]"
+                >
+                  <option value="auto">✨ Auto Copilot</option>
+                  <option value="exam">📄 PDF Exam Paper</option>
+                  <option value="lesson">⏱️ 30-Min Lesson Plan</option>
+                  <option value="poster">🎨 Event Poster (Flux)</option>
+                  <option value="circular">📢 Parent Circular</option>
+                  <option value="hifz">📖 Hifz & Tajweed Quiz</option>
+                  <option value="speech">🎙️ Bayan / Speech</option>
+                  <option value="summarizer">⚡ PDF Summarizer</option>
+                  <option value="translate">🌐 3-Language Translator</option>
+                </select>
 
-            {/* Generated Output Preview Right Panel */}
-            <div
-              className={`${
-                mobileView === 'preview' ? 'block' : 'hidden'
-              } lg:block lg:col-span-7 bg-white rounded-3xl p-5 sm:p-8 border border-[#E7E9EE] shadow-sm min-h-[500px] flex flex-col justify-between`}
-            >
-              <div>
-                <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4 mb-4 gap-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setMobileView('config')}
-                      className="lg:hidden p-1.5 rounded-lg border border-[#E7E9EE] text-[#7C8A9A] hover:text-[#0F172A]"
-                      title="Back to Configuration"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <h3 className="text-sm font-bold text-[#0F172A]">Chapter Summary & Notes Preview</h3>
-                  </div>
-
-                  {generatedSummary && (
-                    <div className="flex items-center gap-2 print:hidden">
-                      <button
-                        type="button"
-                        onClick={() => handleCopy(generatedSummary)}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedText ? 'Copied' : 'Copy'}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={printExamPaper}
-                        className="px-3 py-1.5 min-h-[36px] text-xs font-semibold rounded-xl bg-[#0F172A] text-white hover:bg-[#1E293B] flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
-                        <span>Print</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {generatingSummary ? (
-                  <AiSparkleLoader title="Reading in RAM & Synthesizing Chapter Notes..." messages={summaryMessages} />
-                ) : generatedSummary ? (
-                  <AiStreamedText text={generatedSummary} />
-                ) : (
-                  <div className="py-20 flex flex-col items-center justify-center text-center text-[#7C8A9A]">
-                    <div className="w-14 h-14 rounded-2xl bg-[#F7F6F1] flex items-center justify-center mb-3">
-                      <Layers className="w-7 h-7 text-emerald-500 opacity-60" />
-                    </div>
-                    <p className="text-sm font-bold text-[#0F172A]">No Chapter Summary Generated</p>
-                    <p className="text-xs mt-1 max-w-xs">
-                      Upload a PDF syllabus chapter or provide a book title to extract structured study notes and revision flashcards.
-                    </p>
-                  </div>
-                )}
+                <select
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as any)}
+                  className="h-8 px-2 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden"
+                >
+                  <option value="English">🇬🇧 English</option>
+                  <option value="Tamil">🇱🇰/🇮🇳 தமிழ்</option>
+                  <option value="Arabic">🇸🇦 العربية</option>
+                  <option value="Bilingual (Tamil + English)">Bilingual</option>
+                </select>
               </div>
+
+              <button
+                type="button"
+                disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
+                onClick={() => handleSubmitPrompt()}
+                className="w-9 h-9 min-h-[36px] min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group"
+              >
+                <ArrowUp className="w-4 h-4 text-[#37C6A3] group-hover:-translate-y-0.5 transition-transform" />
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Floating Bottom-Right Round AI Orb / Quick-Action Button */}
+      {/* Floating Bottom-Right Round AI Orb */}
       <div className="fixed bottom-5 right-5 z-40 print:hidden">
-        <div className="relative group">
-          {/* Tooltip on Hover */}
-          <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
-            <div className="bg-[#0F172A] text-white px-3.5 py-2 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
-              <div className="text-left">
-                <div className="text-xs font-bold leading-none text-white">Ask AI Copilot</div>
-                <div className="text-[10px] text-slate-400 mt-0.5 leading-none">
-                  8 Active Islamic AI Tools
-                </div>
-              </div>
-              <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
-            </div>
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] transition-all flex items-center justify-center cursor-pointer group"
+          title="Scroll to Top"
+        >
+          <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform">
+            <AiRobotMascot variant="avatar" size={36} />
           </div>
-
-          {/* Outer Pulsing Halo Ripple */}
-          <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-orb-halo pointer-events-none" />
-
-          {/* Round Circular Action Button with 3D AI Robot Mascot Avatar */}
-          <button
-            type="button"
-            onClick={scrollToWorkspaceTop}
-            className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95 overflow-visible"
-            aria-label="MadrasaNexa AI Copilot Active"
-            title="MadrasaNexa AI Copilot Active"
-          >
-            <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <AiRobotMascot variant="avatar" size={36} />
-            </div>
-
-            {/* Active Emerald Pulse Badge */}
-            <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 z-10">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
-            </span>
-          </button>
-        </div>
+          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 z-10">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
+          </span>
+        </button>
       </div>
     </div>
   );

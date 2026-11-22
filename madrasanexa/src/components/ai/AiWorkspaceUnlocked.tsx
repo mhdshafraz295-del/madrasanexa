@@ -133,22 +133,6 @@ export default function AiWorkspaceUnlocked({
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const cyclingMessages = [
-    'Synthesizing Islamic curriculum & authentic proofs...',
-    'Analyzing requirements strictly in RAM memory (0 MB stored)...',
-    'Drafting pedagogical Islamic content with structured headings...',
-    'Polishing typography & terminology (Tamil, English & Arabic)...',
-  ];
-  const [msgIdx, setMsgIdx] = useState(0);
-
-  useEffect(() => {
-    if (!isGenerating) return;
-    const interval = setInterval(() => {
-      setMsgIdx((prev) => (prev + 1) % cyclingMessages.length);
-    }, 2400);
-    return () => clearInterval(interval);
-  }, [isGenerating, cyclingMessages.length]);
-
   useEffect(() => {
     if (messages.length > 0) {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -596,20 +580,20 @@ export default function AiWorkspaceUnlocked({
             />
 
             {/* Bottom Controls Bar inside Input Box */}
-            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
+              <div className="flex items-center gap-1 min-w-0">
                 {/* PDF Attach Button */}
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1.5 cursor-pointer ${
+                  className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 shrink-0 cursor-pointer ${
                     attachedFile
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                       : 'bg-slate-50 hover:bg-slate-100 text-[#0F172A] border-slate-200'
                   }`}
                   title="Upload Syllabus PDF (in-memory RAM only)"
                 >
-                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3]" />
+                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3] shrink-0" />
                   <span className="hidden sm:inline">{attachedFile ? 'PDF Attached' : 'Attach PDF'}</span>
                 </button>
 
@@ -617,29 +601,29 @@ export default function AiWorkspaceUnlocked({
                 <select
                   value={toolMode}
                   onChange={(e) => setToolMode(e.target.value as ToolMode)}
-                  className="h-8 px-2.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3]"
+                  className="h-8 px-1.5 sm:px-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3] shrink-0 max-w-[100px] sm:max-w-none truncate"
                 >
-                  <option value="auto">✨ Auto Copilot</option>
-                  <option value="exam">📄 PDF Exam Paper</option>
-                  <option value="lesson">⏱️ 30-Min Lesson Plan</option>
-                  <option value="poster">🎨 Event Poster (Flux)</option>
-                  <option value="circular">📢 Parent Circular</option>
-                  <option value="hifz">📖 Hifz & Tajweed Quiz</option>
-                  <option value="speech">🎙️ Bayan / Speech</option>
-                  <option value="summarizer">⚡ PDF Summarizer</option>
-                  <option value="translate">🌐 3-Language Translator</option>
+                  <option value="auto">✨ Auto</option>
+                  <option value="exam">📄 Exam</option>
+                  <option value="lesson">⏱️ Lesson</option>
+                  <option value="poster">🎨 Poster</option>
+                  <option value="circular">📢 Notice</option>
+                  <option value="hifz">📖 Hifz</option>
+                  <option value="speech">🎙️ Bayan</option>
+                  <option value="summarizer">⚡ Summary</option>
+                  <option value="translate">🌐 Translate</option>
                 </select>
 
                 {/* Language Quick Pill */}
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as any)}
-                  className="h-8 px-2 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden"
+                  className="h-8 px-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden shrink-0 max-w-[70px] sm:max-w-none"
                 >
-                  <option value="English">🇬🇧 English</option>
-                  <option value="Tamil">🇱🇰/🇮🇳 தமிழ்</option>
-                  <option value="Arabic">🇸🇦 العربية</option>
-                  <option value="Bilingual (Tamil + English)">Bilingual</option>
+                  <option value="English">🇬🇧 EN</option>
+                  <option value="Tamil">🇱🇰 தமிழ்</option>
+                  <option value="Arabic">🇸🇦 عربي</option>
+                  <option value="Bilingual (Tamil + English)">Bi-Lang</option>
                 </select>
               </div>
 
@@ -648,7 +632,7 @@ export default function AiWorkspaceUnlocked({
                 type="button"
                 disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
                 onClick={() => handleSubmitPrompt()}
-                className="w-9 h-9 min-h-[36px] min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group"
+                className="w-8 h-8 sm:w-9 sm:h-9 min-h-[32px] min-w-[32px] sm:min-h-[36px] sm:min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group shrink-0"
                 title="Send Prompt (Enter)"
               >
                 <ArrowUp className="w-4 h-4 text-[#37C6A3] group-hover:-translate-y-0.5 transition-transform" />
@@ -774,34 +758,24 @@ export default function AiWorkspaceUnlocked({
             </div>
           ))}
 
-          {/* Compact Inline Animated "Thinking Robot" Indicator (just like Gemini / ChatGPT) */}
+          {/* Minimalist Inline Animated "Thinking..." Indicator */}
           {isGenerating && (
-            <div className="w-full flex items-start gap-3.5 sm:gap-4 text-left animate-fade-in py-1">
-              <div className="relative shrink-0 mt-0.5">
-                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#0F172A] border border-[#37C6A3]/50 flex items-center justify-center shadow-md p-1">
-                  <AiRobotMascot variant="thinking" size={28} />
+            <div className="w-full flex items-center gap-3 text-left animate-fade-in py-1">
+              <div className="relative shrink-0">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-[#0F172A] border border-[#37C6A3]/50 flex items-center justify-center shadow-md p-1">
+                  <AiRobotMascot variant="thinking" size={24} />
                 </div>
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400" />
                 </span>
               </div>
 
-              <div className="flex-1 min-w-0 space-y-1 pt-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
-                    <span>Thinking</span>
-                    <span className="inline-flex gap-0.5 text-[#37C6A3] text-[11px] animate-pulse">
-                      ✦ ✧ ✦
-                    </span>
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-medium border border-emerald-200">
-                    RAM-Only • 0 MB Stored
-                  </span>
-                </div>
-                <p className="text-xs text-[#7C8A9A] font-medium animate-pulse">
-                  {cyclingMessages[msgIdx]}
-                </p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs sm:text-sm font-bold text-[#0F172A]">Thinking</span>
+                <span className="inline-flex gap-1 text-[#37C6A3] text-sm font-extrabold animate-pulse">
+                  <span>.</span><span>.</span><span>.</span>
+                </span>
               </div>
             </div>
           )}
@@ -842,53 +816,73 @@ export default function AiWorkspaceUnlocked({
               className="w-full text-xs sm:text-sm text-[#0F172A] placeholder-[#7C8A9A] bg-transparent focus:outline-hidden resize-none leading-relaxed"
             />
 
-            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-1.5 flex-wrap">
+            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
+              <div className="flex items-center gap-1 min-w-0">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-slate-50 hover:bg-slate-100 text-[#0F172A] border border-slate-200 transition flex items-center gap-1.5 cursor-pointer"
+                  className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 shrink-0 cursor-pointer ${
+                    attachedFile
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      : 'bg-slate-50 hover:bg-slate-100 text-[#0F172A] border-slate-200'
+                  }`}
+                  title="Attach PDF"
                 >
-                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3]" />
+                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3] shrink-0" />
                   <span className="hidden sm:inline">Attach PDF</span>
                 </button>
 
                 <select
                   value={toolMode}
                   onChange={(e) => setToolMode(e.target.value as ToolMode)}
-                  className="h-8 px-2.5 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3]"
+                  className="h-8 px-1.5 sm:px-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3] shrink-0 max-w-[100px] sm:max-w-none truncate"
                 >
-                  <option value="auto">✨ Auto Copilot</option>
-                  <option value="exam">📄 PDF Exam Paper</option>
-                  <option value="lesson">⏱️ 30-Min Lesson Plan</option>
-                  <option value="poster">🎨 Event Poster (Flux)</option>
-                  <option value="circular">📢 Parent Circular</option>
-                  <option value="hifz">📖 Hifz & Tajweed Quiz</option>
-                  <option value="speech">🎙️ Bayan / Speech</option>
-                  <option value="summarizer">⚡ PDF Summarizer</option>
-                  <option value="translate">🌐 3-Language Translator</option>
+                  <option value="auto">✨ Auto</option>
+                  <option value="exam">📄 Exam</option>
+                  <option value="lesson">⏱️ Lesson</option>
+                  <option value="poster">🎨 Poster</option>
+                  <option value="circular">📢 Notice</option>
+                  <option value="hifz">📖 Hifz</option>
+                  <option value="speech">🎙️ Bayan</option>
+                  <option value="summarizer">⚡ Summary</option>
+                  <option value="translate">🌐 Translate</option>
                 </select>
 
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value as any)}
-                  className="h-8 px-2 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden"
+                  className="h-8 px-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden shrink-0 max-w-[70px] sm:max-w-none"
                 >
-                  <option value="English">🇬🇧 English</option>
-                  <option value="Tamil">🇱🇰/🇮🇳 தமிழ்</option>
-                  <option value="Arabic">🇸🇦 العربية</option>
-                  <option value="Bilingual (Tamil + English)">Bilingual</option>
+                  <option value="English">🇬🇧 EN</option>
+                  <option value="Tamil">🇱🇰 தமிழ்</option>
+                  <option value="Arabic">🇸🇦 عربي</option>
+                  <option value="Bilingual (Tamil + English)">Bi-Lang</option>
                 </select>
               </div>
 
-              <button
-                type="button"
-                disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
-                onClick={() => handleSubmitPrompt()}
-                className="w-9 h-9 min-h-[36px] min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group"
-              >
-                <ArrowUp className="w-4 h-4 text-[#37C6A3] group-hover:-translate-y-0.5 transition-transform" />
-              </button>
+              <div className="flex items-center gap-1 shrink-0">
+                {messages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleNewChat}
+                    className="p-1.5 sm:px-2 sm:py-1.5 rounded-xl border border-slate-200 text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer shrink-0"
+                    title="Start New Chat"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="hidden md:inline text-xs font-medium">New</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
+                  onClick={() => handleSubmitPrompt()}
+                  className="w-8 h-8 sm:w-9 sm:h-9 min-h-[32px] min-w-[32px] sm:min-h-[36px] sm:min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group shrink-0"
+                  title="Send Prompt (Enter)"
+                >
+                  <ArrowUp className="w-4 h-4 text-[#37C6A3] group-hover:-translate-y-0.5 transition-transform" />
+                </button>
+              </div>
             </div>
           </div>
         </div>

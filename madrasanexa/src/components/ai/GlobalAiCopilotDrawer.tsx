@@ -134,22 +134,6 @@ export default function GlobalAiCopilotDrawer() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const cyclingMessages = [
-    'Synthesizing Islamic curriculum & authentic proofs...',
-    'Analyzing requirements strictly in RAM memory (0 MB stored)...',
-    'Drafting pedagogical Islamic content with structured headings...',
-    'Polishing typography & terminology (Tamil, English & Arabic)...',
-  ];
-  const [msgIdx, setMsgIdx] = useState(0);
-
-  useEffect(() => {
-    if (!isGenerating) return;
-    const interval = setInterval(() => {
-      setMsgIdx((prev) => (prev + 1) % cyclingMessages.length);
-    }, 2400);
-    return () => clearInterval(interval);
-  }, [isGenerating, cyclingMessages.length]);
-
   useEffect(() => {
     let isMounted = true;
     aiService
@@ -542,16 +526,16 @@ export default function GlobalAiCopilotDrawer() {
       {/* 2. SLIDE-OVER AI COPILOT SIDE DRAWER                                      */}
       {/* ========================================================================= */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden print:hidden">
-          {/* Backdrop Blur Overlay */}
+        <div className="fixed inset-0 z-50 overflow-hidden print:hidden pointer-events-none">
+          {/* Backdrop Blur Overlay - ONLY on mobile (< 640px), hidden on desktop for non-blocking interaction */}
           <div
-            className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity animate-fade-in"
+            className="fixed inset-0 bg-slate-900/30 transition-opacity animate-fade-in block sm:hidden pointer-events-auto"
             onClick={() => setIsOpen(false)}
           />
 
-          {/* Right Slide-over Panel */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-            <div className="w-screen max-w-md sm:max-w-[460px] bg-white shadow-2xl border-l border-[#E7E9EE] flex flex-col h-full transform transition-transform duration-300 ease-in-out">
+          {/* Right Slide-over Panel - Non-blocking on desktop, sits directly on right edge */}
+          <div className="fixed inset-y-0 right-0 max-w-full flex pointer-events-none">
+            <div className="w-screen max-w-full sm:w-[430px] bg-white shadow-2xl border-l border-[#E7E9EE] flex flex-col h-full transform transition-transform duration-300 ease-in-out pointer-events-auto">
               {/* Drawer Top Header */}
               <div className="px-4 py-3.5 border-b border-[#E7E9EE] bg-[#0F172A] text-white flex items-center justify-between gap-3 shrink-0">
                 <div className="flex items-center gap-2.5">
@@ -801,10 +785,10 @@ export default function GlobalAiCopilotDrawer() {
                             </div>
                           ))}
 
-                          {/* Inline Thinking Robot Indicator */}
+                          {/* Inline Minimalist Thinking Robot Indicator */}
                           {isGenerating && (
-                            <div className="w-full flex items-start gap-2.5 text-left animate-fade-in py-1">
-                              <div className="relative shrink-0 mt-0.5">
+                            <div className="w-full flex items-center gap-2.5 text-left animate-fade-in py-1">
+                              <div className="relative shrink-0">
                                 <div className="w-7 h-7 rounded-xl bg-[#0F172A] border border-[#37C6A3]/50 flex items-center justify-center shadow-md p-0.5">
                                   <AiRobotMascot variant="thinking" size={20} />
                                 </div>
@@ -814,26 +798,11 @@ export default function GlobalAiCopilotDrawer() {
                                 </span>
                               </div>
 
-                              <div className="flex-1 min-w-0 space-y-0.5 pt-0.5">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="text-[11px] font-bold text-[#0F172A] flex items-center gap-1">
-                                    <span>Thinking</span>
-                                    <span className="inline-flex gap-0.5 text-[#37C6A3] text-[10px] animate-pulse">
-                                      ✦ ✧ ✦
-                                    </span>
-                                  </span>
-                                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-800 font-medium border border-emerald-200">
-                                    RAM Memory
-                                  </span>
-                                </div>
-                                <p className="text-[11px] text-slate-600 font-medium animate-pulse">
-                                  {cyclingMessages[msgIdx]}
-                                </p>
-                                <div className="flex items-center gap-2 pt-0.5 text-[9px] text-[#7C8A9A]">
-                                  <span>Zero-Storage</span>
-                                  <span>•</span>
-                                  <span>Zero Live DB Queries</span>
-                                </div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs font-bold text-[#0F172A]">Thinking</span>
+                                <span className="inline-flex gap-0.5 text-[#37C6A3] text-xs font-extrabold animate-pulse">
+                                  <span>.</span><span>.</span><span>.</span>
+                                </span>
                               </div>
                             </div>
                           )}
@@ -872,12 +841,12 @@ export default function GlobalAiCopilotDrawer() {
                         className="w-full text-xs text-[#0F172A] placeholder-[#7C8A9A] bg-transparent focus:outline-hidden resize-none leading-relaxed"
                       />
 
-                      <div className="pt-1.5 border-t border-slate-200/60 flex items-center justify-between gap-1.5 flex-wrap">
-                        <div className="flex items-center gap-1">
+                      <div className="pt-1.5 border-t border-slate-200/60 flex items-center justify-between gap-1 flex-nowrap overflow-x-hidden">
+                        <div className="flex items-center gap-1 min-w-0">
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className={`p-1.5 rounded-lg text-xs border transition cursor-pointer ${
+                            className={`p-1.5 rounded-lg text-xs border transition shrink-0 cursor-pointer ${
                               attachedFile
                                 ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                                 : 'bg-white hover:bg-slate-100 text-[#0F172A] border-slate-200'
@@ -890,7 +859,7 @@ export default function GlobalAiCopilotDrawer() {
                           <select
                             value={toolMode}
                             onChange={(e) => setToolMode(e.target.value as ToolMode)}
-                            className="h-7 px-1.5 text-[11px] font-bold rounded-lg border border-slate-200 bg-white text-[#0F172A] focus:outline-hidden"
+                            className="h-7 px-1.5 text-[11px] font-bold rounded-lg border border-slate-200 bg-white text-[#0F172A] focus:outline-hidden shrink-0 max-w-[85px] sm:max-w-none truncate"
                           >
                             <option value="auto">✨ Auto</option>
                             <option value="exam">📄 Exam</option>
@@ -906,20 +875,21 @@ export default function GlobalAiCopilotDrawer() {
                           <select
                             value={language}
                             onChange={(e) => setLanguage(e.target.value as any)}
-                            className="h-7 px-1.5 text-[11px] font-semibold rounded-lg border border-slate-200 bg-white text-[#0F172A] focus:outline-hidden"
+                            className="h-7 px-1 text-[11px] font-semibold rounded-lg border border-slate-200 bg-white text-[#0F172A] focus:outline-hidden shrink-0 max-w-[65px] sm:max-w-none"
                           >
                             <option value="English">🇬🇧 EN</option>
                             <option value="Tamil">🇱🇰 தமிழ்</option>
                             <option value="Arabic">🇸🇦 عربي</option>
+                            <option value="Bilingual (Tamil + English)">Bi-Lang</option>
                           </select>
                         </div>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0">
                           {messages.length > 0 && (
                             <button
                               type="button"
                               onClick={handleNewChat}
-                              className="p-1.5 text-slate-500 hover:text-[#0F172A] rounded-lg hover:bg-slate-200 transition cursor-pointer"
+                              className="p-1.5 text-slate-500 hover:text-[#0F172A] rounded-lg hover:bg-slate-200 transition cursor-pointer shrink-0"
                               title="New Chat"
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -930,7 +900,7 @@ export default function GlobalAiCopilotDrawer() {
                             type="button"
                             disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
                             onClick={() => handleSubmitPrompt()}
-                            className="w-7 h-7 rounded-lg bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-xs flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="w-7 h-7 min-w-[28px] min-h-[28px] rounded-lg bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-xs flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
                             title="Send Message"
                           >
                             <ArrowUp className="w-3.5 h-3.5 text-[#37C6A3]" />

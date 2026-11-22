@@ -18,6 +18,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { aiService, type AiStatusResponse } from '../../services/ai.service';
+import AiRobotMascot from './AiRobotMascot';
 
 interface AiShowcaseLockedProps {
   statusData: AiStatusResponse;
@@ -176,6 +177,46 @@ export default function AiShowcaseLocked({
         .animate-orb-float {
           animation: orb-float-gentle 4s ease-in-out infinite;
         }
+        /* 3D AI Robot Mascot Keyframe Animations */
+        @keyframes robot-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-7px); }
+        }
+        @keyframes robot-wave {
+          0% { transform: rotate(0deg); }
+          20% { transform: rotate(14deg); }
+          40% { transform: rotate(-8deg); }
+          60% { transform: rotate(12deg); }
+          80% { transform: rotate(-4deg); }
+          100% { transform: rotate(0deg); }
+        }
+        @keyframes robot-think {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-3px) rotate(2deg); }
+        }
+        @keyframes robot-blink {
+          0%, 92%, 96%, 100% { transform: scaleY(1); }
+          94% { transform: scaleY(0.1); }
+        }
+        @keyframes robot-pulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.15); opacity: 1; }
+        }
+        .animate-robot-float {
+          animation: robot-float 3.5s ease-in-out infinite;
+        }
+        .animate-robot-wave {
+          animation: robot-wave 2.2s ease-in-out infinite;
+        }
+        .animate-robot-think {
+          animation: robot-think 3s ease-in-out infinite;
+        }
+        .animate-robot-blink {
+          animation: robot-blink 4.5s ease-in-out infinite;
+        }
+        .animate-robot-pulse {
+          animation: robot-pulse 2s ease-in-out infinite;
+        }
         @media (prefers-reduced-motion: reduce) {
           .animate-hero-spin,
           .animate-hero-reverse,
@@ -183,7 +224,12 @@ export default function AiShowcaseLocked({
           .animate-sparkle,
           .animate-badge-shimmer,
           .animate-orb-halo,
-          .animate-orb-float {
+          .animate-orb-float,
+          .animate-robot-float,
+          .animate-robot-wave,
+          .animate-robot-think,
+          .animate-robot-blink,
+          .animate-robot-pulse {
             animation: none !important;
           }
         }
@@ -292,8 +338,15 @@ export default function AiShowcaseLocked({
           </div>
         </div>
 
+        {/* 3D AI Robot Mascot (Waving) Floating on Hero Banner */}
+        <div className="absolute right-3 sm:right-8 lg:right-14 top-1/2 -translate-y-1/2 z-20 pointer-events-none select-none">
+          <div className="w-22 sm:w-32 lg:w-40 drop-shadow-2xl">
+            <AiRobotMascot variant="wave" className="w-full h-auto" />
+          </div>
+        </div>
+
         {/* Hero Content Layer */}
-        <div className="relative z-10 max-w-3xl">
+        <div className="relative z-10 max-w-xl sm:max-w-2xl lg:max-w-3xl">
           {/* Shimmer Sweep Badge */}
           <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
             <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
@@ -836,18 +889,20 @@ export default function AiShowcaseLocked({
           {/* Outer Pulsing Halo Ripple */}
           <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-orb-halo pointer-events-none" />
 
-          {/* Round Circular Action Button */}
+          {/* Round Circular Action Button with 3D AI Robot Mascot Avatar */}
           <button
             type="button"
             onClick={handleOrbClick}
-            className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95"
+            className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95 overflow-visible"
             aria-label="Unlock Smart AI Assistant"
             title="Unlock Smart AI Assistant"
           >
-            <Sparkles className="w-6 h-6 text-[#37C6A3] group-hover:rotate-12 transition-transform duration-300" />
+            <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+              <AiRobotMascot variant="avatar" size={36} />
+            </div>
 
             {/* Small Lock Dot Indicator */}
-            <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-amber-500 text-slate-950 border-2 border-[#0F172A] flex items-center justify-center shadow-xs">
+            <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-amber-500 text-slate-950 border-2 border-[#0F172A] flex items-center justify-center shadow-xs z-10">
               <Lock className="w-2.5 h-2.5" />
             </span>
           </button>

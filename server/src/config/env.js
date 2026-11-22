@@ -87,6 +87,10 @@ export const envSchema = z.object({
   R2_RECEIPTS_ACCESS_KEY_ID: z.string().optional(),
   R2_RECEIPTS_SECRET_ACCESS_KEY: z.string().optional(),
 
+  // Cloudflare Workers AI
+  CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
+  CLOUDFLARE_API_TOKEN: z.string().optional(),
+
   // Phase 5 Subscription settings
   SUBSCRIPTION_EXPIRING_SOON_DAYS: z.coerce.number().int().positive().default(7),
 

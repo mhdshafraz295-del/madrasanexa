@@ -95,6 +95,12 @@ enum PaymentVerificationStatus {
   REJECTED
 }
 
+enum AiSubscriptionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum AboutUsStatus {
   DRAFT
   PUBLISHED
@@ -292,6 +298,7 @@ model User {
   createdPolls                  PlatformPoll[]                  @relation("CreatedPolls")
   pollVotes                     PlatformPollVote[]              @relation("UserPollVotes")
   reviewedAlumniScholars        AlumniScholar[]                 @relation("ScholarReviewedByUser")
+  aiSubscriptionRequests        AiSubscriptionRequest[]
 
   @@unique([id, madrasaId])
   @@index([madrasaId])
@@ -386,6 +393,9 @@ model Madrasa {
   pollVotes                      PlatformPollVote[]              @relation("MadrasaPollVotes")
   showAlumniOnWebsite            Boolean                         @default(false)
   alumniScholars                 AlumniScholar[]                 @relation("MadrasaAlumniScholars")
+  aiEnabled                      Boolean                         @default(false) @map("ai_enabled")
+  aiExpiresAt                    DateTime?                       @map("ai_expires_at")
+  aiSubscriptionRequests         AiSubscriptionRequest[]
 
   @@index([status])
   @@map("madrasas")
@@ -1160,6 +1170,46 @@ model PlatformBankSetting {
   updatedAt     DateTime @updatedAt
 
   @@map("platform_bank_settings")
+}
+
+/// Global Platform AI Assistant Pricing & Bank Account Details
+model PlatformAiSetting {
+  id            String   @id @default("global")
+  monthlyPrice  Decimal  @default(2500.00) @map("monthly_price") @db.Decimal(10, 2)
+  yearlyPrice   Decimal  @default(25000.00) @map("yearly_price") @db.Decimal(10, 2)
+  currency      String   @default("LKR")
+  bankName      String?  @map("bank_name")
+  accountName   String?  @map("account_name")
+  accountNumber String?  @map("account_number")
+  branch        String?  @map("branch")
+  instructions  String?  @map("instructions") @db.Text
+  featuresList  Json?    @map("features_list")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_ai_settings")
+}
+
+/// Madrasa AI Assistant Tenant Subscription Requests
+model AiSubscriptionRequest {
+  id                String                      @id @default(cuid())
+  madrasaId         String                      @map("madrasa_id")
+  submittedByUserId String                      @map("submitted_by_user_id")
+  planName          String                      @map("plan_name")
+  amount            Decimal                     @db.Decimal(10, 2)
+  transactionRef    String                      @map("transaction_ref")
+  receiptUrl        String                      @map("receipt_url") @db.Text
+  status            AiSubscriptionRequestStatus @default(PENDING)
+  adminNote         String?                     @map("admin_note") @db.Text
+  createdAt         DateTime                    @default(now()) @map("created_at")
+  updatedAt         DateTime                    @updatedAt @map("updated_at")
+
+  madrasa           Madrasa                     @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+  submittedByUser   User                        @relation(fields: [submittedByUserId], references: [id], onDelete: Cascade)
+
+  @@index([madrasaId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("ai_subscription_requests")
 }
 
 /// Global Platform Public Homepage CMS Singleton

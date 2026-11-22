@@ -59,6 +59,8 @@ export interface MadrasaIdentity {
   name: string;
   code: string;
   logoUrl?: string | null;
+  aiEnabled?: boolean;
+  aiExpiresAt?: string | null;
 }
 
 export interface AuthUser {

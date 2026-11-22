@@ -8,6 +8,7 @@ import madrasaAdminRoutes from './madrasa-admin.routes.js';
 import publicRoutes from './public.routes.js';
 import gateRoutes from './gate.routes.js';
 import teacherRoutes from './teacher.routes.js';
+import aiRoutes from './ai.routes.js';
 
 const router = Router();
 
@@ -21,5 +22,6 @@ router.use('/madrasa-admin', madrasaAdminRoutes);
 router.use('/public', publicRoutes);
 router.use('/gate', gateRoutes);
 router.use('/teacher', teacherRoutes);
+router.use('/ai', aiRoutes);
 
 export default router;

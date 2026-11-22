@@ -16,11 +16,13 @@ import {
   Building2,
   KeyRound,
   ChevronDown,
+  Lock,
 } from 'lucide-react';
 import type {
   TeacherProfile,
 } from '../mock/teacherMockData';
 import { authApi, profileApi, notificationsApi, resolveAssetUrl } from '../services/api';
+import { teacherAiService } from '../services/ai.service';
 import { TEACHER_NAV_ITEMS, type TeacherNavItem as NavItem } from '../components/layout/TeacherNavigation';
 import NotificationDrawer from '../components/notifications/NotificationDrawer';
 
@@ -32,12 +34,16 @@ export default function TeacherLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [logoError, setLogoError] = useState(false);
   const [photoError, setPhotoError] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     let isMounted = true;
+    teacherAiService.getAiStatus().then((s) => {
+      if (isMounted) setAiEnabled(s.aiEnabled);
+    }).catch(() => {});
 
     const handleUnauthorized = () => {
       navigate('/login');
@@ -268,14 +274,24 @@ export default function TeacherLayout() {
                     to={item.to}
                     end={item.end}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                    className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                       isActive
                         ? 'bg-[#0F172A] text-white shadow-xs'
                         : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1]'
                     }`}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.isAi && !aiEnabled && (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded-md"
+                        title="AI Subscription Required"
+                      >
+                        <Lock className="w-2.5 h-2.5 text-amber-600" />
+                      </span>
+                    )}
                   </NavLink>
                 );
               })}

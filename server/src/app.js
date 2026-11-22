@@ -1,3 +1,7 @@
+import dns from 'dns';
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch {}
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';

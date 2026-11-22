@@ -19,6 +19,7 @@ import {
   Receipt,
   Globe,
   Vote,
+  Sparkles,
 } from 'lucide-react';
 
 const navItems = [
@@ -28,6 +29,7 @@ const navItems = [
   { to: '/super-admin/plans', label: 'Subscription Plans', icon: Layers },
   { to: '/super-admin/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { to: '/super-admin/subscription-payments', label: 'Subscription Payments', icon: Receipt },
+  { to: '/super-admin/ai-subscriptions', label: '✨ AI Subscriptions', icon: Sparkles },
   { to: '/super-admin/bank-details', label: 'Bank Details', icon: Landmark },
   { to: '/super-admin/announcements', label: 'Announcement Center', icon: Megaphone },
   { to: '/super-admin/polls', label: 'Polls & Surveys', icon: Vote },

@@ -22,6 +22,7 @@ import SuperAdminAnnouncementsPage from './pages/super-admin/AnnouncementsPage';
 import SuperAdminPollsPage from './pages/super-admin/PollsPage';
 import BankDetailsPage from './pages/super-admin/BankDetailsPage';
 import SubscriptionPaymentsPage from './pages/super-admin/SubscriptionPaymentsPage';
+import SuperAdminAiSubscriptionsPage from './pages/super-admin/AiSubscriptionsPage';
 import WebsiteContentPage from './pages/super-admin/WebsiteContentPage';
 import AboutUsPage from './pages/public/AboutUsPage';
 import HomePage from './pages/public/HomePage';
@@ -32,6 +33,7 @@ import PricingPage from './pages/public/PricingPage';
 // Madrasa Admin Workspace Components
 import MadrasaAdminLayout from './layouts/MadrasaAdminLayout';
 import MadrasaAdminDashboardPage from './pages/madrasa-admin/DashboardPage';
+import AiAssistantPage from './pages/madrasa-admin/AiAssistantPage';
 import MadrasaAdminSettingsPage from './pages/madrasa-admin/SettingsPage';
 import MadrasaAdminSubscriptionPage from './pages/madrasa-admin/SubscriptionPage';
 import MadrasaAdminActivityPage from './pages/madrasa-admin/ActivityPage';
@@ -117,6 +119,7 @@ export default function App() {
             <Route path="plans" element={<PlansPage />} />
             <Route path="subscriptions" element={<SubscriptionsPage />} />
             <Route path="subscription-payments" element={<SubscriptionPaymentsPage />} />
+            <Route path="ai-subscriptions" element={<SuperAdminAiSubscriptionsPage />} />
             <Route path="bank-details" element={<BankDetailsPage />} />
             <Route path="announcements" element={<SuperAdminAnnouncementsPage />} />
             <Route path="polls" element={<SuperAdminPollsPage />} />
@@ -148,6 +151,7 @@ export default function App() {
             <Route element={<SubscriptionRoute />}>
               <Route index element={<MadrasaAdminDashboardPage />} />
               <Route path="dashboard" element={<MadrasaAdminDashboardPage />} />
+              <Route path="ai-assistant" element={<AiAssistantPage />} />
               <Route path="classes" element={<ClassesPage />} />
               <Route path="attendance" element={<AttendancePage />} />
               <Route path="timetable" element={<TimetablePage />} />

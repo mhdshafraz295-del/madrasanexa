@@ -10,6 +10,7 @@ import {
   Bell,
   User,
   GraduationCap,
+  Sparkles,
 } from 'lucide-react';
 
 export interface TeacherNavItem {
@@ -17,10 +18,12 @@ export interface TeacherNavItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   end?: boolean;
+  isAi?: boolean;
 }
 
 export const TEACHER_NAV_ITEMS: TeacherNavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/ai-assistant', label: '✨ AI Assistant', icon: Sparkles, isAi: true },
   { to: '/attendance/my', label: 'Attendance Check-In', icon: QrCode },
   { to: '/timetable', label: 'Timetable', icon: Calendar },
   { to: '/classes', label: 'Classes & Subjects', icon: BookOpen },

@@ -20,6 +20,7 @@ import MySalaryPage from './pages/salary/MySalaryPage';
 import PaymentHistoryPage from './pages/salary/PaymentHistoryPage';
 import PayslipsPage from './pages/salary/PayslipsPage';
 import TeacherAlumniPage from './pages/alumni/TeacherAlumniPage';
+import TeacherAiPage from './pages/ai/TeacherAiPage';
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="ai-assistant" element={<TeacherAiPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="timetable" element={<TimetablePage />} />
         <Route path="classes" element={<ClassesSubjectsPage />} />

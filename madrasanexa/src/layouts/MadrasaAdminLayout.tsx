@@ -32,11 +32,15 @@ import {
   Globe,
   UserPlus,
   ShieldCheck,
+  Sparkles,
+  Lock,
 } from 'lucide-react';
 import AnnouncementBell from '../components/announcement/AnnouncementBell';
+import { aiService } from '../services/ai.service';
 
 const activeNavItems = [
   { to: '/madrasa-admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/madrasa-admin/ai-assistant', label: '✨ AI Assistant', icon: Sparkles, isAi: true },
   { to: '/madrasa-admin/admissions', label: 'Admissions & Intake', icon: UserPlus },
   { to: '/madrasa-admin/students', label: 'Students', icon: GraduationCap },
   { to: '/madrasa-admin/alumni', label: 'Alumni & Scholars', icon: GraduationCap },
@@ -73,6 +77,13 @@ export default function MadrasaAdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [logoError, setLogoError] = useState(false);
+  const [aiEnabled, setAiEnabled] = useState<boolean>(Boolean(user?.madrasa?.aiEnabled));
+
+  useEffect(() => {
+    aiService.getAiStatus().then((res) => {
+      setAiEnabled(res.aiEnabled);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     setLogoError(false);
@@ -182,7 +193,7 @@ export default function MadrasaAdminLayout() {
               Workspace Modules
             </div>
             <nav className="space-y-1">
-              {activeNavItems.map((item) => {
+              {activeNavItems.map((item: any) => {
                 const Icon = item.icon;
                 return (
                   <NavLink
@@ -191,15 +202,25 @@ export default function MadrasaAdminLayout() {
                     end={item.end}
                     onClick={() => setMobileMenuOpen(false)}
                     className={({ isActive }) =>
-                      `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+                      `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
                         isActive
                           ? 'bg-[#0F172A] text-white shadow-xs'
                           : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1]'
                       }`
                     }
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.isAi && !aiEnabled && (
+                      <span
+                        className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-600 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded-md"
+                        title="AI Subscription Required"
+                      >
+                        <Lock className="w-2.5 h-2.5 text-amber-600" />
+                      </span>
+                    )}
                   </NavLink>
                 );
               })}

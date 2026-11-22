@@ -10,3 +10,10 @@ dist/
 
 .vite/
 scratch/
+
+# Local load testing & user manual scripts
+load_test.mjs
+generate_user_manual.mjs
+*.pdf
+*.tsbuildinfo
+

@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js",
+    "start": "npx prisma migrate deploy && node src/server.js",
+    "start:server": "node src/server.js",
     "test:tenant": "node --import ./tests/setup-test-env.js tests/tenant-isolation.test.js",
     "test:subscription": "node --import ./tests/setup-test-env.js tests/subscription.test.js",
     "test:phase6": "node --import ./tests/setup-test-env.js tests/super-admin.test.js",
@@ -50,6 +51,7 @@
     "test:log-sanitization": "node --import ./tests/setup-test-env.js tests/request-logging-sanitization.test.js",
     "test:trust-proxy": "node --import ./tests/setup-test-env.js tests/trust-proxy-rate-limit.test.js",
     "test:gate": "node --import ./tests/setup-test-env.js tests/gate-scanner-backend.test.js",
+    "test:ai": "node --import ./tests/setup-test-env.js tests/ai-assistant.test.js",
     "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
@@ -68,6 +70,7 @@
     "multer": "^2.5.0",
     "node-cron": "^4.6.0",
     "nodemailer": "^10.3.1",
+    "pdf-parse": "^2.4.5",
     "prisma": "^6.19.3",
     "puppeteer": "^25.16.0",
     "sharp": "^0.35.5",

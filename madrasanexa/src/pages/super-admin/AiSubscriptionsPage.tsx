@@ -80,7 +80,7 @@ export default function SuperAdminAiSubscriptionsPage() {
     try {
       setLoadingMadrasas(true);
       const res = await apiClient.get('/super-admin/madrasas', {
-        params: { limit: 100, pageSize: 100 },
+        params: { limit: 100, pageSize: 100, _t: Date.now() },
       });
       const list = res.data?.data?.madrasas || res.data?.data || [];
       setMadrasas(list);
@@ -165,7 +165,7 @@ export default function SuperAdminAiSubscriptionsPage() {
       ? (madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) > new Date()
           ? madrasa.aiExpiresAt
           : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString())
-      : madrasa.aiExpiresAt;
+      : null;
 
     // 1. Optimistic UI Update immediately reflected in table
     setMadrasas((prev) =>
@@ -188,7 +188,16 @@ export default function SuperAdminAiSubscriptionsPage() {
       // 2. Sync with server data
       if (res?.data) {
         setMadrasas((prev) =>
-          prev.map((m) => (m.id === madrasa.id ? { ...m, ...res.data } : m))
+          prev.map((m) =>
+            m.id === madrasa.id
+              ? {
+                  ...m,
+                  ...res.data,
+                  aiEnabled: Boolean(res.data.aiEnabled),
+                  aiExpiresAt: res.data.aiExpiresAt,
+                }
+              : m
+          )
         );
       }
       await loadMadrasas();

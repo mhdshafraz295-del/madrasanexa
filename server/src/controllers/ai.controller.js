@@ -11,9 +11,9 @@ export async function getAiStatus(req, res, next) {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    const madrasaId = req.auth.role === 'SUPER_ADMIN'
-      ? (req.query.madrasaId || null)
-      : req.auth.madrasaId;
+    const madrasaId = (req.auth.role === 'SUPER_ADMIN'
+      ? (req.query.madrasaId || req.auth.madrasaId)
+      : req.auth.madrasaId) || null;
 
     if (!madrasaId) {
       if (req.auth.role === 'SUPER_ADMIN') {

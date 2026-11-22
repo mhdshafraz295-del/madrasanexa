@@ -179,8 +179,13 @@ export async function getTenantAiStatus(madrasaId) {
     throw new BadRequestError('Madrasa ID is required.');
   }
 
-  const madrasa = await prisma.madrasa.findUnique({
-    where: { id: madrasaId },
+  const madrasa = await prisma.madrasa.findFirst({
+    where: {
+      OR: [
+        { id: madrasaId },
+        { code: madrasaId },
+      ],
+    },
     select: {
       id: true,
       name: true,
@@ -197,7 +202,8 @@ export async function getTenantAiStatus(madrasaId) {
 
   const now = new Date();
   const isExpired = Boolean(madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) <= now);
-  const isActive = Boolean(madrasa.aiEnabled && (!madrasa.aiExpiresAt || new Date(madrasa.aiExpiresAt) > now));
+  const isTenantActive = madrasa.status === 'ACTIVE';
+  const isActive = Boolean(madrasa.aiEnabled === true && !isExpired && isTenantActive);
   const effectiveAiEnabled = isActive;
 
   let daysRemaining = null;
@@ -567,8 +573,13 @@ export async function rejectAiSubscriptionRequest({ requestId, adminUserId, admi
  * Super Admin: Manually toggle AI access for any Madrasa
  */
 export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adminUserId, note }) {
-  const madrasa = await prisma.madrasa.findUnique({
-    where: { id: madrasaId },
+  const madrasa = await prisma.madrasa.findFirst({
+    where: {
+      OR: [
+        { id: madrasaId },
+        { code: madrasaId },
+      ],
+    },
   });
 
   if (!madrasa) {
@@ -584,14 +595,12 @@ export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adm
       newExpiry = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
     }
   } else {
-    // If disabling, keep or clear expiry
-    if (expiresAt === null) {
-      newExpiry = null;
-    }
+    // When disabling AI, cleanly clear expiry
+    newExpiry = null;
   }
 
   const updated = await prisma.madrasa.update({
-    where: { id: madrasaId },
+    where: { id: madrasa.id },
     data: {
       aiEnabled: Boolean(enabled),
       aiExpiresAt: newExpiry,
@@ -605,23 +614,28 @@ export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adm
     },
   });
 
-  await prisma.activityLog.create({
-    data: {
-      userId: adminUserId,
-      action: enabled ? 'AI_MANUAL_ENABLED' : 'AI_MANUAL_DISABLED',
-      entityType: 'MADRASA',
-      entityId: madrasaId,
-      metadata: {
-        enabled: Boolean(enabled),
-        expiresAt: newExpiry?.toISOString() || null,
-        note,
+  try {
+    await prisma.activityLog.create({
+      data: {
+        madrasaId: madrasa.id,
+        userId: adminUserId || null,
+        action: enabled ? 'AI_MANUAL_ENABLED' : 'AI_MANUAL_DISABLED',
+        entityType: 'MADRASA',
+        entityId: madrasa.id,
+        metadata: {
+          enabled: Boolean(enabled),
+          expiresAt: newExpiry?.toISOString() || null,
+          note,
+        },
       },
-    },
-  });
+    });
+  } catch (logErr) {
+    console.error('Activity log error during AI toggle:', logErr);
+  }
 
   return {
     ...updated,
-    isActive: Boolean(updated.aiEnabled && (!updated.aiExpiresAt || new Date(updated.aiExpiresAt) > new Date())),
+    isActive: Boolean(updated.aiEnabled === true && (!updated.aiExpiresAt || new Date(updated.aiExpiresAt) > new Date())),
   };
 }
 

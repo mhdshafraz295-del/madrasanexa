@@ -153,6 +153,7 @@ export const resendOnboardingApprovalEmail = async (req, res, next) => {
 
 export const listMadrasas = async (req, res, next) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const validated = listMadrasasQuerySchema.parse(req.query);
     const result = await superAdminService.listMadrasas(validated);
     return res.status(200).json({ success: true, data: result });

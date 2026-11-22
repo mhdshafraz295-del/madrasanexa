@@ -28,8 +28,13 @@ export const requireActiveAiSubscription = async (req, res, next) => {
       throw new ForbiddenError('User is not associated with an active Madrasa tenant.');
     }
 
-    const madrasa = await prisma.madrasa.findUnique({
-      where: { id: madrasaId },
+    const madrasa = await prisma.madrasa.findFirst({
+      where: {
+        OR: [
+          { id: madrasaId },
+          { code: madrasaId },
+        ],
+      },
       select: {
         id: true,
         status: true,
@@ -46,7 +51,7 @@ export const requireActiveAiSubscription = async (req, res, next) => {
 
     const now = new Date();
     const isExpired = Boolean(madrasa.aiExpiresAt && new Date(madrasa.aiExpiresAt) <= now);
-    const isActive = Boolean(madrasa.aiEnabled && !isExpired);
+    const isActive = Boolean(madrasa.aiEnabled === true && !isExpired && madrasa.status === 'ACTIVE');
 
     if (!isActive) {
       return res.status(403).json({

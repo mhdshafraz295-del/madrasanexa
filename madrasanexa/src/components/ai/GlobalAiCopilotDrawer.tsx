@@ -245,29 +245,48 @@ export default function GlobalAiCopilotDrawer() {
 
       if (resolvedMode === 'auto') {
         const lower = query.toLowerCase();
-        if (file && (lower.includes('exam') || lower.includes('mcq') || lower.includes('question paper'))) {
+        if (file && (lower.includes('exam') || lower.includes('mcq') || lower.includes('question paper') || lower.includes('வினாத்தாள்') || lower.includes('பரீட்சை வினா'))) {
           resolvedMode = 'exam';
-        } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner')) {
+        } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner') || lower.includes('சுவரொட்டி')) {
           resolvedMode = 'poster';
         } else if (
-          lower.startsWith('translate') ||
-          lower.includes('translate to') ||
-          lower.includes('la tha') ||
-          lower.includes('la thanga') ||
-          lower.includes('in english') ||
-          lower.includes('in tamil') ||
-          lower.includes('in arabic')
+          lower.startsWith('translate ') ||
+          lower.includes('translate this') ||
+          lower.includes('translate to ') ||
+          lower.includes('மொழிபெயர்க்க') ||
+          lower.includes('மொழிபெயர்ப்பு')
         ) {
           resolvedMode = 'translate';
-        } else if (lower.includes('circular') || lower.includes('parent notice') || lower.includes('ramadan notice')) {
+        } else if (
+          lower.includes('circular') ||
+          lower.includes('parent notice') ||
+          lower.includes('ramadan notice') ||
+          lower.includes('leave notice') ||
+          lower.includes('சுற்றறிக்கை') ||
+          lower.includes('விடுமுறை அறிவிப்பு') ||
+          lower.includes('notice onnu')
+        ) {
           resolvedMode = 'circular';
-        } else if (lower.includes('summarize') || lower.includes('summary') || lower.includes('executive summary')) {
+        } else if (
+          lower.includes('summarize') ||
+          lower.includes('summary') ||
+          lower.includes('surukki') ||
+          lower.includes('surukkam') ||
+          lower.includes('சுருக்கம்') ||
+          lower.includes('executive summary')
+        ) {
           resolvedMode = 'summarizer';
-        } else if (lower.includes('speech') || lower.includes('bayan') || lower.includes('assembly speech')) {
+        } else if (
+          lower.includes('speech') ||
+          lower.includes('bayan') ||
+          lower.includes('assembly speech') ||
+          lower.includes('உரை') ||
+          lower.includes('பயான்')
+        ) {
           resolvedMode = 'speech';
-        } else if (lower.includes('hifz') || lower.includes('tajweed quiz')) {
+        } else if (lower.includes('hifz') || lower.includes('tajweed quiz') || lower.includes('ஹிஃப்ழு') || lower.includes('தஜ்வீத்')) {
           resolvedMode = 'hifz';
-        } else if (lower.includes('lesson plan') || lower.includes('30-min lesson')) {
+        } else if (lower.includes('lesson plan') || lower.includes('30-min lesson') || lower.includes('பாடத் திட்டம்')) {
           resolvedMode = 'lesson';
         }
       }
@@ -562,6 +581,18 @@ export default function GlobalAiCopilotDrawer() {
                 </div>
 
                 <div className="flex items-center gap-1.5">
+                  {isUnlocked && messages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={handleNewChat}
+                      className="px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-800 rounded-lg border border-slate-700 transition flex items-center gap-1 cursor-pointer"
+                      title="Start New Chat (Auto Copilot)"
+                    >
+                      <Plus className="w-3 h-3 text-[#37C6A3]" />
+                      <span>New Chat</span>
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => {

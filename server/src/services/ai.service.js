@@ -764,6 +764,153 @@ export async function extractTextFromPdfBuffer(buffer) {
 }
 
 /**
+ * Universal System Instructions for Tanglish Comprehension, Natural Scholarly Tamil,
+ * Clean Topic Extraction, and Rigorous Islamic Scholarly Accuracy.
+ */
+export const UNIVERSAL_AI_INSTRUCTIONS = `
+[UNIVERSAL TANGLISH (SPOKEN TAMIL IN ENGLISH SCRIPT) COMPREHENSION & NATURAL RESPONSE RULES]
+1. UNIVERSAL TANGLISH UNDERSTANDING:
+   - Users frequently type spoken Tamil using English letters (Tanglish) across all topics, for example:
+     * "wudu eppadi seirathu" (How to perform Wudu / Rules of Wudu)
+     * "zakat kanakku eppadi podurathu" (How to calculate Zakat)
+     * "naalaikku madrasa leave notice onnu ezhuthu" (Draft Madrasa holiday/leave circular)
+     * "ramadan paththi bayan speech thaa" (Deliver Bayan/Speech on Ramadan)
+     * "islamiya sattam paththi sollu" (Explain Islamic Jurisprudence / Shariah rulings)
+     * "indha pdf-a surukki sollu" (Summarize this syllabus/document)
+     * "thozhugai timing pathi sollu" (Explain Salah timings and rules)
+     * "hifz test paper onnu ready pannu" (Prepare a Hifz test paper)
+   - You MUST first mentally decode the true Tamil and Islamic meaning behind any Tanglish prompt. Treat Tanglish as genuine user intent and answer with full knowledge, depth, and clarity.
+
+2. NEVER ECHO OR PHONETIC-TRANSLITERATE RAW TANGLISH PROMPTS:
+   - STRICT PROHIBITION: NEVER copy-paste, parrot, or phonetically spell out colloquial Tanglish words into titles, headings, subject lines, or bullet points!
+   - NEVER write awkward phonetic gibberish such as: "இஸ்லாமியா சத்தாம் பத்தி சொல்லு பற்றிய அறிவு" or "வூதூ எப்படி செய்றது நோட்ஸ்" or "ஸகாத் கணக்கு எப்படி போடுறது பாடம்".
+   - ALWAYS extract and refine the user's intent into a clean, dignified, formal scholarly title and subject (e.g., "வுளூவின் முக்கியத்துவமும் அதன் சட்டதிட்டங்களும் செய்முறையும் (The Fiqh and Method of Wudu)", "ஜகாத் கணக்கிடும் முறை (Method of Zakat Calculation)", "ரமழானின் சிறப்புகளும் அதன் வழிகாட்டல்களும் (Virtues of Ramadan)").
+
+3. FLUENT, SCHOLARLY, NATURAL TAMIL:
+   - When responding in Tamil (or when the user prompts in Tanglish/Tamil and expects Tamil output):
+     * Write in natural, grammatically sound, elegant Tamil as used by authentic Islamic scholars, Madrasas, and Muslim educational institutions in Sri Lanka and India.
+     * Use authentic, widely recognized Islamic terminology in Tamil script: (வுளூ, தொழுகை/ஸலாஹ், ஜகாத், நோன்பு/ஸவ்ம், ஷரீஆ, ஃபிக்ஹ், திருக்குர்ஆன், ஸஹீஹ் ஹதீஸ், ஸுன்னத், துஆ, அதப், அக்லாக், தஹாரத், இபாத், திக்ர், மத்ரஸா, உஸ்தாத்).
+     * NEVER use awkward machine-translated phrasing or dry literal Google Translations.
+
+4. STRICT ISLAMIC ACCURACY & SCHOLARLY INTEGRITY GUARDRAILS:
+   - ZERO SCRIPTURAL FABRICATION: Never invent or guess Quranic verse numbers or Surah references (e.g., never misquote Surah 2:238 or cite non-existent numbers). If quoting an Ayah, ensure the Surah name and theological context are accurate.
+   - ACCURATE HADITH ATTRIBUTION: Strictly attribute Hadith quotations to their authentic canonical collections (e.g., Sahih al-Bukhari, Sahih Muslim, Sunan Abi Dawud, Jami' at-Tirmidhi, Sunan an-Nasa'i, Sunan Ibn Majah).
+     * Example: The statement "தூய்மை ஈமானின் பாதியாகும்" (Cleanliness is half of faith) is authentically recorded in Sahih Muslim (Hadith 223), NOT Sahih al-Bukhari.
+   - COMPLETE AND VALID FIQH STEPS: When explaining Fiqh rulings or acts of worship (Ibadah), provide complete, step-by-step conditions (Shuroot) and obligatory pillars (Fara'idh / Arkan).
+     * For example, for Wudu (வுளூ), you MUST include all 4 Quranic Fardh steps (Surah Al-Ma'idah 5:6):
+       1. Niyyah (Intention in the heart)
+       2. Washing the entire face (from top of forehead to bottom of chin, and from earlobe to earlobe)
+       3. Washing both arms up to and including the elbows
+       4. Masah (wiping over) the head
+       5. Washing both feet up to and including the ankles
+       6. Tertib (maintaining the proper obligatory sequence)
+       Along with authentic Sunnah steps: reciting Bismillah, washing hands up to wrists, rinsing mouth (Madmadah), sniffing water into nostrils and blowing it out (Istinshaq), and reciting the Sunnah Shahadah Du'a upon completion.
+   - REVERENCE & HONORIFICS: Always use dignified Islamic honorifics (Allah ﷻ, Prophet Muhammad ﷺ, Sahabah رضي الله عنهم, scholars رحمه الله).
+`;
+
+/**
+ * Natural language target-language detection & instruction stripper.
+ * Detects Tanglish, English, Tamil, and Arabic inline prompts (e.g. "english la tha", "in english", "tamilil", "arabic la")
+ * so the output strictly matches the user's intent without translating the meta-instruction itself.
+ */
+export function detectAndStripLanguageInstruction(text, defaultTarget = 'English') {
+  let cleanedText = String(text || '').trim();
+  let detectedTarget = null;
+
+  // Patterns for English requests:
+  const englishPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+english\s*[:,-]?\s*)/i,
+    /^(?:english\s+la\s*(?:tha|thanga|podunga|podu|venum|kudunga)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+english\s*[:,-]?\s*)/i,
+    /^(?:englishil\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+english|english\s+la\s*(?:tha|thanga|podunga|podu|venum|kudunga)?|translate\s+(?:to|into)\s+english|englishil))$/i,
+  ];
+
+  // Patterns for Tamil requests:
+  const tamilPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+tamil\s*[:,-]?\s*)/i,
+    /^(?:tamil\s+la\s*(?:tha|thanga|podunga|podu|venum|kudunga)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+tamil\s*[:,-]?\s*)/i,
+    /^(?:tamilil\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+tamil|tamil\s+la\s*(?:tha|thanga|podunga|podu|venum|kudunga)?|translate\s+(?:to|into)\s+tamil|tamilil))$/i,
+  ];
+
+  // Patterns for Arabic requests:
+  const arabicPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+arabic\s*[:,-]?\s*)/i,
+    /^(?:arabic\s+la\s*(?:tha|thanga|podunga|podu|venum|kudunga)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+arabic\s*[:,-]?\s*)/i,
+    /^(?:arabiyil\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+arabic|arabic\s+la\s*(?:tha|thanga|podunga|podu|venum|kudunga)?|translate\s+(?:to|into)\s+arabic|arabiyil))$/i,
+  ];
+
+  // Patterns for Bilingual requests:
+  const bilingualPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+bilingual\s*[:,-]?\s*)/i,
+    /^(?:bilingual\s*(?:la)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+bilingual\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+bilingual|bilingual\s*(?:la)?|tamil\s+(?:and|&)\s+english))$/i,
+  ];
+
+  for (const pat of englishPatterns) {
+    if (pat.test(cleanedText)) {
+      detectedTarget = 'English';
+      cleanedText = cleanedText.replace(pat, '').trim();
+      break;
+    }
+  }
+
+  if (!detectedTarget) {
+    for (const pat of tamilPatterns) {
+      if (pat.test(cleanedText)) {
+        detectedTarget = 'Tamil';
+        cleanedText = cleanedText.replace(pat, '').trim();
+        break;
+      }
+    }
+  }
+
+  if (!detectedTarget) {
+    for (const pat of arabicPatterns) {
+      if (pat.test(cleanedText)) {
+        detectedTarget = 'Arabic';
+        cleanedText = cleanedText.replace(pat, '').trim();
+        break;
+      }
+    }
+  }
+
+  if (!detectedTarget) {
+    for (const pat of bilingualPatterns) {
+      if (pat.test(cleanedText)) {
+        detectedTarget = 'Bilingual (Tamil + English)';
+        cleanedText = cleanedText.replace(pat, '').trim();
+        break;
+      }
+    }
+  }
+
+  // Normalize defaultTarget if detectedTarget wasn't found
+  let finalTarget = detectedTarget;
+  if (!finalTarget) {
+    const raw = String(defaultTarget || '').toLowerCase();
+    if (raw.includes('arab') || raw === 'ar') finalTarget = 'Arabic';
+    else if (raw.includes('tamil') || raw === 'ta') finalTarget = 'Tamil';
+    else if (raw.includes('bilingual')) finalTarget = 'Bilingual (Tamil + English)';
+    else finalTarget = 'English';
+  }
+
+  if (!cleanedText && text) {
+    cleanedText = String(text).trim();
+  }
+
+  return {
+    cleanedText,
+    targetLanguage: finalTarget,
+  };
+}
+
+/**
  * Feature 1: Zero-Storage PDF Exam Paper & Answer Key Generator
  */
 export async function generateExamPaper({
@@ -795,6 +942,8 @@ export async function generateExamPaper({
     throw new BadRequestError('Please provide a syllabus PDF, pasted notes, or a specific topic to generate the exam paper.');
   }
 
+  const { cleanedText: cleanTopic, targetLanguage: resolvedLanguage } = detectAndStripLanguageInstruction(topic, language);
+
   const prompt = `
 You are an expert Islamic curriculum exam paper designer for Madrasa education.
 Generate a structured, authentic, comprehensive examination paper and complete answer key based strictly on the provided input:
@@ -806,8 +955,14 @@ Generate a structured, authentic, comprehensive examination paper and complete a
 - Grade / Level: ${gradeLevel}
 - Total Marks: ${totalMarks}
 - Time Allowed: ${durationMinutes} Minutes
-- Topic / Focus: ${topic || 'Covered Syllabus Topics'}
-- Target Output Language: ${language} (Ensure all questions, instructions, and answers are provided in ${language}. If "Bilingual" or "Tamil" or "Arabic", provide natural, accurate phrasing with proper terminology).
+- Topic / Focus: ${cleanTopic || topic || 'Covered Syllabus Topics'}
+- Target Output Language: ${resolvedLanguage} (Ensure all questions, instructions, and answers are provided in ${resolvedLanguage}. If "Bilingual" or "Tamil" or "Arabic", provide natural, accurate phrasing with proper terminology).
+
+[CLEAN TOPIC EXTRACTION & TANGLISH RULE]
+- Extract the clean, formal Islamic subject matter from "${cleanTopic || topic}".
+- NEVER echo colloquial Tanglish words (e.g. "wudu eppadi seirathu", "zakat kanakku") into the exam header, questions, or answer keys. Use formal scholarly titles (e.g. "வுளூவின் சட்டதிட்டங்கள் / Fiqh of Taharah: Rules of Wudu").
+- If target language is Tamil: Provide natural, grammatically sound Tamil with authentic Islamic terms (வுளூ, தொழுகை, ஜகாத், திருக்குர்ஆன், ஸஹீஹ் ஹதீஸ்).
+- Ensure 100% accurate Quranic references and Hadith citations.
 
 [SPECIFIC STRUCTURE REQUIRED]
 1. EXAM HEADER: Clean centered layout with Madrasa Name, Subject, Grade, Marks, Time, and Student Name & Index No blanks.
@@ -824,20 +979,22 @@ Generate a structured, authentic, comprehensive examination paper and complete a
    - Model answers and key mark-allocation points for Section B and Section C.
 
 [SOURCE SYLLABUS / CONTENT]
-${syllabusContent ? syllabusContent.slice(0, 7000) : topic}
+${syllabusContent ? syllabusContent.slice(0, 7000) : (cleanTopic || topic)}
 
 Format the output in clean, professional GitHub-flavored Markdown ready for display, copying, and clean A4 print/PDF generation.
 `;
 
-  const systemPrompt = `You are MadrasaNexa Smart AI Assistant, a specialized Islamic educational copilot for Madrasa administrators and Ustadhs. Output accurate, structured exam papers formatted in professional Markdown with rigorous Islamic accuracy and exact requested language.`;
+  const systemPrompt = `You are MadrasaNexa Smart AI Assistant, a specialized Islamic educational copilot for Madrasa administrators and Ustadhs. Output accurate, structured exam papers formatted in professional Markdown with rigorous Islamic accuracy and exact requested language.
+
+${UNIVERSAL_AI_INSTRUCTIONS}`;
 
   const examContent = await callCloudflareTextAi({ prompt, systemPrompt, temperature: 0.25 });
 
   return {
     examContent,
-    language,
+    language: resolvedLanguage,
     subject,
-    topic,
+    topic: cleanTopic || topic,
   };
 }
 
@@ -867,6 +1024,8 @@ export async function generateLessonPlan({
     throw new BadRequestError('Please provide a lesson topic or upload a syllabus reference.');
   }
 
+  const { cleanedText: cleanTopic, targetLanguage: resolvedLanguage } = detectAndStripLanguageInstruction(topic, language);
+
   const prompt = `
 You are a senior Madrasa Head Ustadh and pedagogical mentor.
 Create a structured, highly engaging ${durationMinutes}-Minute Islamic Lesson Plan designed for real Madrasa classroom teaching.
@@ -874,9 +1033,15 @@ Create a structured, highly engaging ${durationMinutes}-Minute Islamic Lesson Pl
 [LESSON PARAMETERS]
 - Subject: ${subject}
 - Grade / Age Group: ${gradeLevel}
-- Topic: ${topic || 'Syllabus Topic'}
+- Input Topic / Request: ${cleanTopic || topic || 'Syllabus Topic'}
 - Duration: ${durationMinutes} Minutes
-- Language: ${language}
+- Target Output Language: ${resolvedLanguage}
+
+[CLEAN TOPIC EXTRACTION & TANGLISH RULE]
+- Extract the clean, formal Islamic subject matter from "${cleanTopic || topic}".
+- For example: if user inputs Tanglish "wudu eppadi seirathu", the formal lesson topic MUST be "வுளூவின் முக்கியத்துவமும் அதன் சட்டதிட்டங்களும் செய்முறையும் (Fiqh of Purification: Method and Rulings of Wudu)".
+- NEVER echo colloquial Tanglish words into the lesson overview, objectives, blackboard layout, or headings!
+- Ensure complete Fiqh accuracy (e.g. all obligatory pillars and sunnahs of Wudu/Salah) and authentic Hadith citations.
 
 [REQUIRED SECTIONS]
 1. LESSON OVERVIEW & OBJECTIVES:
@@ -898,20 +1063,22 @@ Create a structured, highly engaging ${durationMinutes}-Minute Islamic Lesson Pl
    - Practical take-home task and one daily Sunnah practice related to the topic.
 
 [SOURCE MATERIALS]
-${content ? content.slice(0, 6000) : topic}
+${content ? content.slice(0, 6000) : (cleanTopic || topic)}
 
-Format the response in structured, beautifully formatted Markdown with bullet points, time badges, and clear headings in ${language}.
+Format the response in structured, beautifully formatted Markdown with bullet points, time badges, and clear headings in ${resolvedLanguage}.
 `;
 
-  const systemPrompt = `You are MadrasaNexa Ustadh Copilot. Provide practical, inspiring, classroom-tested 30-minute lesson plans with authentic Islamic scholarship and high pedagogical structure in the requested language.`;
+  const systemPrompt = `You are MadrasaNexa Ustadh Copilot. Provide practical, inspiring, classroom-tested 30-minute lesson plans with authentic Islamic scholarship and high pedagogical structure in the requested language.
+
+${UNIVERSAL_AI_INSTRUCTIONS}`;
 
   const lessonPlan = await callCloudflareTextAi({ prompt, systemPrompt, temperature: 0.3 });
 
   return {
     lessonPlan,
-    language,
+    language: resolvedLanguage,
     subject,
-    topic,
+    topic: cleanTopic || topic,
   };
 }
 
@@ -1036,108 +1203,6 @@ export async function generatePoster({
 }
 
 /**
- * Natural language target-language detection & instruction stripper.
- * Detects Tanglish, English, Tamil, and Arabic inline prompts (e.g. "english la tha", "in english", "tamilil", "arabic la")
- * so the output strictly matches the user's intent without translating the meta-instruction itself.
- */
-function detectAndStripLanguageInstruction(text, defaultTarget = 'English') {
-  let cleanedText = String(text || '').trim();
-  let detectedTarget = null;
-
-  // Patterns for English requests:
-  const englishPatterns = [
-    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+english\s*[:,-]?\s*)/i,
-    /^(?:english\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?\s*[:,-]?\s*)/i,
-    /^(?:in\s+english\s*[:,-]?\s*)/i,
-    /^(?:englishil\s*[:,-]?\s*)/i,
-    /(?:\s*[:,-]?\s*(?:in\s+english|english\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?|translate\s+(?:to|into)\s+english|englishil))$/i,
-  ];
-
-  // Patterns for Tamil requests:
-  const tamilPatterns = [
-    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+tamil\s*[:,-]?\s*)/i,
-    /^(?:tamil\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?\s*[:,-]?\s*)/i,
-    /^(?:in\s+tamil\s*[:,-]?\s*)/i,
-    /^(?:tamilil\s*[:,-]?\s*)/i,
-    /(?:\s*[:,-]?\s*(?:in\s+tamil|tamil\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?|translate\s+(?:to|into)\s+tamil|tamilil))$/i,
-  ];
-
-  // Patterns for Arabic requests:
-  const arabicPatterns = [
-    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+arabic\s*[:,-]?\s*)/i,
-    /^(?:arabic\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?\s*[:,-]?\s*)/i,
-    /^(?:in\s+arabic\s*[:,-]?\s*)/i,
-    /^(?:arabiyil\s*[:,-]?\s*)/i,
-    /(?:\s*[:,-]?\s*(?:in\s+arabic|arabic\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?|translate\s+(?:to|into)\s+arabic|arabiyil))$/i,
-  ];
-
-  // Patterns for Bilingual requests:
-  const bilingualPatterns = [
-    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+bilingual\s*[:,-]?\s*)/i,
-    /^(?:bilingual\s*(?:la)?\s*[:,-]?\s*)/i,
-    /^(?:in\s+bilingual\s*[:,-]?\s*)/i,
-    /(?:\s*[:,-]?\s*(?:in\s+bilingual|bilingual\s*(?:la)?|tamil\s+(?:and|&)\s+english))$/i,
-  ];
-
-  for (const pat of englishPatterns) {
-    if (pat.test(cleanedText)) {
-      detectedTarget = 'English';
-      cleanedText = cleanedText.replace(pat, '').trim();
-      break;
-    }
-  }
-
-  if (!detectedTarget) {
-    for (const pat of tamilPatterns) {
-      if (pat.test(cleanedText)) {
-        detectedTarget = 'Tamil';
-        cleanedText = cleanedText.replace(pat, '').trim();
-        break;
-      }
-    }
-  }
-
-  if (!detectedTarget) {
-    for (const pat of arabicPatterns) {
-      if (pat.test(cleanedText)) {
-        detectedTarget = 'Arabic';
-        cleanedText = cleanedText.replace(pat, '').trim();
-        break;
-      }
-    }
-  }
-
-  if (!detectedTarget) {
-    for (const pat of bilingualPatterns) {
-      if (pat.test(cleanedText)) {
-        detectedTarget = 'Bilingual (Tamil + English)';
-        cleanedText = cleanedText.replace(pat, '').trim();
-        break;
-      }
-    }
-  }
-
-  // Normalize defaultTarget if detectedTarget wasn't found
-  let finalTarget = detectedTarget;
-  if (!finalTarget) {
-    const raw = String(defaultTarget || '').toLowerCase();
-    if (raw.includes('arab') || raw === 'ar') finalTarget = 'Arabic';
-    else if (raw.includes('tamil') || raw === 'ta') finalTarget = 'Tamil';
-    else if (raw.includes('bilingual')) finalTarget = 'Bilingual (Tamil + English)';
-    else finalTarget = 'English';
-  }
-
-  if (!cleanedText && text) {
-    cleanedText = String(text).trim();
-  }
-
-  return {
-    cleanedText,
-    targetLanguage: finalTarget,
-  };
-}
-
-/**
  * Feature 4: Multilingual Translator (Tamil ↔ English ↔ Arabic ↔ Bilingual)
  */
 export async function translateContent({
@@ -1160,20 +1225,24 @@ Translate the following source text into ${resolvedTarget}.
 [MANDATORY OUTPUT LANGUAGE RULE]
 - OUTPUT STRICTLY IN ${resolvedTarget.toUpperCase()}: The translation MUST be 100% in ${resolvedTarget}.
 - If translating to English: Output natural, elegant, grammatically flawless English prose.
-- If translating to Tamil: Output natural, clear Sri Lankan/Indian Muslim Tamil vocabulary commonly used in Madrasas.
+- If translating to Tamil: Output natural, clear Sri Lankan/Indian Muslim Tamil vocabulary commonly used in Madrasas with authentic Islamic terminology.
 - If translating to Arabic: Output fluent, authentic Modern Standard Arabic (Fusha) with standard Islamic honorifics.
 - If translating to Bilingual: Output clear paragraph-by-paragraph or side-by-side Tamil and English translations.
 
 [CONTENT & FORMATTING RULES]
-1. Maintain authentic Islamic terminology (e.g. Du'a, Hadith, Salah, Ustadh, Madrasa, Jalsa, Sunnah, Adab, Akhlaq) with respectful accuracy.
-2. Preserve original formatting, bullet points, numbers, and dates intact.
-3. Provide ONLY the translated text without conversational preamble, greetings, or meta-disclaimers.
+1. Universal Tanglish Comprehension: If the source text contains conversational Tamil written in English letters (Tanglish), mentally decode the genuine Tamil meaning first, then translate into ${resolvedTarget}.
+2. Never echo or phonetically transliterate colloquial Tanglish words into the translated output.
+3. Maintain authentic Islamic terminology (e.g. Du'a, Hadith, Salah, Ustadh, Madrasa, Jalsa, Sunnah, Adab, Akhlaq) with respectful accuracy.
+4. Preserve original formatting, bullet points, numbers, and dates intact.
+5. Provide ONLY the translated text without conversational preamble, greetings, or meta-disclaimers.
 
 [SOURCE TEXT]
 ${cleanedText}
 `;
 
-  const systemPrompt = `You are a certified Islamic multilingual translator. Output strictly the clean, high-fidelity translation in ${resolvedTarget}.`;
+  const systemPrompt = `You are a certified Islamic multilingual translator. Output strictly the clean, high-fidelity translation in ${resolvedTarget}.
+
+${UNIVERSAL_AI_INSTRUCTIONS}`;
 
   const translatedText = await callCloudflareTextAi({ prompt, systemPrompt, temperature: 0.1 });
 
@@ -1210,6 +1279,9 @@ export async function chatWithCopilot({
     }
   }
 
+  // Detect explicit target language instructions in prompt (e.g. "tamil la tha", "in english", "arabic la")
+  const { cleanedText: userPrompt, targetLanguage: resolvedLanguage } = detectAndStripLanguageInstruction(cleanMessage, language);
+
   // Mode-specific behavioral instructions to guarantee authentic output format
   let modeInstructions = '';
 
@@ -1217,6 +1289,9 @@ export async function chatWithCopilot({
     modeInstructions = `
 [SPECIFIC TASK: OFFICIAL MADRASA PARENT CIRCULAR & NOTICE]
 You are drafting an official, ready-to-issue Madrasa Parent Notice / Circular.
+CLEAN NOTICE TOPIC EXTRACTION:
+- Mentally decode the user's Tanglish/English/Tamil request (e.g., if user writes "naalaikku madrasa leave notice onnu ezhuthu", extract the formal subject "மத்ரஸா விடுமுறை அறிவிப்பு / NOTICE OF SPECIAL MADRASA LEAVE").
+- NEVER echo raw colloquial Tanglish words into the notice header or subject line!
 STRUCTURE & LAYOUT:
 1. HEADER:
    - Institution Name: "${madrasaName || 'MadrasaNexa Islamic Academy'}"
@@ -1226,7 +1301,7 @@ STRUCTURE & LAYOUT:
    - "Assalamu Alaikum wa Rahmatullahi wa Barakatuh"
    - "Respected Parents and Guardians,"
 3. NOTICE SUBJECT:
-   - Bold, clear subject line (e.g., "**SUBJECT: IMPORTANT ANNOUNCEMENT — [TOPIC]**")
+   - Bold, clear formal subject line (e.g., "**SUBJECT: IMPORTANT ANNOUNCEMENT — [FORMAL TOPIC]**")
 4. CIRCULAR BODY:
    - Warm introductory opening thanking parents for their continuous support.
    - Clear announcement paragraphs highlighting dates, revised timings, fee deadlines, or holiday schedules.
@@ -1235,22 +1310,27 @@ STRUCTURE & LAYOUT:
    - Heartfelt Du'a for the students and families ("May Allah ﷻ bless our children with beneficial knowledge...").
    - "JazakAllahu Khairan wa BarakAllahu Feekum,"
    - Official Sign-off: "Principal / Madrasa Administration"
-CRITICAL: Do NOT generate a lesson plan, classroom objectives, or blackboard layout. This must be an administrative parent notice in ${language}.`;
+CRITICAL: Do NOT generate a lesson plan, classroom objectives, or blackboard layout. This must be an administrative parent notice in ${resolvedLanguage}.`;
   } else if (mode === 'summarizer') {
     modeInstructions = `
 [SPECIFIC TASK: EXECUTIVE DOCUMENT & CHAPTER REVISION SUMMARY]
 Extract a thorough, structured, and easy-to-revise Executive Summary from the provided document or text.
+CLEAN SUMMARY TITLE EXTRACTION:
+- Extract a formal, scholarly title for the summary (e.g., if user writes "indha pdf-a surukki sollu", synthesize a proper scholarly title for the document).
+- NEVER echo raw colloquial Tanglish words into headers or bullet points.
 STRUCTURE & LAYOUT:
 1. 📌 DOCUMENT OVERVIEW: High-level executive synthesis of the chapter, syllabus text, or document in 2-3 concise paragraphs.
 2. 🔑 KEY POINTS & CORE CONCEPTS: Exhaustive, bulleted breakdown of all major principles, rulings, historical milestones, or lessons.
 3. 📖 IMPORTANT TERMS & SCRIPTURAL PROOFS: Concise glossary of key Islamic terminology, Quranic Ayahs, and Hadith citations with translations.
 4. 📝 QUICK REVISION TAKEAWAYS: High-yield bullet points for students and teachers to memorize or review before examinations.
 5. 💡 USTADH PEDAGOGICAL TIPS: 2-3 practical tips on how to teach or explain this topic effectively in the classroom.
-CRITICAL: Do NOT generate a lesson plan or exam paper. This must be an executive revision summary in ${language}.`;
+CRITICAL: Do NOT generate a lesson plan or exam paper. This must be an executive revision summary in ${resolvedLanguage}.`;
   } else if (mode === 'hifz') {
     modeInstructions = `
 [SPECIFIC TASK: HIFZ & TAJWEED ASSESSMENT SHEET]
 Generate a complete, structured Hifz & Tajweed Assessment Worksheet.
+CLEAN ASSESSMENT TITLE EXTRACTION:
+- Provide formal Quranic and Tajweed evaluation titles. Ground all Ayahs and Tajweed rules in authentic scholarship.
 STRUCTURE & LAYOUT:
 1. HEADER: Madrasa Name, Assessment Title, Surah / Juz Covered, Total Marks: 50 Marks, Duration: 30 Mins.
 2. PART A: COMPLETE THE AYAH DRILL (15 Marks):
@@ -1263,11 +1343,14 @@ STRUCTURE & LAYOUT:
    - Grading matrix: Hifz Accuracy (6 Marks), Tajweed & Makharij (5 Marks), Fluency & Waqf/Ibtida (4 Marks).
 6. COMPLETE ANSWER KEY:
    - Separated by "---", provide full answers for Part A, B, and C.
-Format clearly in professional Markdown in ${language}.`;
+Format clearly in professional Markdown in ${resolvedLanguage}.`;
   } else if (mode === 'speech') {
     modeInstructions = `
 [SPECIFIC TASK: ISLAMIC SPEECH / BAYAN SCRIPT]
 Write an inspiring, spiritually uplifting, ready-to-deliver 5-minute Madrasa Morning Assembly Speech or Jalsa Bayan.
+CLEAN SPEECH TITLE EXTRACTION:
+- Synthesize a formal, inspiring title (e.g., if user writes "ramadan paththi bayan speech thaa", title the speech "ரமழானின் மகத்துவமும் அதன் ஆத்மீக வழிகாட்டல்களும் / The Spiritual Virtues and Blessings of Ramadan").
+- NEVER echo colloquial Tanglish phrases into the title or body!
 STRUCTURE & LAYOUT:
 1. TRADITIONAL ARABIC OPENING (Khutbah al-Hajah):
    - "الحمد لله رب العالمين، والصلاة والسلام على أشرف الأنبياء والمرسلين..." with brief translation.
@@ -1281,22 +1364,31 @@ STRUCTURE & LAYOUT:
    - One actionable habit or Sunnah students can adopt starting today.
 5. CLOSING DU'A:
    - Heartfelt Arabic Du'a with translation for parents, teachers, Madrasa, and the Ummah.
-Format in clean, orator-friendly Markdown in ${language}.`;
+Format in clean, orator-friendly Markdown in ${resolvedLanguage}.`;
   } else {
     // Mode is 'auto'
     modeInstructions = `
-[SPECIFIC TASK: CONVERSATIONAL MADRASA COPILOT]
-1. WARM & NATURAL:
-   - For greetings ("hi", "hello", "assalamu alaikum"), reply warmly with an authentic Islamic greeting (e.g. "Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh"), introduce yourself as the MadrasaNexa Copilot, and highlight your 8 capabilities.
-   - NEVER abruptly return a lesson plan or exam paper when the user simply said "hi" or asked a general question!
-2. ISLAMIC ACCURACY: Ground answers in authentic Islamic scholarship with respectful Quran and Hadith citations.
-3. ZERO LIVE DATABASE EXPOSURE: Maintain complete privacy in RAM memory.`;
+[SPECIFIC TASK: UNIVERSAL CONVERSATIONAL MADRASA COPILOT]
+1. WARM & NATURAL INTERACTION:
+   - For greetings ("hi", "hello", "assalamu alaikum", "vanakkam"), reply warmly with an authentic Islamic greeting (e.g. "Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh"), introduce yourself as the MadrasaNexa Smart AI Assistant, and highlight your 8 core capabilities.
+   - For general questions (e.g., "wudu eppadi seirathu", "zakat kanakku eppadi podurathu", "islamiya sattam paththi sollu"): Provide a comprehensive, structured, educational response directly. NEVER prematurely return an unrelated template or refuse to answer!
+2. COMPLETE SCHOLARLY FIQH STEPS:
+   - When asked about acts of worship (Wudu, Ghusl, Salah, Zakat, Sawm, Hajj):
+     * Always outline the complete obligatory conditions and pillars (Fara'idh/Arkan) step-by-step.
+     * Explain practical methods clearly with authentic Quranic & Hadith references.
+     * Include the Sunnah Du'as with Arabic text, transliteration, and Tamil/English meaning.
+3. AUTHENTIC ISLAMIC TERMINOLOGY:
+   - When responding in Tamil: Write in natural, grammatically correct, scholarly Tamil using standard Islamic terminology (வுளூ, தொழுகை, ஜகாத், ஷரீஆ, ஃபிக்ஹ், திருக்குர்ஆன், ஸஹீஹ் ஹதீஸ், ஸுன்னத்).
+   - NEVER copy-paste or transliterate Tanglish words into headings or sentences.
+4. ZERO LIVE DATABASE EXPOSURE: Maintain complete privacy in RAM memory.`;
   }
 
   const systemPrompt = `You are the MadrasaNexa Smart AI Copilot, a warm, polite, highly knowledgeable Islamic Educational & Madrasa Operations Assistant.
 Institution: ${madrasaName || 'Madrasa'}
 User Role: ${role || 'Staff'}
-Target Output Language: ${language} (Ensure responses are naturally phrased in ${language}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).
+Target Output Language: ${resolvedLanguage} (Ensure responses are naturally phrased in ${resolvedLanguage}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).
+
+${UNIVERSAL_AI_INSTRUCTIONS}
 
 ${modeInstructions}
 ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''}`;
@@ -1323,7 +1415,7 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
 
   messages.push({
     role: 'user',
-    content: cleanMessage || 'Please examine the attached document and provide an overview and key points.',
+    content: userPrompt || cleanMessage || 'Please examine the attached document and provide an overview and key points.',
   });
 
   const { text, model } = await callCloudflareChatAi({ messages, temperature: 0.35 });
@@ -1331,7 +1423,7 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
   return {
     reply: text,
     modelUsed: model,
-    language,
+    language: resolvedLanguage,
     mode,
   };
 }

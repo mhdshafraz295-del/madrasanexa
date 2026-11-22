@@ -129,6 +129,7 @@ export default function GlobalAiCopilotDrawer() {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const isOnAiPage = location.pathname.includes('ai-assistant');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -534,53 +535,55 @@ export default function GlobalAiCopilotDrawer() {
       />
 
       {/* ========================================================================= */}
-      {/* 1. PERSISTENT FLOATING 3D AI ROBOT ORB (FIXED BOTTOM-RIGHT)               */}
+      {/* 1. PERSISTENT FLOATING 3D AI ROBOT ORB (HIDDEN ON DEDICATED AI PAGE)       */}
       {/* ========================================================================= */}
-      <div className="fixed bottom-5 right-5 z-40">
-        <div className="relative group">
-          {/* Tooltip on Hover */}
-          <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
-            <div className="bg-[#0F172A] text-white px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
-              <div className="text-left">
-                <div className="text-xs font-bold leading-none text-white">Madrasa AI Copilot</div>
-                <div className="text-[10px] text-slate-400 mt-0.5 leading-none">
-                  {isUnlocked ? 'Click to open slide-over chat' : 'Unlock Institutional AI'}
+      {!isOnAiPage && (
+        <div className="fixed bottom-5 right-5 z-40">
+          <div className="relative group">
+            {/* Tooltip on Hover */}
+            <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
+              <div className="bg-[#0F172A] text-white px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
+                <div className="text-left">
+                  <div className="text-xs font-bold leading-none text-white">Madrasa AI Copilot</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 leading-none">
+                    {isUnlocked ? 'Click to open slide-over chat' : 'Unlock Institutional AI'}
+                  </div>
                 </div>
+                <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
               </div>
-              <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
             </div>
+
+            {/* Glowing Halo Ripple */}
+            <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-ping pointer-events-none" style={{ animationDuration: '3s' }} />
+
+            {/* Round Circular Floating Action Button */}
+            <button
+              type="button"
+              onClick={() => setIsOpen((prev) => !prev)}
+              className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.4)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.6)] transition-all duration-300 flex items-center justify-center cursor-pointer group-hover:scale-105 active:scale-95 overflow-visible"
+              aria-label="Toggle Madrasa AI Copilot"
+              title="Toggle Madrasa AI Copilot"
+            >
+              <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <AiRobotMascot variant="avatar" size={36} />
+              </div>
+
+              {/* Badge Indicator Dot */}
+              {isUnlocked ? (
+                <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 z-10">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
+                </span>
+              ) : (
+                <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-amber-500 text-slate-950 border-2 border-[#0F172A] flex items-center justify-center shadow-xs z-10">
+                  <Lock className="w-2.5 h-2.5" />
+                </span>
+              )}
+            </button>
           </div>
-
-          {/* Glowing Halo Ripple */}
-          <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-ping pointer-events-none" style={{ animationDuration: '3s' }} />
-
-          {/* Round Circular Floating Action Button */}
-          <button
-            type="button"
-            onClick={() => setIsOpen((prev) => !prev)}
-            className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.4)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.6)] transition-all duration-300 flex items-center justify-center cursor-pointer group-hover:scale-105 active:scale-95 overflow-visible"
-            aria-label="Toggle Madrasa AI Copilot"
-            title="Toggle Madrasa AI Copilot"
-          >
-            <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <AiRobotMascot variant="avatar" size={36} />
-            </div>
-
-            {/* Badge Indicator Dot */}
-            {isUnlocked ? (
-              <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 z-10">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
-              </span>
-            ) : (
-              <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-amber-500 text-slate-950 border-2 border-[#0F172A] flex items-center justify-center shadow-xs z-10">
-                <Lock className="w-2.5 h-2.5" />
-              </span>
-            )}
-          </button>
         </div>
-      </div>
+      )}
 
       {/* ========================================================================= */}
       {/* 2. SLIDE-OVER AI COPILOT SIDE DRAWER                                      */}

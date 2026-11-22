@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { teacherAiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from '../../components/ai/AiRobotMascot';
+import AiConcentricOrbitShowcase from '../../components/ai/AiConcentricOrbitShowcase';
 import PosterCanvasRenderer from '../../components/ai/PosterCanvasRenderer';
 import AiMarkdownContent from '../../components/ai/AiMarkdownContent';
 
@@ -643,591 +644,24 @@ export default function TeacherAiPage() {
   );
 
   // ==========================================
-  // VIEW A: LOCKED PREVIEW (AI DISABLED)
+  // VIEW A: LOCKED PREVIEW (CONCENTRIC ORBITAL SHOWCASE)
   // ==========================================
   if (!isAiActive) {
     return (
-      <div className="p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-8 relative">
-        {/* Component-scoped GPU-accelerated Keyframe Styles */}
-        <style>{`
-          @keyframes hero-spin-slow {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-          @keyframes hero-spin-reverse {
-            from { transform: rotate(360deg); }
-            to { transform: rotate(0deg); }
-          }
-          @keyframes hero-pulse-glow {
-            0%, 100% { transform: scale(1); opacity: 0.14; }
-            50% { transform: scale(1.18); opacity: 0.28; }
-          }
-          @keyframes hero-float-sparkle {
-            0%, 100% { transform: translateY(0px) scale(0.9); opacity: 0.25; }
-            50% { transform: translateY(-7px) scale(1.2); opacity: 0.9; }
-          }
-          @keyframes badge-shimmer-sweep {
-            0% { transform: translateX(-160%); }
-            40%, 100% { transform: translateX(260%); }
-          }
-          @keyframes orb-halo-ripple {
-            0% { transform: scale(0.92); opacity: 0.8; }
-            50% { transform: scale(1.28); opacity: 0.25; }
-            100% { transform: scale(1.48); opacity: 0; }
-          }
-          @keyframes orb-float-gentle {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-4px); }
-          }
-          .animate-hero-spin {
-            animation: hero-spin-slow 40s linear infinite;
-          }
-          .animate-hero-reverse {
-            animation: hero-spin-reverse 55s linear infinite;
-          }
-          .animate-hero-pulse {
-            animation: hero-pulse-glow 9s ease-in-out infinite;
-          }
-          .animate-sparkle {
-            animation: hero-float-sparkle 3.5s ease-in-out infinite;
-          }
-          .animate-badge-shimmer {
-            animation: badge-shimmer-sweep 4.5s ease-in-out infinite;
-          }
-          .animate-orb-halo {
-            animation: orb-halo-ripple 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-          }
-          .animate-orb-float {
-            animation: orb-float-gentle 4s ease-in-out infinite;
-          }
-          /* 3D AI Robot Mascot Keyframe Animations */
-          @keyframes robot-float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-7px); }
-          }
-          @keyframes robot-wave {
-            0% { transform: rotate(0deg); }
-            20% { transform: rotate(14deg); }
-            40% { transform: rotate(-8deg); }
-            60% { transform: rotate(12deg); }
-            80% { transform: rotate(-4deg); }
-            100% { transform: rotate(0deg); }
-          }
-          @keyframes robot-think {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-3px) rotate(2deg); }
-          }
-          @keyframes robot-blink {
-            0%, 92%, 96%, 100% { transform: scaleY(1); }
-            94% { transform: scaleY(0.1); }
-          }
-          @keyframes robot-pulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.15); opacity: 1; }
-          }
-          .animate-robot-float {
-            animation: robot-float 3.5s ease-in-out infinite;
-          }
-          .animate-robot-wave {
-            animation: robot-wave 2.2s ease-in-out infinite;
-          }
-          .animate-robot-think {
-            animation: robot-think 3s ease-in-out infinite;
-          }
-          .animate-robot-blink {
-            animation: robot-blink 4.5s ease-in-out infinite;
-          }
-          .animate-robot-pulse {
-            animation: robot-pulse 2s ease-in-out infinite;
-          }
-          @media (prefers-reduced-motion: reduce) {
-            .animate-hero-spin,
-            .animate-hero-reverse,
-            .animate-hero-pulse,
-            .animate-sparkle,
-            .animate-badge-shimmer,
-            .animate-orb-halo,
-            .animate-orb-float,
-            .animate-robot-float,
-            .animate-robot-wave,
-            .animate-robot-think,
-            .animate-robot-blink,
-            .animate-robot-pulse {
-              animation: none !important;
-            }
-          }
-        `}</style>
+      <div className="p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 sm:space-y-8 relative pt-2 sm:pt-4">
+        {/* Concentric Orbital Ring Animation */}
+        <AiConcentricOrbitShowcase portalType="teacher" />
 
-        {/* Hero with Ambient Islamic Geometric Animation */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0A0F1D] text-white p-6 sm:p-10 border border-slate-800 shadow-xl">
-          {/* Breathing Emerald Glow Orbs */}
-          <div className="absolute -top-20 -right-20 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-[#37C6A3]/15 blur-3xl pointer-events-none animate-hero-pulse" />
-          <div
-            className="absolute top-1/2 right-20 w-56 h-56 rounded-full bg-teal-500/10 blur-2xl pointer-events-none animate-hero-pulse"
-            style={{ animationDelay: '3s' }}
-          />
-
-          {/* Ambient Rotating Islamic 8-Point Geometric Star Emblem */}
-          <div className="absolute -right-12 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none opacity-20 sm:opacity-35 transition-opacity">
-            <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
-              {/* Outer Reverse Rotating Dashed Halo Ring */}
-              <div className="absolute inset-0 flex items-center justify-center animate-hero-reverse">
-                <svg viewBox="0 0 240 240" className="w-full h-full text-[#37C6A3]/50 stroke-current fill-none">
-                  <circle cx="120" cy="120" r="112" strokeWidth="1" strokeDasharray="6 8" />
-                  <circle cx="120" cy="120" r="100" strokeWidth="0.8" strokeDasharray="3 5" opacity="0.6" />
-                </svg>
-              </div>
-
-              {/* Primary Rotating Islamic 8-Point Geometric Star */}
-              <div className="absolute inset-4 sm:inset-6 flex items-center justify-center animate-hero-spin">
-                <svg viewBox="0 0 200 200" className="w-full h-full text-[#37C6A3] stroke-current fill-none">
-                  <circle cx="100" cy="100" r="90" strokeWidth="1.2" opacity="0.35" />
-                  <rect x="35" y="35" width="130" height="130" rx="3" strokeWidth="1.6" opacity="0.5" />
-                  <rect
-                    x="35"
-                    y="35"
-                    width="130"
-                    height="130"
-                    rx="3"
-                    strokeWidth="1.6"
-                    opacity="0.5"
-                    transform="rotate(45 100 100)"
-                  />
-                  <circle cx="100" cy="100" r="34" strokeWidth="1.2" strokeDasharray="4 4" opacity="0.5" />
-                  <circle cx="100" cy="100" r="18" strokeWidth="1.5" opacity="0.65" />
-                  <circle cx="100" cy="100" r="5" fill="#37C6A3" opacity="0.85" />
-                </svg>
-              </div>
-
-              {/* Floating Twinkle Sparkle Particles */}
-              <span
-                className="absolute top-6 left-12 text-[#37C6A3] text-sm animate-sparkle"
-                style={{ animationDelay: '0s' }}
-              >
-                ✦
-              </span>
-              <span
-                className="absolute bottom-8 right-8 text-emerald-300 text-xs animate-sparkle"
-                style={{ animationDelay: '1.6s' }}
-              >
-                ✧
-              </span>
-              <span
-                className="absolute top-1/2 right-4 text-[#37C6A3] text-base animate-sparkle"
-                style={{ animationDelay: '2.8s' }}
-              >
-                ✦
-              </span>
-            </div>
-          </div>
-
-          {/* Responsive Flex Hero Layout: Content first, 3D Mascot stacked cleanly below on mobile (360px+) */}
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="w-full md:max-w-xl lg:max-w-2xl flex-1">
-              {/* Shimmer Sweep Badge */}
-              <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
-                <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-                <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
-                <span className="relative z-10">MadrasaNexa Ustadh Smart AI</span>
-                <span className="text-slate-400 relative z-10">|</span>
-                <span className="flex items-center gap-1 text-slate-300 relative z-10">
-                  <Lock className="w-3 h-3 text-amber-400" />
-                  Locked Preview
-                </span>
-              </div>
-
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-                Your Islamic Teaching & Exam Preparation <span className="text-[#37C6A3]">Copilot</span>
-              </h1>
-
-              <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-                Design structured term examinations, generate 30-minute interactive lesson plans with blackboard summaries,
-                create event announcement posters, and translate materials in Tamil, Arabic, and English.
-              </p>
-
-              <div
-                id="teacher-ai-notice"
-                className="mt-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-3 scroll-mt-6"
-              >
-                <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
-                  at the institutional level. Please contact your Madrasa Administrator to activate the subscription
-                  from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
-                </div>
-              </div>
-            </div>
-
-            {/* 3D AI Robot Mascot (Waving): Centered & Cleanly Stacked Below on Mobile, On Right on Desktop */}
-            <div className="shrink-0 w-28 sm:w-32 md:w-36 lg:w-40 mt-4 md:mt-0 mx-auto md:mx-0 flex justify-center items-center pointer-events-none select-none drop-shadow-2xl">
-              <AiRobotMascot variant="wave" className="w-full h-auto" />
-            </div>
-          </div>
-        </div>
-
-        {/* 8 Feature Capability Cards with 3D Medallions & Quick-Scan Pills */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
-          {/* Feature 1: Zero-Storage PDF Exam Paper Generator */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Emerald Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/25 border border-emerald-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-                  <FileText className="w-5 h-5 text-white relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-emerald-800 border border-emerald-400/50 flex items-center justify-center z-10">
-                    <Sparkles className="w-2.5 h-2.5 text-[#37C6A3]" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      Zero-Storage PDF Exam Generator
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      RAM-Only
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Upload syllabus or textbook PDFs to instantly synthesize multi-section MCQs, short answers, essays, and answer keys.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>📄</span> Upload PDF
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>📝</span> MCQs & Essays
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>✅</span> Answer Key
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>📋</span> Exam Papers
-              </span>
-            </div>
-          </div>
-
-          {/* Feature 2: Ustadh 30-Min Lesson Planner */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Dark Navy & Emerald Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0F172A] via-slate-800 to-emerald-700 text-white flex items-center justify-center shrink-0 shadow-lg shadow-slate-900/30 border border-slate-700 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
-                  <Clock className="w-5 h-5 text-[#37C6A3] relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-slate-900 border border-emerald-500/50 flex items-center justify-center z-10">
-                    <BookOpen className="w-2.5 h-2.5 text-emerald-400" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      Ustadh 30-Min Lesson Planner
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
-                      Ustadh Copilot
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Generate structured pedagogical lesson plans with classroom hook, core explanation, exercises, and blackboard diagrams.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1">
-                <span>⏱️</span> 30-Min Flow
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1">
-                <span>📖</span> Quran Proofs
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1">
-                <span>🧑‍🏫</span> Board Summary
-              </span>
-            </div>
-          </div>
-
-          {/* Feature 3: Madrasa Event Poster & Flyer Maker */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Teal-Cyan Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-teal-500/25 border border-teal-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-                  <ImageIcon className="w-5 h-5 text-white relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-teal-800 border border-cyan-400/50 flex items-center justify-center z-10">
-                    <Palette className="w-2.5 h-2.5 text-cyan-300" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      Madrasa Event Poster Maker
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      Flux 1 Schnell
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Synthesize Islamic announcement flyers, Hifz graduation posters, and admission banners with Cloudflare Workers AI.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1">
-                <span>🎨</span> 1-Click Poster
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1">
-                <span>🕌</span> Islamic Design
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1">
-                <span>⬇️</span> Download
-              </span>
-            </div>
-          </div>
-
-          {/* Feature 4: Multilingual Islamic Translator */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Emerald-Green Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-green-800 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-600/25 border border-emerald-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-                  <Languages className="w-5 h-5 text-white relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-emerald-900 border border-emerald-400/50 flex items-center justify-center z-10">
-                    <Sparkles className="w-2.5 h-2.5 text-[#37C6A3]" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      Multilingual Islamic Translator
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
-                      3 Languages
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Translate administrative circulars, exam questions, and curriculum text across Tamil, English, and Arabic.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>🇱🇰/🇮🇳</span> தமிழ்
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>🇬🇧</span> English
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1 font-arabic">
-                <span>🇸🇦</span> العربية
-              </span>
-            </div>
-          </div>
-
-          {/* Feature 5: Parent Circular & Notice Writer */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Indigo/Navy & Emerald Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-700 to-slate-900 text-white flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/25 border border-indigo-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-                  <Megaphone className="w-5 h-5 text-white relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-slate-900 border border-indigo-400/50 flex items-center justify-center z-10">
-                    <FileText className="w-2.5 h-2.5 text-[#37C6A3]" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      Parent Circular & Notice Writer
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
-                      Admin Copilot
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Generate polished parent announcements for Jummah reminders, Ramadan timings, fee circulars, and Annual Jalsa.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-100 flex items-center gap-1">
-                <span>📢</span> Parent Notices
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-100 flex items-center gap-1">
-                <span>🕌</span> Islamic Etiquette
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-100 flex items-center gap-1">
-                <span>📋</span> Ready to Send
-              </span>
-            </div>
-          </div>
-
-          {/* Feature 6: Hifz & Tajweed Worksheet Builder */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Emerald & Gold Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-amber-700 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-700/25 border border-emerald-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-                  <BookOpen className="w-5 h-5 text-white relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-slate-900 border border-amber-400/50 flex items-center justify-center z-10">
-                    <Award className="w-2.5 h-2.5 text-amber-300" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      Hifz & Tajweed Worksheet Builder
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-                      Hifz & Qira'ah
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Build Surah and Ayah completion drills, Makharij & Tajweed rule tests (Ghunnah, Idgham, Ikhfa), and teacher grading rubrics.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/60 flex items-center gap-1">
-                <span>📖</span> Juz/Surah Drills
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/60 flex items-center gap-1">
-                <span>🎯</span> Tajweed Rules
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-amber-50 text-amber-900 border border-amber-200/60 flex items-center gap-1">
-                <span>✅</span> Oral Rubric
-              </span>
-            </div>
-          </div>
-
-          {/* Feature 7: Bayan & Student Speech Writer */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Slate & Emerald Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 via-emerald-800 to-teal-900 text-white flex items-center justify-center shrink-0 shadow-lg shadow-slate-900/30 border border-slate-700 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-                  <Mic className="w-5 h-5 text-[#37C6A3] relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-slate-900 border border-emerald-400/50 flex items-center justify-center z-10">
-                    <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      Bayan & Student Speech Writer
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
-                      Minbar & Assembly
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Draft inspiring 3 to 15-minute speeches with authentic Quranic Ayahs, Hadith references, and structured bullet points.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1">
-                <span>🎙️</span> Assembly Talks
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1">
-                <span>📚</span> Authentic Proofs
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1">
-                <span>🌟</span> Student Prep
-              </span>
-            </div>
-          </div>
-
-          {/* Feature 8: PDF Syllabus & Chapter Summarizer */}
-          <div className="bg-white rounded-3xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
-            <div>
-              <div className="flex items-start gap-3.5">
-                {/* 3D Glossy Emerald & Slate Medallion */}
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-600 via-emerald-600 to-slate-900 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-700/25 border border-emerald-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
-                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
-                  <Layers className="w-5 h-5 text-white relative z-10" />
-                  <span className="absolute -bottom-1 -right-1 w-4.5 h-4.5 rounded-full bg-slate-900 border border-teal-400/50 flex items-center justify-center z-10">
-                    <Zap className="w-2.5 h-2.5 text-teal-300" />
-                  </span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 flex-wrap">
-                    <h3 className="text-sm font-bold text-[#0F172A] leading-snug">
-                      PDF Syllabus Summarizer
-                    </h3>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-                      RAM-Only Notes
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-                    Upload Islamic syllabus books or chapter PDFs to extract key learning takeaways, glossary terms, and revision bullet points in RAM.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick-Scan Visual Pills */}
-            <div className="mt-3.5 pt-3.5 border-t border-[#E7E9EE]/80 flex flex-wrap gap-1.5">
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>⚡</span> Instant Summary
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>🗂️</span> Study Notes
-              </span>
-              <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1">
-                <span>🔒</span> 0 MB Stored
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Floating Bottom-Right Round AI Orb / Quick-Action Button */}
-        <div className="fixed bottom-5 right-5 z-40">
-          <div className="relative group">
-            <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
-              <div className="bg-[#0F172A] text-white px-3.5 py-2 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
-                <div className="text-left">
-                  <div className="text-xs font-bold leading-none text-white">Ustadh AI Copilot</div>
-                  <div className="text-[10px] text-slate-400 mt-0.5 leading-none">Madrasa Subscription Required</div>
-                </div>
-                <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
-              </div>
-            </div>
+        {/* Institutional Subscription Notice */}
+        <div
+          id="teacher-ai-notice"
+          className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs sm:text-sm flex items-start gap-3 shadow-xs leading-relaxed"
+        >
+          <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
+            at the institutional level. Please contact your Madrasa Administrator to activate the subscription
+            from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
           </div>
         </div>
       </div>
@@ -1238,7 +672,7 @@ export default function TeacherAiPage() {
   // VIEW B: UNLOCKED TEACHER AI WORKSPACE
   // ==========================================
   return (
-    <div id="teacher-workspace-top" className="max-w-4xl mx-auto space-y-6 pb-20 relative min-h-[calc(100vh-140px)] flex flex-col justify-between">
+    <div id="teacher-workspace-top" className="max-w-4xl mx-auto h-[calc(100dvh-5.5rem)] min-h-[520px] flex flex-col overflow-hidden pb-1 sm:pb-2 relative">
       {/* Hidden File Input for PDF uploads */}
       <input
         ref={fileInputRef}
@@ -1263,186 +697,99 @@ export default function TeacherAiPage() {
         }}
       />
 
-      {/* Top Workspace Header Bar */}
-      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-[#E7E9EE] shadow-xs flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
-            <AiRobotMascot variant="avatar" size={26} />
+      {/* Top Workspace Header Bar (Responsive 2-Row Stack on Mobile 345px) */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3">
+        {/* Row 1: Bot Avatar + Title + Active Tenant Badge */}
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
+            <AiRobotMascot variant="avatar" size={24} />
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base sm:text-lg font-extrabold text-[#0F172A] tracking-tight">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h1 className="text-sm sm:text-base md:text-lg font-extrabold text-[#0F172A] tracking-tight truncate">
                 Ustadh Smart AI Assistant
               </h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
                 Active Tenant
               </span>
             </div>
-            <p className="text-[11px] text-[#7C8A9A]">
+            <p className="text-[10.5px] sm:text-[11px] text-[#7C8A9A] truncate hidden sm:block">
               Isolated Teaching Copilot • 0 MB storage • In-memory RAM processing
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={handleNewChat}
-              className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] transition flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Chat</span>
-            </button>
-          )}
+        {/* Row 2 on mobile: Subtitle & Action Buttons */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 pt-1.5 sm:pt-0 border-t border-slate-100 sm:border-0">
+          <p className="text-[10.5px] text-[#7C8A9A] sm:hidden truncate flex-1">
+            0 MB storage • In-memory RAM
+          </p>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="px-2.5 sm:px-3 py-1.5 min-h-[34px] sm:min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] transition flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Chat</span>
+              </button>
+            )}
 
-          <button
-            onClick={loadStatus}
-            className="p-2 min-h-[38px] min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center"
-            title="Refresh Status"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
+            <button
+              onClick={loadStatus}
+              className="p-1.5 sm:p-2 min-h-[34px] min-w-[34px] sm:min-h-[38px] sm:min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center shrink-0"
+              title="Refresh Status"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. WELCOME HERO STATE (WHEN NO MESSAGES YET)                                */}
+      {/* SCROLLABLE CONVERSATION / WELCOME WORKSPACE (FLEX-1 OVERFLOW-Y-AUTO)       */}
       {/* ========================================================================= */}
-      {messages.length === 0 ? (
-        <div className="my-auto py-8 sm:py-12 flex flex-col items-center text-center px-4 space-y-6">
-          <div className="relative">
-            <div className="absolute -inset-4 rounded-full bg-[#37C6A3]/15 blur-2xl pointer-events-none" />
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
-              <AiRobotMascot variant="wave" className="w-full h-full drop-shadow-xl" />
-            </div>
-          </div>
-
-          <div className="max-w-xl space-y-2">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
-              Assalamu Alaikum Ustadh! What can I help you prepare today?
-            </h2>
-            <p className="text-xs sm:text-sm text-[#7C8A9A] leading-relaxed">
-              Synthesize zero-storage exam papers from PDFs, craft 30-minute lesson plans, design event posters, or draft parent notices in Tamil, English, and Arabic.
-            </p>
-          </div>
-
-          {/* Centered Omni-Prompt Input Box */}
-          <div className="w-full max-w-2xl bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
-            {/* Attached PDF Preview Chip */}
-            {attachedFile && (
-              <div className="mb-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900">
-                <div className="flex items-center gap-2 truncate">
-                  <FileText className="w-4 h-4 text-[#37C6A3] shrink-0" />
-                  <span className="font-semibold truncate">{attachedFile.name}</span>
-                  <span className="text-[10px] text-emerald-700">({(attachedFile.size / 1024).toFixed(0)} KB)</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAttachedFile(null)}
-                  className="p-1 hover:bg-emerald-200 rounded-lg text-emerald-800 transition cursor-pointer"
-                  title="Remove attachment"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+      <div className="flex-1 overflow-y-auto min-h-0 pr-1 space-y-4">
+        {messages.length === 0 ? (
+          <div className="my-auto py-6 sm:py-10 flex flex-col items-center text-center px-4 space-y-6">
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-full bg-[#37C6A3]/15 blur-2xl pointer-events-none" />
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                <AiRobotMascot variant="wave" className="w-full h-full drop-shadow-xl" />
               </div>
-            )}
+            </div>
 
-            <textarea
-              ref={textareaRef}
-              rows={2}
-              placeholder="Ask anything — paste a syllabus topic, write a circular, or describe an event poster..."
-              value={inputPrompt}
-              onChange={handleTextareaChange}
-              onKeyDown={handleKeyDown}
-              className="w-full text-xs sm:text-sm text-[#0F172A] placeholder-[#7C8A9A] bg-transparent focus:outline-hidden resize-none leading-relaxed"
-            />
+            <div className="max-w-xl space-y-2">
+              <h2 className="text-lg sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
+                Assalamu Alaikum Ustadh! What can I help you prepare today?
+              </h2>
+              <p className="text-xs sm:text-sm text-[#7C8A9A] leading-relaxed">
+                Synthesize zero-storage exam papers from PDFs, craft 30-minute lesson plans, design event posters, or draft parent notices in Tamil, English, and Arabic.
+              </p>
+            </div>
 
-            {/* Bottom Controls Bar inside Input Box */}
-            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
-              <div className="flex items-center gap-1 min-w-0">
-                {/* PDF Attach Button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 shrink-0 cursor-pointer ${
-                    attachedFile
-                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                      : 'bg-slate-50 hover:bg-slate-100 text-[#0F172A] border-slate-200'
-                  }`}
-                  title="Upload Syllabus PDF (in-memory RAM only)"
-                >
-                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3]" />
-                  <span className="hidden sm:inline">{attachedFile ? 'PDF Attached' : 'Attach PDF'}</span>
-                </button>
-
-                {/* Mode Selector Pill */}
-                <select
-                  value={toolMode}
-                  onChange={(e) => setToolMode(e.target.value as ToolMode)}
-                  className="h-8 px-1.5 sm:px-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3] shrink-0 max-w-[100px] sm:max-w-none truncate"
-                >
-                  <option value="auto">✨ Auto</option>
-                  <option value="exam">📄 Exam</option>
-                  <option value="lesson">⏱️ Lesson</option>
-                  <option value="poster">🎨 Poster</option>
-                  <option value="circular">📢 Notice</option>
-                  <option value="hifz">📖 Hifz</option>
-                  <option value="speech">🎙️ Bayan</option>
-                  <option value="summarizer">⚡ Summary</option>
-                  <option value="translate">🌐 Translate</option>
-                </select>
-
-                {/* Language Quick Pill */}
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as any)}
-                  className="h-8 px-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden shrink-0 max-w-[70px] sm:max-w-none"
-                >
-                  <option value="English">🇬🇧 EN</option>
-                  <option value="Tamil">🇱🇰 தமிழ்</option>
-                  <option value="Arabic">🇸🇦 عربي</option>
-                  <option value="Bilingual (Tamil + English)">Bi-Lang</option>
-                </select>
+            {/* 8 Quick-Start Suggestion Pills */}
+            <div className="w-full max-w-2xl pt-2">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C8A9A] mb-3 text-center">
+                Quick Islamic Copilot Actions
               </div>
-
-              {/* Glowing Send Button */}
-              <button
-                type="button"
-                disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
-                onClick={() => handleSubmitPrompt()}
-                className="w-8 h-8 sm:w-9 sm:h-9 min-h-[32px] min-w-[32px] sm:min-h-[36px] sm:min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group shrink-0"
-                title="Send Prompt (Enter)"
-              >
-                <ArrowUp className="w-4 h-4 text-[#37C6A3] group-hover:-translate-y-0.5 transition-transform" />
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {quickPills.map((pill, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={pill.action}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3] hover:shadow-sm transition cursor-pointer text-left"
+                  >
+                    {pill.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-
-          {/* 8 Quick-Start Suggestion Pills */}
-          <div className="w-full max-w-2xl pt-2">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C8A9A] mb-3 text-center">
-              Quick Islamic Copilot Actions
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {quickPills.map((pill, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={pill.action}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3] hover:shadow-sm transition cursor-pointer text-left"
-                >
-                  {pill.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ========================================================================= */
-        /* 2. ACTIVE CONVERSATION THREAD STATE                                       */
-        /* ========================================================================= */
-        <div className="flex-1 space-y-7 px-1 sm:px-2 max-w-3xl mx-auto w-full">
+        ) : (
+          <div className="space-y-6 px-1 sm:px-2 max-w-3xl mx-auto w-full">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -1552,12 +899,12 @@ export default function TeacherAiPage() {
           <div ref={chatEndRef} />
         </div>
       )}
+      </div>
 
       {/* ========================================================================= */}
-      {/* 3. DOCKED BOTTOM PROMPT INPUT BAR (WHEN THREAD HAS MESSAGES)              */}
+      {/* 3. PERMANENTLY PINNED BOTTOM CHAT INPUT COMPOSER BOX                       */}
       {/* ========================================================================= */}
-      {messages.length > 0 && (
-        <div className="sticky bottom-3 z-30 pt-3 bg-gradient-to-t from-[#F7F6F1] via-[#F7F6F1] to-transparent">
+      <div className="shrink-0 pt-2 z-20 bg-gradient-to-t from-[#F7F6F1] via-[#F7F6F1] to-transparent">
           <div className="bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
             {attachedFile && (
               <div className="mb-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900">
@@ -1655,7 +1002,6 @@ export default function TeacherAiPage() {
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
   );
 }

@@ -492,7 +492,7 @@ export default function AiWorkspaceUnlocked({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-20 relative min-h-[calc(100vh-140px)] flex flex-col justify-between">
+    <div className="max-w-4xl mx-auto h-[calc(100dvh-5.5rem)] min-h-[520px] flex flex-col overflow-hidden pb-1 sm:pb-2 relative">
       {/* Hidden File Input for PDF uploads */}
       <input
         ref={fileInputRef}
@@ -517,188 +517,101 @@ export default function AiWorkspaceUnlocked({
         }}
       />
 
-      {/* Top Workspace Header Bar */}
-      <div className="bg-white rounded-3xl p-4 sm:p-5 border border-[#E7E9EE] shadow-xs flex items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
-            <AiRobotMascot variant="avatar" size={26} />
+      {/* Top Workspace Header Bar (Responsive 2-Row Layout on 345px Mobile) */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3">
+        {/* Row 1: Bot Avatar + Title + Active Tenant Badge */}
+        <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
+            <AiRobotMascot variant="avatar" size={24} />
           </div>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-base sm:text-lg font-extrabold text-[#0F172A] tracking-tight">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+              <h1 className="text-sm sm:text-base md:text-lg font-extrabold text-[#0F172A] tracking-tight truncate">
                 MadrasaNexa Smart AI Assistant
               </h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
                 {statusData?.madrasaName || 'Active Tenant'}
               </span>
             </div>
-            <p className="text-[11px] text-[#7C8A9A]">
+            <p className="text-[10.5px] sm:text-[11px] text-[#7C8A9A] truncate hidden sm:block">
               Isolated Copilot • 0 MB storage • In-memory RAM processing
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {messages.length > 0 && (
-            <button
-              type="button"
-              onClick={handleNewChat}
-              className="px-3 py-1.5 min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] transition flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>New Chat</span>
-            </button>
-          )}
+        {/* Row 2 on mobile: Subtitle & Aligned Action Buttons */}
+        <div className="flex items-center justify-between sm:justify-end gap-2 pt-1.5 sm:pt-0 border-t border-slate-100 sm:border-0">
+          <p className="text-[10.5px] text-[#7C8A9A] sm:hidden truncate flex-1">
+            0 MB storage • In-memory RAM
+          </p>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={handleNewChat}
+                className="px-2.5 sm:px-3 py-1.5 min-h-[34px] sm:min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 text-[#0F172A] transition flex items-center gap-1 cursor-pointer shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Chat</span>
+              </button>
+            )}
 
-          {onRefresh && (
-            <button
-              onClick={onRefresh}
-              className="p-2 min-h-[38px] min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center"
-              title="Refresh Status"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          )}
+            {onRefresh && (
+              <button
+                onClick={onRefresh}
+                className="p-1.5 sm:p-2 min-h-[34px] min-w-[34px] sm:min-h-[38px] sm:min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center shrink-0"
+                title="Refresh Status"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 1. WELCOME HERO STATE (WHEN NO MESSAGES YET)                                */}
+      {/* SCROLLABLE CONVERSATION / WELCOME WORKSPACE (FLEX-1 OVERFLOW-Y-AUTO)       */}
       {/* ========================================================================= */}
-      {messages.length === 0 ? (
-        <div className="my-auto py-8 sm:py-12 flex flex-col items-center text-center px-4 space-y-6">
-          <div className="relative">
-            <div className="absolute -inset-4 rounded-full bg-[#37C6A3]/15 blur-2xl pointer-events-none" />
-            <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
-              <AiRobotMascot variant="wave" className="w-full h-full drop-shadow-xl" />
-            </div>
-          </div>
-
-          <div className="max-w-xl space-y-2">
-            <h2 className="text-xl sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
-              Assalamu Alaikum! What can I help your Madrasa with today?
-            </h2>
-            <p className="text-xs sm:text-sm text-[#7C8A9A] leading-relaxed">
-              Synthesize zero-storage exam papers from PDFs, craft 30-minute lesson plans, design event posters, or draft parent notices in Tamil, English, and Arabic.
-            </p>
-          </div>
-
-          {/* Centered Omni-Prompt Input Box */}
-          <div className="w-full max-w-2xl bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
-            {/* Attached PDF Preview Chip */}
-            {attachedFile && (
-              <div className="mb-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900">
-                <div className="flex items-center gap-2 truncate">
-                  <FileText className="w-4 h-4 text-[#37C6A3] shrink-0" />
-                  <span className="font-semibold truncate">{attachedFile.name}</span>
-                  <span className="text-[10px] text-emerald-700">({(attachedFile.size / 1024).toFixed(0)} KB)</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setAttachedFile(null)}
-                  className="p-1 hover:bg-emerald-200 rounded-lg text-emerald-800 transition cursor-pointer"
-                  title="Remove attachment"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+      <div className="flex-1 overflow-y-auto min-h-0 pr-1 space-y-4">
+        {messages.length === 0 ? (
+          <div className="my-auto py-6 sm:py-10 flex flex-col items-center text-center px-4 space-y-6">
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-full bg-[#37C6A3]/15 blur-2xl pointer-events-none" />
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                <AiRobotMascot variant="wave" className="w-full h-full drop-shadow-xl" />
               </div>
-            )}
+            </div>
 
-            <textarea
-              ref={textareaRef}
-              rows={2}
-              placeholder="Ask anything — paste a syllabus topic, write a circular, or describe an event poster..."
-              value={inputPrompt}
-              onChange={handleTextareaChange}
-              onKeyDown={handleKeyDown}
-              className="w-full text-xs sm:text-sm text-[#0F172A] placeholder-[#7C8A9A] bg-transparent focus:outline-hidden resize-none leading-relaxed"
-            />
+            <div className="max-w-xl space-y-2">
+              <h2 className="text-lg sm:text-2xl font-extrabold text-[#0F172A] tracking-tight">
+                Assalamu Alaikum! What can I help your Madrasa with today?
+              </h2>
+              <p className="text-xs sm:text-sm text-[#7C8A9A] leading-relaxed">
+                Synthesize zero-storage exam papers from PDFs, craft 30-minute lesson plans, design event posters, or draft parent notices in Tamil, English, and Arabic.
+              </p>
+            </div>
 
-            {/* Bottom Controls Bar inside Input Box */}
-            <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
-              <div className="flex items-center gap-1 min-w-0">
-                {/* PDF Attach Button */}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 shrink-0 cursor-pointer ${
-                    attachedFile
-                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                      : 'bg-slate-50 hover:bg-slate-100 text-[#0F172A] border-slate-200'
-                  }`}
-                  title="Upload Syllabus PDF (in-memory RAM only)"
-                >
-                  <Paperclip className="w-3.5 h-3.5 text-[#37C6A3] shrink-0" />
-                  <span className="hidden sm:inline">{attachedFile ? 'PDF Attached' : 'Attach PDF'}</span>
-                </button>
-
-                {/* Mode Selector Pill */}
-                <select
-                  value={toolMode}
-                  onChange={(e) => setToolMode(e.target.value as ToolMode)}
-                  className="h-8 px-1.5 sm:px-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden focus:border-[#37C6A3] shrink-0 max-w-[100px] sm:max-w-none truncate"
-                >
-                  <option value="auto">✨ Auto</option>
-                  <option value="exam">📄 Exam</option>
-                  <option value="lesson">⏱️ Lesson</option>
-                  <option value="poster">🎨 Poster</option>
-                  <option value="circular">📢 Notice</option>
-                  <option value="hifz">📖 Hifz</option>
-                  <option value="speech">🎙️ Bayan</option>
-                  <option value="summarizer">⚡ Summary</option>
-                  <option value="translate">🌐 Translate</option>
-                </select>
-
-                {/* Language Quick Pill */}
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as any)}
-                  className="h-8 px-1.5 text-xs font-semibold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#0F172A] focus:outline-hidden shrink-0 max-w-[70px] sm:max-w-none"
-                >
-                  <option value="English">🇬🇧 EN</option>
-                  <option value="Tamil">🇱🇰 தமிழ்</option>
-                  <option value="Arabic">🇸🇦 عربي</option>
-                  <option value="Bilingual (Tamil + English)">Bi-Lang</option>
-                </select>
+            {/* 8 Quick-Start Suggestion Pills */}
+            <div className="w-full max-w-2xl pt-2">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C8A9A] mb-3 text-center">
+                Quick Islamic Copilot Actions
               </div>
-
-              {/* Glowing Send Button */}
-              <button
-                type="button"
-                disabled={(!inputPrompt.trim() && !attachedFile) || isGenerating}
-                onClick={() => handleSubmitPrompt()}
-                className="w-8 h-8 sm:w-9 sm:h-9 min-h-[32px] min-w-[32px] sm:min-h-[36px] sm:min-w-[36px] rounded-xl bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border border-emerald-500/40 shadow-md flex items-center justify-center transition cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed group shrink-0"
-                title="Send Prompt (Enter)"
-              >
-                <ArrowUp className="w-4 h-4 text-[#37C6A3] group-hover:-translate-y-0.5 transition-transform" />
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {quickPills.map((pill, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={pill.action}
+                    className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3] hover:shadow-sm transition cursor-pointer text-left"
+                  >
+                    {pill.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-
-          {/* 8 Quick-Start Suggestion Pills */}
-          <div className="w-full max-w-2xl pt-2">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-[#7C8A9A] mb-3 text-center">
-              Quick Islamic Copilot Actions
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              {quickPills.map((pill, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={pill.action}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3] hover:shadow-sm transition cursor-pointer text-left"
-                >
-                  {pill.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* ========================================================================= */
-        /* 2. ACTIVE CONVERSATION THREAD STATE                                       */
-        /* ========================================================================= */
-        <div className="flex-1 space-y-7 px-1 sm:px-2 max-w-3xl mx-auto w-full">
+        ) : (
+          <div className="space-y-6 px-1 sm:px-2 max-w-3xl mx-auto w-full">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -808,12 +721,12 @@ export default function AiWorkspaceUnlocked({
           <div ref={chatEndRef} />
         </div>
       )}
+      </div>
 
       {/* ========================================================================= */}
-      {/* 3. DOCKED BOTTOM PROMPT INPUT BAR (WHEN THREAD HAS MESSAGES)              */}
+      {/* 3. PERMANENTLY PINNED BOTTOM CHAT INPUT COMPOSER BOX                       */}
       {/* ========================================================================= */}
-      {messages.length > 0 && (
-        <div className="sticky bottom-3 z-30 pt-3 bg-gradient-to-t from-[#F7F6F1] via-[#F7F6F1] to-transparent">
+      <div className="shrink-0 pt-2 z-20 bg-gradient-to-t from-[#F7F6F1] via-[#F7F6F1] to-transparent">
           <div className="bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
             {attachedFile && (
               <div className="mb-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900">
@@ -911,7 +824,6 @@ export default function AiWorkspaceUnlocked({
             </div>
           </div>
         </div>
-      )}
-    </div>
+      </div>
   );
 }

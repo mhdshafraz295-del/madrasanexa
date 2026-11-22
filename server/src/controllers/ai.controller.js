@@ -4,12 +4,12 @@ function resolveUploadedFile(req) {
   if (req.file) return req.file;
   if (req.files) {
     return (
+      req.files['receipt']?.[0] ||
       req.files['file']?.[0] ||
+      req.files['slip']?.[0] ||
       req.files['pdf']?.[0] ||
       req.files['document']?.[0] ||
       req.files['attachment']?.[0] ||
-      req.files['receipt']?.[0] ||
-      req.files['slip']?.[0] ||
       null
     );
   }

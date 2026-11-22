@@ -312,7 +312,6 @@ export default function TeacherAiPage() {
 
     setMessages((prev) => [...prev, userMsg]);
     setInputPrompt('');
-    setAttachedFile(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -491,6 +490,7 @@ export default function TeacherAiPage() {
           },
         ]);
       }
+      setAttachedFile(null);
     } catch (err: any) {
       if (
         err.response?.status === 403 &&
@@ -526,7 +526,9 @@ export default function TeacherAiPage() {
   const quickPills = [
     {
       label: '📝 Exam Paper from PDF',
-      action: () => {
+      action: (e?: React.MouseEvent) => {
+        e?.preventDefault();
+        e?.stopPropagation();
         setToolMode('exam');
         fileInputRef.current?.click();
       },
@@ -583,7 +585,9 @@ export default function TeacherAiPage() {
     },
     {
       label: '⚡ Summarize Textbook Chapter',
-      action: () => {
+      action: (e?: React.MouseEvent) => {
+        e?.preventDefault();
+        e?.stopPropagation();
         setToolMode('summarizer');
         fileInputRef.current?.click();
       },
@@ -883,7 +887,9 @@ export default function TeacherAiPage() {
         ref={fileInputRef}
         type="file"
         accept="application/pdf,.pdf"
-        className="hidden"
+        className="sr-only fixed -top-96 -left-96 opacity-0 pointer-events-none"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) {
@@ -984,7 +990,7 @@ export default function TeacherAiPage() {
                   <button
                     key={idx}
                     type="button"
-                    onClick={pill.action}
+                    onClick={(e) => pill.action(e)}
                     className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-[#0F172A] border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3] hover:shadow-sm transition cursor-pointer text-left"
                   >
                     {pill.label}
@@ -1112,15 +1118,25 @@ export default function TeacherAiPage() {
       <div className="shrink-0 pt-2 z-20 bg-gradient-to-t from-[#F7F6F1] via-[#F7F6F1] to-transparent">
           <div className="bg-white rounded-3xl p-3 sm:p-4 border-2 border-slate-200 focus-within:border-[#37C6A3] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 shadow-xl transition-all">
             {attachedFile && (
-              <div className="mb-2 p-2 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900">
-                <div className="flex items-center gap-2 truncate">
-                  <FileText className="w-4 h-4 text-[#37C6A3] shrink-0" />
-                  <span className="font-semibold truncate">{attachedFile.name}</span>
+              <div className="mb-2 p-2 sm:p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-xs text-emerald-900 shadow-2xs">
+                <div className="flex items-center gap-2 truncate min-w-0">
+                  <span className="text-sm shrink-0">📄</span>
+                  <span className="font-bold truncate text-[#0F172A]">{attachedFile.name}</span>
+                  <span className="text-[11px] text-emerald-700 font-mono shrink-0">
+                    • {attachedFile.size < 1024 * 1024
+                        ? `${(attachedFile.size / 1024).toFixed(0)} KB`
+                        : `${(attachedFile.size / (1024 * 1024)).toFixed(2)} MB`}
+                  </span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setAttachedFile(null)}
-                  className="p-1 hover:bg-emerald-200 rounded-lg text-emerald-800 transition cursor-pointer"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setAttachedFile(null);
+                  }}
+                  className="p-1 hover:bg-emerald-200/80 rounded-lg text-emerald-800 transition cursor-pointer shrink-0"
+                  title="Remove attached PDF"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -1141,7 +1157,11 @@ export default function TeacherAiPage() {
               <div className="flex items-center gap-1 min-w-0">
                 <button
                   type="button"
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
                   className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border transition flex items-center gap-1 shrink-0 cursor-pointer ${
                     attachedFile
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'

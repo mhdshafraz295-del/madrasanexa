@@ -243,7 +243,6 @@ export default function GlobalAiCopilotDrawer() {
 
     setMessages((prev) => [...prev, userMsg]);
     setInputPrompt('');
-    setAttachedFile(null);
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
@@ -422,6 +421,7 @@ export default function GlobalAiCopilotDrawer() {
           },
         ]);
       }
+      setAttachedFile(null);
     } catch (err: any) {
       const isLocked =
         err.response?.status === 403 &&
@@ -515,7 +515,9 @@ export default function GlobalAiCopilotDrawer() {
         ref={fileInputRef}
         type="file"
         accept="application/pdf,.pdf"
-        className="hidden"
+        className="sr-only fixed -top-96 -left-96 opacity-0 pointer-events-none"
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) {
@@ -880,15 +882,25 @@ export default function GlobalAiCopilotDrawer() {
                   {/* Docked Prompt Input Bar */}
                   <div className="p-3 border-t border-[#E7E9EE] bg-white space-y-2">
                     {attachedFile && (
-                      <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-[11px] text-emerald-900">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <FileText className="w-3.5 h-3.5 text-[#37C6A3] shrink-0" />
-                          <span className="font-semibold truncate">{attachedFile.name}</span>
+                      <div className="p-1.5 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2 text-[11px] text-emerald-900 shadow-2xs">
+                        <div className="flex items-center gap-1.5 truncate min-w-0">
+                          <span className="text-xs shrink-0">📄</span>
+                          <span className="font-bold truncate text-[#0F172A]">{attachedFile.name}</span>
+                          <span className="text-[10px] text-emerald-700 font-mono shrink-0">
+                            • {attachedFile.size < 1024 * 1024
+                                ? `${(attachedFile.size / 1024).toFixed(0)} KB`
+                                : `${(attachedFile.size / (1024 * 1024)).toFixed(2)} MB`}
+                          </span>
                         </div>
                         <button
                           type="button"
-                          onClick={() => setAttachedFile(null)}
-                          className="p-0.5 hover:bg-emerald-200 rounded text-emerald-800 transition cursor-pointer"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setAttachedFile(null);
+                          }}
+                          className="p-0.5 hover:bg-emerald-200/80 rounded text-emerald-800 transition cursor-pointer shrink-0"
+                          title="Remove attached PDF"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -910,7 +922,11 @@ export default function GlobalAiCopilotDrawer() {
                         <div className="flex items-center gap-1 min-w-0">
                           <button
                             type="button"
-                            onClick={() => fileInputRef.current?.click()}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              fileInputRef.current?.click();
+                            }}
                             className={`p-1.5 rounded-lg text-xs border transition shrink-0 cursor-pointer ${
                               attachedFile
                                 ? 'bg-emerald-100 text-emerald-800 border-emerald-300'

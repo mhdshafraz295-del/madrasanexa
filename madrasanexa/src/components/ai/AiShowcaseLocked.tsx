@@ -160,6 +160,7 @@ export default function AiShowcaseLocked({
       formData.append('transactionRef', transactionRef.trim());
       formData.append('receipt', receiptFile);
       formData.append('file', receiptFile);
+      formData.append('slip', receiptFile);
 
       await aiService.submitSubscriptionReceipt(formData);
       setSuccessMsg('Receipt submitted successfully! Super Admin will review and activate your subscription.');
@@ -770,7 +771,13 @@ export default function AiShowcaseLocked({
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-2xl p-4 sm:p-6 text-center transition ${
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest('button')) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    fileInputRef.current?.click();
+                  }}
+                  className={`border-2 border-dashed rounded-2xl p-4 sm:p-6 text-center transition cursor-pointer ${
                     isDragging
                       ? 'border-[#37C6A3] bg-emerald-50/70 scale-[1.01]'
                       : 'border-[#E7E9EE] hover:border-[#37C6A3]/60 bg-[#F7F6F1]/50'
@@ -782,7 +789,9 @@ export default function AiShowcaseLocked({
                     id="receipt-upload"
                     accept="image/png,image/jpeg,image/webp,application/pdf,.pdf"
                     onChange={handleFileChange}
-                    className="hidden"
+                    className="sr-only fixed -top-96 -left-96 opacity-0 pointer-events-none"
+                    tabIndex={-1}
+                    onClick={(e) => e.stopPropagation()}
                   />
 
                   {receiptFile ? (
@@ -902,9 +911,14 @@ export default function AiShowcaseLocked({
                       )}
                     </div>
                   ) : (
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="cursor-pointer flex flex-col items-center justify-center min-h-[60px]"
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }}
+                      className="w-full cursor-pointer flex flex-col items-center justify-center min-h-[70px] bg-transparent border-0 focus:outline-hidden"
                     >
                       <div className="w-12 h-12 rounded-2xl bg-white border border-[#E7E9EE] text-[#37C6A3] flex items-center justify-center mb-3 shadow-xs">
                         <Upload className="w-6 h-6" />
@@ -913,9 +927,9 @@ export default function AiShowcaseLocked({
                         Click to upload bank transfer slip or drag & drop
                       </div>
                       <div className="text-[10px] text-[#7C8A9A] mt-1 font-medium">
-                        Supports PNG, JPG, WebP, PDF (Max 5 MB)
+                        Supports PNG, JPG, WebP, PDF (Max 25 MB)
                       </div>
-                    </div>
+                    </button>
                   )}
                 </div>
               </div>

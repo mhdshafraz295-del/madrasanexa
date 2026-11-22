@@ -154,6 +154,7 @@ export async function generatePoster(req, res, next) {
   try {
     const {
       title,
+      prompt,
       themePrompt,
       category,
       dateText,
@@ -164,7 +165,8 @@ export async function generatePoster(req, res, next) {
     const madrasaName = req.tenant?.name || '';
 
     const result = await aiService.generatePoster({
-      title,
+      title: title || prompt,
+      prompt: prompt || title,
       themePrompt,
       category,
       dateText,

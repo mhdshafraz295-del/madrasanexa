@@ -127,12 +127,20 @@ export default function GlobalAiCopilotDrawer() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [printingMessage, setPrintingMessage] = useState<ChatMessage | null>(null);
 
   const location = useLocation();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const handlePrintMessage = (msg: ChatMessage) => {
+    setPrintingMessage(msg);
+    setTimeout(() => {
+      window.print();
+    }, 120);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -791,7 +799,7 @@ export default function GlobalAiCopilotDrawer() {
 
                                         <button
                                           type="button"
-                                          onClick={() => window.print()}
+                                          onClick={() => handlePrintMessage(msg)}
                                           className="px-1.5 py-0.5 text-[10px] font-semibold rounded-md text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
                                           title="Print response"
                                         >
@@ -943,6 +951,78 @@ export default function GlobalAiCopilotDrawer() {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* CLEAN DOCUMENT-ONLY A4 PRINT CONTAINER (PRINT ONLY)                       */}
+      {/* ========================================================================= */}
+      {printingMessage && (
+        <div
+          id="ai-document-printable-sheet"
+          className="hidden print:block w-full bg-white text-slate-900 font-sans p-2 sm:p-4"
+        >
+          <style>{`
+            @media print {
+              @page {
+                size: A4 portrait;
+                margin: 12mm 15mm;
+              }
+              body {
+                background: #ffffff !important;
+                color: #000000 !important;
+              }
+              aside, nav, header, footer, .sidebar, #root > *:not(#ai-document-printable-sheet), .print\\:hidden {
+                display: none !important;
+              }
+              #ai-document-printable-sheet {
+                display: block !important;
+                width: 100% !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+              }
+            }
+          `}</style>
+
+          {/* Institutional Header Banner */}
+          <div className="border-b-2 border-slate-900 pb-3 mb-6">
+            <div className="text-center space-y-1">
+              <div className="text-sm font-serif font-bold text-slate-700 tracking-wider">
+                بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
+              </div>
+              <h1 className="text-xl font-black uppercase tracking-tight text-slate-950">
+                {statusData?.madrasaName || 'MadrasaNexa Islamic Academy'}
+              </h1>
+              <div className="text-xs font-bold uppercase tracking-widest text-emerald-800">
+                {modeLabels[printingMessage.mode]?.label || 'Institutional Document'}
+              </div>
+              <div className="text-[11px] text-slate-500 pt-1 flex items-center justify-center gap-3">
+                <span>Date: {printingMessage.timestamp.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                <span>•</span>
+                <span>Official Verified Institutional Document</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Document Content */}
+          <div className="text-slate-950 text-sm leading-relaxed">
+            {printingMessage.posterData ? (
+              <div className="flex flex-col items-center justify-center p-2">
+                <img
+                  src={printingMessage.posterData.imageDataUrl || printingMessage.posterData.backgroundDataUrl}
+                  alt={printingMessage.posterData.title}
+                  className="max-h-[850px] w-auto object-contain rounded-xl shadow-md border border-slate-300"
+                />
+              </div>
+            ) : (
+              <AiMarkdownContent content={printingMessage.content} />
+            )}
+          </div>
+
+          {/* Institutional Print Footer */}
+          <div className="border-t border-slate-200 mt-8 pt-3 text-center text-[10px] text-slate-400">
+            Printed via MadrasaNexa Smart AI Copilot • Zero-Storage RAM-Only Verification
           </div>
         </div>
       )}

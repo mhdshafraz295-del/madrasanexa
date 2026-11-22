@@ -1084,11 +1084,14 @@ ${UNIVERSAL_AI_INSTRUCTIONS}`;
 
 /**
  * Feature 3: Madrasa Event Poster & Flyer Generator
- * Generates image via Cloudflare Workers AI (Flux 1 Schnell with SDXL fallback)
+ * 1-Click Gemini-Style Direct Poster Generator:
+ * 1. Uses Llama 3.3 70B to parse natural prompt (English, Tamil, Arabic, Tanglish) into structured metadata (headline, subtitle, dateLine, venueLine, category) + ultra-rich Flux prompt.
+ * 2. Generates background image via Cloudflare Workers AI (Flux 1 Schnell with SDXL fallback).
  * Returns directly as base64 data URL. 0 MB saved to disk or R2.
  */
 export async function generatePoster({
   title,
+  prompt: userPromptInput = '',
   themePrompt = '',
   category = 'Event',
   dateText = '',
@@ -1096,8 +1099,9 @@ export async function generatePoster({
   madrasaName = '',
   language = 'English',
 }) {
-  if (!title || typeof title !== 'string' || title.trim().length === 0) {
-    throw new BadRequestError('Poster title is required.');
+  const rawPrompt = (userPromptInput || title || '').trim();
+  if (!rawPrompt) {
+    throw new BadRequestError('Poster description or title is required.');
   }
 
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
@@ -1107,12 +1111,79 @@ export async function generatePoster({
     throw new Error('Cloudflare Workers AI credentials are not configured.');
   }
 
-  // Construct clean textless Islamic background visual prompt
-  const cleanTitle = title.trim();
-  const visualPrompt = [
+  // 1. Use Llama 3.3 70B to extract clean structured JSON + craft an ultra-rich Flux graphic art prompt
+  const resolvedMadrasaName = madrasaName || 'MadrasaNexa Islamic Academy';
+  let structured = {
+    headline: rawPrompt.replace(/^(?:i\s+need\s+(?:a\s+)?poster\s+(?:for\s+)?|poster\s+(?:for\s+)?|make\s+(?:a\s+)?poster\s+(?:for\s+)?)/i, '').trim().toUpperCase() || 'ISLAMIC CEREMONY & EVENT',
+    subtitle: 'Sacred Reflections, Qur\'anic Recitation & Community Blessings',
+    dateLine: dateText || '',
+    venueLine: venue || resolvedMadrasaName,
+    category: category || 'Islamic Event',
+    fluxPrompt: '',
+  };
+
+  try {
+    const analysisPrompt = `
+You are a master Islamic graphic designer and event art director.
+Analyze this user's natural event poster request (in English, Tamil, Arabic, or Tanglish):
+User Prompt: "${rawPrompt}"
+${themePrompt ? `Custom Theme: "${themePrompt}"` : ''}
+Madrasa Name: "${resolvedMadrasaName}"
+Target Output Language: "${language || 'English'}"
+
+Your task:
+1. "headline": Bold, inspiring, dignified event title (e.g. "RAMADAN MUBARAK", "ANNUAL HIFZ CONVOCATION 2026", "ரமழான் முபாரக்", "حفل تكريم حفظة القرآن الكريم"). STRICT PROHIBITION: NEVER echo conversational words like "i need poster for...", "poster venum", "make a poster".
+2. "subtitle": Concise, poetic 1-line event tagline (e.g. "Sacred Reflections, Qur'an Recitation & Community Iftar").
+3. "dateLine": Extract date and time ONLY if explicitly mentioned in the user's prompt (e.g. "Friday, 15th Ramadan • 7:30 PM"). If NO date is mentioned, return an empty string "" — NEVER invent a fake date.
+4. "venueLine": Extract venue ONLY if explicitly mentioned, otherwise return "${resolvedMadrasaName}".
+5. "category": Event category (e.g. "Spiritual Gathering", "Hifz Convocation", "Community Event", "Eid Celebration").
+6. "fluxPrompt": Ultra-detailed graphic design prompt for @cf/black-forest-labs/flux-1-schnell:
+   - Describe a luminous, richly illustrated, ornate Islamic poster background.
+   - Ornate emerald green, royal navy and polished gold Andalusian / Mughal horseshoe archway.
+   - Glowing golden crescent moon in night sky, intricate hanging brass fanoos lanterns casting warm golden lighting rays and specular glows.
+   - Central open soft copy-safe space for typography overlay.
+   - Deep rich emerald and sapphire color palette, starry night ambient lighting, ultra-detailed 8k vector finish.
+   - STRICT PROHIBITION: strictly NO text, NO letters, NO words, NO typography, NO watermarks, NO calligraphy.
+
+Return ONLY a valid JSON object matching this schema without any markdown formatting or surrounding text:
+{
+  "headline": "Bold Event Headline",
+  "subtitle": "Concise 1-Line Tagline",
+  "dateLine": "",
+  "venueLine": "${resolvedMadrasaName}",
+  "category": "Islamic Event",
+  "fluxPrompt": "Ultra-detailed visual prompt..."
+}
+`;
+
+    const llamaRes = await callCloudflareTextAi({
+      prompt: analysisPrompt,
+      systemPrompt: 'You are a professional Islamic art director. You extract structured event poster metadata and craft vivid visual prompts. Output strictly valid JSON.',
+      temperature: 0.2,
+    });
+
+    if (llamaRes) {
+      const jsonMatch = llamaRes.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.headline) structured.headline = parsed.headline.trim();
+        if (parsed.subtitle) structured.subtitle = parsed.subtitle.trim();
+        if (parsed.dateLine !== undefined) structured.dateLine = parsed.dateLine ? parsed.dateLine.trim() : '';
+        if (parsed.venueLine !== undefined) structured.venueLine = parsed.venueLine ? parsed.venueLine.trim() : '';
+        if (parsed.category) structured.category = parsed.category.trim();
+        if (parsed.fluxPrompt) structured.fluxPrompt = parsed.fluxPrompt.trim();
+      }
+    }
+  } catch (err) {
+    console.warn('Llama event extraction failed, falling back to default structured metadata:', err.message);
+  }
+
+  // 2. Construct final clean textless Islamic background visual prompt
+  const visualPrompt = structured.fluxPrompt || [
     'Clean textless ornate Islamic event background poster artwork',
     'Luxurious emerald green, royal navy and gold Islamic geometric border frame',
     'Grand architectural Islamic horseshoe archway and intricate arabesque filigree',
+    'Glowing golden crescent moon in night sky with warm hanging brass fanoos lanterns',
     'Open soft central copy-safe space for typography overlay',
     'Subtle ambient mosque minaret silhouettes in distant background, majestic spiritual lighting, soft specular golden glows',
     themePrompt ? `Custom style: ${themePrompt}` : 'High-end Islamic cultural aesthetics, ultra-detailed 8k vector finish, symmetrical composition',
@@ -1121,7 +1192,7 @@ export async function generatePoster({
     .filter(Boolean)
     .join(', ');
 
-  // Call Flux 1 Schnell
+  // 3. Call Flux 1 Schnell
   let base64Image = null;
   let modelUsed = '@cf/black-forest-labs/flux-1-schnell';
 
@@ -1134,6 +1205,8 @@ export async function generatePoster({
       },
       body: JSON.stringify({
         prompt: visualPrompt,
+        width: 1024,
+        height: 1280,
       }),
     });
 
@@ -1149,7 +1222,7 @@ export async function generatePoster({
     console.warn('Flux 1 Schnell error:', err.message);
   }
 
-  // Fallback to SDXL if Flux did not return image
+  // 4. Fallback to SDXL if Flux did not return image
   if (!base64Image) {
     modelUsed = '@cf/stabilityai/stable-diffusion-xl-base-1.0';
     try {
@@ -1161,6 +1234,8 @@ export async function generatePoster({
         },
         body: JSON.stringify({
           prompt: visualPrompt,
+          width: 1024,
+          height: 1024,
         }),
       });
 
@@ -1182,21 +1257,24 @@ export async function generatePoster({
     }
   }
 
-  if (!base64Image) {
-    throw new Error('Image generation service was unable to generate poster at this time. Please try again.');
-  }
+  // If both Cloudflare image endpoints fail, base64Image is null.
+  // The frontend PosterCanvasRenderer will render the rich procedural Islamic arch & crescent fallback.
 
   return {
-    imageDataUrl: base64Image,
-    backgroundDataUrl: base64Image,
-    modelUsed,
-    title: cleanTitle,
-    eventTitle: cleanTitle,
-    category: category || 'Islamic Event',
-    dateText: dateText || '',
-    dateTime: dateText || '',
-    venue: venue || '',
-    madrasaName: madrasaName || 'MadrasaNexa Islamic Academy',
+    imageDataUrl: base64Image || '',
+    backgroundDataUrl: base64Image || '',
+    modelUsed: base64Image ? modelUsed : 'procedural-islamic-canvas',
+    title: structured.headline,
+    eventTitle: structured.headline,
+    headline: structured.headline,
+    subtitle: structured.subtitle,
+    category: structured.category || category || 'Islamic Event',
+    dateText: structured.dateLine || dateText || '',
+    dateLine: structured.dateLine || dateText || '',
+    dateTime: structured.dateLine || dateText || '',
+    venue: structured.venueLine || venue || resolvedMadrasaName,
+    venueLine: structured.venueLine || venue || resolvedMadrasaName,
+    madrasaName: resolvedMadrasaName,
     bismillahLine: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
     language: language || 'English',
   };

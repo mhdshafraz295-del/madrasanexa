@@ -91,6 +91,9 @@ export const envSchema = z.object({
   CLOUDFLARE_ACCOUNT_ID: z.string().optional(),
   CLOUDFLARE_API_TOKEN: z.string().optional(),
 
+  // Google Gemini API (Primary Production AI Engine)
+  GEMINI_API_KEY: z.string().optional(),
+
   // Phase 5 Subscription settings
   SUBSCRIPTION_EXPIRING_SOON_DAYS: z.coerce.number().int().positive().default(7),
 

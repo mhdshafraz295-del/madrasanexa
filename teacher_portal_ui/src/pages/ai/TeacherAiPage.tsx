@@ -1681,9 +1681,11 @@ export default function TeacherAiPage() {
                 size: A4 portrait;
                 margin: 12mm 15mm;
               }
-              body {
+              body, html {
                 background: #ffffff !important;
                 color: #000000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
               }
               aside, nav, header, footer, .sidebar, #root > *:not(#ai-document-printable-sheet), .print\\:hidden {
                 display: none !important;
@@ -1692,7 +1694,66 @@ export default function TeacherAiPage() {
                 display: block !important;
                 width: 100% !important;
                 background: #ffffff !important;
-                color: #0f172a !important;
+                color: #000000 !important;
+                font-size: 12.5pt !important;
+                line-height: 1.6 !important;
+                font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, 'Noto Sans Tamil', 'Amiri', 'Scheherazade New', sans-serif !important;
+              }
+              #ai-document-printable-sheet * {
+                color: #000000 !important;
+                border-color: #000000 !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+              }
+              #ai-document-printable-sheet h1,
+              #ai-document-printable-sheet h2,
+              #ai-document-printable-sheet h3,
+              #ai-document-printable-sheet h4,
+              #ai-document-printable-sheet h5,
+              #ai-document-printable-sheet h6 {
+                color: #000000 !important;
+                font-weight: 700 !important;
+                page-break-after: avoid;
+                break-after: avoid;
+              }
+              #ai-document-printable-sheet p,
+              #ai-document-printable-sheet li,
+              #ai-document-printable-sheet blockquote {
+                color: #000000 !important;
+                font-size: 12pt !important;
+                line-height: 1.6 !important;
+              }
+              #ai-document-printable-sheet table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                border: 1.5px solid #000000 !important;
+                margin: 12px 0 !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+              }
+              #ai-document-printable-sheet th,
+              #ai-document-printable-sheet td {
+                border: 1px solid #000000 !important;
+                padding: 6px 10px !important;
+                color: #000000 !important;
+                font-size: 11pt !important;
+              }
+              #ai-document-printable-sheet th {
+                background-color: #f1f5f9 !important;
+                font-weight: bold !important;
+              }
+              #ai-document-printable-sheet hr {
+                border-color: #000000 !important;
+                border-width: 1px !important;
+                margin: 12px 0 !important;
+              }
+              #ai-document-printable-sheet pre,
+              #ai-document-printable-sheet code {
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+                background-color: #f8fafc !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #000000 !important;
+                white-space: pre-wrap !important;
               }
             }
           `}</style>

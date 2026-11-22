@@ -732,6 +732,198 @@ export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adm
 }
 
 /**
+ * Helper to execute Google Gemini generation with native PDF inlineData support.
+ * Targets gemini-2.5-flash with automatic fallback to gemini-1.5-flash.
+ */
+async function callGeminiGenerateContent({
+  prompt = '',
+  systemPrompt = '',
+  messages = [],
+  pdfBuffer = null,
+  temperature = 0.3,
+  maxOutputTokens = 4096,
+}) {
+  const apiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error('GEMINI_API_KEY is not configured.');
+  }
+
+  const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  const contents = [];
+
+  if (Array.isArray(messages) && messages.length > 0) {
+    for (const msg of messages) {
+      if (msg.role === 'system') continue;
+      const role = msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user';
+      const text = String(msg.content || '').trim();
+      if (!text) continue;
+
+      if (contents.length > 0 && contents[contents.length - 1].role === role) {
+        contents[contents.length - 1].parts.push({ text });
+      } else {
+        contents.push({
+          role,
+          parts: [{ text }],
+        });
+      }
+    }
+
+    if (contents.length > 0 && contents[0].role === 'model') {
+      contents.unshift({
+        role: 'user',
+        parts: [{ text: 'Assalamu Alaikum' }],
+      });
+    }
+  } else if (prompt) {
+    contents.push({
+      role: 'user',
+      parts: [{ text: prompt }],
+    });
+  }
+
+  // If pdfBuffer is supplied, attach it natively as inlineData to the last user message
+  if (pdfBuffer && Buffer.isBuffer(pdfBuffer) && pdfBuffer.length > 0) {
+    const pdfBase64 = pdfBuffer.toString('base64');
+    const pdfPart = {
+      inlineData: {
+        mimeType: 'application/pdf',
+        data: pdfBase64,
+      },
+    };
+
+    let lastUserMsg = null;
+    for (let i = contents.length - 1; i >= 0; i--) {
+      if (contents[i].role === 'user') {
+        lastUserMsg = contents[i];
+        break;
+      }
+    }
+
+    if (lastUserMsg) {
+      lastUserMsg.parts.unshift(pdfPart);
+    } else {
+      contents.push({
+        role: 'user',
+        parts: [pdfPart, { text: prompt || 'Please examine the attached syllabus or document.' }],
+      });
+    }
+  }
+
+  if (contents.length === 0) {
+    contents.push({
+      role: 'user',
+      parts: [{ text: prompt || 'Assalamu Alaikum' }],
+    });
+  }
+
+  const requestBody = {
+    contents,
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxOutputTokens || 4096,
+    },
+  };
+
+  if (systemPrompt && systemPrompt.trim()) {
+    requestBody.systemInstruction = {
+      parts: [{ text: systemPrompt.trim() }],
+    };
+  }
+
+  let lastError = null;
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`[Gemini] Model ${model} returned ${res.status}: ${errText.slice(0, 200)}`);
+        lastError = new Error(`Gemini API error (${res.status}): ${errText.slice(0, 200)}`);
+        continue;
+      }
+
+      const data = await res.json();
+      const candidate = data?.candidates?.[0];
+      const responseParts = candidate?.content?.parts || [];
+      const text = responseParts.map((p) => p.text || '').join('').trim();
+
+      if (text) {
+        return {
+          text,
+          model,
+        };
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`[Gemini] Error invoking model ${model}:`, err.message);
+    }
+  }
+
+  throw lastError || new Error('Failed to generate response from Gemini API.');
+}
+
+/**
+ * Master AI Generation Dispatcher:
+ * 1. Tries Google Gemini (gemini-2.5-flash) first if GEMINI_API_KEY is configured.
+ * 2. Seamlessly falls back to Cloudflare Workers AI (@cf/meta/llama-3.3-70b-instruct-fp8-fast) if Gemini fails or is unconfigured.
+ */
+async function generateAiText({
+  prompt = '',
+  systemPrompt = '',
+  messages = null,
+  pdfBuffer = null,
+  temperature = 0.3,
+  maxTokens = 4096,
+}) {
+  const geminiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
+  if (geminiKey && geminiKey.trim()) {
+    try {
+      const geminiRes = await callGeminiGenerateContent({
+        prompt,
+        systemPrompt,
+        messages,
+        pdfBuffer,
+        temperature,
+        maxOutputTokens: maxTokens,
+      });
+      if (geminiRes?.text) {
+        return geminiRes;
+      }
+    } catch (geminiErr) {
+      console.warn('[AI Service] Gemini 2.5 Flash invocation error, falling back to Cloudflare Workers AI:', geminiErr.message);
+    }
+  }
+
+  // Fallback to Cloudflare Workers AI
+  if (Array.isArray(messages) && messages.length > 0) {
+    return await callCloudflareChatAi({
+      messages,
+      temperature,
+      maxTokens: Math.min(maxTokens, 3500),
+    });
+  }
+
+  const cfText = await callCloudflareTextAi({
+    prompt,
+    systemPrompt,
+    temperature,
+  });
+
+  return {
+    text: cfText,
+    model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  };
+}
+
+/**
  * Helper to execute Cloudflare Workers AI Text Generation
  */
 async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0.3 }) {
@@ -917,6 +1109,19 @@ export const UNIVERSAL_AI_INSTRUCTIONS = `
        6. Tertib (maintaining the proper obligatory sequence)
        Along with authentic Sunnah steps: reciting Bismillah, washing hands up to wrists, rinsing mouth (Madmadah), sniffing water into nostrils and blowing it out (Istinshaq), and reciting the Sunnah Shahadah Du'a upon completion.
    - REVERENCE & HONORIFICS: Always use dignified Islamic honorifics (Allah ﷻ, Prophet Muhammad ﷺ, Sahabah رضي الله عنهم, scholars رحمه الله).
+
+5. STRICT PDF ATTACHMENT GROUNDING & EXHAUSTIVE STRUCTURED NOTES:
+   - When a syllabus PDF or document text is provided (via native PDF vision or parsed RAM buffer):
+     * Ground all answers, notes, summaries, and exam questions STRICTLY on the document's actual contents, facts, and structure.
+     * Do NOT hallucinate external chapters or assume syllabus content not present in the document.
+     * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 4096 tokens). Never truncate or provide shallow 2-sentence answers.
+
+6. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING:
+   - When the user sends a greeting (e.g. "Assalamu Alaikum", "Salam", "Hi", "Hello", "Vanakkam"):
+     * NEVER reply with a cold, robotic one-word response like "Wa Alaikumussalam".
+     * Respond with a warm, dignified, authentic Islamic greeting (e.g. "وَعَلَيْكُمُ السَّلَامُ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ • Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh").
+     * Introduce yourself warmly as the MadrasaNexa Smart AI Assistant and concisely present the core capabilities available to Ustadhs and Administrators (Exam & Answer Key Generation, 30-Min Lesson Planning, Madrasa Parent Circulars, Hifz & Tajweed Tracking, Bayan & Assembly Speeches, Multilingual Translation, Document Summaries, and Event Posters).
+     * Respond in the user's language (Tamil if greeted in Tamil/Tanglish, Arabic if Arabic, English if English).
 `;
 
 /**
@@ -1099,7 +1304,13 @@ Format the output in clean, professional GitHub-flavored Markdown ready for disp
 
 ${UNIVERSAL_AI_INSTRUCTIONS}`;
 
-  const examContent = await callCloudflareTextAi({ prompt, systemPrompt, temperature: 0.25 });
+  const { text: examContent } = await generateAiText({
+    prompt,
+    systemPrompt,
+    pdfBuffer,
+    temperature: 0.25,
+    maxTokens: 4096,
+  });
 
   return {
     examContent,
@@ -1183,7 +1394,13 @@ Format the response in structured, beautifully formatted Markdown with bullet po
 
 ${UNIVERSAL_AI_INSTRUCTIONS}`;
 
-  const lessonPlan = await callCloudflareTextAi({ prompt, systemPrompt, temperature: 0.3 });
+  const { text: lessonPlan } = await generateAiText({
+    prompt,
+    systemPrompt,
+    pdfBuffer,
+    temperature: 0.3,
+    maxTokens: 4096,
+  });
 
   return {
     lessonPlan,
@@ -1267,10 +1484,11 @@ Return ONLY a valid JSON object matching this schema without any markdown format
 }
 `;
 
-    const llamaRes = await callCloudflareTextAi({
+    const { text: llamaRes } = await generateAiText({
       prompt: analysisPrompt,
       systemPrompt: 'You are a professional Islamic art director. You extract structured event poster metadata and craft vivid visual prompts. Output strictly valid JSON.',
       temperature: 0.2,
+      maxTokens: 1024,
     });
 
     if (llamaRes) {
@@ -1433,7 +1651,12 @@ ${cleanedText}
 
 ${UNIVERSAL_AI_INSTRUCTIONS}`;
 
-  const translatedText = await callCloudflareTextAi({ prompt, systemPrompt, temperature: 0.1 });
+  const { text: translatedText } = await generateAiText({
+    prompt,
+    systemPrompt,
+    temperature: 0.1,
+    maxTokens: 4096,
+  });
 
   return {
     translatedText,
@@ -1572,6 +1795,30 @@ Format in clean, orator-friendly Markdown in ${resolvedLanguage}.`;
 4. ZERO LIVE DATABASE EXPOSURE: Maintain complete privacy in RAM memory.`;
   }
 
+  const GREETING_REGEX = /^(?:assalamu?\s*alaikum(?:\s*wa\s*rahmatullahi(?:\s*wa\s*barakatuh)?)?|salam(?:\s*alaikum)?|slm|hi|hello|hey|vanakkam|marhaban|ahlan|hola)[\s!.,?]*$/i;
+  const isSingleGreeting = GREETING_REGEX.test(cleanMessage) && (!history || history.length <= 1) && !pdfBuffer && !pastedText;
+
+  if (isSingleGreeting) {
+    modeInstructions += `
+[CRITICAL INSTRUCTION FOR GREETING PROMPT]
+The user just sent a greeting ("${cleanMessage}").
+STRICT PROHIBITION: NEVER output a robotic 1-word or 1-sentence reply like "Wa Alaikumussalam" or "Hello"!
+YOU MUST PROVIDE A COMPREHENSIVE, WARM, DIGNIFIED GREETING AND FULL ONBOARDING:
+1. Warm Islamic Salutation with honorifics: "وَعَلَيْكُمُ السَّلَامُ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ" and English/Tamil transliteration.
+2. Welcome the user warmly to MadrasaNexa Smart AI Studio, respectfully addressing their role (${role || 'Ustadh / Administrator'}) at ${madrasaName || 'the Madrasa'}.
+3. Present an elegant bulleted overview of how you can assist them today:
+   - 📄 Zero-Storage Exam & Answer Key Generator (Tamil / English / Arabic / Bilingual)
+   - ⏱️ Ustadh 30-Min Lesson Planner & Blackboard Summary
+   - 📢 Official Madrasa Parent Circulars & Holiday Notices
+   - 📖 Hifz & Tajweed Assessment Worksheet Designer
+   - 🎤 Inspiring Madrasa Assembly & Jalsa Bayan Speeches
+   - 🌐 3-Language Islamic Circular & Content Translator
+   - 📌 Document & Chapter Executive Summarizer
+   - 🎨 Madrasa Event Poster & Flyer Maker
+4. Conclude with an inspiring, supportive closing inviting them to ask a question or pick an action.
+Respond in ${resolvedLanguage} (if Tamil/Tanglish: use beautiful natural Tamil; if English: elegant English; if Arabic: authentic Arabic).`;
+  }
+
   const systemPrompt = `You are the MadrasaNexa Smart AI Copilot, a warm, polite, highly knowledgeable Islamic Educational & Madrasa Operations Assistant.
 Institution: ${madrasaName || 'Madrasa'}
 User Role: ${role || 'Staff'}
@@ -1607,7 +1854,12 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     content: userPrompt || cleanMessage || 'Please examine the attached document and provide an overview and key points.',
   });
 
-  const { text, model } = await callCloudflareChatAi({ messages, temperature: 0.35 });
+  const { text, model } = await generateAiText({
+    messages,
+    pdfBuffer,
+    temperature: 0.35,
+    maxTokens: 4096,
+  });
 
   return {
     reply: text,

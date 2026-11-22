@@ -37,10 +37,11 @@ import {
 } from 'lucide-react';
 import AnnouncementBell from '../components/announcement/AnnouncementBell';
 import { aiService } from '../services/ai.service';
+import AiRobotMascot from '../components/ai/AiRobotMascot';
 
 const activeNavItems = [
   { to: '/madrasa-admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/madrasa-admin/ai-assistant', label: '✨ AI Assistant', icon: Sparkles, isAi: true },
+  { to: '/madrasa-admin/ai-assistant', label: 'AI Assistant', icon: Sparkles, isAi: true },
   { to: '/madrasa-admin/admissions', label: 'Admissions & Intake', icon: UserPlus },
   { to: '/madrasa-admin/students', label: 'Students', icon: GraduationCap },
   { to: '/madrasa-admin/alumni', label: 'Alumni & Scholars', icon: GraduationCap },
@@ -209,8 +210,14 @@ export default function MadrasaAdminLayout() {
                       }`
                     }
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Icon className="w-4 h-4 shrink-0" />
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {item.isAi ? (
+                        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                          <AiRobotMascot variant="avatar" size={20} />
+                        </div>
+                      ) : (
+                        <Icon className="w-4 h-4 shrink-0" />
+                      )}
                       <span className="truncate">{item.label}</span>
                     </div>
                     {item.isAi && !aiEnabled && (

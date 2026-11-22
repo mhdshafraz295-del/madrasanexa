@@ -16,6 +16,8 @@ import {
   Download,
   ArrowRightLeft,
   ChevronLeft,
+  BookOpen,
+  Palette,
 } from 'lucide-react';
 import { teacherAiService, type AiStatusResponse } from '../../services/ai.service';
 import AiRobotMascot from '../../components/ai/AiRobotMascot';
@@ -633,46 +635,181 @@ export default function TeacherAiPage() {
           </div>
         </div>
 
-        {/* Feature Cards - Emerald & Brand Themed */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/50 transition">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 border border-emerald-100">
-              <FileText className="w-5 h-5 text-emerald-600" />
+        {/* 4 Feature Capability Cards with 3D Medallions & Quick-Scan Pills */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
+          {/* Feature 1: Zero-Storage PDF Exam Paper Generator */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+            <div>
+              <div className="flex items-start gap-4">
+                {/* 3D Glossy Emerald Medallion */}
+                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/25 border border-emerald-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
+                  <FileText className="w-6 h-6 text-white relative z-10" />
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-800 border border-emerald-400/50 flex items-center justify-center z-10">
+                    <Sparkles className="w-2.5 h-2.5 text-[#37C6A3]" />
+                  </span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0F172A] leading-snug">
+                      Zero-Storage PDF Exam Generator
+                    </h3>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      RAM-Only
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#7C8A9A] mt-1.5 leading-relaxed">
+                    Upload syllabus or textbook PDFs to instantly synthesize multi-section MCQs, short answers, essay questions, and complete answer keys.
+                  </p>
+                </div>
+              </div>
             </div>
-            <h3 className="text-sm font-bold text-[#0F172A]">Zero-Storage PDF Exam Generator</h3>
-            <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-              Upload textbook or syllabus PDFs in RAM only (0 MB stored). Instantly generate MCQs, short questions, and full answer keys in Tamil, English, and Arabic.
-            </p>
+
+            {/* Quick-Scan Visual Pills */}
+            <div className="mt-4 pt-4 border-t border-[#E7E9EE]/80 flex flex-wrap gap-2">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1.5">
+                <span>📄</span> Upload PDF
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1.5">
+                <span>📝</span> MCQs & Essays
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1.5">
+                <span>✅</span> Answer Key
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1.5">
+                <span>🖨️</span> A4 Print
+              </span>
+            </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/50 transition">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3 border border-teal-100">
-              <Clock className="w-5 h-5 text-teal-600" />
+          {/* Feature 2: Ustadh 30-Min Lesson Planner */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+            <div>
+              <div className="flex items-start gap-4">
+                {/* 3D Glossy Dark Navy & Emerald Medallion */}
+                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[#0F172A] via-slate-800 to-emerald-700 text-white flex items-center justify-center shrink-0 shadow-lg shadow-slate-900/30 border border-slate-700 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+                  <Clock className="w-6 h-6 text-[#37C6A3] relative z-10" />
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-900 border border-emerald-500/50 flex items-center justify-center z-10">
+                    <BookOpen className="w-2.5 h-2.5 text-emerald-400" />
+                  </span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0F172A] leading-snug">
+                      Ustadh 30-Min Lesson Planner
+                    </h3>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
+                      Ustadh Copilot
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#7C8A9A] mt-1.5 leading-relaxed">
+                    Generate step-by-step 30-minute pedagogical lesson plans with classroom hook, core explanation, exercises, and blackboard diagrams.
+                  </p>
+                </div>
+              </div>
             </div>
-            <h3 className="text-sm font-bold text-[#0F172A]">Ustadh 30-Min Lesson Planner</h3>
-            <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-              Pedagogical lesson plans with 5m hook, 15m core explanation, 7m active student exercise, 3m plenary, and visual blackboard summary layouts.
-            </p>
+
+            {/* Quick-Scan Visual Pills */}
+            <div className="mt-4 pt-4 border-t border-[#E7E9EE]/80 flex flex-wrap gap-2">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1.5">
+                <span>⏱️</span> 30-Min Flow
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1.5">
+                <span>📖</span> Quran/Hadith Proofs
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 border border-slate-200 flex items-center gap-1.5">
+                <span>🧑‍🏫</span> Board Summary
+              </span>
+            </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/50 transition">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#37C6A3] flex items-center justify-center mb-3 border border-emerald-100">
-              <ImageIcon className="w-5 h-5 text-emerald-600" />
+          {/* Feature 3: Madrasa Event Poster & Flyer Maker */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+            <div>
+              <div className="flex items-start gap-4">
+                {/* 3D Glossy Teal-Cyan Medallion */}
+                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-teal-500/25 border border-teal-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
+                  <ImageIcon className="w-6 h-6 text-white relative z-10" />
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-teal-800 border border-cyan-400/50 flex items-center justify-center z-10">
+                    <Palette className="w-2.5 h-2.5 text-cyan-300" />
+                  </span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0F172A] leading-snug">
+                      Madrasa Event Poster Maker
+                    </h3>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Flux 1 Schnell
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#7C8A9A] mt-1.5 leading-relaxed">
+                    Synthesize Islamic announcement flyers, Hifz graduation posters, and admission banners with Cloudflare Workers AI and 1-click download.
+                  </p>
+                </div>
+              </div>
             </div>
-            <h3 className="text-sm font-bold text-[#0F172A]">Madrasa Event Poster Maker</h3>
-            <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-              Generate beautiful event flyers and Hifz graduation posters with Cloudflare Flux 1 Schnell and direct one-click image download.
-            </p>
+
+            {/* Quick-Scan Visual Pills */}
+            <div className="mt-4 pt-4 border-t border-[#E7E9EE]/80 flex flex-wrap gap-2">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1.5">
+                <span>🎨</span> 1-Click Poster
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1.5">
+                <span>🕌</span> Islamic Design
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-teal-50 text-teal-800 border border-teal-100 flex items-center gap-1.5">
+                <span>⬇️</span> Instant Download
+              </span>
+            </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-5 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/50 transition">
-            <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center mb-3 border border-teal-100">
-              <Languages className="w-5 h-5 text-teal-600" />
+          {/* Feature 4: Multilingual Islamic Translator */}
+          <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs hover:border-[#37C6A3]/60 hover:shadow-md hover:-translate-y-1 transition-all duration-300 group flex flex-col justify-between">
+            <div>
+              <div className="flex items-start gap-4">
+                {/* 3D Glossy Emerald-Green Medallion */}
+                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-green-800 text-white flex items-center justify-center shrink-0 shadow-lg shadow-emerald-600/25 border border-emerald-400/40 overflow-hidden group-hover:scale-105 transition-transform duration-300">
+                  <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/35 to-transparent pointer-events-none" />
+                  <Languages className="w-6 h-6 text-white relative z-10" />
+                  <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-900 border border-emerald-400/50 flex items-center justify-center z-10">
+                    <Sparkles className="w-2.5 h-2.5 text-[#37C6A3]" />
+                  </span>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <h3 className="text-sm sm:text-base font-bold text-[#0F172A] leading-snug">
+                      Multilingual Islamic Translator
+                    </h3>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-800 border border-teal-200">
+                      3 Languages
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#7C8A9A] mt-1.5 leading-relaxed">
+                    Translate administrative circulars, exam questions, and curriculum text across Tamil, English, and Arabic preserving Islamic terminology.
+                  </p>
+                </div>
+              </div>
             </div>
-            <h3 className="text-sm font-bold text-[#0F172A]">Multilingual Islamic Translator</h3>
-            <p className="text-xs text-[#7C8A9A] mt-1 leading-relaxed">
-              High-accuracy translation between Tamil, English, and Arabic preserving Islamic terminology, Du'a, and religious context.
-            </p>
+
+            {/* Quick-Scan Visual Pills */}
+            <div className="mt-4 pt-4 border-t border-[#E7E9EE]/80 flex flex-wrap gap-2">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1.5">
+                <span>🇱🇰/🇮🇳</span> தமிழ்
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1.5">
+                <span>🇬🇧</span> English
+              </span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 flex items-center gap-1.5 font-arabic">
+                <span>🇸🇦</span> العربية
+              </span>
+            </div>
           </div>
         </div>
 

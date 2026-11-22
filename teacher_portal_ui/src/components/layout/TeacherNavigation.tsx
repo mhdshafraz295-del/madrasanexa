@@ -23,7 +23,7 @@ export interface TeacherNavItem {
 
 export const TEACHER_NAV_ITEMS: TeacherNavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/ai-assistant', label: '✨ AI Assistant', icon: Sparkles, isAi: true },
+  { to: '/ai-assistant', label: 'AI Assistant', icon: Sparkles, isAi: true },
   { to: '/attendance/my', label: 'Attendance Check-In', icon: QrCode },
   { to: '/timetable', label: 'Timetable', icon: Calendar },
   { to: '/classes', label: 'Classes & Subjects', icon: BookOpen },

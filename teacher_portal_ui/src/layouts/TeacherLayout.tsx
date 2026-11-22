@@ -25,6 +25,7 @@ import { authApi, profileApi, notificationsApi, resolveAssetUrl } from '../servi
 import { teacherAiService } from '../services/ai.service';
 import { TEACHER_NAV_ITEMS, type TeacherNavItem as NavItem } from '../components/layout/TeacherNavigation';
 import NotificationDrawer from '../components/notifications/NotificationDrawer';
+import AiRobotMascot from '../components/ai/AiRobotMascot';
 
 export default function TeacherLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -280,8 +281,14 @@ export default function TeacherLayout() {
                         : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1]'
                     }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Icon className="w-4 h-4 shrink-0" />
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {item.isAi ? (
+                        <div className="w-5 h-5 flex items-center justify-center shrink-0">
+                          <AiRobotMascot variant="avatar" size={20} />
+                        </div>
+                      ) : (
+                        <Icon className="w-4 h-4 shrink-0" />
+                      )}
                       <span className="truncate">{item.label}</span>
                     </div>
                     {item.isAi && !aiEnabled && (

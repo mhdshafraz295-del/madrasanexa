@@ -61,12 +61,40 @@ export interface TranslationResult {
   targetLanguage: string;
 }
 
+export interface ChatResult {
+  reply: string;
+  modelUsed: string;
+  language?: string;
+}
+
 function getAuthHeader(): Record<string, string> {
   const token = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN);
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 export const teacherAiService = {
+  async chatWithCopilot(data: FormData | {
+    message: string;
+    history?: Array<{ sender?: string; role?: string; content: string }>;
+    language?: string;
+  }): Promise<ChatResult> {
+    const isFormData = data instanceof FormData;
+    const res = await fetch(`${BASE_URL}/ai/tools/chat`, {
+      method: 'POST',
+      headers: {
+        ...getAuthHeader(),
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: isFormData ? data : JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to generate response.');
+    }
+    const json = await res.json();
+    return json.data;
+  },
+
   async getAiStatus(): Promise<AiStatusResponse> {
     const res = await fetch(`${BASE_URL}/ai/status`, {
       headers: {

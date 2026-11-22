@@ -21,6 +21,7 @@ import {
 import { aiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
 import PosterCanvasRenderer from './PosterCanvasRenderer';
+import AiMarkdownContent from './AiMarkdownContent';
 
 export type ToolMode =
   | 'auto'
@@ -106,8 +107,8 @@ function AiStreamedText({ text, onFinished }: { text: string; onFinished?: () =>
         </div>
       )}
 
-      <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans text-[#0F172A]">
-        {text.slice(0, displayedLength)}
+      <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed font-sans text-[#0F172A]">
+        <AiMarkdownContent content={text.slice(0, displayedLength)} />
         {!isComplete && (
           <span className="inline-block w-2 h-4 ml-1 bg-[#37C6A3] animate-pulse align-middle" />
         )}
@@ -215,22 +216,35 @@ export default function AiWorkspaceUnlocked({
       let resolvedMode = currentMode;
       if (resolvedMode === 'auto') {
         const lower = query.toLowerCase();
-        if (file || lower.includes('exam') || lower.includes('question paper') || lower.includes('test') || lower.includes('mcq')) {
+        if (file && (lower.includes('exam') || lower.includes('mcq') || lower.includes('question paper'))) {
           resolvedMode = 'exam';
-        } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner') || lower.includes('jalsa poster')) {
+        } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner')) {
           resolvedMode = 'poster';
         } else if (lower.startsWith('translate') || lower.includes('translate to')) {
           resolvedMode = 'translate';
-        } else if (lower.includes('circular') || lower.includes('notice') || lower.includes('parent announcement')) {
-          resolvedMode = 'circular';
-        } else if (lower.includes('hifz') || lower.includes('tajweed') || lower.includes('quran drill')) {
-          resolvedMode = 'hifz';
-        } else if (lower.includes('speech') || lower.includes('bayan') || lower.includes('khutbah') || lower.includes('assembly talk')) {
-          resolvedMode = 'speech';
-        } else if (lower.includes('summar') || lower.includes('study notes')) {
-          resolvedMode = 'summarizer';
         } else {
-          resolvedMode = 'lesson';
+          // Natural Conversational Chat Copilot with multi-turn history & RAM-only PDF grounding
+          const formData = new FormData();
+          if (file) formData.append('file', file);
+          formData.append('message', query || (file ? `Attached document: ${file.name}` : 'Assalamu Alaikum'));
+          formData.append('language', language);
+          formData.append(
+            'history',
+            JSON.stringify(
+              messages.slice(-8).map((m) => ({
+                role: m.sender === 'user' ? 'user' : 'assistant',
+                content: m.content,
+              }))
+            )
+          );
+
+          const res = await aiService.chatWithCopilot(formData);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.reply } : m
+            )
+          );
+          return;
         }
       }
 
@@ -813,24 +827,6 @@ export default function AiWorkspaceUnlocked({
           </div>
         </div>
       )}
-
-      {/* Floating Bottom-Right Round AI Orb */}
-      <div className="fixed bottom-5 right-5 z-40 print:hidden">
-        <button
-          type="button"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] transition-all flex items-center justify-center cursor-pointer group"
-          title="Scroll to Top"
-        >
-          <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <AiRobotMascot variant="avatar" size={36} />
-          </div>
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 z-10">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
-          </span>
-        </button>
-      </div>
     </div>
   );
 }

@@ -89,7 +89,30 @@ export interface TranslationResult {
   targetLanguage: string;
 }
 
+export interface ChatResult {
+  reply: string;
+  modelUsed: string;
+  language?: string;
+}
+
 export const aiService = {
+  // Conversational Copilot Chat
+  async chatWithCopilot(data: FormData | {
+    message: string;
+    history?: Array<{ sender?: string; role?: string; content: string }>;
+    language?: string;
+  }): Promise<ChatResult> {
+    const isFormData = data instanceof FormData;
+    const res = await apiClient.post<{ success: boolean; data: ChatResult }>(
+      '/ai/tools/chat',
+      data,
+      {
+        headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+        timeout: 90000,
+      }
+    );
+    return res.data.data;
+  },
   // Status check for tenant or super admin
   async getAiStatus(madrasaId?: string): Promise<AiStatusResponse> {
     const res = await apiClient.get<{ success: boolean; data: AiStatusResponse }>('/ai/status', {

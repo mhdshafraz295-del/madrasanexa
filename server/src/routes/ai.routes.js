@@ -48,6 +48,13 @@ router.post(
 // (Guarded by requireAiEnabled: Admin + Teacher)
 // ==========================================
 router.post(
+  '/tools/chat',
+  requireAiEnabled,
+  memoryUpload.single('file'),
+  aiController.chatWithCopilot
+);
+
+router.post(
   '/tools/exam-paper',
   requireAiEnabled,
   memoryUpload.single('file'),

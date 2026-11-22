@@ -38,6 +38,7 @@ import {
 import AnnouncementBell from '../components/announcement/AnnouncementBell';
 import { aiService } from '../services/ai.service';
 import AiRobotMascot from '../components/ai/AiRobotMascot';
+import GlobalAiCopilotDrawer from '../components/ai/GlobalAiCopilotDrawer';
 
 const activeNavItems = [
   { to: '/madrasa-admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -374,6 +375,9 @@ export default function MadrasaAdminLayout() {
           MadrasaNexa &copy; 2026 &bull; Production SaaS Platform for Islamic Educational Institutions
         </footer>
       </div>
+
+      {/* Global Persistent Slide-Over AI Copilot Side Drawer */}
+      <GlobalAiCopilotDrawer />
     </div>
   );
 }

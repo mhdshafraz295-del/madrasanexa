@@ -22,6 +22,50 @@ export default function AiRobotMascot({
   const eyeBlinkClass = animate ? 'animate-robot-blink' : '';
   const pulseClass = animate ? 'animate-robot-pulse' : '';
 
+  const mascotKeyframes = (
+    <style>{`
+      @keyframes robotFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-4px); }
+      }
+      @keyframes robotWave {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-18deg); }
+        75% { transform: rotate(14deg); }
+      }
+      @keyframes robotBlink {
+        0%, 90%, 100% { transform: scaleY(1); }
+        95% { transform: scaleY(0.12); }
+      }
+      @keyframes robotThink {
+        0%, 100% { transform: rotate(0deg) translateY(0); }
+        50% { transform: rotate(3deg) translateY(-3px); }
+      }
+      @keyframes robotHaloPulse {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.15); opacity: 1; filter: drop-shadow(0 0 6px rgba(55, 198, 163, 0.8)); }
+      }
+      .animate-robot-float {
+        animation: robotFloat 3.2s ease-in-out infinite;
+      }
+      .animate-robot-wave {
+        transform-origin: 30px 80px;
+        animation: robotWave 1.8s ease-in-out infinite;
+      }
+      .animate-robot-blink {
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: robotBlink 3.6s ease-in-out infinite;
+      }
+      .animate-robot-think {
+        animation: robotThink 2.8s ease-in-out infinite;
+      }
+      .animate-robot-pulse {
+        animation: robotHaloPulse 2s ease-in-out infinite;
+      }
+    `}</style>
+  );
+
   // AVATAR VARIANT (Compact Head for Circular Orb & Mini Icons)
   if (variant === 'avatar') {
     return (
@@ -30,6 +74,7 @@ export default function AiRobotMascot({
         style={{ width: size || '100%', height: size || '100%' }}
         aria-label="MadrasaNexa AI Robot Avatar"
       >
+        {mascotKeyframes}
         <svg
           viewBox="0 0 100 100"
           className="w-full h-full overflow-visible drop-shadow-md"
@@ -173,6 +218,7 @@ export default function AiRobotMascot({
         style={{ width: size || '100%', height: size || '100%' }}
         aria-label="MadrasaNexa AI Robot Mascot - Waving"
       >
+        {mascotKeyframes}
         <svg
           viewBox="0 0 140 160"
           className="w-full h-full overflow-visible"
@@ -364,6 +410,7 @@ export default function AiRobotMascot({
       style={{ width: size || '100%', height: size || '100%' }}
       aria-label="MadrasaNexa AI Robot Mascot - Thinking"
     >
+      {mascotKeyframes}
       <svg
         viewBox="0 0 140 160"
         className="w-full h-full overflow-visible"

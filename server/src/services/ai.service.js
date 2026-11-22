@@ -681,6 +681,61 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
 }
 
 /**
+ * Helper to execute Cloudflare Workers AI Multi-Turn Chat Generation
+ */
+async function callCloudflareChatAi({ messages, temperature = 0.4, maxTokens = 3500 }) {
+  const accountId = env.CLOUDFLARE_ACCOUNT_ID;
+  const token = env.CLOUDFLARE_API_TOKEN;
+
+  if (!accountId || !token) {
+    throw new Error('Cloudflare Workers AI credentials (CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN) are not configured.');
+  }
+
+  const models = [
+    '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    '@cf/meta/llama-3.3-70b-instruct',
+    '@cf/meta/llama-3.1-8b-instruct',
+  ];
+
+  let lastError = null;
+
+  for (const model of models) {
+    try {
+      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages,
+          temperature,
+          max_tokens: maxTokens,
+        }),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        console.warn(`Cloudflare model ${model} returned ${res.status}: ${errText.slice(0, 200)}`);
+        lastError = new Error(`Cloudflare AI error (${res.status}): ${errText}`);
+        continue;
+      }
+
+      const data = await res.json();
+      const responseText = data?.result?.response || data?.result?.choices?.[0]?.message?.content || '';
+      if (responseText) {
+        return { text: responseText, model };
+      }
+    } catch (err) {
+      lastError = err;
+      console.warn(`Error invoking Cloudflare model ${model}:`, err.message);
+    }
+  }
+
+  throw lastError || new Error('Failed to generate response from Cloudflare Workers AI.');
+}
+
+/**
  * In-Memory PDF Parser:
  * Extracts text in RAM and immediately discards buffer. 0 MB saved to disk or R2.
  */
@@ -1012,5 +1067,78 @@ ${text}
     translatedText,
     sourceLanguage,
     targetLanguage,
+  };
+}
+
+/**
+ * Feature: Conversational Copilot Chat (Multi-Turn Chat with RAM-Only Context)
+ */
+export async function chatWithCopilot({
+  message,
+  history = [],
+  language = 'English',
+  pdfBuffer = null,
+  pastedText = '',
+  madrasaName = 'Madrasa',
+  role = 'Staff',
+}) {
+  const cleanMessage = (message || '').trim();
+  if (!cleanMessage && !pdfBuffer && !pastedText) {
+    throw new BadRequestError('Message or attachment is required.');
+  }
+
+  let pdfContext = pastedText.trim();
+  if (pdfBuffer && Buffer.isBuffer(pdfBuffer) && pdfBuffer.length > 0) {
+    const extracted = await extractTextFromPdfBuffer(pdfBuffer);
+    if (extracted) {
+      pdfContext = extracted.slice(0, 8000) + (pdfContext ? `\n\n${pdfContext}` : '');
+    }
+  }
+
+  const systemPrompt = `You are the MadrasaNexa Smart AI Copilot, a warm, polite, highly knowledgeable Islamic Educational & Madrasa Operations Assistant.
+Institution: ${madrasaName || 'Madrasa'}
+User Role: ${role || 'Staff'}
+Target Output Language: ${language} (Ensure responses are naturally phrased in ${language}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).
+
+BEHAVIOR & GUIDELINES:
+1. CONVERSATIONAL & NATURAL:
+   - For greetings like "hi", "hello", "assalamu alaikum", "who are you?", reply warmly with an authentic Islamic greeting (e.g. "Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh"), introduce yourself as the MadrasaNexa Copilot, and offer helpful suggestions (exam generation, lesson planning, student circulars, Hifz quizzes, speeches, translation, or general curriculum guidance).
+   - NEVER abruptly return a lesson plan or exam paper when the user simply said "hi" or asked a general question!
+2. PEDAGOGICALLY AUTHENTIC: Ground answers in authentic Islamic scholarship, citing relevant Quranic Ayahs or Hadith with dignity and accuracy where appropriate.
+3. STRUCTURED & VISUALLY POLISHED: Use clean markdown styling with clear headings, bullet points, numbered steps, and bold emphasis where appropriate. Avoid raw unrendered symbols.
+4. ZERO DATABASE EXPOSURE: You operate with complete data privacy in RAM. You do not store or query live tenant tables.
+${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''}`;
+
+  const messages = [{ role: 'system', content: systemPrompt }];
+
+  // Include recent conversation history (last 8 messages)
+  if (Array.isArray(history) && history.length > 0) {
+    const recent = history.slice(-8);
+    for (const h of recent) {
+      if (h.sender && h.content) {
+        messages.push({
+          role: h.sender === 'user' ? 'user' : 'assistant',
+          content: String(h.content),
+        });
+      } else if (h.role && h.content) {
+        messages.push({
+          role: h.role === 'user' ? 'user' : 'assistant',
+          content: String(h.content),
+        });
+      }
+    }
+  }
+
+  messages.push({
+    role: 'user',
+    content: cleanMessage || 'Please examine the attached document and provide an overview and key points.',
+  });
+
+  const { text, model } = await callCloudflareChatAi({ messages, temperature: 0.4 });
+
+  return {
+    reply: text,
+    modelUsed: model,
+    language,
   };
 }

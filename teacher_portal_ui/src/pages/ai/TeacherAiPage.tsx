@@ -27,6 +27,7 @@ import {
 import { teacherAiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from '../../components/ai/AiRobotMascot';
 import PosterCanvasRenderer from '../../components/ai/PosterCanvasRenderer';
+import AiMarkdownContent from '../../components/ai/AiMarkdownContent';
 
 export type ToolMode =
   | 'auto'
@@ -166,8 +167,8 @@ function AiStreamedText({
         </div>
       )}
 
-      <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans text-[#0F172A]">
-        {text.slice(0, displayedLength)}
+      <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed font-sans text-[#0F172A]">
+        <AiMarkdownContent content={text.slice(0, displayedLength)} />
         {!isComplete && (
           <span className="inline-block w-2 h-4 ml-1 bg-[#37C6A3] animate-pulse align-middle" />
         )}
@@ -329,22 +330,35 @@ export default function TeacherAiPage() {
       let resolvedMode = currentMode;
       if (resolvedMode === 'auto') {
         const lower = query.toLowerCase();
-        if (file || lower.includes('exam') || lower.includes('question paper') || lower.includes('test') || lower.includes('mcq')) {
+        if (file && (lower.includes('exam') || lower.includes('mcq') || lower.includes('question paper'))) {
           resolvedMode = 'exam';
-        } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner') || lower.includes('jalsa poster')) {
+        } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner')) {
           resolvedMode = 'poster';
         } else if (lower.startsWith('translate') || lower.includes('translate to')) {
           resolvedMode = 'translate';
-        } else if (lower.includes('circular') || lower.includes('notice') || lower.includes('parent announcement')) {
-          resolvedMode = 'circular';
-        } else if (lower.includes('hifz') || lower.includes('tajweed') || lower.includes('quran drill')) {
-          resolvedMode = 'hifz';
-        } else if (lower.includes('speech') || lower.includes('bayan') || lower.includes('khutbah') || lower.includes('assembly talk')) {
-          resolvedMode = 'speech';
-        } else if (lower.includes('summar') || lower.includes('study notes')) {
-          resolvedMode = 'summarizer';
         } else {
-          resolvedMode = 'lesson';
+          // Natural Conversational Chat Copilot with multi-turn history & RAM-only PDF grounding
+          const formData = new FormData();
+          if (file) formData.append('file', file);
+          formData.append('message', query || (file ? `Attached document: ${file.name}` : 'Assalamu Alaikum'));
+          formData.append('language', language);
+          formData.append(
+            'history',
+            JSON.stringify(
+              messages.slice(-8).map((m) => ({
+                role: m.sender === 'user' ? 'user' : 'assistant',
+                content: m.content,
+              }))
+            )
+          );
+
+          const res = await teacherAiService.chatWithCopilot(formData);
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.reply } : m
+            )
+          );
+          return;
         }
       }
 
@@ -1161,26 +1175,6 @@ export default function TeacherAiPage() {
                 <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
               </div>
             </div>
-
-            <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-orb-halo pointer-events-none" />
-
-            {/* Round Circular Action Button with 3D AI Robot Mascot Avatar */}
-            <button
-              type="button"
-              onClick={() => {
-                document.getElementById('teacher-ai-notice')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-              }}
-              className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95 overflow-visible"
-              aria-label="Madrasa Subscription Required for AI Copilot"
-              title="Madrasa Subscription Required for AI Copilot"
-            >
-              <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <AiRobotMascot variant="avatar" size={36} />
-              </div>
-              <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-amber-500 text-slate-950 border-2 border-[#0F172A] flex items-center justify-center shadow-xs z-10">
-                <Lock className="w-2.5 h-2.5" />
-              </span>
-            </button>
           </div>
         </div>
       </div>
@@ -1564,24 +1558,6 @@ export default function TeacherAiPage() {
           </div>
         </div>
       )}
-
-      {/* Floating Bottom-Right Round AI Orb */}
-      <div className="fixed bottom-5 right-5 z-40 print:hidden">
-        <button
-          type="button"
-          onClick={() => { document.getElementById('teacher-workspace-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
-          className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] transition-all flex items-center justify-center cursor-pointer group"
-          title="Scroll to Top"
-        >
-          <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform">
-            <AiRobotMascot variant="avatar" size={36} />
-          </div>
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 z-10">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
-          </span>
-        </button>
-      </div>
     </div>
   );
 }

@@ -205,6 +205,54 @@ export async function translateContent(req, res, next) {
 }
 
 /**
+ * AI Tool: Conversational Copilot Chat
+ */
+export async function chatWithCopilot(req, res, next) {
+  try {
+    const {
+      message,
+      history,
+      language,
+      pastedText,
+    } = req.body;
+
+    const pdfBuffer = req.file?.buffer || null;
+    const madrasaName = req.tenant?.name || '';
+    const role = req.auth?.role || 'MADRASA_ADMIN';
+
+    let parsedHistory = [];
+    if (history) {
+      if (typeof history === 'string') {
+        try {
+          parsedHistory = JSON.parse(history);
+        } catch {
+          parsedHistory = [];
+        }
+      } else if (Array.isArray(history)) {
+        parsedHistory = history;
+      }
+    }
+
+    const result = await aiService.chatWithCopilot({
+      message: message || '',
+      history: parsedHistory,
+      language: language || 'English',
+      pdfBuffer,
+      pastedText,
+      madrasaName,
+      role,
+    });
+
+    return res.json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * Super Admin: List all AI Subscription Requests
  */
 export async function listAllAiSubscriptionRequests(req, res, next) {

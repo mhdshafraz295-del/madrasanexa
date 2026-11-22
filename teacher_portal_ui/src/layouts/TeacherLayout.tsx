@@ -26,6 +26,7 @@ import { teacherAiService } from '../services/ai.service';
 import { TEACHER_NAV_ITEMS, type TeacherNavItem as NavItem } from '../components/layout/TeacherNavigation';
 import NotificationDrawer from '../components/notifications/NotificationDrawer';
 import AiRobotMascot from '../components/ai/AiRobotMascot';
+import GlobalAiCopilotDrawer from '../components/ai/GlobalAiCopilotDrawer';
 
 export default function TeacherLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -428,6 +429,9 @@ export default function TeacherLayout() {
           onCountChange={setUnreadCount}
         />
       </div>
+
+      {/* Global Persistent Slide-Over AI Copilot Side Drawer */}
+      <GlobalAiCopilotDrawer />
     </div>
   );
 }

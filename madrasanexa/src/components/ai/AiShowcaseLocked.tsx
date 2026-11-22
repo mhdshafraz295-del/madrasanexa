@@ -120,15 +120,6 @@ export default function AiShowcaseLocked({
   const isPending = latestRequest?.status === 'PENDING';
   const isRejected = latestRequest?.status === 'REJECTED';
 
-  const handleOrbClick = () => {
-    const el = document.getElementById('unlock-section');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    }
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12 relative">
       {/* Component-scoped GPU-accelerated Keyframe Styles */}
@@ -1137,46 +1128,6 @@ export default function AiShowcaseLocked({
           </div>
         </div>
       )}
-
-      {/* Floating Bottom-Right Round AI Orb / Quick-Action Button */}
-      <div className="fixed bottom-5 right-5 z-40 print:hidden">
-        <div className="relative group">
-          {/* Tooltip on Hover */}
-          <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
-            <div className="bg-[#0F172A] text-white px-3.5 py-2 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
-              <div className="text-left">
-                <div className="text-xs font-bold leading-none text-white">Unlock Smart AI</div>
-                <div className="text-[10px] text-slate-400 mt-0.5 leading-none">
-                  {isTeacher ? 'Institutional Access' : 'Upload Bank Receipt'}
-                </div>
-              </div>
-              <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
-            </div>
-          </div>
-
-          {/* Outer Pulsing Halo Ripple */}
-          <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-orb-halo pointer-events-none" />
-
-          {/* Round Circular Action Button with 3D AI Robot Mascot Avatar */}
-          <button
-            type="button"
-            onClick={handleOrbClick}
-            className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95 overflow-visible"
-            aria-label="Unlock Smart AI Assistant"
-            title="Unlock Smart AI Assistant"
-          >
-            <div className="w-9 h-9 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <AiRobotMascot variant="avatar" size={36} />
-            </div>
-
-            {/* Small Lock Dot Indicator */}
-            <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-amber-500 text-slate-950 border-2 border-[#0F172A] flex items-center justify-center shadow-xs z-10">
-              <Lock className="w-2.5 h-2.5" />
-            </span>
-          </button>
-        </div>
-      </div>
     </div>
   );
 }

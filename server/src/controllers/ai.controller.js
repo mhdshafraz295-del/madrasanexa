@@ -1,4 +1,40 @@
 import * as aiService from '../services/ai.service.js';
+
+function resolveUploadedFile(req) {
+  if (req.file) return req.file;
+  if (req.files) {
+    return (
+      req.files['file']?.[0] ||
+      req.files['pdf']?.[0] ||
+      req.files['document']?.[0] ||
+      req.files['attachment']?.[0] ||
+      req.files['receipt']?.[0] ||
+      req.files['slip']?.[0] ||
+      null
+    );
+  }
+  return null;
+}
+
+function resolvePdfBuffer(req) {
+  const file = resolveUploadedFile(req);
+  if (file && Buffer.isBuffer(file.buffer) && file.buffer.length > 0) {
+    return file.buffer;
+  }
+  if (req.body?.pdfBase64 && typeof req.body.pdfBase64 === 'string') {
+    try {
+      const cleanBase64 = req.body.pdfBase64.replace(/^data:[^;]+;base64,/, '');
+      return Buffer.from(cleanBase64, 'base64');
+    } catch {}
+  }
+  if (req.body?.fileBase64 && typeof req.body.fileBase64 === 'string') {
+    try {
+      const cleanBase64 = req.body.fileBase64.replace(/^data:[^;]+;base64,/, '');
+      return Buffer.from(cleanBase64, 'base64');
+    } catch {}
+  }
+  return null;
+}
 import { BadRequestError } from '../utils/errors.js';
 
 /**
@@ -50,7 +86,7 @@ export async function submitSubscriptionReceipt(req, res, next) {
     const userId = req.auth.userId;
 
     const { planName, amount, transactionRef } = req.body;
-    const file = req.file;
+    const file = resolveUploadedFile(req);
 
     const request = await aiService.submitAiSubscriptionReceipt({
       madrasaId,
@@ -115,7 +151,7 @@ export async function generateExamPaper(req, res, next) {
     } = req.body;
 
     const madrasaName = req.tenant?.name || 'Islamic Madrasa';
-    const pdfBuffer = req.file?.buffer || null;
+    const pdfBuffer = resolvePdfBuffer(req);
 
     const result = await aiService.generateExamPaper({
       pdfBuffer,
@@ -156,7 +192,7 @@ export async function generateLessonPlan(req, res, next) {
       language,
     } = req.body;
 
-    const pdfBuffer = req.file?.buffer || null;
+    const pdfBuffer = resolvePdfBuffer(req);
 
     const result = await aiService.generateLessonPlan({
       pdfBuffer,
@@ -250,7 +286,7 @@ export async function chatWithCopilot(req, res, next) {
       mode,
     } = req.body;
 
-    const pdfBuffer = req.file?.buffer || null;
+    const pdfBuffer = resolvePdfBuffer(req);
     const madrasaName = req.tenant?.name || '';
     const role = req.auth?.role || 'MADRASA_ADMIN';
 

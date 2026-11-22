@@ -58,7 +58,8 @@ export default function AiShowcaseLocked({
       setReceiptPreviewUrl(null);
       return;
     }
-    if (receiptFile.type.startsWith('image/')) {
+    const isImage = receiptFile.type.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(receiptFile.name);
+    if (isImage) {
       const url = URL.createObjectURL(receiptFile);
       setReceiptPreviewUrl(url);
       return () => URL.revokeObjectURL(url);
@@ -86,15 +87,19 @@ export default function AiShowcaseLocked({
     const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
     const fileNameLower = file.name.toLowerCase();
     const isValidExt = allowedExts.some((ext) => fileNameLower.endsWith(ext));
-    const isValidType = allowedTypes.includes(file.type) || file.type.startsWith('image/') || isValidExt;
+    const isValidType =
+      allowedTypes.includes(file.type) ||
+      file.type.startsWith('image/') ||
+      file.type === '' ||
+      isValidExt;
 
     if (!isValidType) {
       setErrorMsg('Invalid file type. Please upload a PNG, JPG, WebP image or PDF document.');
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMsg('File exceeds 5MB size limit. Please upload a smaller image or PDF receipt.');
+    if (file.size > 25 * 1024 * 1024) {
+      setErrorMsg('File exceeds 25MB size limit. Please upload a smaller image or PDF receipt.');
       return;
     }
 

@@ -106,12 +106,10 @@ export const aiService = {
     pastedText?: string;
     pdfText?: string;
   }): Promise<ChatResult> {
-    const isFormData = data instanceof FormData;
     const res = await apiClient.post<{ success: boolean; data: ChatResult }>(
       '/ai/tools/chat',
       data,
       {
-        headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
         timeout: 90000,
       }
     );

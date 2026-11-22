@@ -12,15 +12,71 @@ const router = Router();
 const memoryUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10 MB limit for syllabus PDFs
+    fileSize: 25 * 1024 * 1024, // 25 MB limit for syllabus PDFs
     files: 1,
   },
+  fileFilter: (req, file, cb) => {
+    const mime = (file.mimetype || '').toLowerCase();
+    const originalName = (file.originalname || '').toLowerCase();
+    if (
+      mime.includes('pdf') ||
+      mime === 'application/octet-stream' ||
+      mime === '' ||
+      originalName.endsWith('.pdf')
+    ) {
+      cb(null, true);
+    } else {
+      cb(new BadRequestError('Invalid file type. Only PDF documents are allowed.'));
+    }
+  },
 });
+
+/**
+ * Express middleware to handle single PDF document upload and catch Multer errors gracefully.
+ * Supports field names 'file', 'pdf', 'document', or 'attachment' seamlessly.
+ */
+const handlePdfUpload = (req, res, next) => {
+  const upload = memoryUpload.fields([
+    { name: 'file', maxCount: 1 },
+    { name: 'pdf', maxCount: 1 },
+    { name: 'document', maxCount: 1 },
+    { name: 'attachment', maxCount: 1 },
+  ]);
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'PDF file exceeds the 25 MB limit. Please upload a smaller document.',
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'PDF upload error.',
+      });
+    } else if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'PDF upload error.',
+      });
+    }
+
+    if (req.files) {
+      req.file =
+        req.files['file']?.[0] ||
+        req.files['pdf']?.[0] ||
+        req.files['document']?.[0] ||
+        req.files['attachment']?.[0] ||
+        req.file;
+    }
+    next();
+  });
+};
 
 const receiptUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5 MB limit for receipts
+    fileSize: 25 * 1024 * 1024, // 25 MB limit for receipts
     files: 1,
   },
   fileFilter: (req, file, cb) => {
@@ -32,6 +88,7 @@ const receiptUpload = multer({
       mime.startsWith('image/') ||
       mime.includes('pdf') ||
       mime === 'application/octet-stream' ||
+      mime === '' ||
       hasValidExt
     ) {
       cb(null, true);
@@ -56,7 +113,7 @@ const handleReceiptUpload = (req, res, next) => {
       if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({
           success: false,
-          message: 'Receipt file exceeds the 5 MB limit. Please upload a smaller image or PDF.',
+          message: 'Receipt file exceeds the 25 MB limit. Please upload a smaller image or PDF.',
         });
       }
       return res.status(400).json({
@@ -109,21 +166,21 @@ router.get(
 router.post(
   '/tools/chat',
   requireActiveAiSubscription,
-  memoryUpload.single('file'),
+  handlePdfUpload,
   aiController.chatWithCopilot
 );
 
 router.post(
   '/tools/exam-paper',
   requireActiveAiSubscription,
-  memoryUpload.single('file'),
+  handlePdfUpload,
   aiController.generateExamPaper
 );
 
 router.post(
   '/tools/lesson-plan',
   requireActiveAiSubscription,
-  memoryUpload.single('file'),
+  handlePdfUpload,
   aiController.generateLessonPlan
 );
 

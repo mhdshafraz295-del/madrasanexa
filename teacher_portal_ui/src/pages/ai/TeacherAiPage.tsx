@@ -1243,14 +1243,23 @@ export default function TeacherAiPage() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf"
+        accept="application/pdf,.pdf"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
           if (f) {
+            const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+            if (!isPdf) {
+              alert('Please select a valid PDF file.');
+              return;
+            }
+            if (f.size > 25 * 1024 * 1024) {
+              alert('PDF file must not exceed 25 MB.');
+              return;
+            }
             setAttachedFile(f);
-            if (toolMode === 'auto') setToolMode('exam');
           }
+          e.target.value = '';
         }}
       />
 

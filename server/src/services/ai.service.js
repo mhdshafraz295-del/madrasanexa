@@ -23,7 +23,7 @@ import {
   ConflictError,
 } from '../utils/errors.js';
 
-const MAX_RECEIPT_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_RECEIPT_SIZE = 25 * 1024 * 1024; // 25 MB
 
 /**
  * Validates in-memory receipt file buffer strictly.
@@ -35,10 +35,11 @@ export async function validateAiReceiptBuffer(fileBuffer, originalName = '') {
   }
 
   if (fileBuffer.length > MAX_RECEIPT_SIZE) {
-    throw new BadRequestError('Receipt file must not exceed 5 MB.');
+    throw new BadRequestError('Receipt file must not exceed 25 MB.');
   }
 
   const nameLower = originalName.toLowerCase().trim();
+  const asciiHeader = fileBuffer.slice(0, 1024).toString('ascii');
   const bufferHeader = fileBuffer.slice(0, 100).toString('utf8').toLowerCase();
 
   // Prohibit SVGs strictly
@@ -50,13 +51,15 @@ export async function validateAiReceiptBuffer(fileBuffer, originalName = '') {
     throw new BadRequestError('SVG files are prohibited for security reasons. Please upload a JPG, PNG, WebP or PDF file.');
   }
 
-  // Reject HTML / Script injection
-  if (
-    bufferHeader.includes('<html') ||
-    bufferHeader.includes('<!doctype') ||
-    bufferHeader.includes('<script')
-  ) {
-    throw new BadRequestError('HTML and executable files are prohibited.');
+  // Reject HTML / Script injection (only for non-PDF files)
+  if (!nameLower.endsWith('.pdf') && !asciiHeader.includes('%PDF')) {
+    if (
+      bufferHeader.includes('<html') ||
+      bufferHeader.includes('<!doctype') ||
+      bufferHeader.includes('<script')
+    ) {
+      throw new BadRequestError('HTML and executable files are prohibited.');
+    }
   }
 
   // Reject Windows / Linux Executable binaries (MZ, ELF)
@@ -72,8 +75,7 @@ export async function validateAiReceiptBuffer(fileBuffer, originalName = '') {
   let ext = 'bin';
   let mimeType = 'application/octet-stream';
 
-  const asciiHeader = fileBuffer.slice(0, 1024).toString('ascii');
-  if (asciiHeader.includes('%PDF')) {
+  if (asciiHeader.includes('%PDF') || nameLower.endsWith('.pdf')) {
     ext = 'pdf';
     mimeType = 'application/pdf';
   } else if (fileBuffer[0] === 0xff && fileBuffer[1] === 0xd8 && fileBuffer[2] === 0xff) {
@@ -94,9 +96,6 @@ export async function validateAiReceiptBuffer(fileBuffer, originalName = '') {
   ) {
     ext = 'webp';
     mimeType = 'image/webp';
-  } else if (nameLower.endsWith('.pdf')) {
-    ext = 'pdf';
-    mimeType = 'application/pdf';
   } else if (nameLower.endsWith('.jpg') || nameLower.endsWith('.jpeg')) {
     ext = 'jpg';
     mimeType = 'image/jpeg';
@@ -1061,8 +1060,8 @@ export async function extractTextFromPdfBuffer(buffer) {
     }
     return '';
   } catch (err) {
-    console.error('In-memory PDF parsing error:', err.message);
-    throw new BadRequestError(`Unable to parse uploaded PDF in memory: ${err.message}`);
+    console.warn('[AI Service] In-memory PDF text extraction warning (falling back to Gemini native vision or raw buffer):', err.message);
+    return '';
   }
 }
 
@@ -1254,8 +1253,12 @@ export async function generateExamPaper({
     }
   }
 
-  if (!syllabusContent && !topic) {
+  if (!syllabusContent && !topic && !pdfBuffer) {
     throw new BadRequestError('Please provide a syllabus PDF, pasted notes, or a specific topic to generate the exam paper.');
+  }
+
+  if (!syllabusContent && pdfBuffer) {
+    syllabusContent = 'Syllabus content is provided in the attached PDF document.';
   }
 
   const { cleanedText: cleanTopic, targetLanguage: resolvedLanguage } = detectAndStripLanguageInstruction(topic, language);
@@ -1342,8 +1345,12 @@ export async function generateLessonPlan({
     }
   }
 
-  if (!content && !topic) {
+  if (!content && !topic && !pdfBuffer) {
     throw new BadRequestError('Please provide a lesson topic or upload a syllabus reference.');
+  }
+
+  if (!content && pdfBuffer) {
+    content = 'Lesson source content is provided in the attached PDF document.';
   }
 
   const { cleanedText: cleanTopic, targetLanguage: resolvedLanguage } = detectAndStripLanguageInstruction(topic, language);

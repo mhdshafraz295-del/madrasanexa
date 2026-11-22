@@ -157,7 +157,7 @@ export default function AiConcentricOrbitShowcase({
   const outerTools = ORBITAL_AI_FEATURES.filter((f) => f.ring === 'outer');
 
   return (
-    <div className="bg-white rounded-3xl p-5 sm:p-8 md:p-10 border border-slate-200/80 shadow-sm relative overflow-hidden text-slate-900">
+    <div className="bg-transparent border-0 shadow-none rounded-none py-4 sm:py-6 relative overflow-hidden text-slate-900">
       {/* Component-scoped CSS for concentric orbital mechanics */}
       <style>{`
         @keyframes orbit-cw {

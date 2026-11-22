@@ -79,10 +79,23 @@ export default function AiMarkdownContent({ content }: { content: string }) {
       continue;
     }
 
-    // Divider
-    if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
+    // Clean up ASCII dividers (===, ---, ***, ___)
+    if (/^[-=*_]{3,}$/.test(trimmed)) {
       flushList();
       elements.push(<hr key={`hr-${i}`} className="my-3 border-slate-200" />);
+      continue;
+    }
+
+    // Clean up ASCII wrapped headings (e.g. "=== SECTION A: MCQS ===" or "--- PART B ---")
+    const asciiHeadingMatch = trimmed.match(/^[-=]{3,}\s*([^=-].*?)\s*[-=]{3,}$/);
+    if (asciiHeadingMatch) {
+      flushList();
+      elements.push(
+        <h3 key={`h3-ascii-${i}`} className="text-xs sm:text-sm font-extrabold text-[#0F172A] mt-3.5 mb-1 flex items-center gap-1.5">
+          <span className="w-1.5 h-3.5 bg-[#37C6A3] rounded-full inline-block shrink-0" />
+          <span>{renderInlineMarkdown(asciiHeadingMatch[1].trim())}</span>
+        </h3>
+      );
       continue;
     }
 

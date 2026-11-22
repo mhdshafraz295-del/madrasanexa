@@ -1036,42 +1036,156 @@ export async function generatePoster({
 }
 
 /**
- * Feature 4: Multilingual Translator (Tamil ↔ English ↔ Arabic)
+ * Natural language target-language detection & instruction stripper.
+ * Detects Tanglish, English, Tamil, and Arabic inline prompts (e.g. "english la tha", "in english", "tamilil", "arabic la")
+ * so the output strictly matches the user's intent without translating the meta-instruction itself.
  */
-export async function translateContent({ text, sourceLanguage = 'English', targetLanguage = 'Tamil' }) {
+function detectAndStripLanguageInstruction(text, defaultTarget = 'English') {
+  let cleanedText = String(text || '').trim();
+  let detectedTarget = null;
+
+  // Patterns for English requests:
+  const englishPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+english\s*[:,-]?\s*)/i,
+    /^(?:english\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+english\s*[:,-]?\s*)/i,
+    /^(?:englishil\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+english|english\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?|translate\s+(?:to|into)\s+english|englishil))$/i,
+  ];
+
+  // Patterns for Tamil requests:
+  const tamilPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+tamil\s*[:,-]?\s*)/i,
+    /^(?:tamil\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+tamil\s*[:,-]?\s*)/i,
+    /^(?:tamilil\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+tamil|tamil\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?|translate\s+(?:to|into)\s+tamil|tamilil))$/i,
+  ];
+
+  // Patterns for Arabic requests:
+  const arabicPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+arabic\s*[:,-]?\s*)/i,
+    /^(?:arabic\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+arabic\s*[:,-]?\s*)/i,
+    /^(?:arabiyil\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+arabic|arabic\s+la\s*(?:tha|thanga|podunga|venum|kudunga)?|translate\s+(?:to|into)\s+arabic|arabiyil))$/i,
+  ];
+
+  // Patterns for Bilingual requests:
+  const bilingualPatterns = [
+    /^(?:please\s+)?(?:translate\s+(?:this\s+)?(?:in|into|to)\s+bilingual\s*[:,-]?\s*)/i,
+    /^(?:bilingual\s*(?:la)?\s*[:,-]?\s*)/i,
+    /^(?:in\s+bilingual\s*[:,-]?\s*)/i,
+    /(?:\s*[:,-]?\s*(?:in\s+bilingual|bilingual\s*(?:la)?|tamil\s+(?:and|&)\s+english))$/i,
+  ];
+
+  for (const pat of englishPatterns) {
+    if (pat.test(cleanedText)) {
+      detectedTarget = 'English';
+      cleanedText = cleanedText.replace(pat, '').trim();
+      break;
+    }
+  }
+
+  if (!detectedTarget) {
+    for (const pat of tamilPatterns) {
+      if (pat.test(cleanedText)) {
+        detectedTarget = 'Tamil';
+        cleanedText = cleanedText.replace(pat, '').trim();
+        break;
+      }
+    }
+  }
+
+  if (!detectedTarget) {
+    for (const pat of arabicPatterns) {
+      if (pat.test(cleanedText)) {
+        detectedTarget = 'Arabic';
+        cleanedText = cleanedText.replace(pat, '').trim();
+        break;
+      }
+    }
+  }
+
+  if (!detectedTarget) {
+    for (const pat of bilingualPatterns) {
+      if (pat.test(cleanedText)) {
+        detectedTarget = 'Bilingual (Tamil + English)';
+        cleanedText = cleanedText.replace(pat, '').trim();
+        break;
+      }
+    }
+  }
+
+  // Normalize defaultTarget if detectedTarget wasn't found
+  let finalTarget = detectedTarget;
+  if (!finalTarget) {
+    const raw = String(defaultTarget || '').toLowerCase();
+    if (raw.includes('arab') || raw === 'ar') finalTarget = 'Arabic';
+    else if (raw.includes('tamil') || raw === 'ta') finalTarget = 'Tamil';
+    else if (raw.includes('bilingual')) finalTarget = 'Bilingual (Tamil + English)';
+    else finalTarget = 'English';
+  }
+
+  if (!cleanedText && text) {
+    cleanedText = String(text).trim();
+  }
+
+  return {
+    cleanedText,
+    targetLanguage: finalTarget,
+  };
+}
+
+/**
+ * Feature 4: Multilingual Translator (Tamil ↔ English ↔ Arabic ↔ Bilingual)
+ */
+export async function translateContent({
+  text,
+  sourceLanguage = 'Auto-Detect',
+  targetLanguage = 'English',
+  language,
+}) {
   if (!text || typeof text !== 'string' || text.trim().length === 0) {
     throw new BadRequestError('Text to translate is required.');
   }
 
+  const requestedTarget = targetLanguage || language || 'English';
+  const { cleanedText, targetLanguage: resolvedTarget } = detectAndStripLanguageInstruction(text, requestedTarget);
+
   const prompt = `
-You are a master translator specializing in Islamic educational texts, circulars, announcements, and Madrasa correspondence.
-Accurately translate the following text from ${sourceLanguage} to ${targetLanguage}.
+You are a master Islamic educational translator specializing in Madrasa circulars, student parent notices, curriculum texts, and Arabic/Tamil/English correspondence.
+Translate the following source text into ${resolvedTarget}.
 
-[CRITICAL TRANSLATION RULES]
-1. Maintain authentic Islamic terminology (e.g. Du'a, Hadith, Salah, Ustadh, Madrasa, Jalsa, Sunnah) with respectful accuracy.
-2. If translating to Tamil: Use clear, natural Sri Lankan/Indian Muslim Tamil vocabulary commonly used in Madrasas and Islamic publications.
-3. If translating to Arabic: Use fluent, grammatical Modern Standard Arabic (Fusha) with appropriate Islamic honorifics.
-4. If translating to English: Use clear, elegant, professional prose.
-5. Preserve formatting, bullet points, numbered lists, and quotes intact.
-6. Provide ONLY the translated text without conversational preamble or meta-commentary.
+[MANDATORY OUTPUT LANGUAGE RULE]
+- OUTPUT STRICTLY IN ${resolvedTarget.toUpperCase()}: The translation MUST be 100% in ${resolvedTarget}.
+- If translating to English: Output natural, elegant, grammatically flawless English prose.
+- If translating to Tamil: Output natural, clear Sri Lankan/Indian Muslim Tamil vocabulary commonly used in Madrasas.
+- If translating to Arabic: Output fluent, authentic Modern Standard Arabic (Fusha) with standard Islamic honorifics.
+- If translating to Bilingual: Output clear paragraph-by-paragraph or side-by-side Tamil and English translations.
 
-[SOURCE TEXT (${sourceLanguage})]
-${text}
+[CONTENT & FORMATTING RULES]
+1. Maintain authentic Islamic terminology (e.g. Du'a, Hadith, Salah, Ustadh, Madrasa, Jalsa, Sunnah, Adab, Akhlaq) with respectful accuracy.
+2. Preserve original formatting, bullet points, numbers, and dates intact.
+3. Provide ONLY the translated text without conversational preamble, greetings, or meta-disclaimers.
+
+[SOURCE TEXT]
+${cleanedText}
 `;
 
-  const systemPrompt = `You are a certified Islamic multilingual translator for Tamil, Arabic, and English. Output strictly the clean, high-fidelity translation.`;
+  const systemPrompt = `You are a certified Islamic multilingual translator. Output strictly the clean, high-fidelity translation in ${resolvedTarget}.`;
 
   const translatedText = await callCloudflareTextAi({ prompt, systemPrompt, temperature: 0.1 });
 
   return {
     translatedText,
     sourceLanguage,
-    targetLanguage,
+    targetLanguage: resolvedTarget,
   };
 }
 
 /**
- * Feature: Conversational Copilot Chat (Multi-Turn Chat with RAM-Only Context)
+ * Feature: Conversational Copilot Chat (Multi-Turn Chat with RAM-Only Context & Dedicated Mode Routing)
  */
 export async function chatWithCopilot({
   message,
@@ -1081,6 +1195,7 @@ export async function chatWithCopilot({
   pastedText = '',
   madrasaName = 'Madrasa',
   role = 'Staff',
+  mode = 'auto',
 }) {
   const cleanMessage = (message || '').trim();
   if (!cleanMessage && !pdfBuffer && !pastedText) {
@@ -1095,18 +1210,95 @@ export async function chatWithCopilot({
     }
   }
 
+  // Mode-specific behavioral instructions to guarantee authentic output format
+  let modeInstructions = '';
+
+  if (mode === 'circular') {
+    modeInstructions = `
+[SPECIFIC TASK: OFFICIAL MADRASA PARENT CIRCULAR & NOTICE]
+You are drafting an official, ready-to-issue Madrasa Parent Notice / Circular.
+STRUCTURE & LAYOUT:
+1. HEADER:
+   - Institution Name: "${madrasaName || 'MadrasaNexa Islamic Academy'}"
+   - "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+   - Date & Ref Number: (Use current Islamic / Gregorian date format)
+2. SALUTATION:
+   - "Assalamu Alaikum wa Rahmatullahi wa Barakatuh"
+   - "Respected Parents and Guardians,"
+3. NOTICE SUBJECT:
+   - Bold, clear subject line (e.g., "**SUBJECT: IMPORTANT ANNOUNCEMENT — [TOPIC]**")
+4. CIRCULAR BODY:
+   - Warm introductory opening thanking parents for their continuous support.
+   - Clear announcement paragraphs highlighting dates, revised timings, fee deadlines, or holiday schedules.
+   - Bullet points for key instructions and parent responsibilities.
+5. CLOSING:
+   - Heartfelt Du'a for the students and families ("May Allah ﷻ bless our children with beneficial knowledge...").
+   - "JazakAllahu Khairan wa BarakAllahu Feekum,"
+   - Official Sign-off: "Principal / Madrasa Administration"
+CRITICAL: Do NOT generate a lesson plan, classroom objectives, or blackboard layout. This must be an administrative parent notice in ${language}.`;
+  } else if (mode === 'summarizer') {
+    modeInstructions = `
+[SPECIFIC TASK: EXECUTIVE DOCUMENT & CHAPTER REVISION SUMMARY]
+Extract a thorough, structured, and easy-to-revise Executive Summary from the provided document or text.
+STRUCTURE & LAYOUT:
+1. 📌 DOCUMENT OVERVIEW: High-level executive synthesis of the chapter, syllabus text, or document in 2-3 concise paragraphs.
+2. 🔑 KEY POINTS & CORE CONCEPTS: Exhaustive, bulleted breakdown of all major principles, rulings, historical milestones, or lessons.
+3. 📖 IMPORTANT TERMS & SCRIPTURAL PROOFS: Concise glossary of key Islamic terminology, Quranic Ayahs, and Hadith citations with translations.
+4. 📝 QUICK REVISION TAKEAWAYS: High-yield bullet points for students and teachers to memorize or review before examinations.
+5. 💡 USTADH PEDAGOGICAL TIPS: 2-3 practical tips on how to teach or explain this topic effectively in the classroom.
+CRITICAL: Do NOT generate a lesson plan or exam paper. This must be an executive revision summary in ${language}.`;
+  } else if (mode === 'hifz') {
+    modeInstructions = `
+[SPECIFIC TASK: HIFZ & TAJWEED ASSESSMENT SHEET]
+Generate a complete, structured Hifz & Tajweed Assessment Worksheet.
+STRUCTURE & LAYOUT:
+1. HEADER: Madrasa Name, Assessment Title, Surah / Juz Covered, Total Marks: 50 Marks, Duration: 30 Mins.
+2. PART A: COMPLETE THE AYAH DRILL (15 Marks):
+   - 4-5 Ayah fragments with missing words (indicated by ________) for students to fill in.
+3. PART B: MUTASHABIHAT (SIMILAR AYAHS) CHECK (10 Marks):
+   - Comparing commonly confused Ayah endings or phrasing across the Surah.
+4. PART C: TAJWEED RULE IDENTIFICATION (10 Marks):
+   - Identifying Noon Sakinah, Meem Sakinah, Qalqalah, Ghunnah, or Madd rules from specific words in the text.
+5. PART D: USTADH ORAL RECITATION EVALUATION RUBRIC (15 Marks):
+   - Grading matrix: Hifz Accuracy (6 Marks), Tajweed & Makharij (5 Marks), Fluency & Waqf/Ibtida (4 Marks).
+6. COMPLETE ANSWER KEY:
+   - Separated by "---", provide full answers for Part A, B, and C.
+Format clearly in professional Markdown in ${language}.`;
+  } else if (mode === 'speech') {
+    modeInstructions = `
+[SPECIFIC TASK: ISLAMIC SPEECH / BAYAN SCRIPT]
+Write an inspiring, spiritually uplifting, ready-to-deliver 5-minute Madrasa Morning Assembly Speech or Jalsa Bayan.
+STRUCTURE & LAYOUT:
+1. TRADITIONAL ARABIC OPENING (Khutbah al-Hajah):
+   - "الحمد لله رب العالمين، والصلاة والسلام على أشرف الأنبياء والمرسلين..." with brief translation.
+2. WELCOME & ENGAGING HOOK:
+   - Warm greeting to Ustadhs, parents, and fellow students, followed by a thought-provoking real-life question or relatable story.
+3. CORE THEME & 3 KEY LESSONS:
+   - Point 1 grounded with Quranic Ayah proof (Arabic text + translation).
+   - Point 2 grounded with Sahih Hadith proof (Arabic text + translation).
+   - Point 3 with practical everyday application in Madrasa and at home.
+4. SPIRITUAL CALL TO ACTION:
+   - One actionable habit or Sunnah students can adopt starting today.
+5. CLOSING DU'A:
+   - Heartfelt Arabic Du'a with translation for parents, teachers, Madrasa, and the Ummah.
+Format in clean, orator-friendly Markdown in ${language}.`;
+  } else {
+    // Mode is 'auto'
+    modeInstructions = `
+[SPECIFIC TASK: CONVERSATIONAL MADRASA COPILOT]
+1. WARM & NATURAL:
+   - For greetings ("hi", "hello", "assalamu alaikum"), reply warmly with an authentic Islamic greeting (e.g. "Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh"), introduce yourself as the MadrasaNexa Copilot, and highlight your 8 capabilities.
+   - NEVER abruptly return a lesson plan or exam paper when the user simply said "hi" or asked a general question!
+2. ISLAMIC ACCURACY: Ground answers in authentic Islamic scholarship with respectful Quran and Hadith citations.
+3. ZERO LIVE DATABASE EXPOSURE: Maintain complete privacy in RAM memory.`;
+  }
+
   const systemPrompt = `You are the MadrasaNexa Smart AI Copilot, a warm, polite, highly knowledgeable Islamic Educational & Madrasa Operations Assistant.
 Institution: ${madrasaName || 'Madrasa'}
 User Role: ${role || 'Staff'}
 Target Output Language: ${language} (Ensure responses are naturally phrased in ${language}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).
 
-BEHAVIOR & GUIDELINES:
-1. CONVERSATIONAL & NATURAL:
-   - For greetings like "hi", "hello", "assalamu alaikum", "who are you?", reply warmly with an authentic Islamic greeting (e.g. "Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh"), introduce yourself as the MadrasaNexa Copilot, and offer helpful suggestions (exam generation, lesson planning, student circulars, Hifz quizzes, speeches, translation, or general curriculum guidance).
-   - NEVER abruptly return a lesson plan or exam paper when the user simply said "hi" or asked a general question!
-2. PEDAGOGICALLY AUTHENTIC: Ground answers in authentic Islamic scholarship, citing relevant Quranic Ayahs or Hadith with dignity and accuracy where appropriate.
-3. STRUCTURED & VISUALLY POLISHED: Use clean markdown styling with clear headings, bullet points, numbered steps, and bold emphasis where appropriate. Avoid raw unrendered symbols.
-4. ZERO DATABASE EXPOSURE: You operate with complete data privacy in RAM. You do not store or query live tenant tables.
+${modeInstructions}
 ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''}`;
 
   const messages = [{ role: 'system', content: systemPrompt }];
@@ -1134,11 +1326,12 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     content: cleanMessage || 'Please examine the attached document and provide an overview and key points.',
   });
 
-  const { text, model } = await callCloudflareChatAi({ messages, temperature: 0.4 });
+  const { text, model } = await callCloudflareChatAi({ messages, temperature: 0.35 });
 
   return {
     reply: text,
     modelUsed: model,
     language,
+    mode,
   };
 }

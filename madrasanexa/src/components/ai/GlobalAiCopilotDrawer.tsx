@@ -265,37 +265,26 @@ export default function GlobalAiCopilotDrawer() {
           resolvedMode = 'exam';
         } else if (lower.includes('poster') || lower.includes('flyer') || lower.includes('banner')) {
           resolvedMode = 'poster';
-        } else if (lower.startsWith('translate') || lower.includes('translate to')) {
+        } else if (
+          lower.startsWith('translate') ||
+          lower.includes('translate to') ||
+          lower.includes('la tha') ||
+          lower.includes('la thanga') ||
+          lower.includes('in english') ||
+          lower.includes('in tamil') ||
+          lower.includes('in arabic')
+        ) {
           resolvedMode = 'translate';
-        } else {
-          // Conversational Copilot Chat with multi-turn history & RAM-only PDF context
-          const formData = new FormData();
-          if (file) formData.append('file', file);
-          formData.append('message', query || (file ? `Attached document: ${file.name}` : 'Assalamu Alaikum'));
-          formData.append('language', language);
-          formData.append(
-            'history',
-            JSON.stringify(
-              messages.slice(-8).map((m) => ({
-                role: m.sender === 'user' ? 'user' : 'assistant',
-                content: m.content,
-              }))
-            )
-          );
-
-          const res = await aiService.chatWithCopilot(formData);
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: assistantMsgId,
-              sender: 'assistant',
-              timestamp: new Date(),
-              content: res.reply,
-              mode: 'auto',
-              isStreaming: false,
-            },
-          ]);
-          return;
+        } else if (lower.includes('circular') || lower.includes('parent notice') || lower.includes('ramadan notice')) {
+          resolvedMode = 'circular';
+        } else if (lower.includes('summarize') || lower.includes('summary') || lower.includes('executive summary')) {
+          resolvedMode = 'summarizer';
+        } else if (lower.includes('speech') || lower.includes('bayan') || lower.includes('assembly speech')) {
+          resolvedMode = 'speech';
+        } else if (lower.includes('hifz') || lower.includes('tajweed quiz')) {
+          resolvedMode = 'hifz';
+        } else if (lower.includes('lesson plan') || lower.includes('30-min lesson')) {
+          resolvedMode = 'lesson';
         }
       }
 
@@ -342,40 +331,42 @@ export default function GlobalAiCopilotDrawer() {
             isStreaming: false,
           },
         ]);
-      } else if (resolvedMode === 'hifz') {
+      } else if (resolvedMode === 'lesson') {
         const formData = new FormData();
         if (file) formData.append('file', file);
-        formData.append(
-          'topic',
-          `Hifz & Tajweed Assessment Worksheet. Context: ${query}. Output sections: 1. Complete the Ayah drill with missing words, 2. Tajweed rule identification, 3. Oral recitation evaluation rubric, 4. Answer key.`
-        );
-        formData.append('subject', 'Hifz & Tajweed Assessment');
-        formData.append('gradeLevel', 'Intermediate');
-        formData.append('language', language);
+        formData.append('topic', query || 'Islamic Studies Lesson');
+        formData.append('subject', 'Ustadh 30-Min Lesson Plan');
+        formData.append('gradeLevel', 'Standard');
         formData.append('durationMinutes', '30');
-        formData.append('totalMarks', '50');
-        formData.append('mcqCount', '2');
-        formData.append('shortCount', '5');
-        formData.append('essayCount', '1');
+        formData.append('language', language);
 
-        const res = await aiService.generateExamPaper(formData);
+        const res = await aiService.generateLessonPlan(formData);
         setMessages((prev) => [
           ...prev,
           {
             id: assistantMsgId,
             sender: 'assistant',
             timestamp: new Date(),
-            content: res.examContent,
-            mode: 'hifz',
+            content: res.lessonPlan,
+            mode: 'lesson',
             isStreaming: false,
           },
         ]);
       } else if (resolvedMode === 'translate') {
-        const targetLang = language.includes('Tamil') ? 'Tamil' : language.includes('Arabic') ? 'Arabic' : 'Tamil';
+        const targetLang =
+          language === 'Arabic'
+            ? 'Arabic'
+            : language === 'Tamil'
+            ? 'Tamil'
+            : language.includes('Bilingual')
+            ? 'Bilingual (Tamil + English)'
+            : 'English';
+
         const res = await aiService.translateContent({
           text: query,
-          sourceLanguage: 'English',
+          sourceLanguage: 'Auto-Detect',
           targetLanguage: targetLang,
+          language: targetLang,
         });
         setMessages((prev) => [
           ...prev,
@@ -389,28 +380,30 @@ export default function GlobalAiCopilotDrawer() {
           },
         ]);
       } else {
+        // Authentic dedicated output for: 'auto', 'circular', 'hifz', 'speech', 'summarizer'
         const formData = new FormData();
         if (file) formData.append('file', file);
-
-        let subjectCategory = 'Ustadh 30-Min Lesson Planner';
-        if (resolvedMode === 'circular') subjectCategory = 'Official Madrasa Parent Notice & Circular';
-        else if (resolvedMode === 'speech') subjectCategory = 'Islamic Speech & Bayan Oratory Guide';
-        else if (resolvedMode === 'summarizer') subjectCategory = 'Curriculum Chapter Study Summary & Revision Notes';
-
-        formData.append('topic', query);
-        formData.append('subject', subjectCategory);
-        formData.append('gradeLevel', 'Standard');
-        formData.append('durationMinutes', '30');
+        formData.append('message', query || (file ? `Attached document: ${file.name}` : 'Assalamu Alaikum'));
         formData.append('language', language);
+        formData.append('mode', resolvedMode);
+        formData.append(
+          'history',
+          JSON.stringify(
+            messages.slice(-8).map((m) => ({
+              role: m.sender === 'user' ? 'user' : 'assistant',
+              content: m.content,
+            }))
+          )
+        );
 
-        const res = await aiService.generateLessonPlan(formData);
+        const res = await aiService.chatWithCopilot(formData);
         setMessages((prev) => [
           ...prev,
           {
             id: assistantMsgId,
             sender: 'assistant',
             timestamp: new Date(),
-            content: res.lessonPlan,
+            content: res.reply,
             mode: resolvedMode,
             isStreaming: false,
           },

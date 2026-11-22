@@ -77,6 +77,9 @@ export const teacherAiService = {
     message: string;
     history?: Array<{ sender?: string; role?: string; content: string }>;
     language?: string;
+    mode?: string;
+    pastedText?: string;
+    pdfText?: string;
   }): Promise<ChatResult> {
     const isFormData = data instanceof FormData;
     const res = await fetch(`${BASE_URL}/ai/tools/chat`, {
@@ -170,6 +173,7 @@ export const teacherAiService = {
     text: string;
     sourceLanguage?: string;
     targetLanguage?: string;
+    language?: string;
   }): Promise<TranslationResult> {
     const res = await fetch(`${BASE_URL}/ai/tools/translate`, {
       method: 'POST',

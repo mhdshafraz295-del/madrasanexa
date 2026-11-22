@@ -187,12 +187,12 @@ export async function generatePoster(req, res, next) {
  */
 export async function translateContent(req, res, next) {
   try {
-    const { text, sourceLanguage, targetLanguage } = req.body;
+    const { text, sourceLanguage, targetLanguage, language } = req.body;
 
     const result = await aiService.translateContent({
       text,
-      sourceLanguage: sourceLanguage || 'English',
-      targetLanguage: targetLanguage || 'Tamil',
+      sourceLanguage: sourceLanguage || 'Auto-Detect',
+      targetLanguage: targetLanguage || language || 'English',
     });
 
     return res.json({
@@ -205,7 +205,7 @@ export async function translateContent(req, res, next) {
 }
 
 /**
- * AI Tool: Conversational Copilot Chat
+ * AI Tool: Conversational Copilot Chat (Multi-Turn Chat & Mode Routing)
  */
 export async function chatWithCopilot(req, res, next) {
   try {
@@ -214,6 +214,8 @@ export async function chatWithCopilot(req, res, next) {
       history,
       language,
       pastedText,
+      pdfText,
+      mode,
     } = req.body;
 
     const pdfBuffer = req.file?.buffer || null;
@@ -238,9 +240,10 @@ export async function chatWithCopilot(req, res, next) {
       history: parsedHistory,
       language: language || 'English',
       pdfBuffer,
-      pastedText,
+      pastedText: pastedText || pdfText || '',
       madrasaName,
       role,
+      mode: mode || 'auto',
     });
 
     return res.json({

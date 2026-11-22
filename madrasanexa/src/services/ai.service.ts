@@ -96,11 +96,14 @@ export interface ChatResult {
 }
 
 export const aiService = {
-  // Conversational Copilot Chat
+  // Conversational Copilot Chat & Dedicated Mode Routing
   async chatWithCopilot(data: FormData | {
     message: string;
     history?: Array<{ sender?: string; role?: string; content: string }>;
     language?: string;
+    mode?: string;
+    pastedText?: string;
+    pdfText?: string;
   }): Promise<ChatResult> {
     const isFormData = data instanceof FormData;
     const res = await apiClient.post<{ success: boolean; data: ChatResult }>(
@@ -181,6 +184,7 @@ export const aiService = {
     text: string;
     sourceLanguage?: string;
     targetLanguage?: string;
+    language?: string;
   }): Promise<TranslationResult> {
     const res = await apiClient.post<{ success: boolean; data: TranslationResult }>(
       '/ai/tools/translate',

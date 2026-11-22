@@ -103,7 +103,10 @@ export function resolveAllowedOrigins(config = env) {
     origins.add(String(config.FRONTEND_URL).trim().replace(/\/+$/, ''));
   }
 
-  // 3. Localhost development environments only
+  // 3. Known deployment origins (e.g. Teacher Portal on Railway)
+  origins.add('https://intuitive-integrity-production-97da886d.up.railway.app');
+
+  // 4. Localhost development environments only
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
     origins.add('http://localhost:5173');
     origins.add('http://127.0.0.1:5173');
@@ -133,7 +136,14 @@ app.use(
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Cache-Control',
+      'Pragma',
+      'Expires',
+      'X-Requested-With',
+    ],
   })
 );
 

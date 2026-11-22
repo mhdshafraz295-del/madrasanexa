@@ -124,11 +124,6 @@ export const aiService = {
         ...(madrasaId ? { madrasaId } : {}),
         _t: Date.now(),
       },
-      headers: {
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        Pragma: 'no-cache',
-        Expires: '0',
-      },
     });
     return res.data.data;
   },

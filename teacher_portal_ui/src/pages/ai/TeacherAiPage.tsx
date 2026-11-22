@@ -414,34 +414,167 @@ export default function TeacherAiPage() {
   // ==========================================
   if (!statusData.aiEnabled) {
     return (
-      <div className="p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-8">
-        {/* Hero */}
+      <div className="p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-8 relative">
+        {/* Component-scoped GPU-accelerated Keyframe Styles */}
+        <style>{`
+          @keyframes hero-spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          @keyframes hero-spin-reverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+          }
+          @keyframes hero-pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 0.14; }
+            50% { transform: scale(1.18); opacity: 0.28; }
+          }
+          @keyframes hero-float-sparkle {
+            0%, 100% { transform: translateY(0px) scale(0.9); opacity: 0.25; }
+            50% { transform: translateY(-7px) scale(1.2); opacity: 0.9; }
+          }
+          @keyframes badge-shimmer-sweep {
+            0% { transform: translateX(-160%); }
+            40%, 100% { transform: translateX(260%); }
+          }
+          @keyframes orb-halo-ripple {
+            0% { transform: scale(0.92); opacity: 0.8; }
+            50% { transform: scale(1.28); opacity: 0.25; }
+            100% { transform: scale(1.48); opacity: 0; }
+          }
+          @keyframes orb-float-gentle {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+          }
+          .animate-hero-spin {
+            animation: hero-spin-slow 40s linear infinite;
+          }
+          .animate-hero-reverse {
+            animation: hero-spin-reverse 55s linear infinite;
+          }
+          .animate-hero-pulse {
+            animation: hero-pulse-glow 9s ease-in-out infinite;
+          }
+          .animate-sparkle {
+            animation: hero-float-sparkle 3.5s ease-in-out infinite;
+          }
+          .animate-badge-shimmer {
+            animation: badge-shimmer-sweep 4.5s ease-in-out infinite;
+          }
+          .animate-orb-halo {
+            animation: orb-halo-ripple 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+          }
+          .animate-orb-float {
+            animation: orb-float-gentle 4s ease-in-out infinite;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .animate-hero-spin,
+            .animate-hero-reverse,
+            .animate-hero-pulse,
+            .animate-sparkle,
+            .animate-badge-shimmer,
+            .animate-orb-halo,
+            .animate-orb-float {
+              animation: none !important;
+            }
+          }
+        `}</style>
+
+        {/* Hero with Ambient Islamic Geometric Animation */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0A0F1D] text-white p-6 sm:p-10 border border-slate-800 shadow-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>MadrasaNexa Ustadh Smart AI</span>
-            <span className="text-slate-400">|</span>
-            <span className="flex items-center gap-1 text-slate-300">
-              <Lock className="w-3 h-3 text-amber-400" />
-              Locked Preview
-            </span>
+          {/* Breathing Emerald Glow Orbs */}
+          <div className="absolute -top-20 -right-20 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-[#37C6A3]/15 blur-3xl pointer-events-none animate-hero-pulse" />
+          <div
+            className="absolute top-1/2 right-20 w-56 h-56 rounded-full bg-teal-500/10 blur-2xl pointer-events-none animate-hero-pulse"
+            style={{ animationDelay: '3s' }}
+          />
+
+          {/* Ambient Rotating Islamic 8-Point Geometric Star Emblem */}
+          <div className="absolute -right-12 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none opacity-20 sm:opacity-35 transition-opacity">
+            <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+              {/* Outer Reverse Rotating Dashed Halo Ring */}
+              <div className="absolute inset-0 flex items-center justify-center animate-hero-reverse">
+                <svg viewBox="0 0 240 240" className="w-full h-full text-[#37C6A3]/50 stroke-current fill-none">
+                  <circle cx="120" cy="120" r="112" strokeWidth="1" strokeDasharray="6 8" />
+                  <circle cx="120" cy="120" r="100" strokeWidth="0.8" strokeDasharray="3 5" opacity="0.6" />
+                </svg>
+              </div>
+
+              {/* Primary Rotating Islamic 8-Point Geometric Star */}
+              <div className="absolute inset-4 sm:inset-6 flex items-center justify-center animate-hero-spin">
+                <svg viewBox="0 0 200 200" className="w-full h-full text-[#37C6A3] stroke-current fill-none">
+                  <circle cx="100" cy="100" r="90" strokeWidth="1.2" opacity="0.35" />
+                  <rect x="35" y="35" width="130" height="130" rx="3" strokeWidth="1.6" opacity="0.5" />
+                  <rect
+                    x="35"
+                    y="35"
+                    width="130"
+                    height="130"
+                    rx="3"
+                    strokeWidth="1.6"
+                    opacity="0.5"
+                    transform="rotate(45 100 100)"
+                  />
+                  <circle cx="100" cy="100" r="34" strokeWidth="1.2" strokeDasharray="4 4" opacity="0.5" />
+                  <circle cx="100" cy="100" r="18" strokeWidth="1.5" opacity="0.65" />
+                  <circle cx="100" cy="100" r="5" fill="#37C6A3" opacity="0.85" />
+                </svg>
+              </div>
+
+              {/* Floating Twinkle Sparkle Particles */}
+              <span
+                className="absolute top-6 left-12 text-[#37C6A3] text-sm animate-sparkle"
+                style={{ animationDelay: '0s' }}
+              >
+                ✦
+              </span>
+              <span
+                className="absolute bottom-8 right-8 text-emerald-300 text-xs animate-sparkle"
+                style={{ animationDelay: '1.6s' }}
+              >
+                ✧
+              </span>
+              <span
+                className="absolute top-1/2 right-4 text-[#37C6A3] text-base animate-sparkle"
+                style={{ animationDelay: '2.8s' }}
+              >
+                ✦
+              </span>
+            </div>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-            Your Islamic Teaching & Exam Preparation <span className="text-[#37C6A3]">Copilot</span>
-          </h1>
+          <div className="relative z-10">
+            {/* Shimmer Sweep Badge */}
+            <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
+              <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+              <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
+              <span className="relative z-10">MadrasaNexa Ustadh Smart AI</span>
+              <span className="text-slate-400 relative z-10">|</span>
+              <span className="flex items-center gap-1 text-slate-300 relative z-10">
+                <Lock className="w-3 h-3 text-amber-400" />
+                Locked Preview
+              </span>
+            </div>
 
-          <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-            Design structured term examinations, generate 30-minute interactive lesson plans with blackboard summaries,
-            create event announcement posters, and translate materials in Tamil, Arabic, and English.
-          </p>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+              Your Islamic Teaching & Exam Preparation <span className="text-[#37C6A3]">Copilot</span>
+            </h1>
 
-          <div className="mt-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-3">
-            <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
-              at the institutional level. Please contact your Madrasa Administrator to activate the subscription
-              from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
+            <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+              Design structured term examinations, generate 30-minute interactive lesson plans with blackboard summaries,
+              create event announcement posters, and translate materials in Tamil, Arabic, and English.
+            </p>
+
+            <div
+              id="teacher-ai-notice"
+              className="mt-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-3 scroll-mt-6"
+            >
+              <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
+                at the institutional level. Please contact your Madrasa Administrator to activate the subscription
+                from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
+              </div>
             </div>
           </div>
         </div>
@@ -488,6 +621,39 @@ export default function TeacherAiPage() {
             </p>
           </div>
         </div>
+
+        {/* Floating Bottom-Right Round AI Orb / Quick-Action Button */}
+        <div className="fixed bottom-5 right-5 z-40 print:hidden">
+          <div className="relative group">
+            <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
+              <div className="bg-[#0F172A] text-white px-3.5 py-2 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
+                <div className="text-left">
+                  <div className="text-xs font-bold leading-none text-white">Ustadh AI Copilot</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5 leading-none">Madrasa Subscription Required</div>
+                </div>
+                <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
+              </div>
+            </div>
+
+            <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-orb-halo pointer-events-none" />
+
+            <button
+              type="button"
+              onClick={() => {
+                document.getElementById('teacher-ai-notice')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95"
+              aria-label="Madrasa Subscription Required for AI Copilot"
+              title="Madrasa Subscription Required for AI Copilot"
+            >
+              <Sparkles className="w-6 h-6 text-[#37C6A3] group-hover:rotate-12 transition-transform duration-300" />
+              <span className="absolute -top-0.5 -right-0.5 w-4.5 h-4.5 rounded-full bg-amber-500 text-slate-950 border-2 border-[#0F172A] flex items-center justify-center shadow-xs">
+                <Lock className="w-2.5 h-2.5" />
+              </span>
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -496,7 +662,7 @@ export default function TeacherAiPage() {
   // VIEW B: UNLOCKED TEACHER AI WORKSPACE
   // ==========================================
   return (
-    <div className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div id="teacher-workspace-top" className="p-3 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 relative">
       {/* Workspace Header */}
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-3.5">
@@ -1367,6 +1533,40 @@ export default function TeacherAiPage() {
           </div>
         </div>
       )}
+
+      {/* Floating Bottom-Right Round AI Orb / Quick-Action Button */}
+      <div className="fixed bottom-5 right-5 z-40 print:hidden">
+        <div className="relative group">
+          <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
+            <div className="bg-[#0F172A] text-white px-3.5 py-2 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
+              <div className="text-left">
+                <div className="text-xs font-bold leading-none text-white">Ask AI Copilot</div>
+                <div className="text-[10px] text-slate-400 mt-0.5 leading-none">Exam, Lesson & Poster Tools</div>
+              </div>
+              <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-orb-halo pointer-events-none" />
+
+          <button
+            type="button"
+            onClick={() => {
+              document.getElementById('teacher-workspace-top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95"
+            aria-label="Ustadh AI Copilot Active"
+            title="Ustadh AI Copilot Active"
+          >
+            <Sparkles className="w-6 h-6 text-[#37C6A3] group-hover:rotate-12 transition-transform duration-300" />
+            <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

@@ -382,8 +382,42 @@ export default function AiWorkspaceUnlocked({
     }
   };
 
+  const scrollToWorkspaceTop = () => {
+    const el = document.getElementById('ai-workspace-top');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div id="ai-workspace-top" className="max-w-7xl mx-auto space-y-6 pb-12 relative">
+      {/* Component-scoped GPU-accelerated Keyframe Styles */}
+      <style>{`
+        @keyframes orb-halo-ripple {
+          0% { transform: scale(0.92); opacity: 0.8; }
+          50% { transform: scale(1.28); opacity: 0.25; }
+          100% { transform: scale(1.48); opacity: 0; }
+        }
+        @keyframes orb-float-gentle {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-4px); }
+        }
+        .animate-orb-halo {
+          animation: orb-halo-ripple 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+        }
+        .animate-orb-float {
+          animation: orb-float-gentle 4s ease-in-out infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-orb-halo,
+          .animate-orb-float {
+            animation: none !important;
+          }
+        }
+      `}</style>
+
       {/* Workspace Header */}
       <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-3.5">
@@ -1339,6 +1373,45 @@ export default function AiWorkspaceUnlocked({
           </div>
         </div>
       )}
+
+      {/* Floating Bottom-Right Round AI Orb / Quick-Action Button */}
+      <div className="fixed bottom-5 right-5 z-40 print:hidden">
+        <div className="relative group">
+          {/* Tooltip on Hover */}
+          <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
+            <div className="bg-[#0F172A] text-white px-3.5 py-2 rounded-xl border border-emerald-500/30 shadow-2xl flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5 text-[#37C6A3]" />
+              <div className="text-left">
+                <div className="text-xs font-bold leading-none text-white">Ask AI Copilot</div>
+                <div className="text-[10px] text-slate-400 mt-0.5 leading-none">
+                  Exam, Lesson, Poster & Translate
+                </div>
+              </div>
+              <div className="w-2 h-2 bg-[#0F172A] border-r border-t border-emerald-500/30 rotate-45 absolute -right-1 top-1/2 -translate-y-1/2" />
+            </div>
+          </div>
+
+          {/* Outer Pulsing Halo Ripple */}
+          <span className="absolute inset-0 rounded-full bg-[#37C6A3]/30 animate-orb-halo pointer-events-none" />
+
+          {/* Round Circular Action Button */}
+          <button
+            type="button"
+            onClick={scrollToWorkspaceTop}
+            className="relative w-14 h-14 min-h-[56px] min-w-[56px] rounded-full bg-[#0F172A] hover:bg-[#1E293B] text-[#37C6A3] border-2 border-[#37C6A3] shadow-[0_4px_24px_rgba(55,198,163,0.35)] hover:shadow-[0_6px_30px_rgba(55,198,163,0.55)] transition-all duration-300 flex items-center justify-center cursor-pointer animate-orb-float group-hover:scale-105 active:scale-95"
+            aria-label="MadrasaNexa AI Copilot Active"
+            title="MadrasaNexa AI Copilot Active"
+          >
+            <Sparkles className="w-6 h-6 text-[#37C6A3] group-hover:rotate-12 transition-transform duration-300" />
+
+            {/* Active Emerald Pulse Badge */}
+            <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 border-2 border-[#0F172A]" />
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

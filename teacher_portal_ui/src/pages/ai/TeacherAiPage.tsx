@@ -644,26 +644,231 @@ export default function TeacherAiPage() {
   );
 
   // ==========================================
-  // VIEW A: LOCKED PREVIEW (CONCENTRIC ORBITAL SHOWCASE)
+  // VIEW A: LOCKED PREVIEW (AI DISABLED)
   // ==========================================
   if (!isAiActive) {
     return (
       <div className="p-3 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-6 sm:space-y-8 relative pt-2 sm:pt-4">
-        {/* Concentric Orbital Ring Animation */}
-        <AiConcentricOrbitShowcase portalType="teacher" />
+        {/* Component-scoped GPU-accelerated Keyframe Styles */}
+        <style>{`
+          @keyframes hero-spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+          @keyframes hero-spin-reverse {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+          }
+          @keyframes hero-pulse-glow {
+            0%, 100% { transform: scale(1); opacity: 0.14; }
+            50% { transform: scale(1.18); opacity: 0.28; }
+          }
+          @keyframes hero-float-sparkle {
+            0%, 100% { transform: translateY(0px) scale(0.9); opacity: 0.25; }
+            50% { transform: translateY(-7px) scale(1.2); opacity: 0.9; }
+          }
+          @keyframes badge-shimmer-sweep {
+            0% { transform: translateX(-160%); }
+            40%, 100% { transform: translateX(260%); }
+          }
+          @keyframes orb-halo-ripple {
+            0% { transform: scale(0.92); opacity: 0.8; }
+            50% { transform: scale(1.28); opacity: 0.25; }
+            100% { transform: scale(1.48); opacity: 0; }
+          }
+          @keyframes orb-float-gentle {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+          }
+          .animate-hero-spin {
+            animation: hero-spin-slow 40s linear infinite;
+          }
+          .animate-hero-reverse {
+            animation: hero-spin-reverse 55s linear infinite;
+          }
+          .animate-hero-pulse {
+            animation: hero-pulse-glow 9s ease-in-out infinite;
+          }
+          .animate-sparkle {
+            animation: hero-float-sparkle 3.5s ease-in-out infinite;
+          }
+          .animate-badge-shimmer {
+            animation: badge-shimmer-sweep 4.5s ease-in-out infinite;
+          }
+          .animate-orb-halo {
+            animation: orb-halo-ripple 2.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+          }
+          .animate-orb-float {
+            animation: orb-float-gentle 4s ease-in-out infinite;
+          }
+          /* 3D AI Robot Mascot Keyframe Animations */
+          @keyframes robot-float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-7px); }
+          }
+          @keyframes robot-wave {
+            0% { transform: rotate(0deg); }
+            20% { transform: rotate(14deg); }
+            40% { transform: rotate(-8deg); }
+            60% { transform: rotate(12deg); }
+            80% { transform: rotate(-4deg); }
+            100% { transform: rotate(0deg); }
+          }
+          @keyframes robot-think {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(2deg); }
+          }
+          @keyframes robot-blink {
+            0%, 92%, 96%, 100% { transform: scaleY(1); }
+            94% { transform: scaleY(0.1); }
+          }
+          @keyframes robot-pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.15); opacity: 1; }
+          }
+          .animate-robot-float {
+            animation: robot-float 3.5s ease-in-out infinite;
+          }
+          .animate-robot-wave {
+            animation: robot-wave 2.2s ease-in-out infinite;
+          }
+          .animate-robot-think {
+            animation: robot-think 3s ease-in-out infinite;
+          }
+          .animate-robot-blink {
+            animation: robot-blink 4.5s ease-in-out infinite;
+          }
+          .animate-robot-pulse {
+            animation: robot-pulse 2s ease-in-out infinite;
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .animate-hero-spin,
+            .animate-hero-reverse,
+            .animate-hero-pulse,
+            .animate-sparkle,
+            .animate-badge-shimmer,
+            .animate-orb-halo,
+            .animate-orb-float,
+            .animate-robot-float,
+            .animate-robot-wave,
+            .animate-robot-think,
+            .animate-robot-blink,
+            .animate-robot-pulse {
+              animation: none !important;
+            }
+          }
+        `}</style>
 
-        {/* Institutional Subscription Notice */}
-        <div
-          id="teacher-ai-notice"
-          className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs sm:text-sm flex items-start gap-3 shadow-xs leading-relaxed"
-        >
-          <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-          <div>
-            <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
-            at the institutional level. Please contact your Madrasa Administrator to activate the subscription
-            from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
+        {/* Hero with Ambient Islamic Geometric Animation */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0A0F1D] text-white p-6 sm:p-10 border border-slate-800 shadow-xl">
+          {/* Breathing Emerald Glow Orbs */}
+          <div className="absolute -top-20 -right-20 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-[#37C6A3]/15 blur-3xl pointer-events-none animate-hero-pulse" />
+          <div
+            className="absolute top-1/2 right-20 w-56 h-56 rounded-full bg-teal-500/10 blur-2xl pointer-events-none animate-hero-pulse"
+            style={{ animationDelay: '3s' }}
+          />
+
+          {/* Ambient Rotating Islamic 8-Point Geometric Star Emblem */}
+          <div className="absolute -right-12 sm:right-4 top-1/2 -translate-y-1/2 pointer-events-none select-none opacity-20 sm:opacity-35 transition-opacity">
+            <div className="relative w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+              {/* Outer Reverse Rotating Dashed Halo Ring */}
+              <div className="absolute inset-0 flex items-center justify-center animate-hero-reverse">
+                <svg viewBox="0 0 240 240" className="w-full h-full text-[#37C6A3]/50 stroke-current fill-none">
+                  <circle cx="120" cy="120" r="112" strokeWidth="1" strokeDasharray="6 8" />
+                  <circle cx="120" cy="120" r="100" strokeWidth="0.8" strokeDasharray="3 5" opacity="0.6" />
+                </svg>
+              </div>
+
+              {/* Primary Rotating Islamic 8-Point Geometric Star */}
+              <div className="absolute inset-4 sm:inset-6 flex items-center justify-center animate-hero-spin">
+                <svg viewBox="0 0 200 200" className="w-full h-full text-[#37C6A3] stroke-current fill-none">
+                  <circle cx="100" cy="100" r="90" strokeWidth="1.2" opacity="0.35" />
+                  <rect x="35" y="35" width="130" height="130" rx="3" strokeWidth="1.6" opacity="0.5" />
+                  <rect
+                    x="35"
+                    y="35"
+                    width="130"
+                    height="130"
+                    rx="3"
+                    strokeWidth="1.6"
+                    opacity="0.5"
+                    transform="rotate(45 100 100)"
+                  />
+                  <circle cx="100" cy="100" r="34" strokeWidth="1.2" strokeDasharray="4 4" opacity="0.5" />
+                  <circle cx="100" cy="100" r="18" strokeWidth="1.5" opacity="0.65" />
+                  <circle cx="100" cy="100" r="5" fill="#37C6A3" opacity="0.85" />
+                </svg>
+              </div>
+
+              {/* Floating Twinkle Sparkle Particles */}
+              <span
+                className="absolute top-6 left-12 text-[#37C6A3] text-sm animate-sparkle"
+                style={{ animationDelay: '0s' }}
+              >
+                ✦
+              </span>
+              <span
+                className="absolute bottom-8 right-8 text-emerald-300 text-xs animate-sparkle"
+                style={{ animationDelay: '1.6s' }}
+              >
+                ✧
+              </span>
+              <span
+                className="absolute top-1/2 right-4 text-[#37C6A3] text-base animate-sparkle"
+                style={{ animationDelay: '2.8s' }}
+              >
+                ✦
+              </span>
+            </div>
+          </div>
+
+          {/* Responsive Flex Hero Layout: Content first, 3D Mascot stacked cleanly below on mobile (360px+) */}
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="w-full md:max-w-xl lg:max-w-2xl flex-1">
+              {/* Shimmer Sweep Badge */}
+              <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
+                <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+                <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
+                <span className="relative z-10">MadrasaNexa Ustadh Smart AI</span>
+                <span className="text-slate-400 relative z-10">|</span>
+                <span className="flex items-center gap-1 text-slate-300 relative z-10">
+                  <Lock className="w-3 h-3 text-amber-400" />
+                  Locked Preview
+                </span>
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+                Your Islamic Teaching & Exam Preparation <span className="text-[#37C6A3]">Copilot</span>
+              </h1>
+
+              <p className="mt-3 text-sm text-slate-300 leading-relaxed">
+                Generate tailored exam papers, structured 30-minute lesson plans, and authentic Arabic/Tamil translations
+                specifically aligned with your Madrasa's curriculum.
+              </p>
+
+              {/* Institutional Notice inside Hero */}
+              <div
+                id="teacher-ai-notice"
+                className="mt-5 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs sm:text-sm flex items-start gap-3 shadow-xs leading-relaxed"
+              >
+                <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
+                  at the institutional level. Please contact your Madrasa Administrator to activate the subscription
+                  from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
+                </div>
+              </div>
+            </div>
+
+            {/* 3D AI Robot Mascot (Waving): Centered & Cleanly Stacked Below on Mobile, On Right on Desktop */}
+            <div className="shrink-0 w-28 sm:w-32 md:w-36 lg:w-40 mt-4 md:mt-0 mx-auto md:mx-0 flex justify-center items-center pointer-events-none select-none drop-shadow-2xl">
+              <AiRobotMascot variant="wave" className="w-full h-auto" />
+            </div>
           </div>
         </div>
+
+        {/* Concentric Orbital Ring Animation Showcase (Light / White Background) */}
+        <AiConcentricOrbitShowcase portalType="teacher" />
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
+  Sparkles,
   Lock,
   FileText,
   Clock,
@@ -10,12 +11,14 @@ import {
   Copy,
   Building2,
   ShieldCheck,
+  Zap,
   ArrowRight,
   RefreshCw,
   FileCheck,
   Trash2,
 } from 'lucide-react';
 import { aiService, type AiStatusResponse } from '../../services/ai.service';
+import AiRobotMascot from './AiRobotMascot';
 import AiConcentricOrbitShowcase from './AiConcentricOrbitShowcase';
 
 interface AiShowcaseLockedProps {
@@ -300,6 +303,142 @@ export default function AiShowcaseLocked({
           </div>
         </div>
       )}
+
+      {/* Hero Showcase Header with Ambient Islamic Geometric Animation */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0F172A] via-[#1E293B] to-[#0A0F1D] text-white p-6 sm:p-10 border border-slate-800 shadow-xl">
+        {/* Breathing Emerald Glow Orbs */}
+        <div className="absolute -top-20 -right-20 w-80 h-80 sm:w-96 sm:h-96 rounded-full bg-[#37C6A3]/15 blur-3xl pointer-events-none animate-hero-pulse" />
+        <div
+          className="absolute top-1/2 right-24 w-60 h-60 rounded-full bg-teal-500/10 blur-2xl pointer-events-none animate-hero-pulse"
+          style={{ animationDelay: '3s' }}
+        />
+        <div
+          className="absolute -bottom-20 right-10 w-72 h-72 rounded-full bg-emerald-600/10 blur-3xl pointer-events-none animate-hero-pulse"
+          style={{ animationDelay: '6s' }}
+        />
+
+        {/* Ambient Rotating Islamic 8-Point Geometric Star Emblem & Orbital Rings */}
+        <div className="absolute -right-12 sm:right-4 lg:right-10 top-1/2 -translate-y-1/2 pointer-events-none select-none opacity-20 sm:opacity-40 transition-opacity">
+          <div className="relative w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center">
+            {/* Outer Reverse Rotating Dashed Halo Ring */}
+            <div className="absolute inset-0 flex items-center justify-center animate-hero-reverse">
+              <svg viewBox="0 0 240 240" className="w-full h-full text-[#37C6A3]/50 stroke-current fill-none">
+                <circle cx="120" cy="120" r="112" strokeWidth="1" strokeDasharray="6 8" />
+                <circle cx="120" cy="120" r="100" strokeWidth="0.8" strokeDasharray="3 5" opacity="0.6" />
+              </svg>
+            </div>
+
+            {/* Primary Rotating Islamic 8-Point Geometric Star (Khatam) */}
+            <div className="absolute inset-4 sm:inset-6 flex items-center justify-center animate-hero-spin">
+              <svg viewBox="0 0 200 200" className="w-full h-full text-[#37C6A3] stroke-current fill-none">
+                {/* Concentric Decorative Rings */}
+                <circle cx="100" cy="100" r="90" strokeWidth="1.2" opacity="0.35" />
+                {/* Interlacing 8-Point Khatam Geometry (Rotated Double Squares) */}
+                <rect x="35" y="35" width="130" height="130" rx="3" strokeWidth="1.6" opacity="0.5" />
+                <rect
+                  x="35"
+                  y="35"
+                  width="130"
+                  height="130"
+                  rx="3"
+                  strokeWidth="1.6"
+                  opacity="0.5"
+                  transform="rotate(45 100 100)"
+                />
+                {/* Inner Octagonal Diamond Struts */}
+                <polygon
+                  points="100,20 124,76 180,100 124,124 100,180 76,124 20,100 76,76"
+                  strokeWidth="1"
+                  opacity="0.3"
+                />
+                <polygon
+                  points="100,20 124,76 180,100 124,124 100,180 76,124 20,100 76,76"
+                  strokeWidth="1"
+                  opacity="0.3"
+                  transform="rotate(45 100 100)"
+                />
+                {/* Central Core Medallion */}
+                <circle cx="100" cy="100" r="34" strokeWidth="1.2" strokeDasharray="4 4" opacity="0.5" />
+                <circle cx="100" cy="100" r="18" strokeWidth="1.5" opacity="0.65" />
+                <circle cx="100" cy="100" r="5" fill="#37C6A3" opacity="0.85" />
+              </svg>
+            </div>
+
+            {/* Floating Twinkle Sparkle Particles */}
+            <span
+              className="absolute top-6 left-12 text-[#37C6A3] text-sm animate-sparkle"
+              style={{ animationDelay: '0s' }}
+            >
+              ✦
+            </span>
+            <span
+              className="absolute bottom-8 right-8 text-emerald-300 text-xs animate-sparkle"
+              style={{ animationDelay: '1.6s' }}
+            >
+              ✧
+            </span>
+            <span
+              className="absolute top-1/2 right-4 text-[#37C6A3] text-base animate-sparkle"
+              style={{ animationDelay: '2.8s' }}
+            >
+              ✦
+            </span>
+            <span
+              className="absolute bottom-14 left-8 text-teal-300 text-xs animate-sparkle"
+              style={{ animationDelay: '2.1s' }}
+            >
+              ✧
+            </span>
+          </div>
+        </div>
+
+        {/* Responsive Flex Hero Layout: Content first, 3D Mascot stacked cleanly below on mobile (360px+) */}
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Hero Content Layer */}
+          <div className="w-full md:max-w-xl lg:max-w-2xl flex-1">
+            {/* Shimmer Sweep Badge */}
+            <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
+              <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+              <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
+              <span className="relative z-10">MadrasaNexa Smart AI Assistant</span>
+              <span className="text-slate-400 relative z-10">|</span>
+              <span className="flex items-center gap-1 text-slate-300 relative z-10">
+                <Lock className="w-3 h-3 text-amber-400" />
+                Locked Preview
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Empower Your Madrasa With an <span className="text-[#37C6A3]">Intelligent Islamic Copilot</span>
+            </h1>
+
+            <p className="mt-3 sm:mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
+              Generate exam papers & answer keys in seconds, craft 30-minute structured Islamic lesson plans,
+              design event posters, and translate materials across Tamil, English, and Arabic.
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3 text-xs font-medium text-slate-300">
+              <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <ShieldCheck className="w-4 h-4 text-[#37C6A3]" />
+                <span>Zero-Storage In-Memory RAM Processing</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span>Powered by Cloudflare Workers AI</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Unlimited Access for Admin & All Ustadhs</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3D AI Robot Mascot (Waving): Centered & Cleanly Stacked Below on Mobile, On Right on Desktop */}
+          <div className="shrink-0 w-28 sm:w-32 md:w-36 lg:w-44 mt-4 md:mt-0 mx-auto md:mx-0 flex justify-center items-center pointer-events-none select-none drop-shadow-2xl">
+            <AiRobotMascot variant="wave" className="w-full h-auto" />
+          </div>
+        </div>
+      </div>
 
       {/* Concentric Orbital AI Ecosystem Showcase */}
       <AiConcentricOrbitShowcase portalType="admin" />

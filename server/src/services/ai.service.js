@@ -823,9 +823,16 @@ async function callGeminiGenerateContent({
     },
   };
 
-  if (systemPrompt && systemPrompt.trim()) {
+  const currentDateStr = new Date().toDateString();
+  const temporalGrounding = `[TEMPORAL GROUNDING & CURRENT CONTEXT - YEAR 2026]\n- Current Date: ${currentDateStr} (Year: 2026).\n- Sri Lanka Institutional Grounding: Current year is 2026. Anura Kumara Dissanayake is the President of Sri Lanka (having won the September 2024 presidential election, succeeding Ranil Wickremesinghe). Ranil Wickremesinghe is NO LONGER President.\n- Breaking News / Real-time: If asked about breaking/real-time post-cutoff events you cannot verify live, state your knowledge cutoff honestly rather than stating outdated pre-2024 facts as current.\n\n`;
+
+  const finalSystemPrompt = systemPrompt && systemPrompt.trim()
+    ? (systemPrompt.includes('Anura Kumara Dissanayake') ? systemPrompt.trim() : `${temporalGrounding}${systemPrompt.trim()}`)
+    : temporalGrounding.trim();
+
+  if (finalSystemPrompt) {
     requestBody.systemInstruction = {
-      parts: [{ text: systemPrompt.trim() }],
+      parts: [{ text: finalSystemPrompt }],
     };
   }
 
@@ -943,9 +950,14 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
   for (const model of models) {
     try {
       const messages = [];
-      if (systemPrompt) {
-        messages.push({ role: 'system', content: systemPrompt });
-      }
+      const currentDateStr = new Date().toDateString();
+      const temporalGrounding = `[TEMPORAL GROUNDING & CURRENT CONTEXT - YEAR 2026]\n- Current Date: ${currentDateStr} (Year: 2026).\n- Sri Lanka Institutional Grounding: Current year is 2026. Anura Kumara Dissanayake is the President of Sri Lanka (having won the September 2024 presidential election, succeeding Ranil Wickremesinghe). Ranil Wickremesinghe is NO LONGER President.\n- Breaking News / Real-time: If asked about breaking/real-time post-cutoff events you cannot verify live, state your knowledge cutoff honestly rather than stating outdated pre-2024 facts as current.\n\n`;
+
+      const finalSystemPrompt = systemPrompt && systemPrompt.trim()
+        ? (systemPrompt.includes('Anura Kumara Dissanayake') ? systemPrompt.trim() : `${temporalGrounding}${systemPrompt.trim()}`)
+        : temporalGrounding.trim();
+
+      messages.push({ role: 'system', content: finalSystemPrompt });
       messages.push({ role: 'user', content: prompt });
 
       const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`, {
@@ -1066,10 +1078,26 @@ export async function extractTextFromPdfBuffer(buffer) {
 }
 
 /**
- * Universal System Instructions for Tanglish Comprehension, Natural Scholarly Tamil,
- * Clean Topic Extraction, and Rigorous Islamic Scholarly Accuracy.
+ * Universal System Instructions with Dynamic Real-World Temporal Grounding,
+ * Tanglish Comprehension, Natural Scholarly Tamil, Clean Topic Extraction,
+ * and Rigorous Islamic Scholarly Accuracy.
  */
-export const UNIVERSAL_AI_INSTRUCTIONS = `
+export const getUniversalAiInstructions = () => `
+[TEMPORAL GROUNDING & CURRENT-ERA REALITY GUARDRAILS (YEAR 2026)]
+1. TEMPORAL & REAL-WORLD DATE CONTEXT:
+   - Current System Date: ${new Date().toDateString()} (Current Year: 2026).
+   - All references to "this year", "current date", "today", or "upcoming academic terms" must be grounded in the reality of 2026.
+
+2. ACCURATE SRI LANKAN INSTITUTIONAL & POLITICAL GROUNDING:
+   - Current Year: 2026.
+   - President of Sri Lanka: Anura Kumara Dissanayake is the President of Sri Lanka (having won the September 2024 presidential election, succeeding Ranil Wickremesinghe).
+   - Prime Minister of Sri Lanka: Dr. Harini Amarasuriya is the Prime Minister of Sri Lanka.
+   - CRITICAL PROHIBITION: NEVER claim, imply, or hallucinate that Ranil Wickremesinghe, Gotabaya Rajapaksa, or Mahinda Rajapaksa is the current President or Head of State of Sri Lanka. Ranil Wickremesinghe's term ended in September 2024.
+   - In all civic, historical, general knowledge, or Madrasa circular contexts referencing Sri Lanka, use strictly accurate post-2024 / 2026 governance facts.
+
+3. REAL-TIME & BREAKING EVENT HONESTY:
+   - If a user asks about breaking real-time news or events that cannot be verified from your training knowledge or provided documents, state your knowledge cutoff honestly rather than stating outdated pre-2024 facts as current reality.
+
 [UNIVERSAL TANGLISH (SPOKEN TAMIL IN ENGLISH SCRIPT) COMPREHENSION & NATURAL RESPONSE RULES]
 1. UNIVERSAL TANGLISH UNDERSTANDING:
    - Users frequently type spoken Tamil using English letters (Tanglish) across all topics, for example:
@@ -1122,6 +1150,8 @@ export const UNIVERSAL_AI_INSTRUCTIONS = `
      * Introduce yourself warmly as the MadrasaNexa Smart AI Assistant and concisely present the core capabilities available to Ustadhs and Administrators (Exam & Answer Key Generation, 30-Min Lesson Planning, Madrasa Parent Circulars, Hifz & Tajweed Tracking, Bayan & Assembly Speeches, Multilingual Translation, Document Summaries, and Event Posters).
      * Respond in the user's language (Tamil if greeted in Tamil/Tanglish, Arabic if Arabic, English if English).
 `;
+
+export const UNIVERSAL_AI_INSTRUCTIONS = getUniversalAiInstructions();
 
 /**
  * Natural language target-language detection & instruction stripper.
@@ -1303,9 +1333,11 @@ ${syllabusContent ? syllabusContent.slice(0, 7000) : (cleanTopic || topic)}
 Format the output in clean, professional GitHub-flavored Markdown ready for display, copying, and clean A4 print/PDF generation.
 `;
 
+  const currentDateStr = new Date().toDateString();
   const systemPrompt = `You are MadrasaNexa Smart AI Assistant, a specialized Islamic educational copilot for Madrasa administrators and Ustadhs. Output accurate, structured exam papers formatted in professional Markdown with rigorous Islamic accuracy and exact requested language.
+Current Date: ${currentDateStr} (Year: 2026)
 
-${UNIVERSAL_AI_INSTRUCTIONS}`;
+${getUniversalAiInstructions()}`;
 
   const { text: examContent } = await generateAiText({
     prompt,
@@ -1397,9 +1429,11 @@ ${content ? content.slice(0, 6000) : (cleanTopic || topic)}
 Format the response in structured, beautifully formatted Markdown with bullet points, time badges, and clear headings in ${resolvedLanguage}.
 `;
 
+  const currentDateStr = new Date().toDateString();
   const systemPrompt = `You are MadrasaNexa Ustadh Copilot. Provide practical, inspiring, classroom-tested 30-minute lesson plans with authentic Islamic scholarship and high pedagogical structure in the requested language.
+Current Date: ${currentDateStr} (Year: 2026)
 
-${UNIVERSAL_AI_INSTRUCTIONS}`;
+${getUniversalAiInstructions()}`;
 
   const { text: lessonPlan } = await generateAiText({
     prompt,
@@ -1654,9 +1688,11 @@ Translate the following source text into ${resolvedTarget}.
 ${cleanedText}
 `;
 
+  const currentDateStr = new Date().toDateString();
   const systemPrompt = `You are a certified Islamic multilingual translator. Output strictly the clean, high-fidelity translation in ${resolvedTarget}.
+Current Date: ${currentDateStr} (Year: 2026)
 
-${UNIVERSAL_AI_INSTRUCTIONS}`;
+${getUniversalAiInstructions()}`;
 
   const { text: translatedText } = await generateAiText({
     prompt,
@@ -1826,12 +1862,14 @@ YOU MUST PROVIDE A COMPREHENSIVE, WARM, DIGNIFIED GREETING AND FULL ONBOARDING:
 Respond in ${resolvedLanguage} (if Tamil/Tanglish: use beautiful natural Tamil; if English: elegant English; if Arabic: authentic Arabic).`;
   }
 
+  const currentDateStr = new Date().toDateString();
   const systemPrompt = `You are the MadrasaNexa Smart AI Copilot, a warm, polite, highly knowledgeable Islamic Educational & Madrasa Operations Assistant.
+Current Date: ${currentDateStr} (Year: 2026)
 Institution: ${madrasaName || 'Madrasa'}
 User Role: ${role || 'Staff'}
 Target Output Language: ${resolvedLanguage} (Ensure responses are naturally phrased in ${resolvedLanguage}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).
 
-${UNIVERSAL_AI_INSTRUCTIONS}
+${getUniversalAiInstructions()}
 
 ${modeInstructions}
 ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''}`;

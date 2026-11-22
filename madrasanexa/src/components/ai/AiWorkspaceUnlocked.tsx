@@ -17,6 +17,7 @@ import {
   BookOpen,
   Mic,
   Layers,
+  RotateCcw,
 } from 'lucide-react';
 import { aiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
@@ -177,6 +178,16 @@ export default function AiWorkspaceUnlocked({
     }
   };
 
+  const handleRegenerate = (lastPrompt?: string, mode?: ToolMode) => {
+    if (isGenerating) return;
+    const promptToRun =
+      lastPrompt ||
+      messages.filter((m) => m.sender === 'user').slice(-1)[0]?.content;
+    if (promptToRun) {
+      handleSubmitPrompt(promptToRun, mode);
+    }
+  };
+
   const handleSubmitPrompt = async (promptOverride?: string, modeOverride?: ToolMode, fileOverride?: File | null) => {
     const query = (promptOverride !== undefined ? promptOverride : inputPrompt).trim();
     const file = fileOverride !== undefined ? fileOverride : attachedFile;
@@ -194,17 +205,7 @@ export default function AiWorkspaceUnlocked({
       file: file ? { name: file.name, size: file.size } : undefined,
     };
 
-    const assistantMsgId = (Date.now() + 1).toString();
-    const assistantMsg: ChatMessage = {
-      id: assistantMsgId,
-      sender: 'assistant',
-      timestamp: new Date(),
-      content: '',
-      mode: currentMode,
-      isStreaming: true,
-    };
-
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInputPrompt('');
     setAttachedFile(null);
     if (textareaRef.current) {
@@ -214,6 +215,8 @@ export default function AiWorkspaceUnlocked({
 
     try {
       let resolvedMode = currentMode;
+      const assistantMsgId = (Date.now() + 1).toString();
+
       if (resolvedMode === 'auto') {
         const lower = query.toLowerCase();
         if (file && (lower.includes('exam') || lower.includes('mcq') || lower.includes('question paper'))) {
@@ -239,11 +242,17 @@ export default function AiWorkspaceUnlocked({
           );
 
           const res = await aiService.chatWithCopilot(formData);
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.reply } : m
-            )
-          );
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: assistantMsgId,
+              sender: 'assistant',
+              timestamp: new Date(),
+              content: res.reply,
+              mode: 'auto',
+              isStreaming: true,
+            },
+          ]);
           return;
         }
       }
@@ -254,18 +263,18 @@ export default function AiWorkspaceUnlocked({
           category: 'Madrasa Event',
           language,
         });
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId
-              ? {
-                  ...m,
-                  isStreaming: false,
-                  posterData: res,
-                  content: `Islamic Event Poster Synthesized: "${res.title}"`,
-                }
-              : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: `Islamic Event Poster Synthesized: "${res.title}"`,
+            posterData: res,
+            mode: 'poster',
+            isStreaming: false,
+          },
+        ]);
       } else if (resolvedMode === 'exam') {
         const formData = new FormData();
         if (file) formData.append('file', file);
@@ -280,11 +289,17 @@ export default function AiWorkspaceUnlocked({
         formData.append('essayCount', '2');
 
         const res = await aiService.generateExamPaper(formData);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.examContent } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.examContent,
+            mode: 'exam',
+            isStreaming: true,
+          },
+        ]);
       } else if (resolvedMode === 'hifz') {
         const formData = new FormData();
         if (file) formData.append('file', file);
@@ -302,11 +317,17 @@ export default function AiWorkspaceUnlocked({
         formData.append('essayCount', '1');
 
         const res = await aiService.generateExamPaper(formData);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.examContent } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.examContent,
+            mode: 'hifz',
+            isStreaming: true,
+          },
+        ]);
       } else if (resolvedMode === 'translate') {
         const targetLang = language.includes('Tamil') ? 'Tamil' : language.includes('Arabic') ? 'Arabic' : 'Tamil';
         const res = await aiService.translateContent({
@@ -314,11 +335,17 @@ export default function AiWorkspaceUnlocked({
           sourceLanguage: 'English',
           targetLanguage: targetLang,
         });
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.translatedText } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.translatedText,
+            mode: 'translate',
+            isStreaming: true,
+          },
+        ]);
       } else {
         const formData = new FormData();
         if (file) formData.append('file', file);
@@ -335,21 +362,31 @@ export default function AiWorkspaceUnlocked({
         formData.append('language', language);
 
         const res = await aiService.generateLessonPlan(formData);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.lessonPlan } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.lessonPlan,
+            mode: resolvedMode,
+            isStreaming: true,
+          },
+        ]);
       }
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.message || 'Generation failed. Please try again.';
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantMsgId
-            ? { ...m, isStreaming: false, content: `⚠️ Request failed: ${errorMsg}` }
-            : m
-        )
-      );
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: 'assistant',
+          timestamp: new Date(),
+          content: `⚠️ Request failed: ${errorMsg}`,
+          mode: currentMode,
+          isStreaming: false,
+        },
+      ]);
     } finally {
       setIsGenerating(false);
     }
@@ -649,7 +686,7 @@ export default function AiWorkspaceUnlocked({
         /* ========================================================================= */
         /* 2. ACTIVE CONVERSATION THREAD STATE                                       */
         /* ========================================================================= */
-        <div className="flex-1 space-y-6 px-1 sm:px-2">
+        <div className="flex-1 space-y-7 px-1 sm:px-2 max-w-3xl mx-auto w-full">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -657,89 +694,125 @@ export default function AiWorkspaceUnlocked({
             >
               {/* User Bubble */}
               {msg.sender === 'user' ? (
-                <div className="bg-[#0F172A] text-white rounded-3xl rounded-tr-md p-4 sm:p-5 max-w-2xl shadow-md space-y-2 text-left">
+                <div className="bg-[#0F172A] text-white rounded-3xl rounded-tr-md p-4 sm:p-5 max-w-[85%] sm:max-w-[78%] shadow-md space-y-2 text-left">
                   {msg.file && (
                     <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-xs text-emerald-300">
                       <FileText className="w-3.5 h-3.5 text-[#37C6A3]" />
-                      <span className="font-mono">{msg.file.name}</span>
+                      <span className="font-mono truncate max-w-[200px]">{msg.file.name}</span>
                     </div>
                   )}
                   <p className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-sans">
                     {msg.content}
                   </p>
-                  <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 pt-1">
+                  <div className="flex items-center justify-end gap-1.5 text-[10px] text-slate-400 pt-0.5">
                     <span>{modeLabels[msg.mode]?.label || 'Copilot'}</span>
                     <span>•</span>
                     <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                   </div>
                 </div>
               ) : (
-                /* Assistant Bubble */
-                <div className="w-full bg-white rounded-3xl rounded-tl-md p-5 sm:p-7 border border-[#E7E9EE] shadow-sm space-y-4 text-left">
-                  <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-3 gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-[#0F172A] flex items-center justify-center shrink-0">
-                        <AiRobotMascot variant="avatar" size={20} />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
-                          <span>Madrasa Copilot</span>
-                          <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
-                            {modeLabels[msg.mode]?.label || 'General'}
-                          </span>
-                        </div>
-                      </div>
+                /* Assistant Message: Clean Gemini / ChatGPT Conversational Flow */
+                <div className="w-full flex items-start gap-3.5 sm:gap-4 text-left group">
+                  {/* Left Avatar Badge */}
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#0F172A] border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                    <AiRobotMascot variant="avatar" size={24} />
+                  </div>
+
+                  {/* Right Response Body */}
+                  <div className="flex-1 min-w-0 space-y-2 pt-0.5">
+                    {/* Header meta */}
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-[#0F172A]">Madrasa Copilot</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                        {modeLabels[msg.mode]?.label || 'General'}
+                      </span>
                     </div>
 
-                    {!msg.isStreaming && msg.content && (
-                      <div className="flex items-center gap-1.5 print:hidden">
+                    {/* Formatted Content */}
+                    <div className="text-xs sm:text-sm leading-relaxed text-[#0F172A]">
+                      {msg.posterData ? (
+                        <PosterCanvasRenderer poster={msg.posterData} />
+                      ) : (
+                        <AiStreamedText text={msg.content} />
+                      )}
+                    </div>
+
+                    {/* Subtle Gemini / ChatGPT Bottom Action Bar */}
+                    {msg.content && (
+                      <div className="flex items-center gap-1.5 pt-1.5 text-slate-400 print:hidden">
                         <button
                           type="button"
                           onClick={() => handleCopyText(msg.content, msg.id)}
-                          className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-[#E7E9EE] text-[#0F172A] hover:bg-slate-50 transition flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                          title="Copy response"
                         >
                           {copiedId === msg.id ? (
                             <Check className="w-3.5 h-3.5 text-emerald-600" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
-                          <span className="hidden sm:inline">{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                          <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
                         </button>
 
                         <button
                           type="button"
                           onClick={() => window.print()}
-                          className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-[#0F172A] text-white hover:bg-[#1E293B] transition flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                          title="Print or Save as PDF"
                         >
-                          <Printer className="w-3.5 h-3.5 text-[#37C6A3]" />
-                          <span className="hidden sm:inline">Print</span>
+                          <Printer className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Print</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRegenerate()}
+                          className="px-2 py-1 text-[11px] font-semibold rounded-lg text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                          title="Regenerate response"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Regenerate</span>
                         </button>
                       </div>
                     )}
                   </div>
-
-                  {/* Body Content */}
-                  {msg.isStreaming ? (
-                    <div className="py-8 flex flex-col items-center justify-center text-center space-y-3">
-                      <div className="w-20 h-20 flex items-center justify-center">
-                        <AiRobotMascot variant="thinking" className="w-full h-full drop-shadow-md animate-pulse" />
-                      </div>
-                      <p className="text-xs font-bold text-[#0F172A] animate-fade-in">
-                        ✨ {cyclingMessages[msgIdx]}
-                      </p>
-                      <span className="text-[10px] text-[#7C8A9A]">
-                        Zero Cloud Storage • RAM processing with Cloudflare Workers AI
-                      </span>
-                    </div>
-                  ) : msg.posterData ? (
-                    <PosterCanvasRenderer poster={msg.posterData} />
-                  ) : (
-                    <AiStreamedText text={msg.content} />
-                  )}
                 </div>
               )}
             </div>
           ))}
+
+          {/* Compact Inline Animated "Thinking Robot" Indicator (just like Gemini / ChatGPT) */}
+          {isGenerating && (
+            <div className="w-full flex items-start gap-3.5 sm:gap-4 text-left animate-fade-in py-1">
+              <div className="relative shrink-0 mt-0.5">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#0F172A] border border-[#37C6A3]/50 flex items-center justify-center shadow-md p-1">
+                  <AiRobotMascot variant="thinking" size={28} />
+                </div>
+                <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400" />
+                </span>
+              </div>
+
+              <div className="flex-1 min-w-0 space-y-1 pt-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
+                    <span>Thinking</span>
+                    <span className="inline-flex gap-0.5 text-[#37C6A3] text-[11px] animate-pulse">
+                      ✦ ✧ ✦
+                    </span>
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-medium border border-emerald-200">
+                    RAM-Only • 0 MB Stored
+                  </span>
+                </div>
+                <p className="text-xs text-[#7C8A9A] font-medium animate-pulse">
+                  {cyclingMessages[msgIdx]}
+                </p>
+              </div>
+            </div>
+          )}
+
           <div ref={chatEndRef} />
         </div>
       )}

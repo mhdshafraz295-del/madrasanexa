@@ -18,6 +18,8 @@ import {
   BookOpen,
   Mic,
   Layers,
+  RotateCcw,
+  Printer,
 } from 'lucide-react';
 import { teacherAiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
@@ -47,6 +49,69 @@ interface ChatMessage {
   };
   posterData?: PosterGenerationResult;
   isStreaming?: boolean;
+}
+
+// Smooth Typewriter / Streamed Text Renderer with Skip Option
+function AiStreamedText({ text, onFinished }: { text: string; onFinished?: () => void }) {
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+
+  const [displayedLength, setDisplayedLength] = useState(prefersReducedMotion ? text.length : 0);
+  const [isSkipped, setIsSkipped] = useState(Boolean(prefersReducedMotion));
+
+  useEffect(() => {
+    if (prefersReducedMotion || isSkipped) {
+      setDisplayedLength(text.length);
+      onFinished?.();
+      return;
+    }
+
+    setDisplayedLength(0);
+    const chunkSize = Math.max(25, Math.floor(text.length / 80));
+    const interval = setInterval(() => {
+      setDisplayedLength((prev) => {
+        const next = prev + chunkSize;
+        if (next >= text.length) {
+          clearInterval(interval);
+          onFinished?.();
+          return text.length;
+        }
+        return next;
+      });
+    }, 20);
+
+    return () => clearInterval(interval);
+  }, [text, isSkipped, prefersReducedMotion, onFinished]);
+
+  const isComplete = displayedLength >= text.length;
+
+  return (
+    <div className="relative">
+      {!isComplete && !isSkipped && !prefersReducedMotion && (
+        <div className="sticky top-2 z-20 flex justify-end mb-2 print:hidden">
+          <button
+            type="button"
+            onClick={() => {
+              setIsSkipped(true);
+              setDisplayedLength(text.length);
+              onFinished?.();
+            }}
+            className="px-2 py-0.5 text-[10px] font-bold bg-[#0F172A] text-white rounded shadow-sm hover:bg-[#1E293B] flex items-center gap-1 transition cursor-pointer"
+          >
+            <span>⏩ Skip</span>
+          </button>
+        </div>
+      )}
+
+      <div className="prose prose-slate max-w-none text-xs leading-relaxed font-sans text-[#0F172A]">
+        <AiMarkdownContent content={text.slice(0, displayedLength)} />
+        {!isComplete && (
+          <span className="inline-block w-1.5 h-3.5 ml-1 bg-[#37C6A3] animate-pulse align-middle" />
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function GlobalAiCopilotDrawer() {
@@ -155,6 +220,16 @@ export default function GlobalAiCopilotDrawer() {
     }
   };
 
+  const handleRegenerate = (lastPrompt?: string, mode?: ToolMode) => {
+    if (isGenerating) return;
+    const promptToRun =
+      lastPrompt ||
+      messages.filter((m) => m.sender === 'user').slice(-1)[0]?.content;
+    if (promptToRun) {
+      handleSubmitPrompt(promptToRun, mode);
+    }
+  };
+
   const handleSubmitPrompt = async (promptOverride?: string, modeOverride?: ToolMode, fileOverride?: File | null) => {
     const query = (promptOverride !== undefined ? promptOverride : inputPrompt).trim();
     const file = fileOverride !== undefined ? fileOverride : attachedFile;
@@ -172,17 +247,7 @@ export default function GlobalAiCopilotDrawer() {
       file: file ? { name: file.name, size: file.size } : undefined,
     };
 
-    const assistantMsgId = (Date.now() + 1).toString();
-    const assistantMsg: ChatMessage = {
-      id: assistantMsgId,
-      sender: 'assistant',
-      timestamp: new Date(),
-      content: '',
-      mode: currentMode,
-      isStreaming: true,
-    };
-
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setMessages((prev) => [...prev, userMsg]);
     setInputPrompt('');
     setAttachedFile(null);
     if (textareaRef.current) {
@@ -192,6 +257,8 @@ export default function GlobalAiCopilotDrawer() {
 
     try {
       let resolvedMode = currentMode;
+      const assistantMsgId = (Date.now() + 1).toString();
+
       if (resolvedMode === 'auto') {
         const lower = query.toLowerCase();
         if (file && (lower.includes('exam') || lower.includes('mcq') || lower.includes('question paper'))) {
@@ -217,11 +284,17 @@ export default function GlobalAiCopilotDrawer() {
           );
 
           const res = await teacherAiService.chatWithCopilot(formData);
-          setMessages((prev) =>
-            prev.map((m) =>
-              m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.reply } : m
-            )
-          );
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: assistantMsgId,
+              sender: 'assistant',
+              timestamp: new Date(),
+              content: res.reply,
+              mode: 'auto',
+              isStreaming: false,
+            },
+          ]);
           return;
         }
       }
@@ -232,18 +305,18 @@ export default function GlobalAiCopilotDrawer() {
           category: 'Madrasa Event',
           language,
         });
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId
-              ? {
-                  ...m,
-                  isStreaming: false,
-                  posterData: res,
-                  content: `Islamic Event Poster Synthesized: "${res.title}"`,
-                }
-              : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: `Islamic Event Poster Synthesized: "${res.title}"`,
+            posterData: res,
+            mode: 'poster',
+            isStreaming: false,
+          },
+        ]);
       } else if (resolvedMode === 'exam') {
         const formData = new FormData();
         if (file) formData.append('file', file);
@@ -258,11 +331,17 @@ export default function GlobalAiCopilotDrawer() {
         formData.append('essayCount', '2');
 
         const res = await teacherAiService.generateExamPaper(formData);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.examContent } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.examContent,
+            mode: resolvedMode,
+            isStreaming: false,
+          },
+        ]);
       } else if (resolvedMode === 'hifz') {
         const formData = new FormData();
         if (file) formData.append('file', file);
@@ -280,11 +359,17 @@ export default function GlobalAiCopilotDrawer() {
         formData.append('essayCount', '1');
 
         const res = await teacherAiService.generateExamPaper(formData);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.examContent } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.examContent,
+            mode: resolvedMode,
+            isStreaming: false,
+          },
+        ]);
       } else if (resolvedMode === 'translate') {
         const targetLang = language.includes('Tamil') ? 'Tamil' : language.includes('Arabic') ? 'Arabic' : 'Tamil';
         const res = await teacherAiService.translateContent({
@@ -292,11 +377,17 @@ export default function GlobalAiCopilotDrawer() {
           sourceLanguage: 'English',
           targetLanguage: targetLang,
         });
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.translatedText } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.translatedText,
+            mode: resolvedMode,
+            isStreaming: false,
+          },
+        ]);
       } else {
         const formData = new FormData();
         if (file) formData.append('file', file);
@@ -313,21 +404,31 @@ export default function GlobalAiCopilotDrawer() {
         formData.append('language', language);
 
         const res = await teacherAiService.generateLessonPlan(formData);
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === assistantMsgId ? { ...m, isStreaming: false, content: res.lessonPlan } : m
-          )
-        );
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMsgId,
+            sender: 'assistant',
+            timestamp: new Date(),
+            content: res.lessonPlan,
+            mode: resolvedMode,
+            isStreaming: false,
+          },
+        ]);
       }
     } catch (err: any) {
       const errorMsg = err.response?.data?.message || err.message || 'Generation failed. Please try again.';
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === assistantMsgId
-            ? { ...m, isStreaming: false, content: `⚠️ Request failed: ${errorMsg}` }
-            : m
-        )
-      );
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: 'assistant',
+          timestamp: new Date(),
+          content: `⚠️ Request failed: ${errorMsg}`,
+          mode: currentMode,
+          isStreaming: false,
+        },
+      ]);
     } finally {
       setIsGenerating(false);
     }
@@ -624,70 +725,126 @@ export default function GlobalAiCopilotDrawer() {
                       </div>
                     ) : (
                       <>
-                        {messages.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-                          >
-                            {msg.sender === 'user' ? (
-                              <div className="bg-[#0F172A] text-white rounded-2xl rounded-tr-xs p-3 max-w-[85%] shadow-sm space-y-1.5 text-left">
-                                {msg.file && (
-                                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-emerald-300">
-                                    <FileText className="w-3 h-3 text-[#37C6A3]" />
-                                    <span className="font-mono truncate max-w-[180px]">{msg.file.name}</span>
-                                  </div>
-                                )}
-                                <p className="text-xs leading-relaxed whitespace-pre-wrap font-sans">
-                                  {msg.content}
-                                </p>
-                              </div>
-                            ) : (
-                              <div className="w-full bg-white rounded-2xl rounded-tl-xs p-3.5 border border-[#E7E9EE] shadow-xs space-y-2.5 text-left">
-                                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-lg bg-[#0F172A] flex items-center justify-center shrink-0">
-                                      <AiRobotMascot variant="avatar" size={16} />
+                        <div className="space-y-4">
+                          {messages.map((msg) => (
+                            <div
+                              key={msg.id}
+                              className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
+                            >
+                              {msg.sender === 'user' ? (
+                                <div className="bg-[#0F172A] text-white rounded-2xl rounded-tr-xs p-3 max-w-[85%] shadow-sm space-y-1.5 text-left">
+                                  {msg.file && (
+                                    <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-800 text-[10px] text-emerald-300">
+                                      <FileText className="w-3 h-3 text-[#37C6A3]" />
+                                      <span className="font-mono truncate max-w-[180px]">{msg.file.name}</span>
                                     </div>
-                                    <span className="text-[11px] font-bold text-[#0F172A]">
-                                      {modeLabels[msg.mode]?.label || 'Ustadh Copilot'}
-                                    </span>
-                                  </div>
-
-                                  {!msg.isStreaming && msg.content && (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCopyText(msg.content, msg.id)}
-                                      className="p-1 text-slate-400 hover:text-slate-700 rounded-md transition cursor-pointer"
-                                      title="Copy text"
-                                    >
-                                      {copiedId === msg.id ? (
-                                        <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                      ) : (
-                                        <Copy className="w-3.5 h-3.5" />
-                                      )}
-                                    </button>
                                   )}
+                                  <p className="text-xs leading-relaxed whitespace-pre-wrap font-sans">
+                                    {msg.content}
+                                  </p>
                                 </div>
-
-                                {msg.isStreaming ? (
-                                  <div className="py-4 flex flex-col items-center justify-center text-center space-y-2">
-                                    <div className="w-12 h-12 flex items-center justify-center">
-                                      <AiRobotMascot variant="thinking" size={40} className="animate-pulse" />
-                                    </div>
-                                    <p className="text-[11px] font-bold text-[#0F172A]">
-                                      ✨ {cyclingMessages[msgIdx]}
-                                    </p>
-                                    <span className="text-[9px] text-[#7C8A9A]">RAM processing • 0 MB stored</span>
+                              ) : (
+                                <div className="w-full flex items-start gap-2.5 text-left">
+                                  <div className="w-7 h-7 rounded-xl bg-[#0F172A] border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                                    <AiRobotMascot variant="avatar" size={18} />
                                   </div>
-                                ) : msg.posterData ? (
-                                  <PosterCanvasRenderer poster={msg.posterData} />
-                                ) : (
-                                  <AiMarkdownContent content={msg.content} />
-                                )}
+
+                                  <div className="flex-1 min-w-0 space-y-1.5">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-[11px] font-bold text-[#0F172A]">Ustadh Copilot</span>
+                                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                        {modeLabels[msg.mode]?.label || 'Copilot'}
+                                      </span>
+                                    </div>
+
+                                    <div className="text-xs leading-relaxed text-[#0F172A]">
+                                      {msg.posterData ? (
+                                        <PosterCanvasRenderer poster={msg.posterData} />
+                                      ) : (
+                                        <AiStreamedText text={msg.content} />
+                                      )}
+                                    </div>
+
+                                    {msg.content && (
+                                      <div className="flex items-center gap-1 pt-1 text-slate-400 print:hidden">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleCopyText(msg.content, msg.id)}
+                                          className="px-1.5 py-0.5 text-[10px] font-semibold rounded-md text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                                          title="Copy response"
+                                        >
+                                          {copiedId === msg.id ? (
+                                            <Check className="w-3 h-3 text-emerald-600" />
+                                          ) : (
+                                            <Copy className="w-3 h-3" />
+                                          )}
+                                          <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => window.print()}
+                                          className="px-1.5 py-0.5 text-[10px] font-semibold rounded-md text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                                          title="Print response"
+                                        >
+                                          <Printer className="w-3 h-3 text-slate-500" />
+                                          <span>Print</span>
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRegenerate()}
+                                          className="px-1.5 py-0.5 text-[10px] font-semibold rounded-md text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
+                                          title="Regenerate response"
+                                        >
+                                          <RotateCcw className="w-3 h-3 text-slate-500" />
+                                          <span>Regenerate</span>
+                                        </button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+
+                          {/* Inline Thinking Robot Indicator */}
+                          {isGenerating && (
+                            <div className="w-full flex items-start gap-2.5 text-left animate-fade-in py-1">
+                              <div className="relative shrink-0 mt-0.5">
+                                <div className="w-7 h-7 rounded-xl bg-[#0F172A] border border-[#37C6A3]/50 flex items-center justify-center shadow-md p-0.5">
+                                  <AiRobotMascot variant="thinking" size={20} />
+                                </div>
+                                <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#37C6A3] opacity-75" />
+                                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+                                </span>
                               </div>
-                            )}
-                          </div>
-                        ))}
+
+                              <div className="flex-1 min-w-0 space-y-0.5 pt-0.5">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[11px] font-bold text-[#0F172A] flex items-center gap-1">
+                                    <span>Thinking</span>
+                                    <span className="inline-flex gap-0.5 text-[#37C6A3] text-[10px] animate-pulse">
+                                      ✦ ✧ ✦
+                                    </span>
+                                  </span>
+                                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-800 font-medium border border-emerald-200">
+                                    RAM Memory
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-slate-600 font-medium animate-pulse">
+                                  {cyclingMessages[msgIdx]}
+                                </p>
+                                <div className="flex items-center gap-2 pt-0.5 text-[9px] text-[#7C8A9A]">
+                                  <span>Zero-Storage</span>
+                                  <span>•</span>
+                                  <span>Zero Live DB Queries</span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <div ref={chatEndRef} />
                       </>
                     )}

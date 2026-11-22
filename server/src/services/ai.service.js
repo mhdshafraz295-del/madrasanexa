@@ -741,7 +741,7 @@ async function callGeminiGenerateContent({
   messages = [],
   pdfBuffer = null,
   temperature = 0.3,
-  maxOutputTokens = 4096,
+  maxOutputTokens = 8192,
 }) {
   const apiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   if (!apiKey || !apiKey.trim()) {
@@ -820,7 +820,7 @@ async function callGeminiGenerateContent({
     contents,
     generationConfig: {
       temperature,
-      maxOutputTokens: maxOutputTokens || 4096,
+      maxOutputTokens: maxOutputTokens || 8192,
     },
   };
 
@@ -881,7 +881,7 @@ async function generateAiText({
   messages = null,
   pdfBuffer = null,
   temperature = 0.3,
-  maxTokens = 4096,
+  maxTokens = 8192,
 }) {
   const geminiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   if (geminiKey && geminiKey.trim()) {
@@ -1114,7 +1114,7 @@ export const UNIVERSAL_AI_INSTRUCTIONS = `
    - When a syllabus PDF or document text is provided (via native PDF vision or parsed RAM buffer):
      * Ground all answers, notes, summaries, and exam questions STRICTLY on the document's actual contents, facts, and structure.
      * Do NOT hallucinate external chapters or assume syllabus content not present in the document.
-     * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 4096 tokens). Never truncate or provide shallow 2-sentence answers.
+     * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 8192 tokens). Never truncate or provide shallow 2-sentence answers.
 
 6. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING:
    - When the user sends a greeting (e.g. "Assalamu Alaikum", "Salam", "Hi", "Hello", "Vanakkam"):
@@ -1309,7 +1309,7 @@ ${UNIVERSAL_AI_INSTRUCTIONS}`;
     systemPrompt,
     pdfBuffer,
     temperature: 0.25,
-    maxTokens: 4096,
+    maxTokens: 8192,
   });
 
   return {
@@ -1399,7 +1399,7 @@ ${UNIVERSAL_AI_INSTRUCTIONS}`;
     systemPrompt,
     pdfBuffer,
     temperature: 0.3,
-    maxTokens: 4096,
+    maxTokens: 8192,
   });
 
   return {
@@ -1655,7 +1655,7 @@ ${UNIVERSAL_AI_INSTRUCTIONS}`;
     prompt,
     systemPrompt,
     temperature: 0.1,
-    maxTokens: 4096,
+    maxTokens: 8192,
   });
 
   return {
@@ -1858,7 +1858,7 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     messages,
     pdfBuffer,
     temperature: 0.35,
-    maxTokens: 4096,
+    maxTokens: 8192,
   });
 
   return {

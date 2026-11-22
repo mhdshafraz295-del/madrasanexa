@@ -19,7 +19,6 @@ import {
   Mic,
   Layers,
   RotateCcw,
-  Printer,
 } from 'lucide-react';
 import { aiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
@@ -89,7 +88,7 @@ function AiStreamedText({ text, onFinished }: { text: string; onFinished?: () =>
   return (
     <div className="relative">
       {!isComplete && !isSkipped && !prefersReducedMotion && (
-        <div className="sticky top-2 z-20 flex justify-end mb-2 print:hidden">
+        <div className="sticky top-2 z-20 flex justify-end mb-2">
           <button
             type="button"
             onClick={() => {
@@ -127,20 +126,12 @@ export default function GlobalAiCopilotDrawer() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [printingMessage, setPrintingMessage] = useState<ChatMessage | null>(null);
 
   const location = useLocation();
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-
-  const handlePrintMessage = (msg: ChatMessage) => {
-    setPrintingMessage(msg);
-    setTimeout(() => {
-      window.print();
-    }, 120);
-  };
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -536,7 +527,7 @@ export default function GlobalAiCopilotDrawer() {
       {/* ========================================================================= */}
       {/* 1. PERSISTENT FLOATING 3D AI ROBOT ORB (FIXED BOTTOM-RIGHT)               */}
       {/* ========================================================================= */}
-      <div className="fixed bottom-5 right-5 z-40 print:hidden">
+      <div className="fixed bottom-5 right-5 z-40">
         <div className="relative group">
           {/* Tooltip on Hover */}
           <div className="absolute right-16 top-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-200 translate-x-2 group-hover:translate-x-0 whitespace-nowrap z-50">
@@ -586,7 +577,7 @@ export default function GlobalAiCopilotDrawer() {
       {/* 2. SLIDE-OVER AI COPILOT SIDE DRAWER                                      */}
       {/* ========================================================================= */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden print:hidden pointer-events-none">
+        <div className="fixed inset-0 z-50 overflow-hidden pointer-events-none">
           {/* Backdrop Blur Overlay - ONLY on mobile (< 640px), hidden on desktop for non-blocking interaction */}
           <div
             className="fixed inset-0 bg-slate-900/30 transition-opacity animate-fade-in block sm:hidden pointer-events-auto"
@@ -815,7 +806,7 @@ export default function GlobalAiCopilotDrawer() {
                                     </div>
 
                                     {msg.content && (
-                                      <div className="flex items-center gap-1 pt-1 text-slate-400 print:hidden">
+                                      <div className="flex items-center gap-1 pt-1 text-slate-400">
                                         <button
                                           type="button"
                                           onClick={() => handleCopyText(msg.content, msg.id)}
@@ -828,16 +819,6 @@ export default function GlobalAiCopilotDrawer() {
                                             <Copy className="w-3 h-3" />
                                           )}
                                           <span>{copiedId === msg.id ? 'Copied' : 'Copy'}</span>
-                                        </button>
-
-                                        <button
-                                          type="button"
-                                          onClick={() => handlePrintMessage(msg)}
-                                          className="px-1.5 py-0.5 text-[10px] font-semibold rounded-md text-slate-500 hover:text-[#0F172A] hover:bg-slate-100 transition flex items-center gap-1 cursor-pointer"
-                                          title="Print response"
-                                        >
-                                          <Printer className="w-3 h-3 text-slate-500" />
-                                          <span>Print</span>
                                         </button>
 
                                         <button
@@ -984,139 +965,6 @@ export default function GlobalAiCopilotDrawer() {
                 </div>
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* CLEAN DOCUMENT-ONLY A4 PRINT CONTAINER (PRINT ONLY)                       */}
-      {/* ========================================================================= */}
-      {printingMessage && (
-        <div
-          id="ai-document-printable-sheet"
-          className="hidden print:block w-full bg-white text-slate-900 font-sans p-2 sm:p-4"
-        >
-          <style>{`
-            @media print {
-              @page {
-                size: A4 portrait;
-                margin: 12mm 15mm;
-              }
-              body, html {
-                background: #ffffff !important;
-                color: #000000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-              }
-              aside, nav, header, footer, .sidebar, #root > *:not(#ai-document-printable-sheet), .print\\:hidden {
-                display: none !important;
-              }
-              #ai-document-printable-sheet {
-                display: block !important;
-                width: 100% !important;
-                background: #ffffff !important;
-                color: #000000 !important;
-                font-size: 12.5pt !important;
-                line-height: 1.6 !important;
-                font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, 'Noto Sans Tamil', 'Amiri', 'Scheherazade New', sans-serif !important;
-              }
-              #ai-document-printable-sheet * {
-                color: #000000 !important;
-                border-color: #000000 !important;
-                box-shadow: none !important;
-                text-shadow: none !important;
-              }
-              #ai-document-printable-sheet h1,
-              #ai-document-printable-sheet h2,
-              #ai-document-printable-sheet h3,
-              #ai-document-printable-sheet h4,
-              #ai-document-printable-sheet h5,
-              #ai-document-printable-sheet h6 {
-                color: #000000 !important;
-                font-weight: 700 !important;
-                page-break-after: avoid;
-                break-after: avoid;
-              }
-              #ai-document-printable-sheet p,
-              #ai-document-printable-sheet li,
-              #ai-document-printable-sheet blockquote {
-                color: #000000 !important;
-                font-size: 12pt !important;
-                line-height: 1.6 !important;
-              }
-              #ai-document-printable-sheet table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-                border: 1.5px solid #000000 !important;
-                margin: 12px 0 !important;
-                page-break-inside: avoid;
-                break-inside: avoid;
-              }
-              #ai-document-printable-sheet th,
-              #ai-document-printable-sheet td {
-                border: 1px solid #000000 !important;
-                padding: 6px 10px !important;
-                color: #000000 !important;
-                font-size: 11pt !important;
-              }
-              #ai-document-printable-sheet th {
-                background-color: #f1f5f9 !important;
-                font-weight: bold !important;
-              }
-              #ai-document-printable-sheet hr {
-                border-color: #000000 !important;
-                border-width: 1px !important;
-                margin: 12px 0 !important;
-              }
-              #ai-document-printable-sheet pre,
-              #ai-document-printable-sheet code {
-                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-                background-color: #f8fafc !important;
-                border: 1px solid #cbd5e1 !important;
-                color: #000000 !important;
-                white-space: pre-wrap !important;
-              }
-            }
-          `}</style>
-
-          {/* Institutional Header Banner */}
-          <div className="border-b-2 border-slate-900 pb-3 mb-6">
-            <div className="text-center space-y-1">
-              <div className="text-sm font-serif font-bold text-slate-700 tracking-wider">
-                بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
-              </div>
-              <h1 className="text-xl font-black uppercase tracking-tight text-slate-950">
-                {statusData?.madrasaName || 'MadrasaNexa Islamic Academy'}
-              </h1>
-              <div className="text-xs font-bold uppercase tracking-widest text-emerald-800">
-                {modeLabels[printingMessage.mode]?.label || 'Institutional Document'}
-              </div>
-              <div className="text-[11px] text-slate-500 pt-1 flex items-center justify-center gap-3">
-                <span>Date: {printingMessage.timestamp.toLocaleDateString([], { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                <span>•</span>
-                <span>Official Verified Institutional Document</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Document Content */}
-          <div className="text-slate-950 text-sm leading-relaxed">
-            {printingMessage.posterData ? (
-              <div className="flex flex-col items-center justify-center p-2">
-                <img
-                  src={printingMessage.posterData.imageDataUrl || printingMessage.posterData.backgroundDataUrl}
-                  alt={printingMessage.posterData.title}
-                  className="max-h-[850px] w-auto object-contain rounded-xl shadow-md border border-slate-300"
-                />
-              </div>
-            ) : (
-              <AiMarkdownContent content={printingMessage.content} />
-            )}
-          </div>
-
-          {/* Institutional Print Footer */}
-          <div className="border-t border-slate-200 mt-8 pt-3 text-center text-[10px] text-slate-400">
-            Printed via MadrasaNexa Smart AI Copilot • Zero-Storage RAM-Only Verification
           </div>
         </div>
       )}

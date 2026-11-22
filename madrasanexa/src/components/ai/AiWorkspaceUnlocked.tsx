@@ -497,32 +497,6 @@ export default function AiWorkspaceUnlocked({
 
   return (
     <div className="max-w-4xl mx-auto h-[calc(100dvh-5.5rem)] min-h-[520px] flex flex-col overflow-hidden pb-1 sm:pb-2 relative">
-      {/* Hidden File Input for PDF uploads */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/pdf,.pdf"
-        className="sr-only fixed -top-96 -left-96 opacity-0 pointer-events-none"
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) {
-            const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
-            if (!isPdf) {
-              alert('Please select a valid PDF file.');
-              return;
-            }
-            if (f.size > 25 * 1024 * 1024) {
-              alert('PDF file must not exceed 25 MB.');
-              return;
-            }
-            setAttachedFile(f);
-          }
-          e.target.value = '';
-        }}
-      />
-
       {/* Top Workspace Header Bar (Responsive 2-Row Layout on 345px Mobile) */}
       <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3">
         {/* Row 1: Bot Avatar + Title + Active Tenant Badge */}
@@ -772,6 +746,32 @@ export default function AiWorkspaceUnlocked({
 
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
               <div className="flex items-center gap-1 min-w-0">
+                {/* Inline Hidden File Input for PDF uploads (zero focus-scroll) */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  tabIndex={-1}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                      if (!isPdf) {
+                        alert('Please select a valid PDF file.');
+                        return;
+                      }
+                      if (f.size > 25 * 1024 * 1024) {
+                        alert('PDF file must not exceed 25 MB.');
+                        return;
+                      }
+                      setAttachedFile(f);
+                    }
+                    e.target.value = '';
+                  }}
+                />
+
                 <button
                   type="button"
                   onClick={(e) => {

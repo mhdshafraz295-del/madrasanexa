@@ -178,6 +178,22 @@ export default function AiShowcaseLocked({
   const isPending = latestRequest?.status === 'PENDING';
   const isRejected = latestRequest?.status === 'REJECTED';
 
+  // Gentle background poll when subscription request is pending verification (auto-pauses if user interacts)
+  useEffect(() => {
+    if (!isPending) return;
+    if (receiptFile || transactionRef.trim() || submitting || showResubmitForm) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      if (!receiptFile && !transactionRef.trim() && !submitting) {
+        onRefresh();
+      }
+    }, 25000);
+
+    return () => clearInterval(interval);
+  }, [isPending, receiptFile, transactionRef, submitting, showResubmitForm, onRefresh]);
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 pb-12 relative">
       {/* Component-scoped GPU-accelerated Keyframe Styles */}
@@ -789,7 +805,7 @@ export default function AiShowcaseLocked({
                     id="receipt-upload"
                     accept="image/png,image/jpeg,image/webp,application/pdf,.pdf"
                     onChange={handleFileChange}
-                    className="sr-only fixed -top-96 -left-96 opacity-0 pointer-events-none"
+                    className="hidden"
                     tabIndex={-1}
                     onClick={(e) => e.stopPropagation()}
                   />

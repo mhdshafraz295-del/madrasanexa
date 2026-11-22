@@ -137,7 +137,19 @@ export default function GlobalAiCopilotDrawer() {
   const fetchStatus = useCallback(async () => {
     try {
       const data = await teacherAiService.getAiStatus();
-      setStatusData(data);
+      setStatusData((prev) => {
+        if (!prev) return data;
+        const prevActive = prev.isActive !== undefined ? prev.isActive : (prev.aiEnabled && !prev.isExpired);
+        const newActive = data.isActive !== undefined ? data.isActive : (data.aiEnabled && !data.isExpired);
+        if (
+          prevActive === newActive &&
+          prev.aiEnabled === data.aiEnabled &&
+          prev.isExpired === data.isExpired
+        ) {
+          return prev;
+        }
+        return data;
+      });
       setLoadingStatus(false);
     } catch {
       setLoadingStatus(false);
@@ -147,13 +159,14 @@ export default function GlobalAiCopilotDrawer() {
   useEffect(() => {
     fetchStatus();
 
-    // Re-check live AI status on window focus (e.g., when Super Admin disabled AI in another tab)
+    // Re-check live AI status on window focus (never wipe attached file or generating session)
     const handleFocus = () => {
+      if (attachedFile || isGenerating) return;
       fetchStatus();
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, [fetchStatus, location.pathname]);
+  }, [fetchStatus, location.pathname, attachedFile, isGenerating]);
 
   // Re-check AI entitlement whenever the slide-over Copilot drawer opens
   useEffect(() => {
@@ -510,32 +523,6 @@ export default function GlobalAiCopilotDrawer() {
 
   return (
     <>
-      {/* Hidden File Input for in-memory PDF uploads */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/pdf,.pdf"
-        className="sr-only fixed -top-96 -left-96 opacity-0 pointer-events-none"
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) {
-            const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
-            if (!isPdf) {
-              alert('Please select a valid PDF file.');
-              return;
-            }
-            if (f.size > 25 * 1024 * 1024) {
-              alert('PDF file must not exceed 25 MB.');
-              return;
-            }
-            setAttachedFile(f);
-          }
-          e.target.value = '';
-        }}
-      />
-
       {/* ========================================================================= */}
       {/* 1. PERSISTENT FLOATING 3D AI ROBOT ORB (HIDDEN ON DEDICATED AI PAGE)       */}
       {/* ========================================================================= */}
@@ -920,6 +907,32 @@ export default function GlobalAiCopilotDrawer() {
 
                       <div className="pt-1.5 border-t border-slate-200/60 flex items-center justify-between gap-1 flex-nowrap overflow-x-hidden">
                         <div className="flex items-center gap-1 min-w-0">
+                          {/* Inline Hidden File Input for in-memory PDF uploads (zero focus-scroll) */}
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="application/pdf,.pdf"
+                            className="hidden"
+                            tabIndex={-1}
+                            onClick={(e) => e.stopPropagation()}
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) {
+                                const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                                if (!isPdf) {
+                                  alert('Please select a valid PDF file.');
+                                  return;
+                                }
+                                if (f.size > 25 * 1024 * 1024) {
+                                  alert('PDF file must not exceed 25 MB.');
+                                  return;
+                                }
+                                setAttachedFile(f);
+                              }
+                              e.target.value = '';
+                            }}
+                          />
+
                           <button
                             type="button"
                             onClick={(e) => {

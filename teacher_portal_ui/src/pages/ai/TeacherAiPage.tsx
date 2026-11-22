@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Sparkles,
   Lock,
@@ -213,9 +213,11 @@ function AiPosterReveal({
 // Teacher AI Page Main Component
 // =========================================================================
 export default function TeacherAiPage() {
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [statusData, setStatusData] = useState<AiStatusResponse | null>(null);
+  const statusDataRef = useRef<AiStatusResponse | null>(null);
+  statusDataRef.current = statusData;
 
   // Conversational Copilot State
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -236,30 +238,49 @@ export default function TeacherAiPage() {
     }
   }, [messages, isGenerating]);
 
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent && !statusDataRef.current) {
+        setInitialLoading(true);
+      }
       setError(null);
       const res = await teacherAiService.getAiStatus();
-      setStatusData(res);
+      setStatusData((prev) => {
+        if (!prev) return res;
+        const prevActive = prev.isActive !== undefined ? prev.isActive : (prev.aiEnabled && !prev.isExpired);
+        const newActive = res.isActive !== undefined ? res.isActive : (res.aiEnabled && !res.isExpired);
+
+        if (
+          prevActive === newActive &&
+          prev.aiEnabled === res.aiEnabled &&
+          prev.isExpired === res.isExpired
+        ) {
+          return prev;
+        }
+        return res;
+      });
     } catch (err: any) {
       console.error('Failed to load AI status:', err);
-      setError(err.message || 'Failed to load AI Assistant.');
+      if (!statusDataRef.current) {
+        setError(err.message || 'Failed to load AI Assistant.');
+      }
     } finally {
-      setLoading(false);
+      setInitialLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadStatus();
+    loadStatus(false);
 
-    // Re-check live status on window focus (e.g., when Super Admin disables AI in another tab)
+    // Silent re-check on window focus (never unmount or wipe staged file)
     const handleFocus = () => {
-      loadStatus();
+      // Never poll while user has a staged file or is generating
+      if (attachedFile || isGenerating) return;
+      loadStatus(true);
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+  }, [loadStatus, attachedFile, isGenerating]);
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputPrompt(e.target.value);
@@ -616,7 +637,7 @@ export default function TeacherAiPage() {
     summarizer: { label: '⚡ PDF Summarizer', icon: <Layers className="w-3.5 h-3.5 text-teal-400" /> },
   };
 
-  if (loading) {
+  if (initialLoading && !statusData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[450px] space-y-3">
         <RefreshCw className="w-8 h-8 text-[#37C6A3] animate-spin" />
@@ -630,9 +651,9 @@ export default function TeacherAiPage() {
       <div className="max-w-xl mx-auto my-12 bg-white rounded-3xl p-8 border border-red-200 text-center shadow-xs">
         <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
         <h3 className="text-base font-bold text-[#0F172A]">Unable to Load AI Assistant</h3>
-        <p className="text-xs text-[#7C8A9A] mt-1.5">{error || 'Unknown error occurred.'}</p>
+        <p className="text-xs text-[#7C8A9A] mt-1.5">{error || 'Unable to retrieve AI Assistant status.'}</p>
         <button
-          onClick={loadStatus}
+          onClick={() => loadStatus(false)}
           className="mt-5 px-5 py-2.5 min-h-[44px] text-xs font-bold text-white bg-[#0F172A] rounded-xl hover:bg-[#1E293B] transition cursor-pointer inline-flex items-center justify-center"
         >
           Try Again
@@ -882,32 +903,6 @@ export default function TeacherAiPage() {
   // ==========================================
   return (
     <div id="teacher-workspace-top" className="max-w-4xl mx-auto h-[calc(100dvh-5.5rem)] min-h-[520px] flex flex-col overflow-hidden pb-1 sm:pb-2 relative">
-      {/* Hidden File Input for PDF uploads */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="application/pdf,.pdf"
-        className="sr-only fixed -top-96 -left-96 opacity-0 pointer-events-none"
-        tabIndex={-1}
-        onClick={(e) => e.stopPropagation()}
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) {
-            const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
-            if (!isPdf) {
-              alert('Please select a valid PDF file.');
-              return;
-            }
-            if (f.size > 25 * 1024 * 1024) {
-              alert('PDF file must not exceed 25 MB.');
-              return;
-            }
-            setAttachedFile(f);
-          }
-          e.target.value = '';
-        }}
-      />
-
       {/* Top Workspace Header Bar (Responsive 2-Row Stack on Mobile 345px) */}
       <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3">
         {/* Row 1: Bot Avatar + Title + Active Tenant Badge */}
@@ -948,7 +943,7 @@ export default function TeacherAiPage() {
             )}
 
             <button
-              onClick={loadStatus}
+              onClick={() => loadStatus(false)}
               className="p-1.5 sm:p-2 min-h-[34px] min-w-[34px] sm:min-h-[38px] sm:min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] rounded-xl border border-[#E7E9EE] bg-white transition cursor-pointer flex items-center justify-center shrink-0"
               title="Refresh Status"
             >
@@ -1155,6 +1150,32 @@ export default function TeacherAiPage() {
 
             <div className="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1.5 flex-nowrap overflow-x-hidden">
               <div className="flex items-center gap-1 min-w-0">
+                {/* Inline Hidden File Input for PDF uploads (zero focus-scroll) */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  tabIndex={-1}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) {
+                      const isPdf = f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf');
+                      if (!isPdf) {
+                        alert('Please select a valid PDF file.');
+                        return;
+                      }
+                      if (f.size > 25 * 1024 * 1024) {
+                        alert('PDF file must not exceed 25 MB.');
+                        return;
+                      }
+                      setAttachedFile(f);
+                    }
+                    e.target.value = '';
+                  }}
+                />
+
                 <button
                   type="button"
                   onClick={(e) => {

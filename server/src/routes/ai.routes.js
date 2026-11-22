@@ -13,7 +13,7 @@ const memoryUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 25 * 1024 * 1024, // 25 MB limit for syllabus PDFs
-    files: 1,
+    files: 5,
   },
   fileFilter: (req, file, cb) => {
     const mime = (file.mimetype || '').toLowerCase();
@@ -50,6 +50,12 @@ const handlePdfUpload = (req, res, next) => {
           message: 'PDF file exceeds the 25 MB limit. Please upload a smaller document.',
         });
       }
+      if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Too many files uploaded. Please upload a single PDF document.',
+        });
+      }
       return res.status(400).json({
         success: false,
         message: err.message || 'PDF upload error.',
@@ -77,7 +83,7 @@ const receiptUpload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 25 * 1024 * 1024, // 25 MB limit for receipts
-    files: 1,
+    files: 5,
   },
   fileFilter: (req, file, cb) => {
     const mime = (file.mimetype || '').toLowerCase();
@@ -114,6 +120,12 @@ const handleReceiptUpload = (req, res, next) => {
         return res.status(400).json({
           success: false,
           message: 'Receipt file exceeds the 25 MB limit. Please upload a smaller image or PDF.',
+        });
+      }
+      if (err.code === 'LIMIT_FILE_COUNT') {
+        return res.status(400).json({
+          success: false,
+          message: 'Too many files uploaded. Please upload a single receipt image or PDF.',
         });
       }
       return res.status(400).json({

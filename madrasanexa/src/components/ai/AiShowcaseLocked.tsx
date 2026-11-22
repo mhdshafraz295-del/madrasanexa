@@ -159,8 +159,6 @@ export default function AiShowcaseLocked({
       formData.append('amount', String(amountToSend));
       formData.append('transactionRef', transactionRef.trim());
       formData.append('receipt', receiptFile);
-      formData.append('file', receiptFile);
-      formData.append('slip', receiptFile);
 
       await aiService.submitSubscriptionReceipt(formData);
       setSuccessMsg('Receipt submitted successfully! Super Admin will review and activate your subscription.');

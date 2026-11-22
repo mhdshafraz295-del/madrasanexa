@@ -103,10 +103,7 @@ export function resolveAllowedOrigins(config = env) {
     origins.add(String(config.FRONTEND_URL).trim().replace(/\/+$/, ''));
   }
 
-  // 3. Known deployment origins (e.g. Teacher Portal on Railway)
-  origins.add('https://intuitive-integrity-production-97da886d.up.railway.app');
-
-  // 4. Localhost development environments only
+  // 3. Localhost development environments only
   if (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') {
     origins.add('http://localhost:5173');
     origins.add('http://127.0.0.1:5173');
@@ -119,6 +116,9 @@ export function resolveAllowedOrigins(config = env) {
 
 // Secure Multi-Origin CORS configuration
 const allowedOrigins = resolveAllowedOrigins(env);
+const defaultTrustedOrigins = [
+  'https://intuitive-integrity-production-97da886d.up.railway.app',
+];
 
 app.use(
   cors({
@@ -128,7 +128,7 @@ app.use(
         return callback(null, true);
       }
       const normalizedOrigin = origin.replace(/\/+$/, '');
-      if (allowedOrigins.includes(normalizedOrigin)) {
+      if (allowedOrigins.includes(normalizedOrigin) || defaultTrustedOrigins.includes(normalizedOrigin)) {
         callback(null, true);
       } else {
         callback(new Error(`CORS policy does not allow access from origin: ${origin}`));

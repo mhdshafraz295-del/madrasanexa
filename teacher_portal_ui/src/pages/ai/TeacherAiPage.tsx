@@ -830,45 +830,46 @@ export default function TeacherAiPage() {
             </div>
           </div>
 
-          {/* 3D AI Robot Mascot (Waving) Floating on Hero Banner */}
-          <div className="absolute right-3 sm:right-8 lg:right-12 top-1/2 -translate-y-1/2 z-20 pointer-events-none select-none">
-            <div className="w-22 sm:w-28 lg:w-36 drop-shadow-2xl">
-              <AiRobotMascot variant="wave" className="w-full h-auto" />
-            </div>
-          </div>
-
-          <div className="relative z-10 max-w-xl sm:max-w-2xl">
-            {/* Shimmer Sweep Badge */}
-            <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
-              <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-              <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
-              <span className="relative z-10">MadrasaNexa Ustadh Smart AI</span>
-              <span className="text-slate-400 relative z-10">|</span>
-              <span className="flex items-center gap-1 text-slate-300 relative z-10">
-                <Lock className="w-3 h-3 text-amber-400" />
-                Locked Preview
-              </span>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
-              Your Islamic Teaching & Exam Preparation <span className="text-[#37C6A3]">Copilot</span>
-            </h1>
-
-            <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
-              Design structured term examinations, generate 30-minute interactive lesson plans with blackboard summaries,
-              create event announcement posters, and translate materials in Tamil, Arabic, and English.
-            </p>
-
-            <div
-              id="teacher-ai-notice"
-              className="mt-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-3 scroll-mt-6"
-            >
-              <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
-                at the institutional level. Please contact your Madrasa Administrator to activate the subscription
-                from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
+          {/* Responsive Flex Hero Layout: Content first, 3D Mascot stacked cleanly below on mobile (360px+) */}
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="w-full md:max-w-xl lg:max-w-2xl flex-1">
+              {/* Shimmer Sweep Badge */}
+              <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
+                <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+                <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
+                <span className="relative z-10">MadrasaNexa Ustadh Smart AI</span>
+                <span className="text-slate-400 relative z-10">|</span>
+                <span className="flex items-center gap-1 text-slate-300 relative z-10">
+                  <Lock className="w-3 h-3 text-amber-400" />
+                  Locked Preview
+                </span>
               </div>
+
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+                Your Islamic Teaching & Exam Preparation <span className="text-[#37C6A3]">Copilot</span>
+              </h1>
+
+              <p className="mt-3 text-xs sm:text-sm text-slate-300 leading-relaxed max-w-2xl">
+                Design structured term examinations, generate 30-minute interactive lesson plans with blackboard summaries,
+                create event announcement posters, and translate materials in Tamil, Arabic, and English.
+              </p>
+
+              <div
+                id="teacher-ai-notice"
+                className="mt-6 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-start gap-3 scroll-mt-6"
+              >
+                <Lock className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Subscription Required for Your Madrasa:</span> AI Assistant is activated
+                  at the institutional level. Please contact your Madrasa Administrator to activate the subscription
+                  from the Admin Dashboard. All Ustadhs receive instant full access upon Super Admin approval.
+                </div>
+              </div>
+            </div>
+
+            {/* 3D AI Robot Mascot (Waving): Centered & Cleanly Stacked Below on Mobile, On Right on Desktop */}
+            <div className="shrink-0 w-28 sm:w-32 md:w-36 lg:w-40 mt-4 md:mt-0 mx-auto md:mx-0 flex justify-center items-center pointer-events-none select-none drop-shadow-2xl">
+              <AiRobotMascot variant="wave" className="w-full h-auto" />
             </div>
           </div>
         </div>

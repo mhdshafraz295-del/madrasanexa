@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Lock,
@@ -22,6 +22,7 @@ import {
   Mic,
   Award,
   Layers,
+  Trash2,
 } from 'lucide-react';
 import { aiService, type AiStatusResponse } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
@@ -43,11 +44,26 @@ export default function AiShowcaseLocked({
   const [transactionRef, setTransactionRef] = useState('');
   const [customAmount, setCustomAmount] = useState<string>('');
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreviewUrl, setReceiptPreviewUrl] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showResubmitForm, setShowResubmitForm] = useState(false);
+
+  useEffect(() => {
+    if (!receiptFile) {
+      setReceiptPreviewUrl(null);
+      return;
+    }
+    if (receiptFile.type.startsWith('image/')) {
+      const url = URL.createObjectURL(receiptFile);
+      setReceiptPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setReceiptPreviewUrl(null);
+    }
+  }, [receiptFile]);
 
   const monthlyPrice = settings?.monthlyPrice || 2500;
   const yearlyPrice = settings?.yearlyPrice || 25000;
@@ -66,10 +82,24 @@ export default function AiShowcaseLocked({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setErrorMsg('File exceeds 5MB size limit. Please upload a smaller image or PDF.');
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+      const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.pdf'];
+      const fileNameLower = file.name.toLowerCase();
+      const isValidExt = allowedExts.some((ext) => fileNameLower.endsWith(ext));
+      const isValidType = allowedTypes.includes(file.type) || file.type.startsWith('image/') || isValidExt;
+
+      if (!isValidType) {
+        setErrorMsg('Invalid file type. Please upload a PNG, JPG, WebP image or PDF document.');
+        e.target.value = '';
         return;
       }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setErrorMsg('File exceeds 5MB size limit. Please upload a smaller image or PDF receipt.');
+        e.target.value = '';
+        return;
+      }
+
       setReceiptFile(file);
       setErrorMsg(null);
     }
@@ -335,49 +365,50 @@ export default function AiShowcaseLocked({
           </div>
         </div>
 
-        {/* 3D AI Robot Mascot (Waving) Floating on Hero Banner */}
-        <div className="absolute right-3 sm:right-8 lg:right-14 top-1/2 -translate-y-1/2 z-20 pointer-events-none select-none">
-          <div className="w-22 sm:w-32 lg:w-40 drop-shadow-2xl">
+        {/* Responsive Flex Hero Layout: Content first, 3D Mascot stacked cleanly below on mobile (360px+) */}
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Hero Content Layer */}
+          <div className="w-full md:max-w-xl lg:max-w-2xl flex-1">
+            {/* Shimmer Sweep Badge */}
+            <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
+              <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
+              <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
+              <span className="relative z-10">MadrasaNexa Smart AI Assistant</span>
+              <span className="text-slate-400 relative z-10">|</span>
+              <span className="flex items-center gap-1 text-slate-300 relative z-10">
+                <Lock className="w-3 h-3 text-amber-400" />
+                Locked Preview
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+              Empower Your Madrasa With an <span className="text-[#37C6A3]">Intelligent Islamic Copilot</span>
+            </h1>
+
+            <p className="mt-3 sm:mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
+              Generate exam papers & answer keys in seconds, craft 30-minute structured Islamic lesson plans,
+              design event posters, and translate materials across Tamil, English, and Arabic.
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center gap-3 text-xs font-medium text-slate-300">
+              <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <ShieldCheck className="w-4 h-4 text-[#37C6A3]" />
+                <span>Zero-Storage In-Memory RAM Processing</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span>Powered by Cloudflare Workers AI</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <span>Unlimited Access for Admin & All Ustadhs</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 3D AI Robot Mascot (Waving): Centered & Cleanly Stacked Below on Mobile, On Right on Desktop */}
+          <div className="shrink-0 w-28 sm:w-32 md:w-36 lg:w-44 mt-4 md:mt-0 mx-auto md:mx-0 flex justify-center items-center pointer-events-none select-none drop-shadow-2xl">
             <AiRobotMascot variant="wave" className="w-full h-auto" />
-          </div>
-        </div>
-
-        {/* Hero Content Layer */}
-        <div className="relative z-10 max-w-xl sm:max-w-2xl lg:max-w-3xl">
-          {/* Shimmer Sweep Badge */}
-          <div className="relative overflow-hidden inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#37C6A3]/20 border border-[#37C6A3]/30 text-[#37C6A3] text-xs font-semibold mb-4 shadow-xs">
-            <span className="absolute inset-0 -translate-x-full animate-badge-shimmer bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
-            <Sparkles className="w-3.5 h-3.5 shrink-0 relative z-10" />
-            <span className="relative z-10">MadrasaNexa Smart AI Assistant</span>
-            <span className="text-slate-400 relative z-10">|</span>
-            <span className="flex items-center gap-1 text-slate-300 relative z-10">
-              <Lock className="w-3 h-3 text-amber-400" />
-              Locked Preview
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
-            Empower Your Madrasa With an <span className="text-[#37C6A3]">Intelligent Islamic Copilot</span>
-          </h1>
-
-          <p className="mt-3 sm:mt-4 text-sm sm:text-base text-slate-300 leading-relaxed">
-            Generate exam papers & answer keys in seconds, craft 30-minute structured Islamic lesson plans,
-            design event posters, and translate materials across Tamil, English, and Arabic.
-          </p>
-
-          <div className="mt-6 flex flex-wrap items-center gap-4 text-xs font-medium text-slate-300">
-            <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-              <ShieldCheck className="w-4 h-4 text-[#37C6A3]" />
-              <span>Zero-Storage In-Memory RAM Processing</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-              <Zap className="w-4 h-4 text-amber-400" />
-              <span>Powered by Cloudflare Workers AI</span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Unlimited Access for Admin & All Ustadhs</span>
-            </div>
           </div>
         </div>
       </div>
@@ -1064,40 +1095,137 @@ export default function AiShowcaseLocked({
                   Bank Payment Receipt Slip (Image / PDF) <span className="text-red-500">*</span>
                 </label>
 
-                <div className="border-2 border-dashed border-[#E7E9EE] hover:border-[#37C6A3]/60 rounded-2xl p-6 text-center transition bg-[#F7F6F1]/50">
+                <div className="border-2 border-dashed border-[#E7E9EE] hover:border-[#37C6A3]/60 rounded-2xl p-4 sm:p-6 text-center transition bg-[#F7F6F1]/50">
                   <input
                     type="file"
                     id="receipt-upload"
-                    accept="image/jpeg,image/png,image/webp,application/pdf"
+                    accept="image/png,image/jpeg,image/webp,application/pdf,.pdf"
                     onChange={handleFileChange}
                     className="hidden"
                   />
-                  <label
-                    htmlFor="receipt-upload"
-                    className="cursor-pointer flex flex-col items-center justify-center min-h-[60px]"
-                  >
-                    <div className="w-12 h-12 rounded-2xl bg-white border border-[#E7E9EE] text-[#37C6A3] flex items-center justify-center mb-3 shadow-xs">
-                      <Upload className="w-6 h-6" />
-                    </div>
 
-                    {receiptFile ? (
-                      <div className="max-w-full overflow-hidden">
-                        <div className="text-xs font-bold text-[#0F172A] truncate px-2">{receiptFile.name}</div>
-                        <div className="text-[10px] text-[#7C8A9A] mt-0.5 font-mono">
-                          {(receiptFile.size / (1024 * 1024)).toFixed(2)} MB • Click to replace
+                  {receiptFile ? (
+                    <div className="w-full">
+                      {receiptFile.type === 'application/pdf' || receiptFile.name.toLowerCase().endsWith('.pdf') ? (
+                        /* Clean PDF Document Preview Card */
+                        <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-rose-100 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                          <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                            <div className="w-11 h-11 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                              <FileText className="w-6 h-6" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-700 uppercase tracking-wide">
+                                  PDF
+                                </span>
+                                <span className="text-xs font-bold text-[#0F172A] truncate block">
+                                  {receiptFile.name}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-[#7C8A9A] mt-0.5 font-mono">
+                                {receiptFile.size < 1024 * 1024
+                                  ? `${(receiptFile.size / 1024).toFixed(0)} KB`
+                                  : `${(receiptFile.size / (1024 * 1024)).toFixed(2)} MB`}{' '}
+                                • Ready for Super Admin review
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                            <label
+                              htmlFor="receipt-upload"
+                              className="px-3 py-1.5 min-h-[38px] text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Change</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setReceiptFile(null);
+                              }}
+                              className="px-3 py-1.5 min-h-[38px] text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Remove</span>
+                            </button>
+                          </div>
                         </div>
+                      ) : (
+                        /* Clean Image Preview Card */
+                        <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-emerald-100 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                          <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                            {receiptPreviewUrl ? (
+                              <img
+                                src={receiptPreviewUrl}
+                                alt="Receipt Preview"
+                                className="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-100 text-[#37C6A3] flex items-center justify-center shrink-0">
+                                <ImageIcon className="w-6 h-6" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-700 uppercase tracking-wide">
+                                  IMAGE
+                                </span>
+                                <span className="text-xs font-bold text-[#0F172A] truncate block">
+                                  {receiptFile.name}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-[#7C8A9A] mt-0.5 font-mono">
+                                {receiptFile.size < 1024 * 1024
+                                  ? `${(receiptFile.size / 1024).toFixed(0)} KB`
+                                  : `${(receiptFile.size / (1024 * 1024)).toFixed(2)} MB`}{' '}
+                                • Ready for Super Admin review
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto justify-end">
+                            <label
+                              htmlFor="receipt-upload"
+                              className="px-3 py-1.5 min-h-[38px] text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Change</span>
+                            </label>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setReceiptFile(null);
+                              }}
+                              className="px-3 py-1.5 min-h-[38px] text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Remove</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="receipt-upload"
+                      className="cursor-pointer flex flex-col items-center justify-center min-h-[60px]"
+                    >
+                      <div className="w-12 h-12 rounded-2xl bg-white border border-[#E7E9EE] text-[#37C6A3] flex items-center justify-center mb-3 shadow-xs">
+                        <Upload className="w-6 h-6" />
                       </div>
-                    ) : (
-                      <div>
-                        <div className="text-xs font-bold text-[#0F172A]">
-                          Click to upload bank transfer slip or drag & drop
-                        </div>
-                        <div className="text-[10px] text-[#7C8A9A] mt-1">
-                          Supports PNG, JPG, WebP, PDF (Max 5 MB)
-                        </div>
+                      <div className="text-xs font-bold text-[#0F172A]">
+                        Click to upload bank transfer slip or drag & drop
                       </div>
-                    )}
-                  </label>
+                      <div className="text-[10px] text-[#7C8A9A] mt-1 font-medium">
+                        Supports PNG, JPG, WebP, PDF (Max 5 MB)
+                      </div>
+                    </label>
+                  )}
                 </div>
               </div>
 

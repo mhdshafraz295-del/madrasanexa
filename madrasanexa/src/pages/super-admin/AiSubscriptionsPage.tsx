@@ -14,6 +14,7 @@ import {
   X,
   Landmark,
   Save,
+  FileText,
 } from 'lucide-react';
 import { aiService, type AiSubscriptionRequestItem, type PlatformAiSettings } from '../../services/ai.service';
 import { apiClient } from '../../services/api';
@@ -731,28 +732,45 @@ export default function SuperAdminAiSubscriptionsPage() {
               </button>
             </div>
 
-            <div className="p-4 overflow-y-auto flex-1 flex items-center justify-center bg-slate-950/5">
-              {selectedReceipt.receiptUrl?.toLowerCase().endsWith('.pdf') ? (
-                <div className="text-center p-6 sm:p-8">
-                  <Receipt className="w-16 h-16 text-[#37C6A3] mx-auto mb-3" />
-                  <p className="text-xs font-bold text-[#0F172A] mb-3">PDF Document Receipt</p>
-                  <a
-                    href={selectedReceipt.receiptUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="px-4 py-2.5 min-h-[44px] bg-[#0F172A] text-white text-xs font-bold rounded-xl inline-flex items-center gap-1.5 shadow-xs"
-                  >
-                    <span>Open PDF in New Tab</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              ) : (
-                <img
-                  src={selectedReceipt.receiptUrl}
-                  alt="Receipt Slip"
-                  className="max-h-[60vh] w-auto max-w-full object-contain rounded-xl shadow-xs"
-                />
-              )}
+            <div className="p-4 overflow-y-auto flex-1 flex flex-col items-center justify-center bg-slate-950/5">
+              {(() => {
+                const url = selectedReceipt.receiptUrl || '';
+                const key = (selectedReceipt as any).receiptKey || '';
+                const cleanUrl = url.split('?')[0].toLowerCase();
+                const isPdf = cleanUrl.endsWith('.pdf') || key.toLowerCase().endsWith('.pdf') || cleanUrl.includes('.pdf');
+
+                if (isPdf) {
+                  return (
+                    <div className="w-full flex flex-col items-center gap-3">
+                      <div className="w-full h-[55vh] max-h-[500px] rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-xs">
+                        <iframe
+                          src={selectedReceipt.receiptUrl}
+                          title="PDF Bank Receipt Preview"
+                          className="w-full h-full border-0"
+                        />
+                      </div>
+                      <a
+                        href={selectedReceipt.receiptUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-4 py-2.5 min-h-[44px] bg-[#0F172A] hover:bg-[#1E293B] text-white text-xs font-bold rounded-xl inline-flex items-center gap-2 shadow-xs transition"
+                      >
+                        <FileText className="w-4 h-4 text-[#37C6A3]" />
+                        <span>Open / Download PDF Receipt</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  );
+                }
+
+                return (
+                  <img
+                    src={selectedReceipt.receiptUrl}
+                    alt="Receipt Slip"
+                    className="max-h-[60vh] w-auto max-w-full object-contain rounded-xl shadow-xs"
+                  />
+                );
+              })()}
             </div>
 
             <div className="p-4 border-t border-[#E7E9EE] bg-[#F7F6F1] flex items-center justify-between gap-2">
@@ -760,7 +778,7 @@ export default function SuperAdminAiSubscriptionsPage() {
                 href={selectedReceipt.receiptUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs font-semibold text-[#0F172A] hover:underline flex items-center gap-1 min-h-[44px] items-center"
+                className="text-xs font-semibold text-[#0F172A] hover:underline flex items-center gap-1.5 min-h-[44px]"
               >
                 <span>Download Original</span>
                 <ExternalLink className="w-3.5 h-3.5" />

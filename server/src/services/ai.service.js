@@ -70,7 +70,8 @@ export async function validateAiReceiptBuffer(fileBuffer, originalName = '') {
   let ext = 'bin';
   let mimeType = 'application/octet-stream';
 
-  if (fileBuffer.length >= 4 && fileBuffer.slice(0, 4).toString('ascii') === '%PDF') {
+  const asciiHeader = fileBuffer.slice(0, 1024).toString('ascii');
+  if (asciiHeader.includes('%PDF')) {
     ext = 'pdf';
     mimeType = 'application/pdf';
   } else if (fileBuffer[0] === 0xff && fileBuffer[1] === 0xd8 && fileBuffer[2] === 0xff) {
@@ -91,6 +92,9 @@ export async function validateAiReceiptBuffer(fileBuffer, originalName = '') {
   ) {
     ext = 'webp';
     mimeType = 'image/webp';
+  } else if (nameLower.endsWith('.pdf')) {
+    ext = 'pdf';
+    mimeType = 'application/pdf';
   } else {
     throw new BadRequestError('Unsupported file format. Please upload a valid JPG, PNG, WebP image or PDF document.');
   }

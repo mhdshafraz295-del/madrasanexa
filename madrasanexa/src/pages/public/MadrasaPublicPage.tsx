@@ -129,6 +129,9 @@ export const MadrasaPublicPage: React.FC = () => {
         activeIntakeCount={profile.activeAdmissionPeriods?.length || 0}
       />
 
+      {/* 1.5. Live Hijri Date & Sacred Knowledge Wisdom Strip */}
+      <MadrasaPublicKnowledgeStrip theme={theme} />
+
       {/* 2. Institutional Hero Section */}
       <MadrasaPublicHero
         slug={slug!}
@@ -141,9 +144,6 @@ export const MadrasaPublicPage: React.FC = () => {
         activeIntakeName={firstActiveIntake?.name}
         activeAcademicYear={firstActiveIntake?.academicYear}
       />
-
-      {/* 2.5. Live Hijri Date & Sacred Knowledge Wisdom Strip */}
-      <MadrasaPublicKnowledgeStrip theme={theme} />
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12 sm:space-y-16 w-full">

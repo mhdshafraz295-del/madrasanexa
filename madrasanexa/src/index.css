@@ -1027,38 +1027,8 @@ html.dark body {
   animation: noorShimmer 6s ease-in-out infinite;
 }
 
-@keyframes starTwinkle {
-  0%, 100% {
-    opacity: 0.2;
-    transform: scale(0.85);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.25);
-  }
-}
-
-@keyframes moonFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-8px) rotate(-2deg);
-  }
-}
-
-.animate-star-twinkle {
-  animation: starTwinkle 3s ease-in-out infinite;
-}
-
-.animate-moon-float {
-  animation: moonFloat 8s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .animate-noor-shimmer,
-  .animate-star-twinkle,
-  .animate-moon-float {
+  .animate-noor-shimmer {
     animation: none !important;
     transform: none !important;
   }

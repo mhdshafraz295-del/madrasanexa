@@ -1330,6 +1330,13 @@ export const getUniversalAiInstructions = () => `
    - Current Date: ${new Date().toDateString()}.
    - Ground all time-sensitive references in the dynamic system date. Real-world facts and current events are fetched dynamically via live Google Search.
 
+[STRICT ISLAMIC MADRASA & MAKTAB INSTITUTIONAL CONTEXT]
+1. ZERO TOLERANCE FOR NON-ISLAMIC / SECULAR INSTITUTION EXAMPLES:
+   - You are the official AI Assistant dedicated exclusively to Islamic Madrasas, Maktabs, and Muslim Educational Institutions.
+   - STRICT PROHIBITION: NEVER generate, reference, or use non-Islamic, secular, or Christian school/office examples (such as "St. Xavier's High School", "Tarang Cultural Fest", "ABC Tech Solutions Pvt Ltd", "Rohan Sharma", "Priya Nair", etc.)!
+   - NEVER output raw bracketed fill-in-the-blank placeholders like "[NAME OF THE ORGANIZATION / SCHOOL / COMPANY]", "[LOCATION / CITY]", "[Your Signature]".
+   - ALL notices, circulars, speeches, worksheets, and correspondence must be authentically and beautifully crafted for Islamic Madrasas with Bismillah (بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ), Islamic greetings, Hijri/Gregorian dates, Sunnah etiquette, Du'as, and Islamic administration sign-offs.
+
 [UNIVERSAL TANGLISH (SPOKEN TAMIL IN ENGLISH SCRIPT) COMPREHENSION & NATURAL RESPONSE RULES]
 1. UNIVERSAL TANGLISH UNDERSTANDING:
    - Users frequently type spoken Tamil using English letters (Tanglish) across all topics, for example:
@@ -1969,13 +1976,51 @@ export async function chatWithCopilot({
   // Detect explicit target language instructions in prompt (e.g. "tamil la tha", "in english", "arabic la")
   const { cleanedText: userPrompt, targetLanguage: resolvedLanguage } = detectAndStripLanguageInstruction(cleanMessage, language);
 
+  // Detect if user is specifically requesting a parent notice / circular
+  const NOTICE_INTENT_REGEX = /\b(?:notic|notice|circular|parent\s+notice|parent\s+circular|leave\s+notice|holiday\s+notice|announcement)\b/i;
+  const isNoticeRequest = mode === 'circular' || NOTICE_INTENT_REGEX.test(cleanMessage);
+  const activeMode = isNoticeRequest ? 'circular' : mode;
+
+  const isGenericNotice = /^(?:i\s+need\s+notic(?:e)?|notic(?:e)?|parent\s+circular|parent\s+notic(?:e)?|circular|write\s+a\s+notic(?:e)?|make\s+a\s+notic(?:e)?|notic(?:e)?\s+onnu|circular\s+venum|leave\s+notic(?:e)?|circular\s+onnu|need\s+a\s+notic(?:e)?)[\s!.,?]*$/i.test(cleanMessage);
+
   // Mode-specific behavioral instructions to guarantee authentic output format
   let modeInstructions = '';
 
-  if (mode === 'circular') {
+  if (activeMode === 'circular') {
     modeInstructions = `
 [SPECIFIC TASK: OFFICIAL MADRASA PARENT CIRCULAR & NOTICE]
-You are drafting an official, ready-to-issue Madrasa Parent Notice / Circular.
+You are drafting an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'MadrasaNexa Islamic Academy'}.
+
+STRICT INSTITUTIONAL GUARDRAILS:
+1. NEVER output a generic fill-in-the-blank meta-template with bracketed placeholders like "[NAME OF THE ORGANIZATION]", "[LOCATION / CITY]", "[Your Signature]".
+2. NEVER output non-Islamic or secular school/office examples (such as "St. Xavier's High School", "Tarang 2026", "ABC Tech Solutions Pvt Ltd", "Rohan Sharma", "Priya Nair", etc.)!
+3. NEVER ask the user clarifying questions before providing a notice.
+
+${isGenericNotice ? `
+[CRITICAL INSTRUCTION FOR OPEN-ENDED NOTICE REQUEST ("${cleanMessage}")]
+The user requested an Official Madrasa Notice / Circular without specifying a custom topic.
+YOU MUST IMMEDIATELY OUTPUT A COMPLETE, ELEGANT, READY-TO-PRINT OFFICIAL MADRASA PARENT NOTICE ON A HIGH-PRIORITY MADRASA OCCASION (Upcoming Term Examinations & Special Revision Schedule):
+- Full Islamic Header:
+  * Institution Name: "${madrasaName || 'MadrasaNexa Islamic Academy'}"
+  * "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+  * Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+  * Ref: MNX/CIR/${new Date().getFullYear()}/042
+- Formal Islamic Salutation:
+  * "Assalamu Alaikum wa Rahmatullahi wa Barakatuh"
+  * "Respected Parents and Guardians,"
+- Clear, Dignified Subject:
+  * "**SUBJECT: IMPORTANT NOTICE — UPCOMING TERM EXAMINATIONS & REVISED ACADEMIC SCHEDULE**"
+- Circular Body:
+  * Warm opening thanking parents for their continuous dedication to their children's Islamic education.
+  * Clear exam schedule, reporting timings, examination duration, and subjects covered (Hifz Revision, Tajweed, Islamic Studies, Arabic).
+  * Bullet points for student preparation and parent responsibilities (punctual attendance, completing revision homework, maintaining Islamic Adab and dress code).
+- Closing:
+  * Heartfelt Du'a for the students and their families: "May Allah ﷻ grant our beloved students beneficial knowledge, success in this world and the Aakhirah, and make them the coolness of our eyes. Ameen."
+  * "JazakAllahu Khairan wa BarakAllahu Feekum,"
+  * Sign-off: "Principal / Examination Committee, ${madrasaName || 'MadrasaNexa Islamic Academy'}"
+- Conclude with a helpful 1-line note:
+  "💡 *Tip: If you would like a notice tailored to a different event (such as a Madrasa Holiday/Leave, Ramadan/Eid Schedule, Fee Reminder, or Jalsa Prize Day), simply reply with the topic and I will generate it immediately!*"
+` : `
 CLEAN NOTICE TOPIC EXTRACTION:
 - Mentally decode the user's Tanglish/English/Tamil request (e.g., if user writes "naalaikku madrasa leave notice onnu ezhuthu", extract the formal subject "மத்ரஸா விடுமுறை அறிவிப்பு / NOTICE OF SPECIAL MADRASA LEAVE").
 - NEVER echo raw colloquial Tanglish words into the notice header or subject line!
@@ -1996,8 +2041,9 @@ STRUCTURE & LAYOUT:
 5. CLOSING:
    - Heartfelt Du'a for the students and families ("May Allah ﷻ bless our children with beneficial knowledge...").
    - "JazakAllahu Khairan wa BarakAllahu Feekum,"
-   - Official Sign-off: "Principal / Madrasa Administration"
-CRITICAL: Do NOT generate a lesson plan, classroom objectives, or blackboard layout. This must be an administrative parent notice in ${resolvedLanguage}.`;
+   - Official Sign-off: "Principal / Madrasa Administration, ${madrasaName || 'MadrasaNexa Islamic Academy'}"
+`}
+Format strictly in clean, professional Markdown in ${resolvedLanguage} (if Tamil: formal dignified Tamil with authentic Islamic terms; if English: elegant English; if Arabic: authentic Arabic).`;
   } else if (mode === 'summarizer') {
     modeInstructions = `
 [SPECIFIC TASK: EXECUTIVE DOCUMENT & CHAPTER REVISION SUMMARY]
@@ -2126,9 +2172,18 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     }
   }
 
+  const isGenericSpeech = activeMode === 'speech' && /^(?:speech|bayan|speech\s+venum|bayan\s+script|bayan\s+speech|i\s+need\s+speech|assembly\s+speech)[\s!.,?]*$/i.test(cleanMessage);
+
+  let finalUserPrompt = userPrompt || cleanMessage || 'Please examine the attached document and provide an overview and key points.';
+  if (isGenericNotice) {
+    finalUserPrompt = `Please generate an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'our Madrasa'}.`;
+  } else if (isGenericSpeech) {
+    finalUserPrompt = `Please write an inspiring, ready-to-deliver 5-minute Madrasa Morning Assembly Speech on the Importance of Seeking Beneficial Knowledge and Practicing Noble Islamic Character (Akhlaq).`;
+  }
+
   messages.push({
     role: 'user',
-    content: userPrompt || cleanMessage || 'Please examine the attached document and provide an overview and key points.',
+    content: finalUserPrompt,
   });
 
   const { text, model } = await generateAiText({

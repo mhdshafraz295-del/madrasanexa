@@ -464,3 +464,44 @@ html.dark body {
   }
 }
 
+/* ==========================================================================
+   COMMUNITY GOVERNANCE BALLOT WIDGET ANIMATIONS
+   ========================================================================== */
+@keyframes pollGradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes pollShimmerSweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-poll-gradient {
+  background-size: 200% 200%;
+  animation: pollGradientShift 6s ease infinite;
+}
+
+.animate-poll-shimmer {
+  animation: pollShimmerSweep 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-poll-gradient,
+  .animate-poll-shimmer {
+    animation: none !important;
+  }
+}
+
+

@@ -6,6 +6,8 @@ import { AlertCircle } from 'lucide-react';
 import { resolvePublicTheme } from '../../components/madrasa-public/publicThemeHelper';
 import { MadrasaPublicNavbar } from '../../components/madrasa-public/MadrasaPublicNavbar';
 import { MadrasaPublicHero } from '../../components/madrasa-public/MadrasaPublicHero';
+import { MadrasaPublicKnowledgeStrip } from '../../components/madrasa-public/MadrasaPublicKnowledgeStrip';
+import { IslamicSectionDivider } from '../../components/common/IslamicSectionDivider';
 import { MadrasaPublicAbout } from '../../components/madrasa-public/MadrasaPublicAbout';
 import { MadrasaPublicMissionVision } from '../../components/madrasa-public/MadrasaPublicMissionVision';
 import { MadrasaPublicCurriculum } from '../../components/madrasa-public/MadrasaPublicCurriculum';
@@ -140,8 +142,11 @@ export const MadrasaPublicPage: React.FC = () => {
         activeAcademicYear={firstActiveIntake?.academicYear}
       />
 
+      {/* 2.5. Live Hijri Date & Sacred Knowledge Wisdom Strip */}
+      <MadrasaPublicKnowledgeStrip theme={theme} />
+
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20 space-y-20 sm:space-y-24 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12 sm:space-y-16 w-full">
 
         {/* 3. About Our Madrasa & Summary */}
         <MadrasaPublicAbout
@@ -151,12 +156,16 @@ export const MadrasaPublicPage: React.FC = () => {
           theme={theme}
         />
 
+        <IslamicSectionDivider />
+
         {/* 4. Guiding Purpose: Mission & Vision */}
         <MadrasaPublicMissionVision
           mission={profile.mission}
           vision={profile.vision}
           theme={theme}
         />
+
+        <IslamicSectionDivider />
 
         {/* 5. Academic Curriculum & Institutional Conduct */}
         <MadrasaPublicCurriculum
@@ -168,44 +177,61 @@ export const MadrasaPublicPage: React.FC = () => {
 
         {/* 6. Living Academic Statistics */}
         {profile.stats ? (
-          <MadrasaPublicStats
-            stats={profile.stats}
-            theme={theme}
-          />
+          <>
+            <IslamicSectionDivider />
+            <MadrasaPublicStats
+              stats={profile.stats}
+              theme={theme}
+            />
+          </>
         ) : null}
 
         {/* 7. Scholarly Faculty & Leadership */}
         {hasStaff && profile.staff ? (
-          <MadrasaPublicStaff
-            staff={profile.staff}
-            theme={theme}
-          />
+          <>
+            <IslamicSectionDivider />
+            <MadrasaPublicStaff
+              staff={profile.staff}
+              theme={theme}
+            />
+          </>
         ) : null}
 
         {/* 7.5. Undergraduate & Alumni Hub */}
         {hasAlumni ? (
-          <MadrasaPublicAlumni
-            madrasaCode={madrasa.code || slug!}
-            madrasaName={madrasa.name}
-            theme={theme}
-          />
+          <>
+            <IslamicSectionDivider />
+            <MadrasaPublicAlumni
+              madrasaCode={madrasa.code || slug!}
+              madrasaName={madrasa.name}
+              theme={theme}
+            />
+          </>
         ) : null}
 
         {/* 8. Upcoming Institutional Events */}
         {hasEvents ? (
-          <MadrasaPublicEvents
-            events={profile.events}
-            theme={theme}
-          />
+          <>
+            <IslamicSectionDivider />
+            <MadrasaPublicEvents
+              events={profile.events}
+              theme={theme}
+            />
+          </>
         ) : null}
 
         {/* 9. Institutional Circulars & Notices */}
         {hasNotices ? (
-          <MadrasaPublicNotices
-            notices={profile.notices}
-            theme={theme}
-          />
+          <>
+            <IslamicSectionDivider />
+            <MadrasaPublicNotices
+              notices={profile.notices}
+              theme={theme}
+            />
+          </>
         ) : null}
+
+        <IslamicSectionDivider />
 
         {/* 8. Admissions Callout Banner */}
         <MadrasaPublicAdmissionsCTA
@@ -215,6 +241,8 @@ export const MadrasaPublicPage: React.FC = () => {
           activeIntakeName={firstActiveIntake?.name}
           activeAcademicYear={firstActiveIntake?.academicYear}
         />
+
+        <IslamicSectionDivider />
 
         {/* 9. Contact Directory & Campus Location */}
         <MadrasaPublicContact

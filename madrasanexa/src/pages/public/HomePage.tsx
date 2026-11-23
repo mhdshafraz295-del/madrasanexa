@@ -19,6 +19,7 @@ import CTASection from '../../components/public/CTASection';
 import ContactSection from '../../components/public/ContactSection';
 import PublicFooter from '../../components/public/PublicFooter';
 import FloatingWhatsAppButton from '../../components/public/FloatingWhatsAppButton';
+import { IslamicSectionDivider } from '../../components/common/IslamicSectionDivider';
 import { Loader2, Eye, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -364,26 +365,40 @@ export default function HomePage({ previewMode = false, previewData = null }: Ho
       {/* 2. Architectural Trust Strip */}
       <TrustStrip items={content.trustStrip} />
 
+      <IslamicSectionDivider />
+
       {/* 2b. Product Showcase (Screenshot with Lightbox or Interactive Mockup) */}
       <ProductShowcaseSection productPreviewMedia={content.productPreviewMedia} />
+
+      <IslamicSectionDivider />
 
       {/* 3. Bento-Grid Features Section */}
       <FeaturesSection features={content.features} />
 
+      <IslamicSectionDivider />
+
       {/* 4. Connected Process Timeline */}
       <HowItWorksSection steps={content.howItWorks} />
+
+      <IslamicSectionDivider />
 
       {/* 5. Authoritative Pricing Plans */}
       <PricingSection plans={plans} />
 
+      <IslamicSectionDivider />
+
       {/* 6. Authoritative Global About Us Snapshot */}
       <AboutSection aboutUs={aboutUs} />
+
+      <IslamicSectionDivider />
 
       {/* 7. Security Architecture Pillars */}
       <SecuritySection data={content.security} />
 
       {/* 8. Dark Navy CTA Banner */}
       <CTASection data={content.cta} />
+
+      {contactHasData && <IslamicSectionDivider />}
 
       {/* 9. Contact Section (Gracefully omitted if empty) */}
       <ContactSection data={content.contact} />

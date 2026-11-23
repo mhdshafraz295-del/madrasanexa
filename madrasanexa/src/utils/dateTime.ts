@@ -47,6 +47,8 @@ export const COMMON_TIMEZONES = [
   { value: 'UTC', label: 'UTC (Coordinated Universal Time)', group: 'Universal' },
 ];
 
+export { formatHijriDate } from './hijriDate';
+
 /**
  * Checks if timezone is valid in browser Intl.
  */

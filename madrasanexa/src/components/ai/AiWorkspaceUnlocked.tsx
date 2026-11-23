@@ -109,7 +109,7 @@ function AiStreamedText({ text, onFinished }: { text: string; onFinished?: () =>
         </div>
       )}
 
-      <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed font-sans text-[#0F172A]">
+      <div className="prose prose-slate max-w-none text-xs sm:text-sm leading-relaxed font-sans text-[#0F172A] dark:text-gray-100 dark:prose-invert">
         <AiMarkdownContent content={text.slice(0, displayedLength)} />
         {!isComplete && (
           <span className="inline-block w-2 h-4 ml-1 bg-[#37C6A3] animate-pulse align-middle" />

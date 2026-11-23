@@ -732,7 +732,7 @@ export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adm
 
 /**
  * Helper to execute Google Gemini generation with native PDF inlineData support.
- * Targets gemini-2.5-flash with automatic fallback to gemini-1.5-flash.
+ * Targets gemini-2.5-flash with live Google Search grounding support and automatic fallback to gemini-1.5-flash.
  */
 async function callGeminiGenerateContent({
   prompt = '',
@@ -741,6 +741,7 @@ async function callGeminiGenerateContent({
   pdfBuffer = null,
   temperature = 0.3,
   maxOutputTokens = 8192,
+  enableSearchGrounding = false,
 }) {
   const apiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   if (!apiKey || !apiKey.trim()) {
@@ -824,7 +825,12 @@ async function callGeminiGenerateContent({
   };
 
   const currentDateStr = new Date().toDateString();
-  const temporalGrounding = `[TEMPORAL GROUNDING & CURRENT CONTEXT - YEAR 2026]\n- Current Date: ${currentDateStr} (Year: 2026).\n- Sri Lanka Institutional Grounding: Current year is 2026. Anura Kumara Dissanayake is the President of Sri Lanka (having won the September 2024 presidential election, succeeding Ranil Wickremesinghe). Ranil Wickremesinghe is NO LONGER President.\n- Breaking News / Real-time: If asked about breaking/real-time post-cutoff events you cannot verify live, state your knowledge cutoff honestly rather than stating outdated pre-2024 facts as current.\n\n`;
+  const temporalGrounding = `[TEMPORAL GROUNDING & CURRENT CONTEXT - YEAR 2026]
+- Current Date: ${currentDateStr} (Year: 2026).
+- Sri Lanka Institutional Grounding: Current year is 2026. Anura Kumara Dissanayake is the President of Sri Lanka (having won the September 2024 presidential election, succeeding Ranil Wickremesinghe). Dr. Harini Amarasuriya is Prime Minister of Sri Lanka. Ranil Wickremesinghe is NO LONGER President.
+- Tamil Nadu / India Grounding: C. Joseph Vijay (TVK) is the Chief Minister of Tamil Nadu (since May 2026).
+- Live Google Search Grounding: Gemini 2.5 Flash uses live Google Search Grounding to verify current real-world facts. Ground answers in verified 2026 facts.
+- Breaking News / Real-time: If asked about breaking/real-time post-cutoff events you cannot verify live, state your knowledge cutoff honestly rather than stating outdated pre-2024 facts as current.\n\n`;
 
   const finalSystemPrompt = systemPrompt && systemPrompt.trim()
     ? (systemPrompt.includes('Anura Kumara Dissanayake') ? systemPrompt.trim() : `${temporalGrounding}${systemPrompt.trim()}`)
@@ -839,6 +845,45 @@ async function callGeminiGenerateContent({
   let lastError = null;
 
   for (const model of models) {
+    // 1. If Google Search grounding is enabled and no binary PDF attachment is present, attempt with live search grounding
+    if (enableSearchGrounding && (!pdfBuffer || pdfBuffer.length === 0)) {
+      try {
+        const groundedBody = {
+          ...requestBody,
+          tools: [{ google_search: {} }],
+        };
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(groundedBody),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const candidate = data?.candidates?.[0];
+          const responseParts = candidate?.content?.parts || [];
+          const text = responseParts.map((p) => p.text || '').join('').trim();
+
+          if (text) {
+            return {
+              text,
+              model,
+              grounded: true,
+            };
+          }
+        } else {
+          const errText = await res.text();
+          console.warn(`[Gemini] Google Search grounding call failed on ${model} (${res.status}): ${errText.slice(0, 150)}. Retrying without search grounding...`);
+        }
+      } catch (groundErr) {
+        console.warn(`[Gemini] Google Search grounding error on ${model}:`, groundErr.message, '. Retrying without search grounding...');
+      }
+    }
+
+    // 2. Standard Gemini generation call (without search grounding)
     try {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey.trim()}`;
       const res = await fetch(url, {
@@ -878,7 +923,7 @@ async function callGeminiGenerateContent({
 
 /**
  * Master AI Generation Dispatcher:
- * 1. Tries Google Gemini (gemini-2.5-flash) first if GEMINI_API_KEY is configured.
+ * 1. Tries Google Gemini (gemini-2.5-flash with live search grounding) first if GEMINI_API_KEY is configured.
  * 2. Seamlessly falls back to Cloudflare Workers AI (@cf/meta/llama-3.3-70b-instruct-fp8-fast) if Gemini fails or is unconfigured.
  */
 async function generateAiText({
@@ -888,6 +933,7 @@ async function generateAiText({
   pdfBuffer = null,
   temperature = 0.3,
   maxTokens = 8192,
+  enableSearchGrounding = false,
 }) {
   const geminiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   if (geminiKey && geminiKey.trim()) {
@@ -899,6 +945,7 @@ async function generateAiText({
         pdfBuffer,
         temperature,
         maxOutputTokens: maxTokens,
+        enableSearchGrounding,
       });
       if (geminiRes?.text) {
         return geminiRes;
@@ -906,6 +953,8 @@ async function generateAiText({
     } catch (geminiErr) {
       console.warn('[AI Service] Gemini 2.5 Flash invocation error, falling back to Cloudflare Workers AI:', geminiErr.message);
     }
+  } else {
+    console.warn('[AI Service] GEMINI_API_KEY is not configured or missing from environment. Falling back to Cloudflare Workers AI.');
   }
 
   // Fallback to Cloudflare Workers AI
@@ -1088,15 +1137,17 @@ export const getUniversalAiInstructions = () => `
    - Current System Date: ${new Date().toDateString()} (Current Year: 2026).
    - All references to "this year", "current date", "today", or "upcoming academic terms" must be grounded in the reality of 2026.
 
-2. ACCURATE SRI LANKAN INSTITUTIONAL & POLITICAL GROUNDING:
+2. ACCURATE SRI LANKAN & REGIONAL INSTITUTIONAL GROUNDING:
    - Current Year: 2026.
    - President of Sri Lanka: Anura Kumara Dissanayake is the President of Sri Lanka (having won the September 2024 presidential election, succeeding Ranil Wickremesinghe).
    - Prime Minister of Sri Lanka: Dr. Harini Amarasuriya is the Prime Minister of Sri Lanka.
    - CRITICAL PROHIBITION: NEVER claim, imply, or hallucinate that Ranil Wickremesinghe, Gotabaya Rajapaksa, or Mahinda Rajapaksa is the current President or Head of State of Sri Lanka. Ranil Wickremesinghe's term ended in September 2024.
-   - In all civic, historical, general knowledge, or Madrasa circular contexts referencing Sri Lanka, use strictly accurate post-2024 / 2026 governance facts.
+   - Chief Minister of Tamil Nadu (India): C. Joseph Vijay (TVK) is the Chief Minister of Tamil Nadu (having won the 2026 state legislative assembly election and taken office in May 2026).
+   - In all civic, historical, general knowledge, or Madrasa circular contexts referencing Sri Lanka or South Asia, use strictly accurate 2026 governance facts.
 
-3. REAL-TIME & BREAKING EVENT HONESTY:
-   - If a user asks about breaking real-time news or events that cannot be verified from your training knowledge or provided documents, state your knowledge cutoff honestly rather than stating outdated pre-2024 facts as current reality.
+3. REAL-TIME & LIVE GOOGLE SEARCH GROUNDING:
+   - Google Gemini 2.5 Flash is equipped with live Google Search Grounding to verify real-time facts, current leadership, breaking events, and post-cutoff developments.
+   - Ground answers in live, verified search facts whenever real-world facts or current events are requested. If any breaking event cannot be verified live, state your knowledge cutoff honestly rather than stating outdated pre-2024 facts as current reality.
 
 [UNIVERSAL TANGLISH (SPOKEN TAMIL IN ENGLISH SCRIPT) COMPREHENSION & NATURAL RESPONSE RULES]
 1. UNIVERSAL TANGLISH UNDERSTANDING:
@@ -1904,6 +1955,7 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     pdfBuffer,
     temperature: 0.35,
     maxTokens: 8192,
+    enableSearchGrounding: !pdfBuffer,
   });
 
   return {

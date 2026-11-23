@@ -19,6 +19,8 @@ import {
   Mic,
   Layers,
   RotateCcw,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { teacherAiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from './AiRobotMascot';
@@ -115,6 +117,7 @@ function AiStreamedText({ text, onFinished }: { text: string; onFinished?: () =>
 
 export default function GlobalAiCopilotDrawer() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [statusData, setStatusData] = useState<AiStatusResponse | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
 
@@ -181,16 +184,20 @@ export default function GlobalAiCopilotDrawer() {
     }
   }, [messages, isGenerating, isOpen]);
 
-  // Close drawer on Escape key
+  // Close drawer or exit expanded mode on Escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
+        if (isExpanded) {
+          setIsExpanded(false);
+        } else {
+          setIsOpen(false);
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, isExpanded]);
 
   // Hide the floating orb on full studio page to avoid duplicate orbs
   const isAiStudioPage = location.pathname === '/ai' || location.pathname.endsWith('/ai');
@@ -586,10 +593,10 @@ export default function GlobalAiCopilotDrawer() {
           />
 
           {/* Right Slide-over Panel - Non-blocking on desktop, sits directly on right edge */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pointer-events-none">
-            <div className="w-screen max-w-full sm:w-[430px] bg-white dark:bg-[#121614] shadow-2xl border-l border-[#E7E9EE] dark:border-[#222925] flex flex-col h-full transform transition-transform duration-300 ease-in-out pointer-events-auto">
+          <div className={isExpanded ? "fixed inset-0 z-50 flex pointer-events-none" : "fixed inset-y-0 right-0 max-w-full flex pointer-events-none"}>
+            <div className={`${isExpanded ? 'w-full max-w-full' : 'w-screen max-w-full sm:w-[430px]'} bg-white dark:bg-[#121614] shadow-2xl border-l border-[#E7E9EE] dark:border-[#222925] flex flex-col h-full transform transition-transform duration-300 ease-in-out pointer-events-auto`}>
               {/* Drawer Top Header */}
-              <div className="px-4 py-3.5 border-b border-[#E7E9EE] dark:border-[#222925] bg-[#0F172A] dark:bg-[#121614] text-white flex items-center justify-between gap-3 shrink-0">
+              <div className={`px-4 py-3.5 border-b border-[#E7E9EE] dark:border-[#222925] bg-[#0F172A] dark:bg-[#121614] text-white flex items-center justify-between gap-3 shrink-0 ${isExpanded ? 'max-w-5xl w-full mx-auto' : ''}`}>
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-slate-800 dark:bg-[#1A1F1C] flex items-center justify-center shrink-0 border border-emerald-500/40">
                     <AiRobotMascot variant="avatar" size={22} />
@@ -626,6 +633,22 @@ export default function GlobalAiCopilotDrawer() {
                     </button>
                   )}
 
+                  {isUnlocked && (
+                    <button
+                      type="button"
+                      onClick={() => setIsExpanded((prev) => !prev)}
+                      className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 dark:hover:bg-[#1A1F1C] rounded-lg transition cursor-pointer"
+                      title={isExpanded ? "Exit Full Screen (Esc)" : "Expand Focus Reading Mode"}
+                      aria-label={isExpanded ? "Exit Full Screen" : "Expand Focus Mode"}
+                    >
+                      {isExpanded ? (
+                        <Minimize2 className="w-3.5 h-3.5 text-emerald-400" />
+                      ) : (
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     onClick={() => {
@@ -641,7 +664,10 @@ export default function GlobalAiCopilotDrawer() {
 
                   <button
                     type="button"
-                    onClick={() => setIsOpen(false)}
+                    onClick={() => {
+                      setIsExpanded(false);
+                      setIsOpen(false);
+                    }}
                     className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 dark:hover:bg-[#1A1F1C] rounded-lg transition cursor-pointer"
                     title="Close Drawer (Esc)"
                   >
@@ -735,7 +761,7 @@ export default function GlobalAiCopilotDrawer() {
                 /* ========================================================================= */
                 <div className="flex-1 flex flex-col justify-between overflow-hidden bg-slate-50/50 dark:bg-[#0A0D0C]">
                   {/* Messages Scroll Area */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isExpanded ? 'max-w-5xl w-full mx-auto px-4 sm:px-6 py-4' : ''}`}>
                     {messages.length === 0 ? (
                       <div className="h-full flex flex-col items-center justify-center text-center p-4 space-y-4 my-auto">
                         <div className="w-16 h-16 flex items-center justify-center">
@@ -867,7 +893,7 @@ export default function GlobalAiCopilotDrawer() {
                   </div>
 
                   {/* Docked Prompt Input Bar */}
-                  <div className="p-3 border-t border-[#E7E9EE] dark:border-[#222925] bg-white dark:bg-[#121614] space-y-2">
+                  <div className={`p-3 border-t border-[#E7E9EE] dark:border-[#222925] bg-white dark:bg-[#121614] space-y-2 shrink-0 ${isExpanded ? 'max-w-5xl w-full mx-auto' : ''}`}>
                     {attachedFile && (
                       <div className="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-2 text-[11px] text-emerald-900 dark:text-emerald-200 shadow-2xs">
                         <div className="flex items-center gap-1.5 truncate min-w-0">

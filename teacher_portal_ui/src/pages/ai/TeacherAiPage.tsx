@@ -23,6 +23,8 @@ import {
   Plus,
   X,
   RotateCcw,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { teacherAiService, type AiStatusResponse, type PosterGenerationResult } from '../../services/ai.service';
 import AiRobotMascot from '../../components/ai/AiRobotMascot';
@@ -227,6 +229,18 @@ export default function TeacherAiPage() {
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Keyboard shortcut: Escape exits Expand Focus reading mode when active
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isExpanded) {
+        setIsExpanded(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isExpanded]);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -902,9 +916,16 @@ export default function TeacherAiPage() {
   // VIEW B: UNLOCKED TEACHER AI WORKSPACE
   // ==========================================
   return (
-    <div id="teacher-workspace-top" className="max-w-4xl mx-auto h-[calc(100dvh-5.5rem)] min-h-[520px] flex flex-col overflow-hidden pb-1 sm:pb-2 relative">
+    <div
+      id="teacher-workspace-top"
+      className={
+        isExpanded
+          ? "fixed inset-0 z-50 bg-white dark:bg-[#0A0D0C] flex flex-col overflow-hidden p-2 sm:p-4 md:p-6"
+          : "max-w-4xl mx-auto h-[calc(100dvh-5.5rem)] min-h-[520px] flex flex-col overflow-hidden pb-1 sm:pb-2 relative"
+      }
+    >
       {/* Top Workspace Header Bar (Responsive 2-Row Stack on Mobile 345px) */}
-      <div className="bg-white dark:bg-[#121614] rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] dark:border-[#222925] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3">
+      <div className={`bg-white dark:bg-[#121614] rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#E7E9EE] dark:border-[#222925] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3 shrink-0 mb-2 sm:mb-3 ${isExpanded ? 'max-w-5xl w-full mx-auto' : ''}`}>
         {/* Row 1: Bot Avatar + Title + Active Tenant Badge */}
         <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#0F172A] dark:bg-[#1A1F1C] text-[#37C6A3] dark:text-[#10B981] flex items-center justify-center font-bold shadow-xs shrink-0">
@@ -943,6 +964,26 @@ export default function TeacherAiPage() {
             )}
 
             <button
+              type="button"
+              onClick={() => setIsExpanded((prev) => !prev)}
+              className="px-2.5 sm:px-3 py-1.5 min-h-[34px] sm:min-h-[38px] text-xs font-bold rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-[#1A1F1C] dark:hover:bg-[#222925] text-[#0F172A] dark:text-white border border-transparent dark:border-[#2A332E] transition flex items-center gap-1.5 cursor-pointer shrink-0"
+              title={isExpanded ? "Exit Full Screen (Esc)" : "Expand Focus Reading Mode"}
+              aria-label={isExpanded ? "Exit Full Screen" : "Expand Focus Mode"}
+            >
+              {isExpanded ? (
+                <>
+                  <Minimize2 className="w-3.5 h-3.5 text-emerald-600 dark:text-[#10B981]" />
+                  <span className="hidden sm:inline">Exit Full Screen</span>
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400" />
+                  <span className="hidden sm:inline">Expand</span>
+                </>
+              )}
+            </button>
+
+            <button
               onClick={() => loadStatus(false)}
               className="p-1.5 sm:p-2 min-h-[34px] min-w-[34px] sm:min-h-[38px] sm:min-w-[38px] text-[#7C8A9A] hover:text-[#0F172A] dark:text-[#9CA3AF] dark:hover:text-white rounded-xl border border-[#E7E9EE] dark:border-[#2A332E] bg-white dark:bg-[#1A1F1C] transition cursor-pointer flex items-center justify-center shrink-0"
               title="Refresh Status"
@@ -956,7 +997,13 @@ export default function TeacherAiPage() {
       {/* ========================================================================= */}
       {/* SCROLLABLE CONVERSATION / WELCOME WORKSPACE (FLEX-1 OVERFLOW-Y-AUTO)       */}
       {/* ========================================================================= */}
-      <div className="flex-1 overflow-y-auto min-h-0 pr-1 space-y-4">
+      <div
+        className={
+          isExpanded
+            ? "max-w-5xl w-full mx-auto flex-1 overflow-y-auto px-3 sm:px-6 py-4 min-h-0 space-y-4"
+            : "flex-1 overflow-y-auto min-h-0 pr-1 space-y-4"
+        }
+      >
         {messages.length === 0 ? (
           <div className="my-auto py-6 sm:py-10 flex flex-col items-center text-center px-4 space-y-6">
             <div className="relative">
@@ -1110,7 +1157,7 @@ export default function TeacherAiPage() {
       {/* ========================================================================= */}
       {/* 3. PERMANENTLY PINNED BOTTOM CHAT INPUT COMPOSER BOX                       */}
       {/* ========================================================================= */}
-      <div className="shrink-0 pt-2 z-20 bg-gradient-to-t from-[#F7F6F1] dark:from-[#0A0D0C] via-[#F7F6F1] dark:via-[#0A0D0C] to-transparent">
+      <div className={`shrink-0 pt-2 z-20 bg-gradient-to-t from-white dark:from-[#0A0D0C] via-white dark:via-[#0A0D0C] to-transparent ${isExpanded ? 'max-w-5xl w-full mx-auto' : ''}`}>
           <div className="bg-white dark:bg-[#121614] rounded-3xl p-3 sm:p-4 border-2 border-slate-200 dark:border-[#222925] focus-within:border-[#37C6A3] dark:focus-within:border-[#10B981] focus-within:ring-4 focus-within:ring-[#37C6A3]/15 dark:focus-within:ring-[#10B981]/20 shadow-xl transition-all">
             {attachedFile && (
               <div className="mb-2 p-2 sm:p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-2 text-xs text-emerald-900 dark:text-emerald-200 shadow-2xs">

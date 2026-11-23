@@ -1155,7 +1155,7 @@ async function generateAiText({
     return await callCloudflareChatAi({
       messages: cfMessages,
       temperature,
-      maxTokens: Math.min(maxTokens, 3500),
+      maxTokens: maxTokens || 8192,
     });
   }
 
@@ -1163,6 +1163,7 @@ async function generateAiText({
     prompt,
     systemPrompt: enrichedSystemPrompt,
     temperature,
+    maxTokens: maxTokens || 8192,
   });
 
   return {
@@ -1174,7 +1175,7 @@ async function generateAiText({
 /**
  * Helper to execute Cloudflare Workers AI Text Generation
  */
-async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0.3 }) {
+async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0.3, maxTokens = 8192 }) {
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
   const token = env.CLOUDFLARE_API_TOKEN;
 
@@ -1211,7 +1212,7 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
         body: JSON.stringify({
           messages,
           temperature,
-          max_tokens: 3500,
+          max_tokens: maxTokens || 8192,
         }),
       });
 
@@ -1239,7 +1240,7 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
 /**
  * Helper to execute Cloudflare Workers AI Multi-Turn Chat Generation
  */
-async function callCloudflareChatAi({ messages, temperature = 0.4, maxTokens = 3500 }) {
+async function callCloudflareChatAi({ messages, temperature = 0.4, maxTokens = 8192 }) {
   const accountId = env.CLOUDFLARE_ACCOUNT_ID;
   const token = env.CLOUDFLARE_API_TOKEN;
 
@@ -1266,7 +1267,7 @@ async function callCloudflareChatAi({ messages, temperature = 0.4, maxTokens = 3
         body: JSON.stringify({
           messages,
           temperature,
-          max_tokens: maxTokens,
+          max_tokens: maxTokens || 8192,
         }),
       });
 
@@ -1376,13 +1377,20 @@ export const getUniversalAiInstructions = () => `
        Along with authentic Sunnah steps: reciting Bismillah, washing hands up to wrists, rinsing mouth (Madmadah), sniffing water into nostrils and blowing it out (Istinshaq), and reciting the Sunnah Shahadah Du'a upon completion.
    - REVERENCE & HONORIFICS: Always use dignified Islamic honorifics (Allah ﷻ, Prophet Muhammad ﷺ, Sahabah رضي الله عنهم, scholars رحمه الله).
 
-5. STRICT PDF ATTACHMENT GROUNDING & EXHAUSTIVE STRUCTURED NOTES:
+5. COMPREHENSIVE STUDY NOTES & LESSON GUIDE REQUIREMENT (ZERO SHALLOW ANSWERS):
+   - When the user asks for notes, study notes, lesson notes, revision notes, explanations, summaries, or topic breakdowns:
+     * STRICT PROHIBITION: NEVER give overly brief, shallow, or truncated 3–4 line answers.
+     * Always provide rich, thorough, well-organized study notes structured with clear Markdown headings (##, ###), bullet points, bold key terms, and step-by-step explanations.
+     * Include authentic Islamic/Madrasa examples, relevant Arabic terms (with transliteration and Tamil/English meaning where applicable), practical pedagogical tips for students and Ustadhs, and a concise "Key Takeaways & Quick Review Questions" section at the end.
+     * Provide comprehensive coverage (up to 8192 tokens) so teachers and students can directly use the material in class or for examination revision. Never cut off or truncate answers mid-sentence.
+
+6. STRICT PDF ATTACHMENT GROUNDING & EXHAUSTIVE STRUCTURED NOTES:
    - When a syllabus PDF or document text is provided (via native PDF vision or parsed RAM buffer):
      * Ground all answers, notes, summaries, and exam questions STRICTLY on the document's actual contents, facts, and structure.
      * Do NOT hallucinate external chapters or assume syllabus content not present in the document.
      * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 8192 tokens). Never truncate or provide shallow 2-sentence answers.
 
-6. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING:
+7. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING:
    - When the user sends a greeting (e.g. "Assalamu Alaikum", "Salam", "Hi", "Hello", "Vanakkam"):
      * NEVER reply with a cold, robotic one-word response like "Wa Alaikumussalam".
      * Respond with a warm, dignified, authentic Islamic greeting (e.g. "وَعَلَيْكُمُ السَّلَامُ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ • Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh").
@@ -2118,6 +2126,19 @@ Format in clean, orator-friendly Markdown in ${resolvedLanguage}.`;
 
   const GREETING_REGEX = /^(?:assalamu?\s*alaikum(?:\s*wa\s*rahmatullahi(?:\s*wa\s*barakatuh)?)?|salam(?:\s*alaikum)?|slm|hi|hello|hey|vanakkam|marhaban|ahlan|hola)[\s!.,?]*$/i;
   const isSingleGreeting = GREETING_REGEX.test(cleanMessage) && (!history || history.length <= 1) && !pdfBuffer && !pastedText;
+
+  // Detect if user is requesting notes, study notes, lesson guides, revision, or explanations
+  const NOTES_INTENT_REGEX = /\b(?:notes?|study\s+notes?|lesson\s+notes?|revision\s+notes?|summary|summarize|surukki|explain|explanation|explain\s+panni|vilakkam|paadam|notes\s+eduthu|kuripu|overview)\b/i;
+  const isNotesRequest = NOTES_INTENT_REGEX.test(cleanMessage) || mode === 'summarizer';
+
+  if (isNotesRequest && activeMode !== 'circular') {
+    modeInstructions += `
+[CRITICAL INSTRUCTION: COMPREHENSIVE STUDY NOTES & LESSON GUIDE]
+The user is requesting study notes, lesson explanation, or revision material ("${cleanMessage}").
+STRICT PROHIBITION: NEVER give overly brief, shallow, or truncated 3–4 line answers!
+ALWAYS provide rich, thorough, well-organized study notes using clear Markdown headings (##, ###), bullet points, bold key terms, step-by-step explanations, relevant Islamic/Madrasa examples (with Arabic terms/transliteration & meaning where applicable), practical pedagogical tips, and a short 'Key Takeaways & Quick Review Questions' section at the end.
+Write detailed, high-yield educational notes up to 8192 tokens in ${resolvedLanguage} ready for student study notebooks or classroom presentation.`;
+  }
 
   if (isSingleGreeting) {
     modeInstructions += `

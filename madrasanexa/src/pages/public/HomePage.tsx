@@ -6,6 +6,7 @@ import {
   type PlanData,
 } from '../../services/homepage.service';
 import PublicNavbar from '../../components/public/PublicNavbar';
+import FlyingDovePerch from '../../components/public/FlyingDovePerch';
 import QuranVerseMarquee from '../../components/public/QuranVerseMarquee';
 import HeroSection from '../../components/public/HeroSection';
 import TrustStrip from '../../components/public/TrustStrip';
@@ -354,6 +355,9 @@ export default function HomePage({ previewMode = false, previewData = null }: Ho
 
       {/* Floating Glass Navbar */}
       <PublicNavbar contactEnabled={contactHasData} />
+
+      {/* Global White Dove ("Pura") Flight, Scroll-Tracking Perch & Drifting Feather Underline */}
+      <FlyingDovePerch />
 
       {/* Horizontal Qur'an Verse Marquee */}
       <QuranVerseMarquee />

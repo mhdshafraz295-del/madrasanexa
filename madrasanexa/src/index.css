@@ -724,43 +724,15 @@ html.dark body {
 
 /* ==========================================================================
    ANIMATED WHITE DOVE ("PURA") FLIGHT & PERCH ANIMATIONS
+   Bespoke slow, graceful gliding (5.8s entrance, 0.55s wing flap cadence),
+   forward-facing flight physics, drifting feather, and emerald-gold underline.
    ========================================================================== */
-@keyframes doveFlightPath {
-  0% {
-    transform: translate3d(min(65vw, 680px), -65px, 0) scale(1.18) rotate(-10deg);
-    opacity: 0;
-  }
-  8% {
-    transform: translate3d(min(56vw, 580px), -45px, 0) scale(1.16) rotate(-7deg);
-    opacity: 1;
-  }
-  30% {
-    transform: translate3d(min(38vw, 390px), -18px, 0) scale(1.12) rotate(-4deg);
-  }
-  55% {
-    transform: translate3d(min(22vw, 220px), 6px, 0) scale(1.08) rotate(1deg);
-  }
-  75% {
-    transform: translate3d(min(10vw, 100px), 3px, 0) scale(1.05) rotate(0deg);
-  }
-  88% {
-    transform: translate3d(12px, -6px, 0) scale(1.03) rotate(-3deg);
-  }
-  96% {
-    transform: translate3d(2px, -1px, 0) scale(1.01) rotate(1deg);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
-    opacity: 1;
-  }
-}
-
 @keyframes doveWingFlapNear {
   0%, 100% {
     transform: rotate(0deg) scaleY(1);
   }
   50% {
-    transform: rotate(-36deg) scaleY(0.72) translateY(-3px);
+    transform: rotate(-32deg) scaleY(0.74) translateY(-2px);
   }
 }
 
@@ -769,7 +741,7 @@ html.dark body {
     transform: rotate(0deg) scaleY(1);
   }
   50% {
-    transform: rotate(-32deg) scaleY(0.76) translateY(-2px);
+    transform: rotate(-28deg) scaleY(0.78) translateY(-2px);
   }
 }
 
@@ -833,109 +805,161 @@ html.dark body {
   }
 }
 
-/* 5 Accompanying Flock Doves Aerodynamic Glide Trajectories */
+/* 5 Accompanying Flock Doves: Slow, majestic 5.8s gliding curve across hero */
 @keyframes flockFly1 {
   0% {
-    transform: translate3d(min(75vw, 780px), -75px, 0) scale(1.15) rotate(-9deg);
+    transform: translate3d(min(80vw, 840px), -60px, 0) scale(1.12) rotate(-6deg);
     opacity: 0;
   }
-  10% {
+  8% {
     opacity: 0.95;
   }
   60% {
-    transform: translate3d(min(32vw, 340px), -15px, 0) scale(1.05) rotate(-3deg);
+    transform: translate3d(min(32vw, 340px), -10px, 0) scale(1.04) rotate(-2deg);
     opacity: 0.95;
   }
+  85% {
+    opacity: 0.75;
+  }
   100% {
-    transform: translate3d(-120px, -90px, 0) scale(0.92) rotate(-14deg);
+    transform: translate3d(-180px, -85px, 0) scale(0.9) rotate(-12deg);
     opacity: 0;
   }
 }
 
 @keyframes flockFly2 {
   0% {
-    transform: translate3d(min(82vw, 840px), -40px, 0) scale(1.08) rotate(-6deg);
+    transform: translate3d(min(88vw, 920px), -30px, 0) scale(1.06) rotate(-4deg);
     opacity: 0;
   }
-  12% {
+  10% {
     opacity: 0.88;
   }
   65% {
-    transform: translate3d(min(40vw, 420px), 18px, 0) scale(1.02) rotate(-1deg);
+    transform: translate3d(min(42vw, 440px), 24px, 0) scale(1.01) rotate(0deg);
     opacity: 0.88;
   }
+  85% {
+    opacity: 0.65;
+  }
   100% {
-    transform: translate3d(-80px, -45px, 0) scale(0.88) rotate(-10deg);
+    transform: translate3d(-140px, -35px, 0) scale(0.86) rotate(-8deg);
     opacity: 0;
   }
 }
 
 @keyframes flockFly3 {
   0% {
-    transform: translate3d(min(90vw, 920px), -90px, 0) scale(1.12) rotate(-12deg);
+    transform: translate3d(min(94vw, 980px), -80px, 0) scale(1.1) rotate(-8deg);
     opacity: 0;
   }
-  8% {
+  6% {
     opacity: 0.92;
   }
   55% {
-    transform: translate3d(min(45vw, 460px), -35px, 0) scale(1.06) rotate(-5deg);
+    transform: translate3d(min(46vw, 480px), -30px, 0) scale(1.05) rotate(-3deg);
     opacity: 0.92;
   }
+  85% {
+    opacity: 0.7;
+  }
   100% {
-    transform: translate3d(-160px, -110px, 0) scale(0.9) rotate(-16deg);
+    transform: translate3d(-220px, -110px, 0) scale(0.88) rotate(-14deg);
     opacity: 0;
   }
 }
 
 @keyframes flockFly4 {
   0% {
-    transform: translate3d(min(70vw, 720px), 5px, 0) scale(1.02) rotate(-4deg);
+    transform: translate3d(min(76vw, 780px), 15px, 0) scale(1) rotate(-3deg);
     opacity: 0;
   }
-  15% {
+  12% {
     opacity: 0.85;
   }
   70% {
-    transform: translate3d(min(28vw, 290px), 30px, 0) scale(0.98) rotate(0deg);
+    transform: translate3d(min(30vw, 310px), 38px, 0) scale(0.96) rotate(1deg);
     opacity: 0.85;
   }
+  88% {
+    opacity: 0.6;
+  }
   100% {
-    transform: translate3d(-60px, -20px, 0) scale(0.85) rotate(-8deg);
+    transform: translate3d(-100px, -15px, 0) scale(0.82) rotate(-6deg);
     opacity: 0;
   }
 }
 
 @keyframes flockFly5 {
   0% {
-    transform: translate3d(min(86vw, 880px), -60px, 0) scale(1) rotate(-8deg);
+    transform: translate3d(min(90vw, 940px), -50px, 0) scale(0.96) rotate(-5deg);
     opacity: 0;
   }
-  12% {
-    opacity: 0.8;
+  10% {
+    opacity: 0.82;
   }
   60% {
-    transform: translate3d(min(36vw, 370px), -8px, 0) scale(0.95) rotate(-2deg);
-    opacity: 0.8;
+    transform: translate3d(min(38vw, 390px), -4px, 0) scale(0.93) rotate(-2deg);
+    opacity: 0.82;
+  }
+  85% {
+    opacity: 0.6;
   }
   100% {
-    transform: translate3d(-100px, -70px, 0) scale(0.82) rotate(-12deg);
+    transform: translate3d(-150px, -65px, 0) scale(0.8) rotate(-10deg);
     opacity: 0;
   }
 }
 
-.animate-dove-flight {
-  animation: doveFlightPath 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+/* Drifting White & Gold Feather with Sinusoidal Sway */
+@keyframes featherFloatDown {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(-22deg) scale(0.9);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translate3d(12px, 8px, 0) rotate(18deg) scale(1);
+  }
+  40% {
+    transform: translate3d(-14px, 22px, 0) rotate(-16deg) scale(1.02);
+  }
+  65% {
+    transform: translate3d(10px, 36px, 0) rotate(14deg) scale(1);
+  }
+  85% {
+    transform: translate3d(-4px, 48px, 0) rotate(-6deg) scale(0.98);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate3d(0, 58px, 0) rotate(0deg) scale(0.95);
+    opacity: 0;
+  }
+}
+
+/* Animated Emerald-Gold Glowing Underline */
+@keyframes headingUnderlineExpand {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
 }
 
 .animate-dove-flap-near {
   transform-origin: 32px 30px;
-  animation: doveWingFlapNear 0.24s ease-in-out infinite;
+  animation: doveWingFlapNear 0.55s ease-in-out infinite;
 }
 
 .animate-dove-flap-far {
   transform-origin: 26px 28px;
-  animation: doveWingFlapFar 0.24s ease-in-out infinite;
+  animation: doveWingFlapFar 0.55s ease-in-out infinite;
 }
 
 .animate-dove-breath {
@@ -958,19 +982,28 @@ html.dark body {
 }
 
 .animate-flock-1 {
-  animation: flockFly1 3.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: flockFly1 5.8s cubic-bezier(0.25, 0.85, 0.35, 1) forwards;
 }
 .animate-flock-2 {
-  animation: flockFly2 3.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+  animation: flockFly2 5.9s cubic-bezier(0.25, 0.85, 0.35, 1) 0.15s forwards;
 }
 .animate-flock-3 {
-  animation: flockFly3 3.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+  animation: flockFly3 6.0s cubic-bezier(0.25, 0.85, 0.35, 1) 0.25s forwards;
 }
 .animate-flock-4 {
-  animation: flockFly4 3.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+  animation: flockFly4 5.8s cubic-bezier(0.25, 0.85, 0.35, 1) 0.35s forwards;
 }
 .animate-flock-5 {
-  animation: flockFly5 3.1s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+  animation: flockFly5 5.7s cubic-bezier(0.25, 0.85, 0.35, 1) 0.45s forwards;
+}
+
+.animate-feather-drift {
+  animation: featherFloatDown 1.8s cubic-bezier(0.25, 0.8, 0.35, 1) forwards;
+}
+
+.animate-heading-underline {
+  transform-origin: left center;
+  animation: headingUnderlineExpand 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -985,7 +1018,9 @@ html.dark body {
   .animate-flock-2,
   .animate-flock-3,
   .animate-flock-4,
-  .animate-flock-5 {
+  .animate-flock-5,
+  .animate-feather-drift,
+  .animate-heading-underline {
     animation: none !important;
     transform: none !important;
   }

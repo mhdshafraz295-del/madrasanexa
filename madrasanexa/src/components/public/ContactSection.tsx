@@ -25,7 +25,10 @@ export default function ContactSection({ data }: ContactSectionProps) {
             <MessageSquare className="w-3.5 h-3.5 text-[#A5A477]" />
             <span>Platform Communications</span>
           </div>
-          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-[#252525] tracking-tight">
+          <h2
+            data-dove-perch="contact"
+            className="font-serif text-2xl sm:text-4xl font-bold text-[#252525] tracking-tight relative inline-block"
+          >
             {data.headline || 'Contact Platform Administration'}
           </h2>
           <div className="w-16 h-1 bg-[#85845C] mx-auto rounded-full mt-4 mb-4" />

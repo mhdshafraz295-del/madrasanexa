@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import logoUrl from '../../assets/logo/madrasanexa-logo.png';
 import { Menu, X, ArrowRight, ChevronDown, ShieldCheck, Sparkles, BookOpen, Layers, DollarSign, UserCheck } from 'lucide-react';
-import FlyingDovePerch from './FlyingDovePerch';
 
 interface PublicNavbarProps {
   contactEnabled?: boolean;
@@ -69,18 +68,17 @@ export default function PublicNavbar({ contactEnabled = true }: PublicNavbarProp
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav aria-label="Main Navigation" className="h-20 flex items-center justify-between gap-4">
 
-            {/* Logo Brand with Bespoke Animated White Dove ("Pura") Perch */}
+            {/* Logo Brand (Official Logo Unchanged) */}
             <Link
               to="/"
-              className="relative flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#85845C] rounded-lg group"
+              className="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#85845C] rounded-lg group"
             >
               <img
                 src={logoUrl}
                 alt="MadrasaNexa"
                 className="h-10 w-auto object-contain transition-transform group-hover:scale-102"
               />
-              <div className="flex flex-col relative">
-                <FlyingDovePerch />
+              <div className="flex flex-col">
                 <span className="font-serif font-bold text-lg sm:text-xl tracking-tight text-[#252525]">
                   MadrasaNexa
                 </span>

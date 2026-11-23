@@ -1,155 +1,436 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-interface FlyingDovePerchProps {
-  className?: string;
-  variant?: 'navbar-lead' | 'section';
-  label?: string;
-  enableFlock?: boolean;
+interface DoveCoords {
+  x: number;
+  y: number;
+  visible: boolean;
 }
 
-export const FlyingDovePerch: React.FC<FlyingDovePerchProps> = ({
-  className = '',
-  variant = 'navbar-lead',
-  enableFlock = true,
-}) => {
-  const [flightPhase, setFlightPhase] = useState<'flying' | 'landing' | 'perched'>('flying');
-  const [showSparkle, setShowSparkle] = useState(false);
-  const [isFluttering, setIsFluttering] = useState(false);
-  const [flockActive, setFlockActive] = useState(enableFlock && variant === 'navbar-lead');
-  const flutterTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+interface FeatherState {
+  id: number;
+  startX: number;
+  startY: number;
+  targetAnchor: string;
+}
 
+export const FlyingDovePerch: React.FC = () => {
+  // Flight phase: 'flock-entrance' (0s-5.8s) -> 'perched' -> 'transitioning' (between sections)
+  const [phase, setPhase] = useState<'flock-entrance' | 'transitioning' | 'perched'>('flock-entrance');
+  const [activeAnchor, setActiveAnchor] = useState<string>('hero');
+  const [coords, setCoords] = useState<DoveCoords>({ x: -100, y: -100, visible: false });
+  const [facing, setFacing] = useState<1 | -1>(-1); // -1 = facing left (traveling right-to-left), 1 = facing right
+  const [isFluttering, setIsFluttering] = useState(false);
+  const [showSparkle, setShowSparkle] = useState(false);
+  const [activeFeather, setActiveFeather] = useState<FeatherState | null>(null);
+  const [underlinedAnchor, setUnderlinedAnchor] = useState<string | null>(null);
+  const [flockActive, setFlockActive] = useState(true);
+
+  const prevCoordsRef = useRef<DoveCoords>({ x: -100, y: -100, visible: false });
+  const activeAnchorRef = useRef<string>('hero');
+  const phaseRef = useRef<'flock-entrance' | 'transitioning' | 'perched'>('flock-entrance');
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flutterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Helper to compute perch coordinate relative to a heading element's getBoundingClientRect()
+  const getPerchCoordsForElement = useCallback((el: HTMLElement): { x: number; y: number } => {
+    const rect = el.getBoundingClientRect();
+    const isMobile = window.innerWidth < 640;
+    const doveHeight = isMobile ? 44 : 54;
+    // Perch right on top edge of the heading text (offset so feet touch the letter stroke)
+    const targetY = rect.top - doveHeight + 8;
+    // For hero, perch on "M"; for centered headings, perch on the left-center of the heading
+    const targetX = rect.left + (el.getAttribute('data-dove-perch') === 'hero' ? 6 : Math.min(20, rect.width * 0.08));
+    return { x: targetX, y: targetY };
+  }, []);
+
+  // Trigger drifting feather & glowing underline effect
+  const triggerFeatherUnderline = useCallback((anchorId: string, perchX: number, perchY: number) => {
+    setActiveFeather({
+      id: Date.now(),
+      startX: perchX + 16,
+      startY: perchY + 32,
+      targetAnchor: anchorId,
+    });
+    setShowSparkle(true);
+    setUnderlinedAnchor(anchorId);
+
+    setTimeout(() => {
+      setShowSparkle(false);
+    }, 1000);
+
+    // Remove feather once drift animation ends (1.8s)
+    setTimeout(() => {
+      setActiveFeather((prev) => (prev?.targetAnchor === anchorId ? null : prev));
+    }, 2000);
+  }, []);
+
+  // INITIAL 5.8s FLOCK ENTRANCE OR REDUCED MOTION
   useEffect(() => {
-    // Respect prefers-reduced-motion
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setFlightPhase('perched');
+    phaseRef.current = 'flock-entrance';
+    activeAnchorRef.current = 'hero';
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      setPhase('perched');
+      phaseRef.current = 'perched';
       setFlockActive(false);
+      setFacing(1);
+      // Immediately place on hero
+      const heroEl = document.querySelector<HTMLElement>('[data-dove-perch="hero"]');
+      if (heroEl) {
+        const p = getPerchCoordsForElement(heroEl);
+        setCoords({ x: p.x, y: p.y, visible: true });
+        prevCoordsRef.current = { x: p.x, y: p.y, visible: true };
+        setUnderlinedAnchor('hero');
+      }
       return;
     }
 
-    // 0s -> 2.4s: Flying along curved arc with wing flapping
-    // 2.4s -> 2.8s: Deceleration & wing folding (landing)
-    const landingTimer = setTimeout(() => {
-      setFlightPhase('landing');
-    }, 2400);
+    // Set initial start position at upper-right
+    const startX = Math.min(window.innerWidth * 0.88, window.innerWidth - 60);
+    const startY = 30;
+    setCoords({ x: startX, y: startY, visible: true });
+    prevCoordsRef.current = { x: startX, y: startY, visible: true };
+    setFacing(-1); // Flying right-to-left towards Hero H1
 
-    // 2.8s: Touchdown & Perch
-    const perchedTimer = setTimeout(() => {
-      setFlightPhase('perched');
-      setShowSparkle(true);
-      setTimeout(() => setShowSparkle(false), 1200);
-    }, 2800);
+    // 100ms delay to trigger smooth CSS transition to Hero H1 over 5.8s
+    const flightStartTimer = setTimeout(() => {
+      const heroEl = document.querySelector<HTMLElement>('[data-dove-perch="hero"]');
+      if (heroEl) {
+        const p = getPerchCoordsForElement(heroEl);
+        setCoords({ x: p.x, y: p.y, visible: true });
+        prevCoordsRef.current = { x: p.x, y: p.y, visible: true };
+      }
+    }, 120);
 
-    // 3.6s: Unmount companion flock overlay to free up all animation resources
+    // At 5.8s: Touchdown on "Manage Your Madrasa Smarter."
+    const touchdownTimer = setTimeout(() => {
+      setPhase('perched');
+      phaseRef.current = 'perched';
+      setFacing(1); // Perched facing inwards toward the headline
+      const heroEl = document.querySelector<HTMLElement>('[data-dove-perch="hero"]');
+      if (heroEl) {
+        const p = getPerchCoordsForElement(heroEl);
+        setCoords({ x: p.x, y: p.y, visible: true });
+        prevCoordsRef.current = { x: p.x, y: p.y, visible: true };
+        triggerFeatherUnderline('hero', p.x, p.y);
+      }
+    }, 5800);
+
+    // At 6.8s: Unmount companion flock overlay to free up DOM & GPU resources
     const flockTimer = setTimeout(() => {
       setFlockActive(false);
-    }, 3600);
+    }, 6800);
 
     return () => {
-      clearTimeout(landingTimer);
-      clearTimeout(perchedTimer);
+      clearTimeout(flightStartTimer);
+      clearTimeout(touchdownTimer);
       clearTimeout(flockTimer);
-      if (flutterTimeoutRef.current) clearTimeout(flutterTimeoutRef.current);
     };
-  }, [variant]);
+  }, [getPerchCoordsForElement, triggerFeatherUnderline]);
 
+  // SCROLL & RESIZE TRACKING: Dynamic perching & section-to-section flight
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const handleScrollOrResize = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+
+        // Skip during initial 5.8s entrance
+        if (phaseRef.current === 'flock-entrance') return;
+
+        const anchors = Array.from(document.querySelectorAll<HTMLElement>('[data-dove-perch]'));
+        if (anchors.length === 0) return;
+
+        // Find which heading is in the active reading viewport zone (20% to 55% from top)
+        const vh = window.innerHeight;
+        const targetZoneTop = vh * 0.18;
+        const targetZoneBottom = vh * 0.58;
+
+        let bestAnchor: HTMLElement | null = null;
+        let minDistance = Infinity;
+
+        for (const el of anchors) {
+          const rect = el.getBoundingClientRect();
+          // Check if top is within viewport
+          if (rect.top >= -50 && rect.top <= vh) {
+            const center = rect.top + rect.height / 2;
+            const dist = Math.abs(center - (targetZoneTop + targetZoneBottom) / 2);
+            if (dist < minDistance) {
+              minDistance = dist;
+              bestAnchor = el;
+            }
+          }
+        }
+
+        // Default to hero if at top of page
+        if (!bestAnchor && window.scrollY < 200) {
+          bestAnchor = anchors.find((a) => a.getAttribute('data-dove-perch') === 'hero') || anchors[0];
+        }
+
+        if (!bestAnchor) return;
+
+        const newAnchorId = bestAnchor.getAttribute('data-dove-perch') || 'hero';
+        const p = getPerchCoordsForElement(bestAnchor);
+
+        // If target changed to another section
+        if (newAnchorId !== activeAnchorRef.current) {
+          const oldX = prevCoordsRef.current.x;
+          const deltaX = p.x - oldX;
+
+          activeAnchorRef.current = newAnchorId;
+          setActiveAnchor(newAnchorId);
+          setPhase('transitioning');
+          phaseRef.current = 'transitioning';
+
+          // ALWAYS point head/beak in the exact direction of travel!
+          // If moving left (deltaX < 0), face left (-1); if moving right (deltaX >= 0), face right (1)
+          setFacing(deltaX < -10 ? -1 : 1);
+
+          // Fly smoothly to new section coordinates (1.4s glide)
+          setCoords({ x: p.x, y: p.y, visible: true });
+          prevCoordsRef.current = { x: p.x, y: p.y, visible: true };
+
+          if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+          transitionTimerRef.current = setTimeout(() => {
+            setPhase('perched');
+            phaseRef.current = 'perched';
+            setFacing(1); // Perched resting pose facing inward
+            triggerFeatherUnderline(newAnchorId, p.x, p.y);
+          }, 1400);
+        } else if (phaseRef.current === 'perched') {
+          // Keep dove locked to heading as user scrolls
+          const isVisible = p.y >= -60 && p.y <= vh + 20;
+          setCoords({ x: p.x, y: p.y, visible: isVisible });
+          prevCoordsRef.current = { x: p.x, y: p.y, visible: isVisible };
+        }
+      });
+    };
+
+    window.addEventListener('scroll', handleScrollOrResize, { passive: true });
+    window.addEventListener('resize', handleScrollOrResize, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize);
+      window.removeEventListener('resize', handleScrollOrResize);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+    };
+  }, [getPerchCoordsForElement, triggerFeatherUnderline]);
+
+  // Handle user hover/click on the perched dove
   const handleDoveInteraction = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (flightPhase !== 'perched' || isFluttering) return;
+    if (phase !== 'perched' || isFluttering) return;
     setIsFluttering(true);
     setShowSparkle(true);
-    flutterTimeoutRef.current = setTimeout(() => {
+    if (flutterTimerRef.current) clearTimeout(flutterTimerRef.current);
+    flutterTimerRef.current = setTimeout(() => {
       setIsFluttering(false);
       setShowSparkle(false);
     }, 650);
   };
 
-  const isFlying = flightPhase === 'flying' || flightPhase === 'landing';
+  const isFlying = phase === 'flock-entrance' || phase === 'transitioning';
 
   return (
     <>
-      {/* Companion Flock (5 accompanying doves soaring across the hero sky) */}
-      {flockActive && (
-        <div
-          aria-hidden="true"
-          className="fixed inset-0 pointer-events-none z-40 overflow-hidden"
-          style={{ willChange: 'transform, opacity' }}
-        >
-          {/* Flock Dove 1: Size 52px */}
-          <div className="absolute top-2 left-0 w-[52px] h-[52px] animate-flock-1">
-            <CompanionDoveSvg size={52} wingDelay="0s" opacity={0.92} />
-          </div>
-
-          {/* Flock Dove 2: Size 48px */}
-          <div className="absolute top-8 left-0 w-[48px] h-[48px] animate-flock-2">
-            <CompanionDoveSvg size={48} wingDelay="0.05s" opacity={0.88} />
-          </div>
-
-          {/* Flock Dove 3: Size 46px */}
-          <div className="absolute top-1 left-0 w-[46px] h-[46px] animate-flock-3">
-            <CompanionDoveSvg size={46} wingDelay="0.1s" opacity={0.85} />
-          </div>
-
-          {/* Flock Dove 4: Size 50px */}
-          <div className="absolute top-12 left-0 w-[50px] h-[50px] animate-flock-4">
-            <CompanionDoveSvg size={50} wingDelay="0.15s" opacity={0.88} />
-          </div>
-
-          {/* Flock Dove 5: Size 42px */}
-          <div className="absolute top-6 left-0 w-[42px] h-[42px] animate-flock-5">
-            <CompanionDoveSvg size={42} wingDelay="0.2s" opacity={0.8} />
-          </div>
-        </div>
-      )}
-
-      {/* Lead Perching Dove ("Pura") */}
+      {/* 1. FULL-VIEWPORT OVERLAY CONTAINER (NEVER CLIPPED BY NAVBAR OR SECTIONS) */}
       <div
-        className={`select-none ${
-          isFlying ? 'pointer-events-none animate-dove-flight' : 'pointer-events-auto cursor-pointer'
-        } ${
-          variant === 'navbar-lead'
-            ? 'absolute -top-[36px] sm:-top-[46px] -left-1 sm:-left-0.5 z-30'
-            : 'absolute -top-[42px] left-1/2 -translate-x-1/2 z-20'
-        } ${className}`}
-        style={{
-          transformOrigin: 'bottom center',
-        }}
-        onClick={handleDoveInteraction}
-        onMouseEnter={handleDoveInteraction}
-        title="🕊️ Pura — Islamic Symbol of Peace, Purity & Barakah"
-        role="img"
-        aria-label="Graceful White Dove perched on MadrasaNexa"
+        aria-hidden="true"
+        className="fixed inset-0 pointer-events-none z-40 overflow-hidden"
       >
-        <div
-          className={`relative transition-transform duration-300 ${
-            isFluttering
-              ? 'animate-dove-flutter'
-              : flightPhase === 'perched'
-              ? 'animate-dove-breath'
-              : ''
-          }`}
-          style={{ transformOrigin: 'bottom center' }}
-        >
-          {/* Landing Sparkle / Shimmer Ring */}
-          {showSparkle && (
-            <div
-              className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border border-emerald-400/80 bg-gradient-to-r from-emerald-400/25 via-amber-300/20 to-teal-400/25 animate-dove-sparkle z-0"
-              style={{ filter: 'blur(0.5px)' }}
-            />
-          )}
+        {/* 2. COMPANION FLOCK (5 Doves gliding across hero over 5.8s, forward-facing scaleX(-1)) */}
+        {flockActive && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* Flock Dove 1: 52px */}
+            <div className="absolute top-2 left-0 w-[52px] h-[52px] animate-flock-1" style={{ transform: 'scaleX(-1)' }}>
+              <CompanionDoveSvg size={52} opacity={0.92} />
+            </div>
 
-          {/* Soft Perch Glow on Light Backgrounds */}
-          <div
-            className="pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 w-7 h-2 rounded-full bg-emerald-500/20 blur-[3px]"
-            aria-hidden="true"
-          />
+            {/* Flock Dove 2: 48px */}
+            <div className="absolute top-10 left-0 w-[48px] h-[48px] animate-flock-2" style={{ transform: 'scaleX(-1)' }}>
+              <CompanionDoveSvg size={48} opacity={0.88} />
+            </div>
 
-          {/* Scaled Lead Dove SVG: 58px x 58px on desktop / 46px x 46px on mobile */}
-          <div className="w-[46px] h-[46px] sm:w-[58px] sm:h-[58px] relative z-10">
-            <LeadDoveSvg isFlying={isFlying} isFluttering={isFluttering} />
+            {/* Flock Dove 3: 46px */}
+            <div className="absolute top-3 left-0 w-[46px] h-[46px] animate-flock-3" style={{ transform: 'scaleX(-1)' }}>
+              <CompanionDoveSvg size={46} opacity={0.85} />
+            </div>
+
+            {/* Flock Dove 4: 50px */}
+            <div className="absolute top-16 left-0 w-[50px] h-[50px] animate-flock-4" style={{ transform: 'scaleX(-1)' }}>
+              <CompanionDoveSvg size={50} opacity={0.88} />
+            </div>
+
+            {/* Flock Dove 5: 44px */}
+            <div className="absolute top-8 left-0 w-[44px] h-[44px] animate-flock-5" style={{ transform: 'scaleX(-1)' }}>
+              <CompanionDoveSvg size={44} opacity={0.82} />
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* 3. DRIFTING WHITE & GOLD FEATHER ANIMATION */}
+        {activeFeather && (
+          <div
+            className="absolute pointer-events-none animate-feather-drift z-30"
+            style={{
+              top: `${activeFeather.startY}px`,
+              left: `${activeFeather.startX}px`,
+            }}
+          >
+            <DriftingFeatherSvg />
+          </div>
+        )}
+
+        {/* 4. LEAD PERCHING DOVE ("PURA") WITH FORWARD-FACING PHYSICS */}
+        {coords.visible && (
+          <div
+            className={`absolute transition-all duration-300 ${
+              isFlying
+                ? 'pointer-events-none'
+                : 'pointer-events-auto cursor-pointer'
+            }`}
+            style={{
+              top: `${coords.y}px`,
+              left: `${coords.x}px`,
+              transition:
+                phase === 'flock-entrance'
+                  ? 'top 5.8s cubic-bezier(0.25, 0.85, 0.35, 1), left 5.8s cubic-bezier(0.25, 0.85, 0.35, 1)'
+                  : phase === 'transitioning'
+                  ? 'top 1.4s cubic-bezier(0.25, 0.85, 0.35, 1), left 1.4s cubic-bezier(0.25, 0.85, 0.35, 1)'
+                  : 'top 0.05s ease-out, left 0.05s ease-out',
+              transformOrigin: 'bottom center',
+            }}
+            onClick={handleDoveInteraction}
+            onMouseEnter={handleDoveInteraction}
+            title="🕊️ Pura — Islamic Symbol of Peace, Purity & Barakah"
+            role="img"
+            aria-label={`Graceful White Dove perched on ${activeAnchor}`}
+            data-active-perch={activeAnchor}
+          >
+            {/* Dynamic facing direction: scaleX(-1) when flying left, scaleX(1) when facing right */}
+            <div
+              className={`relative transition-transform duration-300 ${
+                isFluttering
+                  ? 'animate-dove-flutter'
+                  : phase === 'perched'
+                  ? 'animate-dove-breath'
+                  : ''
+              }`}
+              style={{
+                transform: `scaleX(${facing})`,
+                transformOrigin: 'bottom center',
+              }}
+            >
+              {/* Soft Perch Glow & Sparkle */}
+              {showSparkle && (
+                <div
+                  className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 w-9 h-9 rounded-full border border-emerald-400/90 bg-gradient-to-r from-emerald-400/30 via-amber-300/25 to-teal-400/30 animate-dove-sparkle z-0"
+                  style={{ filter: 'blur(0.5px)' }}
+                />
+              )}
+
+              {/* Ambient landing shadow glow */}
+              <div
+                className="pointer-events-none absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-2 rounded-full bg-emerald-500/25 blur-[3px]"
+                aria-hidden="true"
+              />
+
+              {/* Scaled Lead Dove SVG: 58px x 58px (Desktop) / 46px x 46px (Mobile) */}
+              <div className="w-[46px] h-[46px] sm:w-[58px] sm:h-[58px] relative z-10">
+                <LeadDoveSvg isFlying={isFlying} isFluttering={isFluttering} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* 5. DYNAMIC EMERALD-GOLD UNDERLINE SYNCED WITH ACTIVE PERCH */}
+      <HeadingUnderlineSync activeAnchor={underlinedAnchor} />
     </>
+  );
+};
+
+/* ==========================================================================
+   HEADING UNDERLINE COMPONENT
+   Attaches a smooth emerald-to-gold glowing underline underneath the active
+   section heading whenever the dove touches down.
+   ========================================================================== */
+const HeadingUnderlineSync: React.FC<{ activeAnchor: string | null }> = ({ activeAnchor }) => {
+  useEffect(() => {
+    if (!activeAnchor) return;
+    const targetEl = document.querySelector<HTMLElement>(`[data-dove-perch="${activeAnchor}"]`);
+    if (!targetEl) return;
+
+    // Check if an existing underline element already exists
+    let lineEl = targetEl.querySelector<HTMLElement>('.dove-underlined-bar');
+    if (!lineEl) {
+      lineEl = document.createElement('div');
+      lineEl.className =
+        'dove-underlined-bar absolute -bottom-1.5 left-0 w-full h-[3px] bg-gradient-to-r from-emerald-500 via-teal-400 via-amber-300 to-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-heading-underline pointer-events-none z-10';
+      targetEl.classList.add('relative');
+      targetEl.appendChild(lineEl);
+    } else {
+      // Re-trigger animation
+      lineEl.classList.remove('animate-heading-underline');
+      void lineEl.offsetWidth; // Force reflow
+      lineEl.classList.add('animate-heading-underline');
+    }
+  }, [activeAnchor]);
+
+  return null;
+};
+
+/* ==========================================================================
+   DRIFTING FEATHER SVG (White & Gold delicate feather)
+   ========================================================================== */
+const DriftingFeatherSvg: React.FC = () => {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="w-7 h-7 overflow-visible"
+      style={{
+        filter: 'drop-shadow(0 4px 8px rgba(16, 185, 129, 0.25)) drop-shadow(0 1px 3px rgba(217, 119, 6, 0.2))',
+      }}
+    >
+      <defs>
+        <linearGradient id="featherGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#FFFFFF" />
+          <stop offset="60%" stopColor="#F8FAFC" />
+          <stop offset="100%" stopColor="#FEF3C7" />
+        </linearGradient>
+      </defs>
+      {/* Delicate Feather Vane */}
+      <path
+        d="M6 26 C8 20 14 10 26 4 C24 10 20 18 12 24 C10 26 8 26 6 26 Z"
+        fill="url(#featherGrad)"
+        stroke="#0F766E"
+        strokeWidth="0.8"
+        strokeOpacity="0.6"
+      />
+      {/* Vane Feather Splits */}
+      <path
+        d="M10 20 C14 17 18 13 22 8 M12 23 C16 19 19 15 22 11"
+        stroke="#D97706"
+        strokeWidth="0.6"
+        strokeOpacity="0.65"
+        strokeLinecap="round"
+      />
+      {/* Golden Quill Shaft */}
+      <path
+        d="M4 28 C8 24 16 14 27 3"
+        stroke="#D97706"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 };
 
@@ -347,7 +628,7 @@ const LeadDoveSvg: React.FC<LeadDoveSvgProps> = ({ isFlying, isFluttering }) => 
           />
         </g>
       ) : (
-        /* Flying Near Wing with Flap Animation */
+        /* Flying Near Wing with 0.55s Flap Animation */
         <g className="animate-dove-flap-near" style={{ transformOrigin: '32px 30px' }}>
           <path
             d="M27 29 C30 19 38 7 51 3 C49 10 43 20 37 28 C34 32 31 34 27 36 C25 34 25 31 27 29 Z"
@@ -377,7 +658,6 @@ const LeadDoveSvg: React.FC<LeadDoveSvgProps> = ({ isFlying, isFluttering }) => 
    ========================================================================== */
 interface CompanionDoveSvgProps {
   size: number;
-  wingDelay?: string;
   opacity?: number;
 }
 

@@ -32,7 +32,7 @@ export default function ProductShowcaseSection({
           </div>
           <h2
             data-dove-perch="showcase"
-            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block"
+            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block w-fit mx-auto"
           >
             Designed for Real Madrasa Workflows
           </h2>

@@ -97,7 +97,7 @@ export default function FeaturesSection({ features }: FeaturesSectionProps) {
           </div>
           <h2
             data-dove-perch="features"
-            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block"
+            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block w-fit mx-auto"
           >
             Engineered for Modern Madrasa Operations
           </h2>

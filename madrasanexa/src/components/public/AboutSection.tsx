@@ -32,7 +32,7 @@ export default function AboutSection({ aboutUs }: AboutSectionProps) {
           </div>
           <h2
             data-dove-perch="about"
-            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block"
+            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block w-fit mx-auto"
           >
             {title}
           </h2>

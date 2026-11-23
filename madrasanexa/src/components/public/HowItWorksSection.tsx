@@ -19,7 +19,7 @@ export default function HowItWorksSection({ steps }: HowItWorksSectionProps) {
           </div>
           <h2
             data-dove-perch="how-it-works"
-            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block"
+            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block w-fit mx-auto"
           >
             How MadrasaNexa Works
           </h2>

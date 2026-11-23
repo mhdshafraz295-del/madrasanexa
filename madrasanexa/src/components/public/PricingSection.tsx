@@ -49,7 +49,7 @@ export default function PricingSection({ plans }: PricingSectionProps) {
           </div>
           <h2
             data-dove-perch="pricing"
-            className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0F172A] tracking-tight relative inline-block"
+            className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0F172A] tracking-tight relative inline-block w-fit mx-auto"
           >
             Transparent Subscription Plans
           </h2>

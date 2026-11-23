@@ -103,7 +103,7 @@ export default function PublicFooter({ data, contactEnabled = true }: PublicFoot
                 {/* data-dove-perch="footer" lets the dove land gracefully in the night-sky footer */}
                 <span
                   data-dove-perch="footer"
-                  className="font-serif font-bold text-lg sm:text-xl tracking-tight text-white relative inline-block"
+                  className="font-serif font-bold text-lg sm:text-xl tracking-tight text-white relative inline-block w-fit"
                 >
                   MadrasaNexa
                 </span>

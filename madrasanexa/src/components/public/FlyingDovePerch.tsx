@@ -13,7 +13,7 @@ interface FeatherState {
   startY: number;
   sweepWidth: number;
   targetAnchor: string;
-  stage: 'air-sway' | 'drawing-sweep';
+  stage: 'air-sway' | 'drawing-sweep' | 'fade-out';
 }
 
 export const FlyingDovePerch: React.FC = () => {
@@ -38,55 +38,37 @@ export const FlyingDovePerch: React.FC = () => {
   const flutterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const featherTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Compute exact perch coordinate from the first line text rect of an anchor
+  // Compute exact perch coordinate from getBoundingClientRect() of tight inline-block heading
   const getPerchCoordsForElement = useCallback(
-    (el: HTMLElement): { x: number; y: number; textWidth: number; opacity: number } => {
-      const clientRects = el.getClientRects();
-      const firstLine = clientRects.length > 0 ? clientRects[0] : el.getBoundingClientRect();
+    (el: HTMLElement): { x: number; y: number; textWidth: number; opacity: number; bottom: number; left: number } => {
+      const rect = el.getBoundingClientRect();
       const isMobile = window.innerWidth < 640;
       const doveHeight = isMobile ? 50 : 64;
 
       // Feet rest squarely on the exact top stroke of the first letter
-      const targetY = firstLine.top - doveHeight + 6;
-      const targetX = firstLine.left + 6;
-
-      // Calculate exact text width of the heading
-      let textWidth = 0;
-      if (clientRects.length > 0) {
-        let minLeft = Infinity;
-        let maxRight = -Infinity;
-        for (let i = 0; i < clientRects.length; i++) {
-          const r = clientRects[i];
-          if (r.width > 0) {
-            minLeft = Math.min(minLeft, r.left);
-            maxRight = Math.max(maxRight, r.right);
-          }
-        }
-        if (minLeft !== Infinity && maxRight !== -Infinity) {
-          textWidth = maxRight - minLeft;
-        }
-      }
-      if (textWidth <= 0) {
-        textWidth = el.offsetWidth || 240;
-      }
+      const targetY = rect.top - doveHeight + 7;
+      const targetX = rect.left + 4;
+      const textWidth = rect.width;
+      const bottom = rect.bottom;
+      const left = rect.left;
 
       // Smoothly fade out if heading scrolls behind the sticky navbar (top < 65px)
-      const opacity = firstLine.top < 65 ? Math.max(0, (firstLine.top - 20) / 45) : 1;
+      const opacity = rect.top < 65 ? Math.max(0, (rect.top - 20) / 45) : 1;
 
-      return { x: targetX, y: targetY, textWidth, opacity };
+      return { x: targetX, y: targetY, textWidth, opacity, bottom, left };
     },
     []
   );
 
   // Trigger drifting 62px feather & glowing text-matched underline sweep
   const triggerFeatherUnderline = useCallback(
-    (anchorId: string, perchX: number, perchY: number, textWidth: number) => {
-      // Stage 1: Air sway downward (1.1s)
+    (anchorId: string, rectLeft: number, rectBottom: number, textWidth: number) => {
+      // Stage 1: Air sway downward onto (rect.left, rect.bottom + 2px) over 0.8s
       setActiveFeather({
         id: Date.now(),
-        startX: perchX + 16,
-        startY: perchY + 36,
-        sweepWidth: Math.max(120, Math.min(textWidth, 680)),
+        startX: rectLeft,
+        startY: rectBottom + 2,
+        sweepWidth: Math.max(120, textWidth),
         targetAnchor: anchorId,
         stage: 'air-sway',
       });
@@ -94,7 +76,7 @@ export const FlyingDovePerch: React.FC = () => {
 
       if (featherTimerRef.current) clearTimeout(featherTimerRef.current);
 
-      // Stage 2: Sweep left-to-right drawing underline (1.0s)
+      // Stage 2: Sweep left-to-right drawing underline (0.9s)
       featherTimerRef.current = setTimeout(() => {
         setActiveFeather((prev) =>
           prev && prev.targetAnchor === anchorId ? { ...prev, stage: 'drawing-sweep' } : prev
@@ -102,11 +84,17 @@ export const FlyingDovePerch: React.FC = () => {
         setUnderlinedAnchor(anchorId);
         setShowSparkle(false);
 
-        // Finish feather animation
+        // Stage 3: Smoothly fade out over 0.4s
         setTimeout(() => {
-          setActiveFeather((prev) => (prev?.targetAnchor === anchorId ? null : prev));
-        }, 1000);
-      }, 1100);
+          setActiveFeather((prev) =>
+            prev && prev.targetAnchor === anchorId ? { ...prev, stage: 'fade-out' } : prev
+          );
+          // Unmount after fade-out
+          setTimeout(() => {
+            setActiveFeather((prev) => (prev?.targetAnchor === anchorId ? null : prev));
+          }, 400);
+        }, 900);
+      }, 800);
     },
     []
   );
@@ -161,7 +149,7 @@ export const FlyingDovePerch: React.FC = () => {
         const p = getPerchCoordsForElement(heroEl);
         setCoords({ x: p.x, y: p.y, visible: true, opacity: p.opacity });
         prevCoordsRef.current = { x: p.x, y: p.y, visible: true, opacity: p.opacity };
-        triggerFeatherUnderline('hero', p.x, p.y, p.textWidth);
+        triggerFeatherUnderline('hero', p.left, p.bottom, p.textWidth);
       }
     }, 5800);
 
@@ -250,7 +238,7 @@ export const FlyingDovePerch: React.FC = () => {
             setPhase('perched');
             phaseRef.current = 'perched';
             setFacing(1); // Perched resting pose
-            triggerFeatherUnderline(newAnchorId, p.x, p.y, p.textWidth);
+            triggerFeatherUnderline(newAnchorId, p.left, p.bottom, p.textWidth);
           }, 1100);
         } else if (phaseRef.current === 'perched') {
           // Keep dove locked cleanly onto heading as user scrolls
@@ -328,12 +316,19 @@ export const FlyingDovePerch: React.FC = () => {
         {activeFeather && (
           <div
             className={`absolute pointer-events-none z-[65] ${
-              activeFeather.stage === 'air-sway' ? 'animate-feather-air' : 'animate-feather-sweep'
+              activeFeather.stage === 'air-sway'
+                ? 'animate-feather-air'
+                : activeFeather.stage === 'drawing-sweep'
+                ? 'animate-feather-sweep'
+                : 'animate-feather-fade'
             }`}
-            style={{
-              top: `${activeFeather.startY}px`,
-              left: `${activeFeather.startX}px`,
-            }}
+            style={
+              {
+                top: `${activeFeather.startY}px`,
+                left: `${activeFeather.startX}px`,
+                '--sweep-x': `${activeFeather.sweepWidth}px`,
+              } as React.CSSProperties
+            }
           >
             <DriftingQuillFeather62Svg />
           </div>
@@ -342,7 +337,7 @@ export const FlyingDovePerch: React.FC = () => {
         {/* 4. LEAD PERCHING DOVE ("PURA") WITH DEDICATED PERCHED POSE */}
         {coords.visible && (
           <div
-            className={`absolute transition-all duration-300 ${
+            className={`absolute ${
               isFlying ? 'pointer-events-none' : 'pointer-events-auto cursor-pointer'
             }`}
             style={{
@@ -354,7 +349,7 @@ export const FlyingDovePerch: React.FC = () => {
                   ? 'top 5.8s cubic-bezier(0.25, 0.85, 0.35, 1), left 5.8s cubic-bezier(0.25, 0.85, 0.35, 1), opacity 0.2s ease-out'
                   : phase === 'transitioning'
                   ? 'top 1.1s cubic-bezier(0.25, 0.85, 0.35, 1), left 1.1s cubic-bezier(0.25, 0.85, 0.35, 1), opacity 0.2s ease-out'
-                  : 'top 0.05s ease-out, left 0.05s ease-out, opacity 0.2s ease-out',
+                  : 'none',
               transformOrigin: 'bottom center',
             }}
             onClick={handleDoveInteraction}
@@ -416,38 +411,12 @@ const HeadingUnderlineSync: React.FC<{ activeAnchor: string | null }> = ({ activ
     const targetEl = document.querySelector<HTMLElement>(`[data-dove-perch="${activeAnchor}"]`);
     if (!targetEl) return;
 
-    // Compute exact rendered text width using getClientRects()
-    const clientRects = targetEl.getClientRects();
-    const parentRect = targetEl.getBoundingClientRect();
-    let textWidth = 0;
-    let textLeft = 0;
-
-    if (clientRects.length > 0) {
-      let minLeft = Infinity;
-      let maxRight = -Infinity;
-      for (let i = 0; i < clientRects.length; i++) {
-        const r = clientRects[i];
-        if (r.width > 0) {
-          minLeft = Math.min(minLeft, r.left);
-          maxRight = Math.max(maxRight, r.right);
-        }
-      }
-      if (minLeft !== Infinity && maxRight !== -Infinity) {
-        textWidth = maxRight - minLeft;
-        textLeft = minLeft - parentRect.left;
-      }
-    }
-
-    if (textWidth <= 0) {
-      textWidth = Math.min(targetEl.offsetWidth, 480);
-      textLeft = 0;
-    }
-
     let lineEl = targetEl.querySelector<HTMLElement>('.dove-underlined-bar');
     if (!lineEl) {
       lineEl = document.createElement('div');
       lineEl.className =
-        'dove-underlined-bar absolute -bottom-2 h-[3.5px] bg-gradient-to-r from-emerald-500 via-teal-400 via-amber-400 to-emerald-500 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.55)] animate-emerald-gold-line pointer-events-none z-10';
+        'dove-underlined-bar absolute left-0 w-full h-[3.5px] bg-gradient-to-r from-emerald-500 via-teal-400 via-amber-400 to-emerald-500 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.55)] animate-emerald-gold-line pointer-events-none z-10';
+      lineEl.style.bottom = '-6px';
       targetEl.classList.add('relative');
       targetEl.appendChild(lineEl);
     } else {
@@ -455,10 +424,6 @@ const HeadingUnderlineSync: React.FC<{ activeAnchor: string | null }> = ({ activ
       void lineEl.offsetWidth; // Force reflow
       lineEl.classList.add('animate-emerald-gold-line');
     }
-
-    // Set precise pixel width & left offset so it NEVER stretches to the screen edge!
-    lineEl.style.width = `${Math.round(textWidth)}px`;
-    lineEl.style.left = `${Math.round(textLeft)}px`;
   }, [activeAnchor]);
 
   return null;

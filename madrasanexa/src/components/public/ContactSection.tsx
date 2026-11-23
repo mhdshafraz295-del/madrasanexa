@@ -27,7 +27,7 @@ export default function ContactSection({ data }: ContactSectionProps) {
           </div>
           <h2
             data-dove-perch="contact"
-            className="font-serif text-2xl sm:text-4xl font-bold text-[#252525] tracking-tight relative inline-block"
+            className="font-serif text-2xl sm:text-4xl font-bold text-[#252525] tracking-tight relative inline-block w-fit mx-auto"
           >
             {data.headline || 'Contact Platform Administration'}
           </h2>

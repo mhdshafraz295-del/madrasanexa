@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import type { MadrasaThemeTokens } from '../../services/api';
+import { HangingFanoosLanterns } from './HangingFanoosLanterns';
 
 interface MadrasaPublicNavbarProps {
   slug: string;
@@ -371,6 +372,9 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
           </div>
         </div>
       )}
+
+      {/* Realistically Lit Hanging Islamic Fanoos Lanterns Suspended from Navbar Bottom */}
+      <HangingFanoosLanterns mobileMenuOpen={mobileMenuOpen} />
     </header>
   );
 };

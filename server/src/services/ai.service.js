@@ -870,7 +870,7 @@ async function callGeminiGenerateContent({
   messages = [],
   pdfBuffer = null,
   temperature = 0.3,
-  maxOutputTokens = 8192,
+  maxOutputTokens = 32768,
   queryText = '',
 }) {
   const apiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
@@ -967,7 +967,7 @@ async function callGeminiGenerateContent({
         contents,
         generationConfig: {
           temperature,
-          maxOutputTokens: maxOutputTokens || 8192,
+          maxOutputTokens: maxOutputTokens || 32768,
         },
         tools: [{ google_search: {} }],
         ...(baseSystemPrompt ? { systemInstruction: { parts: [{ text: baseSystemPrompt }] } } : {}),
@@ -1031,7 +1031,7 @@ async function callGeminiGenerateContent({
         contents,
         generationConfig: {
           temperature,
-          maxOutputTokens: maxOutputTokens || 8192,
+          maxOutputTokens: maxOutputTokens || 32768,
         },
         ...(retrySystemPrompt ? { systemInstruction: { parts: [{ text: retrySystemPrompt }] } } : {}),
       };
@@ -1091,7 +1091,7 @@ async function generateAiText({
   messages = null,
   pdfBuffer = null,
   temperature = 0.3,
-  maxTokens = 8192,
+  maxTokens = 32768,
 }) {
   // Extract user query for context enrichment
   let userQuery = (prompt || '').trim();
@@ -1113,7 +1113,7 @@ async function generateAiText({
         messages,
         pdfBuffer,
         temperature,
-        maxOutputTokens: maxTokens,
+        maxOutputTokens: maxTokens || 32768,
         queryText: userQuery,
       });
       if (geminiRes?.text) {
@@ -1140,6 +1140,9 @@ async function generateAiText({
     }
   }
 
+  // Safe token limit for Cloudflare Workers AI fallback (capped safely at 4096–8192)
+  const cfSafeMaxTokens = Math.min(Number(maxTokens) || 8192, 8192);
+
   // Fallback to Cloudflare Workers AI
   if (Array.isArray(messages) && messages.length > 0) {
     const cfMessages = messages.map((m) => ({ ...m }));
@@ -1155,7 +1158,7 @@ async function generateAiText({
     return await callCloudflareChatAi({
       messages: cfMessages,
       temperature,
-      maxTokens: maxTokens || 8192,
+      maxTokens: cfSafeMaxTokens,
     });
   }
 
@@ -1163,7 +1166,7 @@ async function generateAiText({
     prompt,
     systemPrompt: enrichedSystemPrompt,
     temperature,
-    maxTokens: maxTokens || 8192,
+    maxTokens: cfSafeMaxTokens,
   });
 
   return {
@@ -1189,6 +1192,7 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
   ];
 
   let lastError = null;
+  const safeMaxTokens = Math.min(Number(maxTokens) || 8192, 8192);
 
   for (const model of models) {
     try {
@@ -1212,7 +1216,7 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
         body: JSON.stringify({
           messages,
           temperature,
-          max_tokens: maxTokens || 8192,
+          max_tokens: safeMaxTokens,
         }),
       });
 
@@ -1255,6 +1259,7 @@ async function callCloudflareChatAi({ messages, temperature = 0.4, maxTokens = 8
   ];
 
   let lastError = null;
+  const safeMaxTokens = Math.min(Number(maxTokens) || 8192, 8192);
 
   for (const model of models) {
     try {
@@ -1267,7 +1272,7 @@ async function callCloudflareChatAi({ messages, temperature = 0.4, maxTokens = 8
         body: JSON.stringify({
           messages,
           temperature,
-          max_tokens: maxTokens || 8192,
+          max_tokens: safeMaxTokens,
         }),
       });
 
@@ -1382,14 +1387,14 @@ export const getUniversalAiInstructions = () => `
      * STRICT PROHIBITION: NEVER give overly brief, shallow, or truncated 3–4 line answers.
      * Always provide rich, thorough, well-organized study notes structured with clear Markdown headings (##, ###), bullet points, bold key terms, and step-by-step explanations.
      * Include authentic Islamic/Madrasa examples, relevant Arabic terms (with transliteration and Tamil/English meaning where applicable), practical pedagogical tips for students and Ustadhs, and a concise "Key Takeaways & Quick Review Questions" section at the end.
-     * Provide comprehensive coverage (up to 8192 tokens) so teachers and students can directly use the material in class or for examination revision. Never cut off or truncate answers mid-sentence.
+     * Provide comprehensive coverage (up to 32,768 tokens) so teachers and students can directly use the material in class or for examination revision. Never cut off or truncate answers mid-sentence.
 
 6. STRICT PDF ATTACHMENT GROUNDING & EXHAUSTIVE STRUCTURED NOTES:
    - When a syllabus PDF or document text is provided (via native PDF vision or parsed RAM buffer):
      * Ground all answers, notes, summaries, and exam questions STRICTLY on the document's actual contents, facts, and structure.
      * Do NOT hallucinate external chapters or assume syllabus content not present in the document.
-     * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 8192 tokens). Never truncate or provide shallow 2-sentence answers.
-     * STRICT PROHIBITION: When a PDF or document is attached or the active tool is PDF Summarizer, NEVER trigger Notice / Circular instructions or output notice templates! Automatically synthesize a comprehensive, structured summary and study guide of the attached document (Title/Metadata, Core Objectives, Detailed Section-by-Section Breakdown, Key Examples, and Conclusion/Takeaways).
+     * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 32,768 tokens). Never truncate or provide shallow 2-sentence answers.
+     * STRICT PROHIBITION: When a PDF or document is attached or the active tool is PDF Summarizer, NEVER trigger Notice / Circular instructions or output notice templates! Automatically synthesize a comprehensive, 5-part structured study guide of the attached document (1. 📌 Document Overview & Core Objectives, 2. 🔑 Section-by-Section Breakdown, 3. 📖 Key Scriptural Proofs & Examples, 4. 📝 Quick Revision Takeaways, 5. 💡 Ustadh Pedagogical Tips & Classroom Discussion).
 
 7. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING:
    - When the user sends a greeting (e.g. "Assalamu Alaikum", "Salam", "Hi", "Hello", "Vanakkam"):
@@ -1607,7 +1612,7 @@ ${getUniversalAiInstructions()}`;
     systemPrompt,
     pdfBuffer,
     temperature: 0.25,
-    maxTokens: 8192,
+    maxTokens: 32768,
   });
 
   return {
@@ -1681,7 +1686,7 @@ Create a structured, highly engaging ${durationMinutes}-Minute Islamic Lesson Pl
    - 00:27 - 00:30 (3 mins) | PLENARY & ASSESSMENT: Wrap-up synthesis, cold-call check for understanding, closing dua.
 
 3. BLACKBOARD / WHITEBOARD SUMMARY LAYOUT:
-   - A visual ASCII/text box representation of what the Ustadh should write on the blackboard during the lesson for students to copy into their notebooks.
+   - A clean Markdown table or structured layout representing what the Ustadh should write on the blackboard during the lesson for students to copy into their notebooks.
 
 4. HOMEWORK & DAILY SUNNAH REFLECTION:
    - Practical take-home task and one daily Sunnah practice related to the topic.
@@ -1703,7 +1708,7 @@ ${getUniversalAiInstructions()}`;
     systemPrompt,
     pdfBuffer,
     temperature: 0.3,
-    maxTokens: 8192,
+    maxTokens: 32768,
   });
 
   return {
@@ -1961,7 +1966,7 @@ ${getUniversalAiInstructions()}`;
     prompt,
     systemPrompt,
     temperature: 0.1,
-    maxTokens: 8192,
+    maxTokens: 32768,
   });
 
   return {
@@ -2006,31 +2011,124 @@ export async function chatWithCopilot({
     (pdfContext && pdfContext.trim().length > 0)
   );
 
-  const isExplicitSummarizerMode = mode === 'summarizer' || mode === 'pdf_summarizer';
-
-  // STRICTLY ISOLATE NOTICE INTENT FROM PDF SUMMARIZER:
-  // Notice / circular generation is strictly bypassed whenever a PDF is attached OR mode is summarizer/pdf_summarizer
-  const STRICT_NOTICE_REGEX = /\b(?:notice|notic|circular|parent\s+notice|parent\s+circular|leave\s+notice|holiday\s+notice|announcement)\b/i;
-  const isNoticeRequest = !hasPdf && !isExplicitSummarizerMode && (mode === 'circular' || STRICT_NOTICE_REGEX.test(cleanMessage));
-
-  let activeMode = mode;
-  if (isNoticeRequest) {
-    activeMode = 'circular';
-  } else if (isExplicitSummarizerMode || (hasPdf && (mode === 'auto' || mode === 'summarizer' || mode === 'pdf_summarizer'))) {
-    activeMode = 'summarizer';
+  // Normalize incoming mode and aliases
+  const rawMode = String(mode || 'auto').trim().toLowerCase();
+  let baseMode = 'auto';
+  if (rawMode === 'summarizer' || rawMode === 'pdf_summarizer') {
+    baseMode = 'summarizer';
+  } else if (rawMode === 'circular' || rawMode === 'notice') {
+    baseMode = 'circular';
+  } else if (rawMode === 'translate' || rawMode === 'translator') {
+    baseMode = 'translate';
+  } else if (rawMode === 'lesson' || rawMode === 'lesson_plan') {
+    baseMode = 'lesson';
+  } else if (rawMode === 'exam' || rawMode === 'quiz') {
+    baseMode = 'exam';
+  } else if (rawMode === 'notes' || rawMode === 'study_notes') {
+    baseMode = 'notes';
+  } else if (rawMode === 'hifz') {
+    baseMode = 'hifz';
+  } else if (rawMode === 'speech') {
+    baseMode = 'speech';
   }
 
-  const isGenericNotice = !hasPdf && !isExplicitSummarizerMode && /^(?:i\s+need\s+notic(?:e)?|notic(?:e)?|parent\s+circular|parent\s+notic(?:e)?|circular|write\s+a\s+notic(?:e)?|make\s+a\s+notic(?:e)?|notic(?:e)?\s+onnu|circular\s+venum|leave\s+notic(?:e)?|circular\s+onnu|need\s+a\s+notic(?:e)?)[\s!.,?]*$/i.test(cleanMessage);
+  // Look for previous assistant response in history (for Tanglish translation follow-ups like "arabic lam panni tha", "tamil la tha")
+  let lastAssistantMessage = '';
+  if (Array.isArray(history) && history.length > 0) {
+    for (let i = history.length - 1; i >= 0; i--) {
+      const h = history[i];
+      const isAssistant = h.sender === 'assistant' || h.role === 'assistant' || h.role === 'model';
+      if (isAssistant && h.content && String(h.content).trim()) {
+        lastAssistantMessage = String(h.content).trim();
+        break;
+      }
+    }
+  }
+
+  // Detect translation follow-ups (e.g., "arabic lam panni tha", "tamil la tha", "english la tha", "itha translate pannu")
+  const TRANSLATE_FOLLOWUP_REGEX = /\b(?:arabic\s+l[ao]m?\s+(?:panni\s+)?tha|arabic\s+la(?:\s+tha)?|tamil\s+la(?:\s+tha)?|english\s+la(?:\s+tha)?|bilingual\s+la(?:\s+tha)?|translate\s+(?:this|it|above|previous)|indha\s+(?:message|reply|circular|text)-?a\s+translate|itha\s+translate)\b/i;
+  const isTranslationFollowup = Boolean(lastAssistantMessage) && (TRANSLATE_FOLLOWUP_REGEX.test(cleanMessage) || (baseMode === 'translate' && cleanMessage.length < 120));
+
+  // STRICTLY ISOLATE NOTICE INTENT FROM PDF SUMMARIZER & TRANSLATOR:
+  // Notice / circular generation is strictly bypassed whenever a PDF is attached OR baseMode is summarizer/translate
+  const STRICT_NOTICE_REGEX = /\b(?:notice|notic|circular|parent\s+notice|parent\s+circular|leave\s+notice|holiday\s+notice|announcement)\b/i;
+  const isNoticeRequest = !hasPdf && baseMode !== 'summarizer' && baseMode !== 'translate' && (baseMode === 'circular' || STRICT_NOTICE_REGEX.test(cleanMessage));
+
+  // Determine active mode with priority and conflict-free routing
+  let activeMode = baseMode;
+  if (hasPdf) {
+    if (baseMode === 'exam' || baseMode === 'lesson' || baseMode === 'translate') {
+      activeMode = baseMode;
+    } else {
+      activeMode = 'summarizer';
+    }
+  } else if (isNoticeRequest) {
+    activeMode = 'circular';
+  } else if (isTranslationFollowup || baseMode === 'translate') {
+    activeMode = 'translate';
+  } else if (baseMode === 'auto') {
+    if (/\b(?:lesson\s*plan|lesson\s*planner|30-?min\s*lesson|paada\s*thittam)\b/i.test(cleanMessage)) {
+      activeMode = 'lesson';
+    } else if (/\b(?:exam\s*paper|question\s*paper|test\s*paper|quiz|vinaaththall)\b/i.test(cleanMessage)) {
+      activeMode = 'exam';
+    } else if (/\b(?:notes?|study\s+notes?|lesson\s+notes?|revision\s+notes?|paada\s+kurippu|vilakkam)\b/i.test(cleanMessage)) {
+      activeMode = 'notes';
+    } else if (/\b(?:hifz|tajweed\s*drill|ayah\s*drill)\b/i.test(cleanMessage)) {
+      activeMode = 'hifz';
+    } else if (/\b(?:bayan|speech|assembly\s*speech)\b/i.test(cleanMessage)) {
+      activeMode = 'speech';
+    } else {
+      activeMode = 'auto';
+    }
+  }
+
+  const isGenericNotice = !hasPdf && activeMode === 'circular' && /^(?:i\s+need\s+notic(?:e)?|notic(?:e)?|parent\s+circular|parent\s+notic(?:e)?|circular|write\s+a\s+notic(?:e)?|make\s+a\s+notic(?:e)?|notic(?:e)?\s+onnu|circular\s+venum|leave\s+notic(?:e)?|circular\s+onnu|need\s+a\s+notic(?:e)?)[\s!.,?]*$/i.test(cleanMessage);
 
   const isGenericPdfPrompt = hasPdf && (
     !cleanMessage ||
     /^(?:attached\s+document[:\s].*|i\s+need|summarize|summary|overview|explain|notes?|surukki|surukki\s+sollu|indha\s+pdf.*)[\s!.,?]*$/i.test(cleanMessage)
   );
 
-  // Mode-specific behavioral instructions to guarantee authentic output format
+  // Build explicit, conflict-free mode instructions
   let modeInstructions = '';
 
-  if (activeMode === 'circular') {
+  if (activeMode === 'translate') {
+    modeInstructions = `
+[SPECIFIC TASK: 3-LANGUAGE ISLAMIC TRANSLATOR (ENGLISH ↔ TAMIL ↔ ARABIC)]
+You are a certified Islamic multilingual translator for Madrasa educational institutions.
+
+${isTranslationFollowup ? `
+[CRITICAL TRANSLATION FOLLOW-UP INSTRUCTION]
+The user sent a follow-up request ("${cleanMessage}") referencing the previous message in conversation history:
+"""
+${lastAssistantMessage.slice(0, 4000)}
+"""
+STRICT INSTRUCTION: Translate this previous message directly into the requested language(s). Do NOT generate new lectures, do NOT create unrelated lesson plans, and do NOT ask conversational questions!
+` : ''}
+
+TRANSLATION RULES:
+1. THREE-LANGUAGE OUTPUT FORMAT:
+   Unless the user explicitly restricts the request to one single language (e.g. "arabic la mattum", "only in english", "tamil la mattum"), provide complete, beautiful translations in ALL THREE LANGUAGES:
+
+   ### 🇬🇧 English Translation
+   [Fluent, professional, dignified English preserving Islamic terms with proper spelling]
+
+   ### 🇱🇰 தமிழ் வடிவம் (Tamil Translation)
+   [Natural, grammatically flawless Tamil as spoken by Islamic scholars in Sri Lanka/Tamil Nadu with standard Islamic terminology (வுளூ, தொழுகை, ஜகாத், ஸஹீஹ் ஹதீஸ், ஸுன்னத், துஆ, மத்ரஸா, உஸ்தாத்)]
+
+   ### 🇸🇦 الترجمة العربية (Arabic Translation)
+   [Authentic Modern Standard Arabic / Fusha with appropriate Islamic honorifics and formal phrasing]
+
+2. SPECIFIC TARGET OVERRIDE:
+   If the user specifically requested a single target language (e.g. "arabic lam panni tha", "tamil la tha", "in english"):
+   Provide that requested language translation directly and thoroughly without conversational meta-commentary.
+
+3. TANGLISH DECODING:
+   If the source text is written in Tanglish (e.g. "naalaikku madrasa leave nu sollunga"), mentally decode the genuine Tamil meaning first, then translate into dignified English, Tamil, and Arabic. Never echo raw colloquial Tanglish words.
+
+4. ISLAMIC REVERENCE & ACCURACY:
+   Preserve authentic Islamic terminology (Du'a, Hadith, Salah, Ustadh, Madrasa, Jalsa, Sunnah, Adab, Akhlaq) with utmost respect and standard transliterations.`;
+  } else if (activeMode === 'circular') {
     modeInstructions = `
 [SPECIFIC TASK: OFFICIAL MADRASA PARENT CIRCULAR & NOTICE]
 You are drafting an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'MadrasaNexa Islamic Academy'}.
@@ -2091,26 +2189,120 @@ Format strictly in clean, professional Markdown in ${resolvedLanguage} (if Tamil
   } else if (activeMode === 'summarizer') {
     modeInstructions = `
 [SPECIFIC TASK: COMPREHENSIVE DOCUMENT & CHAPTER REVISION SUMMARY / STUDY GUIDE]
-Extract an exhaustive, structured, and easy-to-revise Executive Summary & Study Guide from the attached document or text.
+Extract an exhaustive, 5-part structured study guide from the attached document or text.
 
 STRICT INSTITUTIONAL GROUNDING:
 1. Ground all facts, points, and summaries STRICTLY on the attached document content.
-2. NEVER output a parent notice, circular, or fill-in-the-blank template when analyzing an attached document!
-3. Provide rich, exhaustive educational coverage (up to 8192 tokens) with clear Markdown headings. Never truncate or give shallow 2-sentence answers!
+2. Completely bypass notice/circular rules: NEVER output a parent notice, circular, or fill-in-the-blank template!
+3. Provide rich, exhaustive educational coverage (up to 32,768 tokens) with clear Markdown headings. Never truncate or give shallow 2-sentence answers!
 
-STRUCTURE & LAYOUT:
+5-PART STRUCTURED STUDY GUIDE:
 1. 📌 DOCUMENT OVERVIEW & CORE OBJECTIVES:
    - High-level executive synthesis of the chapter, syllabus text, or document in 2-3 detailed paragraphs outlining the primary pedagogical objectives.
 2. 🔑 DETAILED SECTION-BY-SECTION BREAKDOWN:
-   - Exhaustive, structured breakdown of all major principles, rulings, topics, historical milestones, or sections in the document with bulleted key points.
+   - Exhaustive, structured breakdown of all major principles, rulings, topics, historical milestones, or sections in the document with bulleted key points and bold concepts.
 3. 📖 KEY SCRIPTURAL PROOFS, IMPORTANT TERMS & EXAMPLES:
    - Glossary of key Islamic terminology, Quranic Ayahs, Hadith citations, and specific examples extracted directly from the document with translations and explanations.
 4. 📝 QUICK REVISION TAKEAWAYS:
    - High-yield summary bullet points for students and Ustadhs to memorize or review before examinations.
 5. 💡 USTADH PEDAGOGICAL TIPS & CLASSROOM DISCUSSION:
-   - 2-3 practical tips on how to teach, assess, or explain these specific topics effectively in the classroom.
+   - 2-3 practical tips on how to teach, assess, or explain these specific topics effectively in the classroom, including discussion questions.
 
 Format strictly in clean, professional Markdown in ${resolvedLanguage}.`;
+  } else if (activeMode === 'lesson') {
+    modeInstructions = `
+[SPECIFIC TASK: USTADH 30-MIN STRUCTURED LESSON PLAN]
+You are a senior Madrasa Head Ustadh and pedagogical mentor designing a structured, practical 30-minute classroom lesson plan.
+
+CLEAN TOPIC EXTRACTION & TANGLISH:
+- Mentally decode any Tanglish prompt (e.g. "wudu eppadi seirathu" -> "வுளூவின் முக்கியத்துவமும் அதன் சட்டதிட்டங்களும் செய்முறையும் / Fiqh of Taharah: Rules of Wudu").
+- NEVER echo colloquial Tanglish words into the lesson headings or overview!
+
+STRUCTURED MADRASA TEACHING PLAN LAYOUT:
+1. 🎯 LESSON OVERVIEW & LEARNING OBJECTIVES:
+   - Institution: ${madrasaName || 'Madrasa'}
+   - Subject & Level: Islamic Studies / Fiqh / Tajweed
+   - Cognitive Objectives (What students will understand)
+   - Spiritual & Behavioral Objectives (Akhlaq & Adab application)
+   - Essential Quranic Ayahs & Sahih Hadith Evidence (Arabic text, transliteration, and meaning)
+
+2. ⏱️ TIME ALLOCATION TABLE (30 MINUTES):
+   | Phase | Duration | Teacher Activity / Pedagogical Method | Student Activity |
+   | :--- | :--- | :--- | :--- |
+   | Starter & Hook | 5 Mins | Inspiring opening, prior knowledge check, real-life question | Answering questions, active engagement |
+   | Core Instruction | 15 Mins | Direct teaching of core concepts, Quran/Hadith evidence, board diagram | Listening, taking structured notes |
+   | Interactive Activity | 7 Mins | Guided pair drill, blackboard recitation, or mini-quiz | Practicing in pairs, reciting, answering |
+   | Plenary & Wrap-up | 3 Mins | Quick summary check, homework assignment, closing Sunnah Du'a | Noting homework, reciting Du'a |
+
+3. 📖 CORE ISLAMIC & ARABIC CONCEPTS:
+   - Step-by-step breakdown of rulings, pillars (Arkan), conditions (Shuroot), and Sunnahs.
+   - Arabic key vocabulary with Tamil / English meanings.
+
+4. 🤝 INTERACTIVE CLASSROOM ACTIVITY:
+   - Engaging pair-and-share drill, board exercise, or question-and-answer scenario.
+
+5. 📝 HOMEWORK & ASSESSMENT QUESTIONS:
+   - 2-3 practical review questions for students to complete in their notebooks.
+   - One daily Sunnah practice related to the lesson to implement at home.
+
+Format in clean, professional Markdown in ${resolvedLanguage}.`;
+  } else if (activeMode === 'exam') {
+    modeInstructions = `
+[SPECIFIC TASK: STRUCTURED EXAMINATION / QUIZ PAPER & COMPLETE ANSWER KEY]
+You are an expert Islamic curriculum exam paper designer for Madrasa education.
+Generate a balanced, comprehensive examination paper followed by a complete Answer Key.
+
+CLEAN TOPIC EXTRACTION:
+- Extract formal scholarly Islamic topics from the user input (e.g. "zakat kanakku" -> "ஜகாத் கணக்கிடும் முறையும் அதன் சட்டங்களும் / Fiqh of Zakat").
+- NEVER echo raw Tanglish words into the exam header or questions.
+
+BALANCED QUESTION PAPER STRUCTURE:
+1. 🏫 INSTITUTIONAL EXAM HEADER:
+   - Institution: ${madrasaName || 'MadrasaNexa Islamic Academy'}
+   - "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
+   - Subject, Grade / Level, Total Marks: 50 Marks, Time Allowed: 1 Hour
+   - Student Name: ____________________ | Index No: __________
+
+2. 🔘 SECTION A: MULTIPLE CHOICE QUESTIONS (MCQs) (10 Marks):
+   - 5 balanced MCQs (2 marks each) testing core concepts.
+   - 4 clear options: (A), (B), (C), (D).
+
+3. ✍️ SECTION B: SHORT ANSWER CONCEPT QUESTIONS (20 Marks):
+   - 4-5 focused questions (4-5 marks each) assessing definitions, conditions (Shuroot), pillars (Arkan), and Hadith understanding.
+
+4. 📖 SECTION C: APPLICATION / AYAH EXPLANATION / TRANSLATION (20 Marks):
+   - 2 detailed questions requiring explanation of Quranic Ayah, translation of Arabic Hadith, or solving a practical Fiqh scenario.
+
+5. 🗝️ COMPLETE ANSWER KEY & MARKING SCHEME:
+   - Separated clearly by "---" at the bottom.
+   - Complete Answer Key for Section A (correct option + 1-line justification).
+   - Detailed model answers and marking points for Section B and Section C so teachers can grade immediately.
+
+Format in clean, professional Markdown in ${resolvedLanguage}.`;
+  } else if (activeMode === 'notes') {
+    modeInstructions = `
+[SPECIFIC TASK: IN-DEPTH SCHOLARLY STUDY NOTES & REVISION GUIDE]
+Generate comprehensive, highly detailed academic study notes on the requested topic.
+
+STRICT INSTITUTIONAL GROUNDING:
+1. STRICT PROHIBITION: NEVER give brief, shallow 3–4 line summaries.
+2. Output deep, thorough academic notes (up to 32,768 tokens) ready for classroom teaching, revision notebooks, and student mastery.
+
+STRUCTURE & LAYOUT:
+1. 📌 TOPIC TITLE & SCHOLARLY FOUNDATION:
+   - Formal title and historical/theological background in Islamic scholarship.
+2. 📖 SCRIPTURAL EVIDENCE & CANONICAL TEXTS:
+   - Quranic Ayahs with Surah and verse numbers (Arabic text, transliteration, and translation).
+   - Sahih Hadith citations with authentic collection references (Bukhari, Muslim, etc.).
+3. 🔍 DETAILED SECTION-BY-SECTION EXPLANATIONS (##, ###, ####):
+   - Comprehensive analysis of rulings, definitions, conditions, pillars, and classical scholarly consensus (Ijma / Qiyas).
+   - Arabic/Tamil terminology explained with precision.
+4. 🌟 PRACTICAL MADRASA & REAL-WORLD EXAMPLES:
+   - Concrete examples and case studies showing how these rulings apply in daily life and Madrasa practice.
+5. 📝 SUMMARY TAKEAWAYS & SELF-REVIEW QUESTIONS:
+   - High-yield revision points and 4-5 self-assessment questions for students to test their understanding.
+
+Format in clean, professional Markdown in ${resolvedLanguage}.`;
   } else if (activeMode === 'hifz') {
     modeInstructions = `
 [SPECIFIC TASK: HIFZ & TAJWEED ASSESSMENT SHEET]
@@ -2174,15 +2366,15 @@ Format in clean, orator-friendly Markdown in ${resolvedLanguage}.`;
 
   // Detect if user is requesting notes, study notes, lesson guides, revision, or explanations
   const NOTES_INTENT_REGEX = /\b(?:notes?|study\s+notes?|lesson\s+notes?|revision\s+notes?|summary|summarize|surukki|explain|explanation|explain\s+panni|vilakkam|paadam|notes\s+eduthu|kuripu|overview)\b/i;
-  const isNotesRequest = NOTES_INTENT_REGEX.test(cleanMessage) || activeMode === 'summarizer';
+  const isNotesRequest = NOTES_INTENT_REGEX.test(cleanMessage) || activeMode === 'summarizer' || activeMode === 'notes';
 
-  if (isNotesRequest && activeMode !== 'circular') {
+  if (isNotesRequest && activeMode !== 'circular' && activeMode !== 'translate' && activeMode !== 'notes') {
     modeInstructions += `
 [CRITICAL INSTRUCTION: COMPREHENSIVE STUDY NOTES & LESSON GUIDE]
 The user is requesting study notes, lesson explanation, or revision material ("${cleanMessage}").
 STRICT PROHIBITION: NEVER give overly brief, shallow, or truncated 3–4 line answers!
 ALWAYS provide rich, thorough, well-organized study notes using clear Markdown headings (##, ###), bullet points, bold key terms, step-by-step explanations, relevant Islamic/Madrasa examples (with Arabic terms/transliteration & meaning where applicable), practical pedagogical tips, and a short 'Key Takeaways & Quick Review Questions' section at the end.
-Write detailed, high-yield educational notes up to 8192 tokens in ${resolvedLanguage} ready for student study notebooks or classroom presentation.`;
+Write detailed, high-yield educational notes up to 32,768 tokens in ${resolvedLanguage} ready for student study notebooks or classroom presentation.`;
   }
 
   if (isSingleGreeting) {
@@ -2241,12 +2433,20 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
   const isGenericSpeech = activeMode === 'speech' && /^(?:speech|bayan|speech\s+venum|bayan\s+script|bayan\s+speech|i\s+need\s+speech|assembly\s+speech)[\s!.,?]*$/i.test(cleanMessage);
 
   let finalUserPrompt = userPrompt || cleanMessage || 'Please examine the attached document and provide an overview and key points.';
-  if (isGenericNotice) {
+  if (isTranslationFollowup) {
+    finalUserPrompt = `Please translate the previous message from our conversation history into ${resolvedLanguage}:\n\n"""\n${lastAssistantMessage.slice(0, 4000)}\n"""`;
+  } else if (isGenericNotice) {
     finalUserPrompt = `Please generate an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'our Madrasa'}.`;
   } else if (hasPdf && isGenericPdfPrompt) {
-    finalUserPrompt = 'Please examine the attached PDF document and provide a comprehensive, structured summary and study guide covering document overview, core objectives, detailed section-by-section breakdown, key examples and scriptural proofs from the document, and conclusion revision takeaways.';
+    finalUserPrompt = 'Please examine the attached PDF document and provide a comprehensive 5-part structured study guide covering document overview and core objectives, detailed section-by-section breakdown, key scriptural proofs and examples from the document, quick revision takeaways, and Ustadh pedagogical tips.';
   } else if (isGenericSpeech) {
     finalUserPrompt = `Please write an inspiring, ready-to-deliver 5-minute Madrasa Morning Assembly Speech on the Importance of Seeking Beneficial Knowledge and Practicing Noble Islamic Character (Akhlaq).`;
+  } else if (activeMode === 'exam' && (!cleanMessage || /^(?:exam|quiz|question\s*paper|test\s*paper|exam\s*paper\s*onnu|quiz\s*ready\s*pannu)[\s!.,?]*$/i.test(cleanMessage))) {
+    finalUserPrompt = `Please generate a structured Islamic examination paper and complete answer key on ${hasPdf ? 'the attached document' : 'Islamic Studies core curriculum'}.`;
+  } else if (activeMode === 'lesson' && (!cleanMessage || /^(?:lesson|lesson\s*plan|lesson\s*planner|lesson\s*plan\s*onnu)[\s!.,?]*$/i.test(cleanMessage))) {
+    finalUserPrompt = `Please design a structured 30-minute Madrasa lesson plan on ${hasPdf ? 'the attached document' : 'Islamic Studies / Fiqh core topic'}.`;
+  } else if (activeMode === 'notes' && (!cleanMessage || /^(?:notes|study\s*notes|notes\s*venum|notes\s*eduthu\s*kudu)[\s!.,?]*$/i.test(cleanMessage))) {
+    finalUserPrompt = `Please generate comprehensive, detailed study notes and revision guide on ${hasPdf ? 'the attached document' : 'Islamic Studies core concepts'}.`;
   }
 
   messages.push({
@@ -2258,7 +2458,7 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     messages,
     pdfBuffer,
     temperature: 0.35,
-    maxTokens: 8192,
+    maxTokens: 32768,
   });
 
   return {

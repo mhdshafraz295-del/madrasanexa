@@ -106,7 +106,7 @@ export const MadrasaPublicPage: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col font-sans selection:bg-[#F5F5F1] selection:text-[#252525]"
+      className="min-h-screen flex flex-col font-sans selection:bg-[#F5F5F1] selection:text-[#252525] overflow-x-clip"
       style={{
         backgroundColor: theme.pageBg || '#ffffff',
         color: theme.bodyTextColor || '#252525',

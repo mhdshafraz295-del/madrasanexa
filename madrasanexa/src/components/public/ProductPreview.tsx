@@ -154,12 +154,12 @@ export default function ProductPreview() {
         </div>
 
         {/* Floating Glass Chips Accents */}
-        <div className="absolute top-16 -right-4 sm:-right-6 bg-white/90 backdrop-blur-md border border-white/70 shadow-lg px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[11px] font-semibold text-[#0F172A] animate-bounce-slow">
+        <div className="absolute top-16 right-1 sm:-right-6 bg-white/90 backdrop-blur-md border border-white/70 shadow-lg px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[11px] font-semibold text-[#0F172A] animate-bounce-slow">
           <GraduationCap className="w-3.5 h-3.5 text-[#85845C]" />
           <span>Tenant Isolated</span>
         </div>
 
-        <div className="absolute bottom-6 -left-3 sm:-left-4 bg-[#252525]/90 backdrop-blur-md border border-white/20 shadow-xl px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[11px] font-semibold text-white">
+        <div className="absolute bottom-6 left-1 sm:-left-4 bg-[#252525]/90 backdrop-blur-md border border-white/20 shadow-xl px-3 py-1.5 rounded-full flex items-center gap-1.5 text-[11px] font-semibold text-white">
           <CheckCircle2 className="w-3.5 h-3.5 text-[#85845C]" />
           <span>Automated Receipts</span>
         </div>

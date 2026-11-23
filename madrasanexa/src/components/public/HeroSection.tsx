@@ -45,11 +45,8 @@ export default function HeroSection({ data, heroMedia }: HeroSectionProps) {
               </div>
             )}
 
-            {/* Main Headline with Serif Typography & Dove Perch Anchor */}
-            <h1
-              data-dove-perch="hero"
-              className="font-serif text-3xl sm:text-5xl xl:text-6xl font-bold text-[#252525] tracking-tight leading-[1.18] relative inline-block w-fit"
-            >
+            {/* Main Headline with Serif Typography */}
+            <h1 className="font-serif text-3xl sm:text-5xl xl:text-6xl font-bold text-[#252525] tracking-tight leading-[1.18]">
               {highlightedPart ? (
                 <>
                   {beforeHighlight}

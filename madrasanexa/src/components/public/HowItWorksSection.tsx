@@ -17,10 +17,7 @@ export default function HowItWorksSection({ steps }: HowItWorksSectionProps) {
           <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#F5F5F1] text-[#85845C] text-xs font-semibold tracking-wider uppercase mb-3 border border-[#E5E5DF]">
             Onboarding Protocol
           </div>
-          <h2
-            data-dove-perch="how-it-works"
-            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block w-fit mx-auto"
-          >
+          <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight">
             How MadrasaNexa Works
           </h2>
           <div className="w-16 h-1 bg-[#85845C] mx-auto rounded-full mt-4 mb-4" />

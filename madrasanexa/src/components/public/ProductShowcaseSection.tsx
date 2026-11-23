@@ -30,10 +30,7 @@ export default function ProductShowcaseSection({
             <Sparkles className="w-3.5 h-3.5 text-[#A5A477]" />
             <span>Intuitive Workspace</span>
           </div>
-          <h2
-            data-dove-perch="showcase"
-            className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight relative inline-block w-fit mx-auto"
-          >
+          <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-[#252525] tracking-tight">
             Designed for Real Madrasa Workflows
           </h2>
           <p className="mt-4 text-base sm:text-lg text-[#666666] leading-relaxed">

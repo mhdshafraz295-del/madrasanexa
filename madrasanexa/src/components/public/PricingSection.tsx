@@ -47,10 +47,7 @@ export default function PricingSection({ plans }: PricingSectionProps) {
             <Sparkles className="w-3.5 h-3.5 text-[#FFD978]" />
             <span>Institutional Subscriptions</span>
           </div>
-          <h2
-            data-dove-perch="pricing"
-            className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0F172A] tracking-tight relative inline-block w-fit mx-auto"
-          >
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0F172A] tracking-tight">
             Transparent Subscription Plans
           </h2>
           <div className="w-16 h-1 bg-[#89865D] mx-auto rounded-full mt-4 mb-4" />

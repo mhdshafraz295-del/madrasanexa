@@ -100,11 +100,7 @@ export default function PublicFooter({ data, contactEnabled = true }: PublicFoot
             <Link to="/" className="flex items-center gap-3 mb-4 focus:outline-none rounded-lg group">
               <img src={logoUrl} alt="MadrasaNexa" className="h-10 w-auto object-contain bg-white/95 p-1 rounded-lg" />
               <div className="flex flex-col">
-                {/* data-dove-perch="footer" lets the dove land gracefully in the night-sky footer */}
-                <span
-                  data-dove-perch="footer"
-                  className="font-serif font-bold text-lg sm:text-xl tracking-tight text-white relative inline-block w-fit"
-                >
+                <span className="font-serif font-bold text-lg sm:text-xl tracking-tight text-white">
                   MadrasaNexa
                 </span>
                 <span className="text-[10px] uppercase tracking-widest text-emerald-200/80 font-semibold -mt-0.5">

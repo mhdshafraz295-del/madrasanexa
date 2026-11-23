@@ -6,7 +6,6 @@ import {
   type PlanData,
 } from '../../services/homepage.service';
 import PublicNavbar from '../../components/public/PublicNavbar';
-import FlyingDovePerch from '../../components/public/FlyingDovePerch';
 import QuranVerseMarquee from '../../components/public/QuranVerseMarquee';
 import HeroSection from '../../components/public/HeroSection';
 import TrustStrip from '../../components/public/TrustStrip';
@@ -335,7 +334,7 @@ export default function HomePage({ previewMode = false, previewData = null }: Ho
   );
 
   return (
-    <div className="min-h-screen bg-white text-[#252525] font-sans antialiased selection:bg-[#A5A477]/20 selection:text-[#252525]">
+    <div className="min-h-screen bg-white text-[#252525] font-sans antialiased selection:bg-[#A5A477]/20 selection:text-[#252525] overflow-x-clip">
       {/* Super Admin Preview Banner */}
       {previewMode && (
         <div className="sticky top-0 z-60 bg-amber-500 text-amber-950 px-4 py-2 text-xs font-bold flex items-center justify-between shadow-md">
@@ -355,9 +354,6 @@ export default function HomePage({ previewMode = false, previewData = null }: Ho
 
       {/* Floating Glass Navbar */}
       <PublicNavbar contactEnabled={contactHasData} />
-
-      {/* Global White Dove ("Pura") Flight, Scroll-Tracking Perch & Drifting Feather Underline */}
-      <FlyingDovePerch />
 
       {/* Horizontal Qur'an Verse Marquee */}
       <QuranVerseMarquee />

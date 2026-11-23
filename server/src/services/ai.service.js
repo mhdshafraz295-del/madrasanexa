@@ -861,6 +861,83 @@ export async function fetchLiveWebContext(query) {
 }
 
 /**
+ * Strict Islamic Aqeedah Theology Sanitizer:
+ * Enforces pure Tawheed. Forbids anthropomorphic/Christianized concepts in any language,
+ * such as referring to Allah (SWT) as "father" ("தந்தை" / "அப்பா" / "Father" / "Abba").
+ */
+export function sanitizeIslamicTheology(text) {
+  if (!text || typeof text !== 'string') return '';
+  let cleaned = text;
+
+  // Tamil anthropomorphic corrections (no \b for non-ASCII Tamil script):
+  cleaned = cleaned.replace(/(?:அல்லாஹ்\s*(?:நம்|நம்முடைய|நமது|ஒரு)?\s*(?:தந்தை|அப்பா))/gu, 'அல்லாஹ் நம்மைப் படைத்த ரப்பு');
+  cleaned = cleaned.replace(/(?:தந்தையாகிய\s*அல்லாஹ்|அப்பாவாகிய\s*அல்லாஹ்)/gu, 'எல்லாம் வல்ல அல்லாஹ்');
+  cleaned = cleaned.replace(/(?:தந்தை\s*அல்லாஹ்|அப்பா\s*அல்லாஹ்)/gu, 'ரப்புல் ஆலமீன் அல்லாஹ்');
+  cleaned = cleaned.replace(/(?:பரலோகத்\s*தந்தை|விண்ணகத்\s*தந்தை|பரலோக\s*தந்தை)/gu, 'ரப்புல் ஆலமீன் (அகிலங்களின் இரட்சகன்)');
+  cleaned = cleaned.replace(/(?:அல்லாஹ்வை\s*தந்தை\s*என்று)/gu, 'அல்லாஹ்வை ரப்பு என்று');
+
+  // English anthropomorphic corrections:
+  cleaned = cleaned.replace(/\b(?:Allah\s+(?:is\s+)?(?:our\s+)?father|Father\s+Allah|Heavenly\s+Father)\b/gi, 'Allah, our Creator and Sustainer');
+
+  return cleaned;
+}
+
+/**
+ * Post-processing guard to detect and truncate pathological repetition loops
+ * (e.g. when an LLM repeats the same sentence, paragraph, line, or phrase 3+ times consecutively).
+ */
+export function sanitizeRepetitiveOutput(text) {
+  if (!text || typeof text !== 'string') return '';
+  let cleaned = text.trim();
+
+  // 1. Strict Islamic Aqeedah check
+  cleaned = sanitizeIslamicTheology(cleaned);
+
+  // 2. Paragraph-level repetition (blocks separated by 2+ newlines)
+  const paragraphs = cleaned.split(/\n{2,}/);
+  if (paragraphs.length >= 3) {
+    const deduplicated = [];
+    let prevParaNorm = '';
+
+    for (const para of paragraphs) {
+      const norm = para.trim().replace(/\s+/g, ' ').toLowerCase();
+      if (norm && norm.length > 20 && norm === prevParaNorm) {
+        // Consecutive identical paragraph: discard duplicate
+        continue;
+      }
+      prevParaNorm = norm;
+      deduplicated.push(para);
+    }
+    cleaned = deduplicated.join('\n\n');
+  }
+
+  // 3. Line-level repetition
+  const lines = cleaned.split('\n');
+  if (lines.length >= 3) {
+    const cleanLines = [];
+    let prevLineNorm = '';
+
+    for (const line of lines) {
+      const norm = line.trim().replace(/\s+/g, ' ').toLowerCase();
+      if (norm && norm.length > 15 && norm === prevLineNorm) {
+        continue;
+      }
+      prevLineNorm = norm;
+      cleanLines.push(line);
+    }
+    cleaned = cleanLines.join('\n');
+  }
+
+  // 4. Sentence-level repetition (sentences of 15+ characters repeating 2+ or 3+ times consecutively)
+  cleaned = cleaned.replace(/((?:[^.!?\n\u06D4]{15,}[.!?\n\u06D4]\s*))\1+/gu, (match, p1) => p1);
+
+  // 5. Arbitrary repeating phrase/clause loops (phrases of 20+ characters repeating 3+ times)
+  cleaned = cleaned.replace(/(.{20,}?)\1{2,}/gu, (match, p1) => p1);
+
+  return cleaned.trim();
+}
+
+/**
  * Helper to execute Google Gemini generation with native PDF inlineData support.
  * Targets gemini-2.5-flash with native Google Search grounding, fallback cascade, and live web context.
  */
@@ -878,8 +955,8 @@ async function callGeminiGenerateContent({
     throw new Error('GEMINI_API_KEY is not configured.');
   }
 
-  // Smart Gemini model cascade: try gemini-2.5-flash first, then gemini-3.5-flash / gemini-flash-latest, then gemini-2.0-flash
-  const models = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
+  // Smart Gemini model cascade: prioritize strong multilingual models
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash'];
   const contents = [];
 
   if (Array.isArray(messages) && messages.length > 0) {
@@ -1117,7 +1194,10 @@ async function generateAiText({
         queryText: userQuery,
       });
       if (geminiRes?.text) {
-        return geminiRes;
+        return {
+          ...geminiRes,
+          text: sanitizeRepetitiveOutput(geminiRes.text),
+        };
       }
     } catch (geminiErr) {
       console.warn('[AI Service] Gemini model cascade failed, falling back to Cloudflare Workers AI:', geminiErr.message);
@@ -1155,11 +1235,15 @@ async function generateAiText({
       }
     }
 
-    return await callCloudflareChatAi({
+    const cfChatRes = await callCloudflareChatAi({
       messages: cfMessages,
       temperature,
       maxTokens: cfSafeMaxTokens,
     });
+    return {
+      ...cfChatRes,
+      text: sanitizeRepetitiveOutput(cfChatRes.text),
+    };
   }
 
   const cfText = await callCloudflareTextAi({
@@ -1170,7 +1254,7 @@ async function generateAiText({
   });
 
   return {
-    text: cfText,
+    text: sanitizeRepetitiveOutput(cfText),
     model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
   };
 }
@@ -1187,6 +1271,7 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
   }
 
   const models = [
+    '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
     '@cf/meta/llama-3.3-70b-instruct',
     '@cf/meta/llama-3.1-8b-instruct',
   ];
@@ -1217,6 +1302,8 @@ async function callCloudflareTextAi({ prompt, systemPrompt = '', temperature = 0
           messages,
           temperature,
           max_tokens: safeMaxTokens,
+          repetition_penalty: 1.15,
+          frequency_penalty: 0.4,
         }),
       });
 
@@ -1273,6 +1360,8 @@ async function callCloudflareChatAi({ messages, temperature = 0.4, maxTokens = 8
           messages,
           temperature,
           max_tokens: safeMaxTokens,
+          repetition_penalty: 1.15,
+          frequency_penalty: 0.4,
         }),
       });
 
@@ -1369,6 +1458,13 @@ export const getUniversalAiInstructions = () => `
    - [TRANSLATOR MODE EXCEPTION]: When the active mode is Translator (translate / translator), single-language mirroring is STRICTLY DISABLED. You MUST output complete translations in ALL THREE LANGUAGES (🇬🇧 English, 🇱🇰 தமிழ், 🇸🇦 العربية) unless the user explicitly requested only one language.
 
 4. STRICT ISLAMIC ACCURACY & SCHOLARLY INTEGRITY GUARDRAILS:
+   - STRICT ISLAMIC AQEEDAH GUARDRAIL (ZERO ANTHROPOMORPHISM & PARENTHOOD METAPHORS):
+     * ABSOLUTE THEOLOGICAL PROHIBITION: NEVER refer to Allah (ﷻ / SWT) as "father" ("தந்தை" / "அப்பா" / "Father" / "Abba") or use any Christianized anthropomorphic concepts in any language!
+     * In pure Islamic Aqeedah, Allah is The One, The Self-Sufficient: "لَمْ يَلِدْ وَلَمْ يُولَدْ" (He neither begets nor is born — Surah Al-Ikhlas 112:3). Attributing fatherhood, sonship, or human biology to Allah is Shirk and strictly forbidden.
+     * Always refer to Allah with His authentic Islamic Names and Attributes: அல்லாஹ் (Allah ﷻ), ரப்புல் ஆலமீன் (Lord of the Worlds), படைத்தவன் (The Creator / Al-Khaliq), நாயன், இறைவன், கருணையாளன் (The Most Merciful / Ar-Rahman).
+     * When addressing parental obedience (பெற்றோருக்குக் கீழ்ப்படிதல் / Birr al-Walidayn):
+       - Strictly distinguish between mortal biological parents (தாய், தந்தை / உம்மா, வாப்பா / பெற்றோர்கள்) and the Supreme Creator Allah ﷻ.
+       - Obeying and honoring parents is a divine commandment of Allah ﷻ, but worship, supreme obedience, and lordship belong solely to Allah ﷻ alone. NEVER conflate Allah with a father!
    - ZERO SCRIPTURAL FABRICATION: Never invent or guess Quranic verse numbers or Surah references (e.g., never misquote Surah 2:238 or cite non-existent numbers). If quoting an Ayah, ensure the Surah name and theological context are accurate.
    - ACCURATE HADITH ATTRIBUTION: Strictly attribute Hadith quotations to their authentic canonical collections (e.g., Sahih al-Bukhari, Sahih Muslim, Sunan Abi Dawud, Jami' at-Tirmidhi, Sunan an-Nasa'i, Sunan Ibn Majah).
      * Example: The statement "தூய்மை ஈமானின் பாதியாகும்" (Cleanliness is half of faith) is authentically recorded in Sahih Muslim (Hadith 223), NOT Sahih al-Bukhari.
@@ -2124,7 +2220,7 @@ export async function chatWithCopilot({
     baseMode = 'notes';
   } else if (rawMode === 'hifz') {
     baseMode = 'hifz';
-  } else if (rawMode === 'speech') {
+  } else if (rawMode === 'speech' || rawMode === 'bayan' || rawMode === 'speech_bayan' || rawMode === 'bayan_speech' || rawMode.includes('speech') || rawMode.includes('bayan')) {
     baseMode = 'speech';
   }
 
@@ -2175,7 +2271,7 @@ export async function chatWithCopilot({
       activeMode = 'notes';
     } else if (/\b(?:hifz|tajweed\s*drill|ayah\s*drill)\b/i.test(cleanMessage)) {
       activeMode = 'hifz';
-    } else if (/\b(?:bayan|speech|assembly\s*speech)\b/i.test(cleanMessage)) {
+    } else if (/\b(?:bayan|speech|assembly\s*speech|morning\s*speech|பேச்சு|பயான்)\b/i.test(cleanMessage)) {
       activeMode = 'speech';
     } else {
       activeMode = 'auto';
@@ -2436,24 +2532,50 @@ STRUCTURE & LAYOUT:
 Format clearly in professional Markdown in ${resolvedLanguage}.`;
   } else if (activeMode === 'speech') {
     modeInstructions = `
-[SPECIFIC TASK: ISLAMIC SPEECH / BAYAN SCRIPT]
-Write an inspiring, spiritually uplifting, ready-to-deliver 5-minute Madrasa Morning Assembly Speech or Jalsa Bayan.
-CLEAN SPEECH TITLE EXTRACTION:
-- Synthesize a formal, inspiring title (e.g., if user writes "ramadan paththi bayan speech thaa", title the speech "ரமழானின் மகத்துவமும் அதன் ஆத்மீக வழிகாட்டல்களும் / The Spiritual Virtues and Blessings of Ramadan").
-- NEVER echo colloquial Tanglish phrases into the title or body!
-STRUCTURE & LAYOUT:
-1. TRADITIONAL ARABIC OPENING (Khutbah al-Hajah):
-   - "الحمد لله رب العالمين، والصلاة والسلام على أشرف الأنبياء والمرسلين..." with brief translation.
-2. WELCOME & ENGAGING HOOK:
-   - Warm greeting to Ustadhs, parents, and fellow students, followed by a thought-provoking real-life question or relatable story.
-3. CORE THEME & 3 KEY LESSONS:
-   - Point 1 grounded with Quranic Ayah proof (Arabic text + translation).
-   - Point 2 grounded with Sahih Hadith proof (Arabic text + translation).
-   - Point 3 with practical everyday application in Madrasa and at home.
-4. SPIRITUAL CALL TO ACTION:
-   - One actionable habit or Sunnah students can adopt starting today.
-5. CLOSING DU'A:
-   - Heartfelt Arabic Du'a with translation for parents, teachers, Madrasa, and the Ummah.
+[SPECIFIC TASK: 🎙️ ISLAMIC BAYAN / ORATION / ASSEMBLY SPEECH SCRIPT]
+You are a distinguished Islamic scholar, orator, and Madrasa mentor preparing a structured, inspiring, ready-to-deliver Bayan / Assembly Speech.
+
+[CRITICAL MANDATE: START IMMEDIATELY AT CHARACTER 0]:
+- STRICT PROHIBITION: NEVER prepend any bot persona greeting, self-introduction, or capability menu (e.g. NEVER write "Assalamu Alaikum! I am MadrasaNexa Smart AI Assistant...", "Welcome...", or list 8 features)!
+- Start DIRECTLY at character 0 with "# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ" and the Khutbah al-Hajah opening.
+
+[STRICT ISLAMIC AQEEDAH GUARDRAIL]:
+- ABSOLUTE THEOLOGICAL PROHIBITION: NEVER refer to Allah (SWT) as "father" ("தந்தை" / "அப்பா" / "Father") or use any Christianized anthropomorphic concepts! Allah is "لَمْ يَلِدْ وَلَمْ يُولَدْ" (He neither begets nor is born — Surah Al-Ikhlas 112:3).
+- Strictly distinguish between biological mortal parents (தாய், தந்தை / உம்மா, வாப்பா) and the Creator Allah ﷻ (படைத்தவன், ரப்புல் ஆலமீன்). Obedience to parents is an Islamic obligation commanded by Allah, but worship, supreme obedience, and lordship belong solely to Allah ﷻ alone.
+
+STRUCTURE & FORMAT (STRUCTURED ISLAMIC BAYAN TEMPLATE):
+1. 📖 TRADITIONAL ISLAMIC OPENING (Khutbah al-Hajah):
+   - "# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"
+   - Formal Speech Title (## ...)
+   - Classical Arabic Khutbah:
+     > الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ، وَالصَّلَاةُ وَالسَّلَامُ عَلَى أَشْرَفِ الأَنْبِيَاءِ وَالْمُرْسЕЛِينَ، نَبِيِّنَا مُحَمَّدٍ وَعَلَى آلِهِ وَصَحْبِهِ أَجْمَعِينَ.
+   - Translation of the praise of Allah ﷻ and peace upon the Prophet ﷺ.
+
+2. 🎯 THEME INTRODUCTION & AUDIENCE HOOK:
+   - Warm Islamic salutation ("Assalamu Alaikum wa Rahmatullahi wa Barakatuh").
+   - Engaging opening hook tailored to the audience (students, youth, teachers, or parents) introducing why this topic is vital for our Dunya and Aakhirah.
+
+3. 📜 SCRIPTURAL EVIDENCE 1: AUTHENTIC QURANIC AYAH:
+   - Clear Quranic citation with Surah name and Ayah number (e.g. Surah Al-Isra 17:23-24, Surah Luqman 31:14).
+   - Arabic text quoted in a clean Markdown blockquote:
+     > [Arabic Quranic Ayah]
+   - Accurate, eloquent translation in ${resolvedLanguage} followed by reflection points.
+
+4. 📖 SCRIPTURAL EVIDENCE 2: AUTHENTIC SAHIH HADITH:
+   - Hadith with precise canonical source (e.g., Sahih al-Bukhari, Sahih Muslim, Sunan Abi Dawud, Jami' at-Tirmidhi).
+   - Quoted in a clean Markdown blockquote:
+     > [Arabic Hadith text / wording]
+   - Clear translation and explanation of the Prophet's ﷺ guidance.
+
+5. 💡 3-4 PRACTICAL ACTIONABLE TAKEAWAYS:
+   - Concrete daily habits and Sunnah actions students and listeners can implement immediately (e.g., speaking gently to parents, making daily Du'a for them, avoiding showing annoyance).
+
+6. 🤲 HEARTFELT CLOSING DU'A:
+   - Authentic Quranic/Sunnah Du'a in Arabic blockquote:
+     > رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا
+     > "My Lord, forgive me and my parents and have mercy upon them as they brought me up when I was small."
+   - Closing prayers for the Madrasa, teachers, students, parents, and the Muslim Ummah.
+
 Format in clean, orator-friendly Markdown in ${resolvedLanguage}.`;
   } else {
     // Mode is 'auto'
@@ -2532,6 +2654,9 @@ Institution: ${madrasaName || 'Madrasa'}
 User Role: ${role || 'Staff'}
 ${languageDirective}
 
+[STRICT ISLAMIC AQEEDAH GUARDRAIL]:
+NEVER refer to Allah (SWT) as "father" ("தந்தை" / "அப்பா" / "Father") or use Christianized metaphors! In Islamic Aqeedah, Allah is "لَمْ يَلِدْ وَلَمْ يُولَدْ" (He neither begets nor is born). Always refer to Allah as அல்லாஹ், ரப்புல் ஆலமீன், படைத்தவன், இறைவன். When discussing parents (பெற்றோர்கள் / தாய் தந்தை), clearly distinguish mortal parents from the Creator Allah ﷻ.
+
 ${getUniversalAiInstructions()}
 
 ${modeInstructions}
@@ -2578,8 +2703,12 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     finalUserPrompt = `${userPrompt || cleanMessage}\n\n[INSTRUCTION]: Generate an official, print-ready Madrasa Parent Circular for ${madrasaName || 'our Madrasa'}. Start immediately at character 0 with '# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ' without self-introductions or conversational preamble.`;
   } else if (hasPdf && isGenericPdfPrompt) {
     finalUserPrompt = 'Please examine the attached PDF document and provide a comprehensive 5-part structured study guide covering document overview and core objectives, detailed section-by-section breakdown, key scriptural proofs and examples from the document, quick revision takeaways, and Ustadh pedagogical tips.';
-  } else if (isGenericSpeech) {
-    finalUserPrompt = `Please write an inspiring, ready-to-deliver 5-minute Madrasa Morning Assembly Speech on the Importance of Seeking Beneficial Knowledge and Practicing Noble Islamic Character (Akhlaq).`;
+  } else if (activeMode === 'speech') {
+    if (isGenericSpeech) {
+      finalUserPrompt = `Please write an inspiring, ready-to-deliver 5-minute Madrasa Morning Assembly Speech on the Importance of Seeking Beneficial Knowledge and Practicing Noble Islamic Character (Akhlaq). Start directly with '# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ' and the Arabic Khutbah without self-introductions.`;
+    } else {
+      finalUserPrompt = `${userPrompt || cleanMessage}\n\n[INSTRUCTION]: Prepare a complete, inspiring, ready-to-deliver Islamic Bayan / Assembly Speech on this topic. Follow the structured Bayan format: Opening (# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ and Arabic Khutbah), theme introduction tailored to the audience, authentic Quranic Ayah in blockquote (> ...) with exact translation and Surah reference, authentic Sahih Hadith in blockquote (> ...) with canonical collection reference, 3-4 practical takeaways, and closing Du'a. Start directly with the Bismillah opening without bot persona self-introductions.`;
+    }
   } else if (activeMode === 'exam' && (!cleanMessage || /^(?:exam|quiz|question\s*paper|test\s*paper|exam\s*paper\s*onnu|quiz\s*ready\s*pannu)[\s!.,?]*$/i.test(cleanMessage))) {
     finalUserPrompt = `Please generate a structured Islamic examination paper and complete answer key on ${hasPdf ? 'the attached document' : 'Islamic Studies core curriculum'}. Start directly with the examination header without self-introductions.`;
   } else if (activeMode === 'lesson') {
@@ -2606,8 +2735,10 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     maxTokens: 32768,
   });
 
+  const sanitizedReply = sanitizeRepetitiveOutput(text);
+
   return {
-    reply: text,
+    reply: sanitizedReply,
     modelUsed: model,
     language: resolvedLanguage,
     mode: activeMode,

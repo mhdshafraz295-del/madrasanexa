@@ -731,8 +731,138 @@ export async function toggleMadrasaAiAccess({ madrasaId, enabled, expiresAt, adm
 }
 
 /**
+ * Detect if a user prompt is asking about real-world facts, leadership, or current affairs.
+ */
+const CURRENT_AFFAIRS_REGEX = /\b(?:who\s+is|who\s+was|who\s+are|current|latest|present|today|now|recently|recent|president|prime\s+minister|chief\s+minister|minister|governor|leader|head\s+of\s+state|election|cabinet|news|score|price|2024|2025|2026|2027)\b/i;
+
+export function isCurrentAffairsQuery(text = '') {
+  return CURRENT_AFFAIRS_REGEX.test(String(text));
+}
+
+/**
+ * Lightweight Live Web Search Context Helper (Zero API Key Required + Optional Tavily / Serper):
+ * Fetches real-time web context dynamically so Gemini (without tools) and Cloudflare Llama
+ * can answer current-affairs facts accurately without hardcoded names.
+ */
+export async function fetchLiveWebContext(query) {
+  if (!query || typeof query !== 'string') return '';
+  const cleanQuery = query
+    .replace(/[?!.,;:()[\]{}"']/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!cleanQuery || cleanQuery.length < 3) return '';
+
+  // 1. Optional Tavily Search API if configured
+  const tavilyKey = process.env.TAVILY_API_KEY || env.TAVILY_API_KEY;
+  if (tavilyKey && tavilyKey.trim()) {
+    try {
+      const res = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: tavilyKey.trim(), query: cleanQuery, max_results: 4 }),
+        signal: AbortSignal.timeout(3500),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const snippets = (data?.results || []).map((r) => r.content || r.snippet).filter(Boolean);
+        if (snippets.length > 0) {
+          return snippets.slice(0, 4).join('\n---\n');
+        }
+      }
+    } catch (tavErr) {
+      console.warn('[Live Web Search] Tavily search error:', tavErr.message);
+    }
+  }
+
+  // 2. Optional Serper API if configured
+  const serperKey = process.env.SERPER_API_KEY || env.SERPER_API_KEY;
+  if (serperKey && serperKey.trim()) {
+    try {
+      const res = await fetch('https://google.serper.dev/search', {
+        method: 'POST',
+        headers: {
+          'X-API-KEY': serperKey.trim(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ q: cleanQuery, num: 4 }),
+        signal: AbortSignal.timeout(3500),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const snippets = (data?.organic || []).map((r) => r.snippet).filter(Boolean);
+        if (snippets.length > 0) {
+          return snippets.slice(0, 4).join('\n---\n');
+        }
+      }
+    } catch (serperErr) {
+      console.warn('[Live Web Search] Serper search error:', serperErr.message);
+    }
+  }
+
+  // 3. DuckDuckGo HTML Search (Zero API Key required)
+  try {
+    const ddgUrl = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(cleanQuery)}`;
+    const res = await fetch(ddgUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+      },
+      signal: AbortSignal.timeout(3500),
+    });
+
+    if (res.ok) {
+      const html = await res.text();
+      const regex = /<a class="result__snippet[^>]*>([\s\S]*?)<\/a>/g;
+      let match;
+      const snippets = [];
+      while ((match = regex.exec(html)) !== null && snippets.length < 4) {
+        const text = match[1]
+          .replace(/<[^>]+>/g, '')
+          .replace(/&quot;/g, '"')
+          .replace(/&#x27;/g, "'")
+          .replace(/&#39;/g, "'")
+          .replace(/&amp;/g, '&')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (text) snippets.push(text);
+      }
+      if (snippets.length > 0) {
+        return snippets.join('\n---\n');
+      }
+    }
+  } catch (ddgErr) {
+    console.warn('[Live Web Search] DuckDuckGo HTML search error:', ddgErr.message);
+  }
+
+  // 4. Wikipedia Search API (Zero API Key required)
+  try {
+    const wikiUrl = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${encodeURIComponent(cleanQuery)}&gsrlimit=3&prop=extracts&exintro=1&explaintext=1&format=json`;
+    const res = await fetch(wikiUrl, {
+      headers: { 'User-Agent': 'MadrasaNexaBot/1.0' },
+      signal: AbortSignal.timeout(3500),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const pages = Object.values(data?.query?.pages || {});
+      const extracts = pages
+        .map((p) => (p.title ? `${p.title}: ${p.extract || ''}` : p.extract))
+        .filter(Boolean)
+        .map((e) => e.slice(0, 300).trim());
+      if (extracts.length > 0) {
+        return extracts.join('\n---\n');
+      }
+    }
+  } catch (wikiErr) {
+    console.warn('[Live Web Search] Wikipedia search error:', wikiErr.message);
+  }
+
+  return '';
+}
+
+/**
  * Helper to execute Google Gemini generation with native PDF inlineData support.
- * Targets gemini-2.5-flash with native Google Search grounding support and automatic retry without tools.
+ * Targets gemini-2.5-flash with native Google Search grounding, fallback cascade, and live web context.
  */
 async function callGeminiGenerateContent({
   prompt = '',
@@ -741,13 +871,15 @@ async function callGeminiGenerateContent({
   pdfBuffer = null,
   temperature = 0.3,
   maxOutputTokens = 8192,
+  queryText = '',
 }) {
   const apiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   if (!apiKey || !apiKey.trim()) {
     throw new Error('GEMINI_API_KEY is not configured.');
   }
 
-  const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+  // Smart Gemini model cascade: try gemini-2.5-flash first, then gemini-3.5-flash / gemini-flash-latest, then gemini-2.0-flash
+  const models = ['gemini-2.5-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash'];
   const contents = [];
 
   if (Array.isArray(messages) && messages.length > 0) {
@@ -815,28 +947,15 @@ async function callGeminiGenerateContent({
     });
   }
 
-  const requestBody = {
-    contents,
-    generationConfig: {
-      temperature,
-      maxOutputTokens: maxOutputTokens || 8192,
-    },
-    tools: [{ google_search: {} }],
-  };
-
   const currentDateStr = new Date().toDateString();
   const temporalGrounding = `Current Date: ${currentDateStr}.\n\n`;
 
-  const finalSystemPrompt = systemPrompt && systemPrompt.trim()
+  const baseSystemPrompt = systemPrompt && systemPrompt.trim()
     ? `${temporalGrounding}${systemPrompt.trim()}`
     : temporalGrounding.trim();
 
-  if (finalSystemPrompt) {
-    requestBody.systemInstruction = {
-      parts: [{ text: finalSystemPrompt }],
-    };
-  }
-
+  let liveWebContext = '';
+  let attemptedWebFetch = false;
   let lastError = null;
 
   for (const model of models) {
@@ -844,12 +963,22 @@ async function callGeminiGenerateContent({
 
     // 1. Primary call with native Google Search Grounding: tools: [{ google_search: {} }]
     try {
+      const groundedBody = {
+        contents,
+        generationConfig: {
+          temperature,
+          maxOutputTokens: maxOutputTokens || 8192,
+        },
+        tools: [{ google_search: {} }],
+        ...(baseSystemPrompt ? { systemInstruction: { parts: [{ text: baseSystemPrompt }] } } : {}),
+      };
+
       const res = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify(groundedBody),
       });
 
       if (res.ok) {
@@ -867,16 +996,45 @@ async function callGeminiGenerateContent({
         }
       } else {
         const errText = await res.text();
-        console.warn(`[Gemini] Model ${model} with google_search returned ${res.status}: ${errText.slice(0, 150)}. Retrying without tools...`);
+        let errorReason = errText.slice(0, 300);
+        try {
+          const errJson = JSON.parse(errText);
+          if (errJson?.error?.message) {
+            errorReason = `${errJson.error.status || 'ERROR'}: ${errJson.error.message}`;
+          }
+        } catch (_) {}
+        console.warn(`[Gemini API Warning] Model ${model} with google_search returned HTTP ${res.status} (${errorReason}). Retrying without tools...`);
       }
     } catch (err) {
-      console.warn(`[Gemini] Error invoking ${model} with google_search:`, err.message, '. Retrying without tools...');
+      console.warn(`[Gemini API Warning] Error invoking ${model} with google_search:`, err.message, '. Retrying without tools...');
     }
 
-    // 2. Retry Gemini call without tools if google_search was unsupported or failed
+    // 2. Fetch live web context if current-affairs query and not already fetched
+    if (!attemptedWebFetch && queryText && isCurrentAffairsQuery(queryText)) {
+      attemptedWebFetch = true;
+      try {
+        liveWebContext = await fetchLiveWebContext(queryText);
+      } catch (e) {
+        console.warn('[Gemini API Warning] Live web context fetch failed:', e.message);
+      }
+    }
+
+    // Prepare system prompt for tool-less call, enriched with live web search results if available
+    let retrySystemPrompt = baseSystemPrompt;
+    if (liveWebContext) {
+      retrySystemPrompt += `\n\n[LIVE WEB SEARCH RESULTS - ${currentDateStr}]\n${liveWebContext}\nGround all answers to real-world and current-affairs facts strictly on the live web search results above.`;
+    }
+
+    // 3. Retry Gemini call without tools (with live web context if retrieved)
     try {
-      const bodyWithoutTools = { ...requestBody };
-      delete bodyWithoutTools.tools;
+      const bodyWithoutTools = {
+        contents,
+        generationConfig: {
+          temperature,
+          maxOutputTokens: maxOutputTokens || 8192,
+        },
+        ...(retrySystemPrompt ? { systemInstruction: { parts: [{ text: retrySystemPrompt }] } } : {}),
+      };
 
       const fallbackRes = await fetch(url, {
         method: 'POST',
@@ -887,9 +1045,16 @@ async function callGeminiGenerateContent({
       });
 
       if (!fallbackRes.ok) {
-        const errText = await fallbackRes.text();
-        console.warn(`[Gemini] Model ${model} without tools returned ${fallbackRes.status}: ${errText.slice(0, 200)}`);
-        lastError = new Error(`Gemini API error (${fallbackRes.status}): ${errText.slice(0, 200)}`);
+        const errFallbackText = await fallbackRes.text();
+        let fallbackReason = errFallbackText.slice(0, 300);
+        try {
+          const errJson = JSON.parse(errFallbackText);
+          if (errJson?.error?.message) {
+            fallbackReason = `${errJson.error.status || 'ERROR'}: ${errJson.error.message}`;
+          }
+        } catch (_) {}
+        console.warn(`[Gemini API Warning] Model ${model} without tools returned HTTP ${fallbackRes.status} (${fallbackReason})`);
+        lastError = new Error(`Gemini API error (${fallbackRes.status}): ${fallbackReason}`);
         continue;
       }
 
@@ -902,11 +1067,12 @@ async function callGeminiGenerateContent({
         return {
           text,
           model,
+          webContext: !!liveWebContext,
         };
       }
     } catch (err) {
       lastError = err;
-      console.warn(`[Gemini] Error invoking model ${model} without tools:`, err.message);
+      console.warn(`[Gemini API Warning] Error invoking model ${model} without tools:`, err.message);
     }
   }
 
@@ -916,7 +1082,8 @@ async function callGeminiGenerateContent({
 /**
  * Master AI Generation Dispatcher:
  * 1. Tries Google Gemini (gemini-2.5-flash with live search grounding) first if GEMINI_API_KEY is configured.
- * 2. Seamlessly falls back to Cloudflare Workers AI (@cf/meta/llama-3.3-70b-instruct-fp8-fast) if Gemini fails or is unconfigured.
+ * 2. Cascades to gemini-2.0-flash / gemini-2.5-flash-lite with fetchLiveWebContext(query).
+ * 3. Seamlessly falls back to Cloudflare Workers AI (@cf/meta/llama-3.3-70b-instruct-fp8-fast) enriched with fetchLiveWebContext(query).
  */
 async function generateAiText({
   prompt = '',
@@ -926,6 +1093,17 @@ async function generateAiText({
   temperature = 0.3,
   maxTokens = 8192,
 }) {
+  // Extract user query for context enrichment
+  let userQuery = (prompt || '').trim();
+  if (!userQuery && Array.isArray(messages)) {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user' && messages[i].content) {
+        userQuery = String(messages[i].content).trim();
+        break;
+      }
+    }
+  }
+
   const geminiKey = process.env.GEMINI_API_KEY || env.GEMINI_API_KEY;
   if (geminiKey && geminiKey.trim()) {
     try {
@@ -936,21 +1114,46 @@ async function generateAiText({
         pdfBuffer,
         temperature,
         maxOutputTokens: maxTokens,
+        queryText: userQuery,
       });
       if (geminiRes?.text) {
         return geminiRes;
       }
     } catch (geminiErr) {
-      console.warn('[AI Service] Gemini 2.5 Flash invocation error, falling back to Cloudflare Workers AI:', geminiErr.message);
+      console.warn('[AI Service] Gemini model cascade failed, falling back to Cloudflare Workers AI:', geminiErr.message);
     }
   } else {
     console.warn('[AI Service] GEMINI_API_KEY is not configured or missing from environment. Falling back to Cloudflare Workers AI.');
   }
 
+  // If falling back to Cloudflare Workers AI, check if live web context is needed for current-affairs queries
+  let enrichedSystemPrompt = systemPrompt;
+  if (userQuery && isCurrentAffairsQuery(userQuery)) {
+    try {
+      const liveWebContext = await fetchLiveWebContext(userQuery);
+      if (liveWebContext) {
+        const searchBlock = `\n\n[LIVE WEB SEARCH RESULTS - ${new Date().toDateString()}]\n${liveWebContext}\nGround all answers to real-world and current-affairs facts strictly on the live web search results above.`;
+        enrichedSystemPrompt = `${systemPrompt || ''}${searchBlock}`;
+      }
+    } catch (searchErr) {
+      console.warn('[AI Service] Live web context fetch for Cloudflare fallback error:', searchErr.message);
+    }
+  }
+
   // Fallback to Cloudflare Workers AI
   if (Array.isArray(messages) && messages.length > 0) {
+    const cfMessages = messages.map((m) => ({ ...m }));
+    if (enrichedSystemPrompt && enrichedSystemPrompt !== systemPrompt) {
+      const sysIdx = cfMessages.findIndex((m) => m.role === 'system');
+      if (sysIdx >= 0) {
+        cfMessages[sysIdx].content = enrichedSystemPrompt;
+      } else {
+        cfMessages.unshift({ role: 'system', content: enrichedSystemPrompt });
+      }
+    }
+
     return await callCloudflareChatAi({
-      messages,
+      messages: cfMessages,
       temperature,
       maxTokens: Math.min(maxTokens, 3500),
     });
@@ -958,7 +1161,7 @@ async function generateAiText({
 
   const cfText = await callCloudflareTextAi({
     prompt,
-    systemPrompt,
+    systemPrompt: enrichedSystemPrompt,
     temperature,
   });
 

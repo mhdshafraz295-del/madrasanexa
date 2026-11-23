@@ -1389,6 +1389,7 @@ export const getUniversalAiInstructions = () => `
      * Ground all answers, notes, summaries, and exam questions STRICTLY on the document's actual contents, facts, and structure.
      * Do NOT hallucinate external chapters or assume syllabus content not present in the document.
      * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 8192 tokens). Never truncate or provide shallow 2-sentence answers.
+     * STRICT PROHIBITION: When a PDF or document is attached or the active tool is PDF Summarizer, NEVER trigger Notice / Circular instructions or output notice templates! Automatically synthesize a comprehensive, structured summary and study guide of the attached document (Title/Metadata, Core Objectives, Detailed Section-by-Section Breakdown, Key Examples, and Conclusion/Takeaways).
 
 7. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING:
    - When the user sends a greeting (e.g. "Assalamu Alaikum", "Salam", "Hi", "Hello", "Vanakkam"):
@@ -1984,12 +1985,32 @@ export async function chatWithCopilot({
   // Detect explicit target language instructions in prompt (e.g. "tamil la tha", "in english", "arabic la")
   const { cleanedText: userPrompt, targetLanguage: resolvedLanguage } = detectAndStripLanguageInstruction(cleanMessage, language);
 
-  // Detect if user is specifically requesting a parent notice / circular
-  const NOTICE_INTENT_REGEX = /\b(?:notic|notice|circular|parent\s+notice|parent\s+circular|leave\s+notice|holiday\s+notice|announcement)\b/i;
-  const isNoticeRequest = mode === 'circular' || NOTICE_INTENT_REGEX.test(cleanMessage);
-  const activeMode = isNoticeRequest ? 'circular' : mode;
+  const hasPdf = Boolean(
+    (pdfBuffer && Buffer.isBuffer(pdfBuffer) && pdfBuffer.length > 0) ||
+    (pastedText && pastedText.trim().length > 0) ||
+    (pdfContext && pdfContext.trim().length > 0)
+  );
 
-  const isGenericNotice = /^(?:i\s+need\s+notic(?:e)?|notic(?:e)?|parent\s+circular|parent\s+notic(?:e)?|circular|write\s+a\s+notic(?:e)?|make\s+a\s+notic(?:e)?|notic(?:e)?\s+onnu|circular\s+venum|leave\s+notic(?:e)?|circular\s+onnu|need\s+a\s+notic(?:e)?)[\s!.,?]*$/i.test(cleanMessage);
+  const isExplicitSummarizerMode = mode === 'summarizer' || mode === 'pdf_summarizer';
+
+  // STRICTLY ISOLATE NOTICE INTENT FROM PDF SUMMARIZER:
+  // Notice / circular generation is strictly bypassed whenever a PDF is attached OR mode is summarizer/pdf_summarizer
+  const STRICT_NOTICE_REGEX = /\b(?:notice|notic|circular|parent\s+notice|parent\s+circular|leave\s+notice|holiday\s+notice|announcement)\b/i;
+  const isNoticeRequest = !hasPdf && !isExplicitSummarizerMode && (mode === 'circular' || STRICT_NOTICE_REGEX.test(cleanMessage));
+
+  let activeMode = mode;
+  if (isNoticeRequest) {
+    activeMode = 'circular';
+  } else if (isExplicitSummarizerMode || (hasPdf && (mode === 'auto' || mode === 'summarizer' || mode === 'pdf_summarizer'))) {
+    activeMode = 'summarizer';
+  }
+
+  const isGenericNotice = !hasPdf && !isExplicitSummarizerMode && /^(?:i\s+need\s+notic(?:e)?|notic(?:e)?|parent\s+circular|parent\s+notic(?:e)?|circular|write\s+a\s+notic(?:e)?|make\s+a\s+notic(?:e)?|notic(?:e)?\s+onnu|circular\s+venum|leave\s+notic(?:e)?|circular\s+onnu|need\s+a\s+notic(?:e)?)[\s!.,?]*$/i.test(cleanMessage);
+
+  const isGenericPdfPrompt = hasPdf && (
+    !cleanMessage ||
+    /^(?:attached\s+document[:\s].*|i\s+need|summarize|summary|overview|explain|notes?|surukki|surukki\s+sollu|indha\s+pdf.*)[\s!.,?]*$/i.test(cleanMessage)
+  );
 
   // Mode-specific behavioral instructions to guarantee authentic output format
   let modeInstructions = '';
@@ -2052,21 +2073,30 @@ STRUCTURE & LAYOUT:
    - Official Sign-off: "Principal / Madrasa Administration, ${madrasaName || 'MadrasaNexa Islamic Academy'}"
 `}
 Format strictly in clean, professional Markdown in ${resolvedLanguage} (if Tamil: formal dignified Tamil with authentic Islamic terms; if English: elegant English; if Arabic: authentic Arabic).`;
-  } else if (mode === 'summarizer') {
+  } else if (activeMode === 'summarizer') {
     modeInstructions = `
-[SPECIFIC TASK: EXECUTIVE DOCUMENT & CHAPTER REVISION SUMMARY]
-Extract a thorough, structured, and easy-to-revise Executive Summary from the provided document or text.
-CLEAN SUMMARY TITLE EXTRACTION:
-- Extract a formal, scholarly title for the summary (e.g., if user writes "indha pdf-a surukki sollu", synthesize a proper scholarly title for the document).
-- NEVER echo raw colloquial Tanglish words into headers or bullet points.
+[SPECIFIC TASK: COMPREHENSIVE DOCUMENT & CHAPTER REVISION SUMMARY / STUDY GUIDE]
+Extract an exhaustive, structured, and easy-to-revise Executive Summary & Study Guide from the attached document or text.
+
+STRICT INSTITUTIONAL GROUNDING:
+1. Ground all facts, points, and summaries STRICTLY on the attached document content.
+2. NEVER output a parent notice, circular, or fill-in-the-blank template when analyzing an attached document!
+3. Provide rich, exhaustive educational coverage (up to 8192 tokens) with clear Markdown headings. Never truncate or give shallow 2-sentence answers!
+
 STRUCTURE & LAYOUT:
-1. 📌 DOCUMENT OVERVIEW: High-level executive synthesis of the chapter, syllabus text, or document in 2-3 concise paragraphs.
-2. 🔑 KEY POINTS & CORE CONCEPTS: Exhaustive, bulleted breakdown of all major principles, rulings, historical milestones, or lessons.
-3. 📖 IMPORTANT TERMS & SCRIPTURAL PROOFS: Concise glossary of key Islamic terminology, Quranic Ayahs, and Hadith citations with translations.
-4. 📝 QUICK REVISION TAKEAWAYS: High-yield bullet points for students and teachers to memorize or review before examinations.
-5. 💡 USTADH PEDAGOGICAL TIPS: 2-3 practical tips on how to teach or explain this topic effectively in the classroom.
-CRITICAL: Do NOT generate a lesson plan or exam paper. This must be an executive revision summary in ${resolvedLanguage}.`;
-  } else if (mode === 'hifz') {
+1. 📌 DOCUMENT OVERVIEW & CORE OBJECTIVES:
+   - High-level executive synthesis of the chapter, syllabus text, or document in 2-3 detailed paragraphs outlining the primary pedagogical objectives.
+2. 🔑 DETAILED SECTION-BY-SECTION BREAKDOWN:
+   - Exhaustive, structured breakdown of all major principles, rulings, topics, historical milestones, or sections in the document with bulleted key points.
+3. 📖 KEY SCRIPTURAL PROOFS, IMPORTANT TERMS & EXAMPLES:
+   - Glossary of key Islamic terminology, Quranic Ayahs, Hadith citations, and specific examples extracted directly from the document with translations and explanations.
+4. 📝 QUICK REVISION TAKEAWAYS:
+   - High-yield summary bullet points for students and Ustadhs to memorize or review before examinations.
+5. 💡 USTADH PEDAGOGICAL TIPS & CLASSROOM DISCUSSION:
+   - 2-3 practical tips on how to teach, assess, or explain these specific topics effectively in the classroom.
+
+Format strictly in clean, professional Markdown in ${resolvedLanguage}.`;
+  } else if (activeMode === 'hifz') {
     modeInstructions = `
 [SPECIFIC TASK: HIFZ & TAJWEED ASSESSMENT SHEET]
 Generate a complete, structured Hifz & Tajweed Assessment Worksheet.
@@ -2085,7 +2115,7 @@ STRUCTURE & LAYOUT:
 6. COMPLETE ANSWER KEY:
    - Separated by "---", provide full answers for Part A, B, and C.
 Format clearly in professional Markdown in ${resolvedLanguage}.`;
-  } else if (mode === 'speech') {
+  } else if (activeMode === 'speech') {
     modeInstructions = `
 [SPECIFIC TASK: ISLAMIC SPEECH / BAYAN SCRIPT]
 Write an inspiring, spiritually uplifting, ready-to-deliver 5-minute Madrasa Morning Assembly Speech or Jalsa Bayan.
@@ -2129,7 +2159,7 @@ Format in clean, orator-friendly Markdown in ${resolvedLanguage}.`;
 
   // Detect if user is requesting notes, study notes, lesson guides, revision, or explanations
   const NOTES_INTENT_REGEX = /\b(?:notes?|study\s+notes?|lesson\s+notes?|revision\s+notes?|summary|summarize|surukki|explain|explanation|explain\s+panni|vilakkam|paadam|notes\s+eduthu|kuripu|overview)\b/i;
-  const isNotesRequest = NOTES_INTENT_REGEX.test(cleanMessage) || mode === 'summarizer';
+  const isNotesRequest = NOTES_INTENT_REGEX.test(cleanMessage) || activeMode === 'summarizer';
 
   if (isNotesRequest && activeMode !== 'circular') {
     modeInstructions += `
@@ -2198,6 +2228,8 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
   let finalUserPrompt = userPrompt || cleanMessage || 'Please examine the attached document and provide an overview and key points.';
   if (isGenericNotice) {
     finalUserPrompt = `Please generate an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'our Madrasa'}.`;
+  } else if (hasPdf && isGenericPdfPrompt) {
+    finalUserPrompt = 'Please examine the attached PDF document and provide a comprehensive, structured summary and study guide covering document overview, core objectives, detailed section-by-section breakdown, key examples and scriptural proofs from the document, and conclusion revision takeaways.';
   } else if (isGenericSpeech) {
     finalUserPrompt = `Please write an inspiring, ready-to-deliver 5-minute Madrasa Morning Assembly Speech on the Importance of Seeking Beneficial Knowledge and Practicing Noble Islamic Character (Akhlaq).`;
   }
@@ -2218,6 +2250,6 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
     reply: text,
     modelUsed: model,
     language: resolvedLanguage,
-    mode,
+    mode: activeMode,
   };
 }

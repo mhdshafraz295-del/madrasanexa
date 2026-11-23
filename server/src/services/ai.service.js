@@ -1397,30 +1397,67 @@ export const getUniversalAiInstructions = () => `
      * Provide thorough, in-depth, structured notes with clear section headings, detailed explanations, practical examples, scriptural proofs, and summary takeaways (up to 32,768 tokens). Never truncate or provide shallow 2-sentence answers.
      * STRICT PROHIBITION: When a PDF or document is attached or the active tool is PDF Summarizer, NEVER trigger Notice / Circular instructions or output notice templates! Automatically synthesize a comprehensive, 5-part structured study guide of the attached document (1. 📌 Document Overview & Core Objectives, 2. 🔑 Section-by-Section Breakdown, 3. 📖 Key Scriptural Proofs & Examples, 4. 📝 Quick Revision Takeaways, 5. 💡 Ustadh Pedagogical Tips & Classroom Discussion).
 
-7. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING:
-   - When the user sends a greeting (e.g. "Assalamu Alaikum", "Salam", "Hi", "Hello", "Vanakkam"):
+7. NATURAL CONVERSATIONAL GREETINGS & COMPREHENSIVE ONBOARDING (PURE GREETINGS ONLY):
+   - When the user sends ONLY a greeting with NO specific task or deliverable requested (e.g. only "Assalamu Alaikum", "Salam", "Hi", "Hello", "Vanakkam"):
      * NEVER reply with a cold, robotic one-word response like "Wa Alaikumussalam".
      * Respond with a warm, dignified, authentic Islamic greeting (e.g. "وَعَلَيْكُمُ السَّلَامُ وَرَحْمَةُ اللهِ وَبَرَكَاتُهُ • Wa Alaikum Assalam wa Rahmatullahi wa Barakatuh").
      * Introduce yourself warmly as the MadrasaNexa Smart AI Assistant and concisely present the core capabilities available to Ustadhs and Administrators (Exam & Answer Key Generation, 30-Min Lesson Planning, Madrasa Parent Circulars, Hifz & Tajweed Tracking, Bayan & Assembly Speeches, Multilingual Translation, Document Summaries, and Event Posters).
      * Respond in the user's language (Tamil if greeted in Tamil/Tanglish, Arabic if Arabic, English if English).
+   - STRICT EXCEPTION: If the user includes a specific task, request, question, or deliverable along with their greeting (e.g. "Assalamu Alaikum, please create a 45-minute lesson plan..." or "Salam, draft a circular..."), NEVER introduce yourself or list capabilities! Immediately proceed directly to generating the requested deliverable!
 
-8. STRICT CLEAN MARKDOWN & TYPOGRAPHY HYGIENE (ZERO RAW LATEX OR ASCII BOXES):
+8. STRICT CLEAN MARKDOWN & SCRIPTURAL BLOCKQUOTE HYGIENE:
+   - SCRIPTURAL CITATIONS (CLEAN MARKDOWN BLOCKQUOTES):
+     * Strictly format all Quranic Ayahs and Hadith citations using clean Markdown blockquotes (> ...) with authentic reverence, Arabic text, transliteration, and translation.
+     * STRICT PROHIBITION: NEVER wrap Quranic Ayahs or Hadith in fenced programming code blocks (like \`\`\`arabic or \`\`\`text) as if they were computer code! Always format sacred scriptural proofs as dignified blockquotes (> ...).
    - CLEAN UNICODE SYMBOLS OVER RAW LATEX:
      * STRICT PROHIBITION: NEVER output raw LaTeX arrows or math commands like $\rightarrow$, \\rightarrow, $\leftarrow$, \\leftarrow, $\Rightarrow$, \\Rightarrow, $\to$, or \\to in prose, circulars, notes, or lesson plans!
      * ALWAYS use clean, universal Unicode symbols instead: "→", "←", "⇒", "•", "✓", "★".
    - CLEAN MARKDOWN TABLES OVER ASCII ART:
-     * STRICT PROHIBITION: NEVER draw ASCII art boxes (such as ┌───┬───┐, |---|---| border drawing, or +---+---+) for comparisons, marks distribution, or schedules!
+     * STRICT PROHIBITION: NEVER draw ASCII art boxes (such as ┌───┬───┐, |---|---| border drawing, or +---+---+) for schedules, time allocations, or marks distribution!
      * ALWAYS use standard clean Markdown tables with header and alignment row:
-       | Category / Subject | Description / Surah | Marks / Hours |
-       | :--- | :--- | :--- |
-       | Content A | Details B | 25 Marks |
-       or clean structured bullet lists.
-   - HEADINGS & FENCED CODE BLOCKS:
-     * When using subheadings, use standard Markdown headings (##, ###, ####).
-     * When writing templates, circular examples, Arabic drills, or technical snippets, ALWAYS enclose them in clean fenced code blocks (\`\`\`text, \`\`\`arabic, etc.) so indentation and layout are preserved cleanly.
+       | Phase | Duration | Teacher Activity | Student Activity |
+       | :--- | :--- | :--- | :--- |
+       | Starter & Hook | 5 Mins | Inspiring opening | Active listening |
+   - HEADINGS: Use standard Markdown headings (##, ###, ####) without leading numbers or awkward prefixes.
+
+9. STRICT PROHIBITION AGAINST SELF-INTRODUCTIONS BEFORE DELIVERABLES:
+   - When generating ANY deliverable (Lesson Plan, Parent Circular, Exam Paper, Study Notes, Summary, Translation, Speech, or Worksheet):
+     * NEVER prepend a self-introduction, bot persona greeting, or capability menu (e.g. NEVER write "Assalamu Alaikum! I am MadrasaNexa Smart AI Assistant...", "Welcome to MadrasaNexa Smart AI Studio...", or list the 8 features)!
+     * Start DIRECTLY at character 0 with the actual deliverable (e.g. the official circular header \`# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ\`, the lesson plan title, or study notes header).
 `;
 
 export const UNIVERSAL_AI_INSTRUCTIONS = getUniversalAiInstructions();
+
+/**
+ * Detect language directly from user's message text (Tamil script, Tanglish, Arabic script, or English).
+ */
+export function detectUserMessageLanguage(text) {
+  const str = String(text || '').trim();
+  if (!str) return 'English';
+
+  // 1. Tamil Unicode range
+  if (/[\u0B80-\u0BFF]/.test(str)) {
+    return 'Tamil';
+  }
+
+  // 2. Arabic Unicode range
+  if (/[\u0600-\u06FF]/.test(str)) {
+    return 'Arabic';
+  }
+
+  // 3. Spoken Tamil in English script (Tanglish)
+  const TANGLISH_PATTERNS = /\b(?:eppadi|epdi|seirathu|solli|sollu|kudunga|kudu|venum|vaenum|onnu|panra|panna|pannu|naalaikku|nalaikku|podunga|podu|thanga|tha|neram|thozhugai|thozhukai|surukki|ezhuthu|paththi|pathi|enaku|enakku|unakku|illai|illatha|mattum|vachu|paada|paadam|thittam|vinaaththall|kurippu|vilakkam|irukku|aachu|aagum|varum|kaatu|kaatunga|bayan)\b/i;
+  if (TANGLISH_PATTERNS.test(str)) {
+    return 'Tamil';
+  }
+
+  // 4. English Latin characters
+  if (/[a-zA-Z]/.test(str)) {
+    return 'English';
+  }
+
+  return 'English';
+}
 
 /**
  * Natural language target-language detection & instruction stripper.
@@ -1504,14 +1541,24 @@ export function detectAndStripLanguageInstruction(text, defaultTarget = 'English
     }
   }
 
-  // Normalize defaultTarget if detectedTarget wasn't found
+  // Determine finalTarget: if not explicitly detected, mirror input language or fall back to defaultTarget
   let finalTarget = detectedTarget;
   if (!finalTarget) {
-    const raw = String(defaultTarget || '').toLowerCase();
-    if (raw.includes('arab') || raw === 'ar') finalTarget = 'Arabic';
-    else if (raw.includes('tamil') || raw === 'ta') finalTarget = 'Tamil';
-    else if (raw.includes('bilingual')) finalTarget = 'Bilingual (Tamil + English)';
-    else finalTarget = 'English';
+    if (cleanedText) {
+      const autoLang = detectUserMessageLanguage(cleanedText);
+      if (autoLang === 'Tamil' || autoLang === 'Arabic') {
+        finalTarget = autoLang;
+      } else {
+        // Text is English / Latin script
+        finalTarget = 'English';
+      }
+    } else {
+      const raw = String(defaultTarget || '').toLowerCase();
+      if (raw.includes('arab') || raw === 'ar') finalTarget = 'Arabic';
+      else if (raw.includes('tamil') || raw === 'ta') finalTarget = 'Tamil';
+      else if (raw.includes('bilingual')) finalTarget = 'Bilingual (Tamil + English)';
+      else finalTarget = 'English';
+    }
   }
 
   if (!cleanedText && text) {
@@ -2182,59 +2229,47 @@ You are the official MadrasaNexa 3-Language Islamic Educational Translator.
 [SPECIFIC TASK: OFFICIAL MADRASA PARENT CIRCULAR & NOTICE]
 You are drafting an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'MadrasaNexa Islamic Academy'}.
 
+[CRITICAL MANDATE: START IMMEDIATELY AT CHARACTER 0]:
+- STRICT PROHIBITION: NEVER prepend any self-introduction, bot persona greeting, or capability menu (e.g., NEVER write "Assalamu Alaikum! I am MadrasaNexa Smart AI Assistant...", "Welcome to MadrasaNexa...", or list features)!
+- Your response MUST start immediately at character 0 with the official Islamic header: "# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ".
+
 STRICT INSTITUTIONAL GUARDRAILS:
 1. NEVER output a generic fill-in-the-blank meta-template with bracketed placeholders like "[NAME OF THE ORGANIZATION]", "[LOCATION / CITY]", "[Your Signature]".
 2. NEVER output non-Islamic or secular school/office examples (such as "St. Xavier's High School", "Tarang 2026", "ABC Tech Solutions Pvt Ltd", "Rohan Sharma", "Priya Nair", etc.)!
 3. NEVER ask the user clarifying questions before providing a notice.
 
+[OFFICIAL PRINT-READY CIRCULAR STRUCTURE]:
+# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+## ${madrasaName || 'MadrasaNexa Islamic Academy'}
+### OFFICIAL PARENT CIRCULAR
+
+**Date:** ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })} | **Ref:** MNX/CIR/${new Date().getFullYear()}/042
+
+---
+
+**Assalamu Alaikum wa Rahmatullahi wa Barakatuh,**
+**Respected Parents and Guardians,**
+
+**SUBJECT: IMPORTANT NOTICE — [Dignified Topic in ${resolvedLanguage}]**
+
+[Warm, formal opening paragraph thanking parents for their continuous dedication to their children's Islamic education and Tarbiyah.]
+
+[Clear, comprehensive announcement details highlighting dates, revised timings, examination details, or holiday schedules.]
+
+[Clear bullet points for student preparation, Madrasa rules, and parent responsibilities.]
+
+[Heartfelt closing Du'a for the students and their families: "May Allah ﷻ grant our beloved students beneficial knowledge, steadfastness upon the Deen, and make them a source of immense pride and Sadaqah Jariyah for their parents in this world and the Aakhirah. Ameen."]
+
+**JazakAllahu Khairan wa BarakAllahu Feekum,**
+
+**Principal / Examination Committee**
+**${madrasaName || 'MadrasaNexa Islamic Academy'}**
+
 ${isGenericNotice ? `
-[CRITICAL INSTRUCTION FOR OPEN-ENDED NOTICE REQUEST ("${cleanMessage}")]
-The user requested an Official Madrasa Notice / Circular without specifying a custom topic.
-YOU MUST IMMEDIATELY OUTPUT A COMPLETE, ELEGANT, READY-TO-PRINT OFFICIAL MADRASA PARENT NOTICE ON A HIGH-PRIORITY MADRASA OCCASION (Upcoming Term Examinations & Special Revision Schedule):
-- Full Islamic Header:
-  * Institution Name: "${madrasaName || 'MadrasaNexa Islamic Academy'}"
-  * "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-  * Date: ${new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-  * Ref: MNX/CIR/${new Date().getFullYear()}/042
-- Formal Islamic Salutation:
-  * "Assalamu Alaikum wa Rahmatullahi wa Barakatuh"
-  * "Respected Parents and Guardians,"
-- Clear, Dignified Subject:
-  * "**SUBJECT: IMPORTANT NOTICE — UPCOMING TERM EXAMINATIONS & REVISED ACADEMIC SCHEDULE**"
-- Circular Body:
-  * Warm opening thanking parents for their continuous dedication to their children's Islamic education.
-  * Clear exam schedule, reporting timings, examination duration, and subjects covered (Hifz Revision, Tajweed, Islamic Studies, Arabic).
-  * Bullet points for student preparation and parent responsibilities (punctual attendance, completing revision homework, maintaining Islamic Adab and dress code).
-- Closing:
-  * Heartfelt Du'a for the students and their families: "May Allah ﷻ grant our beloved students beneficial knowledge, success in this world and the Aakhirah, and make them the coolness of our eyes. Ameen."
-  * "JazakAllahu Khairan wa BarakAllahu Feekum,"
-  * Sign-off: "Principal / Examination Committee, ${madrasaName || 'MadrasaNexa Islamic Academy'}"
-- Conclude with a helpful 1-line note:
-  "💡 *Tip: If you would like a notice tailored to a different event (such as a Madrasa Holiday/Leave, Ramadan/Eid Schedule, Fee Reminder, or Jalsa Prize Day), simply reply with the topic and I will generate it immediately!*"
-` : `
-CLEAN NOTICE TOPIC EXTRACTION:
-- Mentally decode the user's Tanglish/English/Tamil request (e.g., if user writes "naalaikku madrasa leave notice onnu ezhuthu", extract the formal subject "மத்ரஸா விடுமுறை அறிவிப்பு / NOTICE OF SPECIAL MADRASA LEAVE").
-- NEVER echo raw colloquial Tanglish words into the notice header or subject line!
-STRUCTURE & LAYOUT:
-1. HEADER:
-   - Institution Name: "${madrasaName || 'MadrasaNexa Islamic Academy'}"
-   - "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ"
-   - Date & Ref Number: (Use current Islamic / Gregorian date format)
-2. SALUTATION:
-   - "Assalamu Alaikum wa Rahmatullahi wa Barakatuh"
-   - "Respected Parents and Guardians,"
-3. NOTICE SUBJECT:
-   - Bold, clear formal subject line (e.g., "**SUBJECT: IMPORTANT ANNOUNCEMENT — [FORMAL TOPIC]**")
-4. CIRCULAR BODY:
-   - Warm introductory opening thanking parents for their continuous support.
-   - Clear announcement paragraphs highlighting dates, revised timings, fee deadlines, or holiday schedules.
-   - Bullet points for key instructions and parent responsibilities.
-5. CLOSING:
-   - Heartfelt Du'a for the students and families ("May Allah ﷻ bless our children with beneficial knowledge...").
-   - "JazakAllahu Khairan wa BarakAllahu Feekum,"
-   - Official Sign-off: "Principal / Madrasa Administration, ${madrasaName || 'MadrasaNexa Islamic Academy'}"
-`}
-Format strictly in clean, professional Markdown in ${resolvedLanguage} (if Tamil: formal dignified Tamil with authentic Islamic terms; if English: elegant English; if Arabic: authentic Arabic).`;
+💡 *Tip: If you would like a circular tailored to a different occasion (e.g. Madrasa Holiday, Ramadan Schedule, Fee Reminder, or Jalsa Prize Day), simply reply with the topic and I will generate it immediately!*
+` : ''}
+
+Format strictly in clean, professional Markdown in ${resolvedLanguage}. If ${resolvedLanguage} is English, write the entire notice in fluent, dignified English (with Arabic Bismillah, Salutation, and closing Du'a). If Tamil, write in formal, scholarly Tamil with standard Islamic terms.`;
   } else if (activeMode === 'summarizer') {
     modeInstructions = `
 [SPECIFIC TASK: COMPREHENSIVE DOCUMENT & CHAPTER REVISION SUMMARY / STUDY GUIDE]
@@ -2259,33 +2294,61 @@ STRICT INSTITUTIONAL GROUNDING:
 
 Format strictly in clean, professional Markdown in ${resolvedLanguage}.`;
   } else if (activeMode === 'lesson') {
+    // Dynamic lesson duration parsing (e.g. "45-minute", "45 mins", "60 mins", "1 hour", "90 mins", default 30 mins)
+    let lessonDurationMinutes = 30;
+    const durationMatch = cleanMessage.match(/\b(\d{1,3})\s*[-–—]?\s*(?:min|mins|minute|minutes)\b/i);
+    if (durationMatch) {
+      const parsed = parseInt(durationMatch[1], 10);
+      if (parsed >= 10 && parsed <= 180) {
+        lessonDurationMinutes = parsed;
+      }
+    } else if (/\b1\s*(?:hr|hour)\b/i.test(cleanMessage)) {
+      lessonDurationMinutes = 60;
+    } else if (/\b2\s*(?:hrs|hours)\b/i.test(cleanMessage)) {
+      lessonDurationMinutes = 120;
+    }
+
+    const starterMins = Math.max(3, Math.round(lessonDurationMinutes * 0.12));
+    const wrapupMins = Math.max(3, Math.round(lessonDurationMinutes * 0.10));
+    const activityMins = Math.max(5, Math.round(lessonDurationMinutes * 0.25));
+    const coreMins = lessonDurationMinutes - starterMins - activityMins - wrapupMins;
+
     modeInstructions = `
-[SPECIFIC TASK: USTADH 30-MIN STRUCTURED LESSON PLAN]
-You are a senior Madrasa Head Ustadh and pedagogical mentor designing a structured, practical 30-minute classroom lesson plan.
+[SPECIFIC TASK: USTADH ${lessonDurationMinutes}-MINUTE STRUCTURED LESSON PLAN]
+You are a senior Madrasa Head Ustadh and pedagogical mentor designing a structured, practical ${lessonDurationMinutes}-minute classroom lesson plan for ${madrasaName || 'Madrasa'}.
+
+[CRITICAL MANDATE: START DIRECTLY WITH DELIVERABLE]:
+- STRICT PROHIBITION: NEVER prepend any self-introduction or bot greeting (e.g. NEVER write "Assalamu Alaikum! I am MadrasaNexa...", "Welcome...", or list capabilities)!
+- Start DIRECTLY with the lesson plan title and overview.
 
 CLEAN TOPIC EXTRACTION & TANGLISH:
 - Mentally decode any Tanglish prompt (e.g. "wudu eppadi seirathu" -> "வுளூவின் முக்கியத்துவமும் அதன் சட்டதிட்டங்களும் செய்முறையும் / Fiqh of Taharah: Rules of Wudu").
 - NEVER echo colloquial Tanglish words into the lesson headings or overview!
 
+SCRIPTURAL CITATIONS (CLEAN MARKDOWN BLOCKQUOTES):
+- Format all Quranic Ayahs and Hadith citations as clean Markdown blockquotes (> ...) with Arabic text, transliteration, and translation.
+- STRICT PROHIBITION: NEVER wrap Quranic Ayahs or Hadith in fenced code blocks (\`\`\`arabic or \`\`\`text)!
+
 STRUCTURED MADRASA TEACHING PLAN LAYOUT:
 1. 🎯 LESSON OVERVIEW & LEARNING OBJECTIVES:
    - Institution: ${madrasaName || 'Madrasa'}
-   - Subject & Level: Islamic Studies / Fiqh / Tajweed
+   - Subject & Level: Islamic Studies / Fiqh / Tajweed / Aqeedah
+   - Duration: ${lessonDurationMinutes} Minutes
    - Cognitive Objectives (What students will understand)
    - Spiritual & Behavioral Objectives (Akhlaq & Adab application)
-   - Essential Quranic Ayahs & Sahih Hadith Evidence (Arabic text, transliteration, and meaning)
+   - Essential Scriptural Evidence (Quoted in clean blockquotes > ... with Arabic, transliteration, and translation)
 
-2. ⏱️ TIME ALLOCATION TABLE (30 MINUTES):
+2. ⏱️ DYNAMIC TIME ALLOCATION TABLE (${lessonDurationMinutes} MINUTES TOTAL):
    | Phase | Duration | Teacher Activity / Pedagogical Method | Student Activity |
    | :--- | :--- | :--- | :--- |
-   | Starter & Hook | 5 Mins | Inspiring opening, prior knowledge check, real-life question | Answering questions, active engagement |
-   | Core Instruction | 15 Mins | Direct teaching of core concepts, Quran/Hadith evidence, board diagram | Listening, taking structured notes |
-   | Interactive Activity | 7 Mins | Guided pair drill, blackboard recitation, or mini-quiz | Practicing in pairs, reciting, answering |
-   | Plenary & Wrap-up | 3 Mins | Quick summary check, homework assignment, closing Sunnah Du'a | Noting homework, reciting Du'a |
+   | Starter & Hook | ${starterMins} Mins | Inspiring opening, prior knowledge check, real-life scenario | Answering questions, active engagement |
+   | Core Instruction | ${coreMins} Mins | Direct teaching of core concepts, Quran/Hadith evidence, board diagram | Listening, taking structured notes |
+   | Interactive Activity | ${activityMins} Mins | Guided pair drill, blackboard recitation, or mini-quiz | Practicing in pairs, reciting, answering |
+   | Plenary & Wrap-up | ${wrapupMins} Mins | Quick summary check, homework assignment, closing Sunnah Du'a | Noting homework, reciting Du'a |
 
-3. 📖 CORE ISLAMIC & ARABIC CONCEPTS:
+3. 📖 CORE ISLAMIC CONCEPTS & STEP-BY-STEP EXPLANATION:
    - Step-by-step breakdown of rulings, pillars (Arkan), conditions (Shuroot), and Sunnahs.
-   - Arabic key vocabulary with Tamil / English meanings.
+   - Arabic key vocabulary with ${resolvedLanguage} meanings.
 
 4. 🤝 INTERACTIVE CLASSROOM ACTIVITY:
    - Engaging pair-and-share drill, board exercise, or question-and-answer scenario.
@@ -2410,8 +2473,9 @@ Format in clean, orator-friendly Markdown in ${resolvedLanguage}.`;
 4. ZERO LIVE DATABASE EXPOSURE: Maintain complete privacy in RAM memory.`;
   }
 
-  const GREETING_REGEX = /^(?:assalamu?\s*alaikum(?:\s*wa\s*rahmatullahi(?:\s*wa\s*barakatuh)?)?|salam(?:\s*alaikum)?|slm|hi|hello|hey|vanakkam|marhaban|ahlan|hola)[\s!.,?]*$/i;
-  const isSingleGreeting = GREETING_REGEX.test(cleanMessage) && (!history || history.length <= 1) && !pdfBuffer && !pastedText;
+  const GREETING_ONLY_REGEX = /^(?:assalamu?\s*alaikum(?:\s*wa\s*rahmatullahi(?:\s*wa\s*barakatuh)?)?|salam(?:\s*alaikum)?|slm|hi|hello|hey|vanakkam|marhaban|ahlan|hola)[\s!.,?]*$/i;
+  const HAS_TASK_INTENT_REGEX = /\b(?:plan|lesson|exam|quiz|test|circular|notice|notic|notes|note|study|summary|summarize|translate|translation|hifz|tajweed|speech|bayan|wudu|salah|zakat|sawm|fasting|surah|ayah|hadith|fiqh|draft|create|make|write|generate|explain|how\s+to|what\s+is|who\s+is|give\s+me|i\s+need|leave|holiday|rules|method)\b/i;
+  const isSingleGreeting = GREETING_ONLY_REGEX.test(cleanMessage) && !HAS_TASK_INTENT_REGEX.test(cleanMessage) && (!history || history.length <= 1) && !pdfBuffer && !pastedText;
 
   // Detect if user is requesting notes, study notes, lesson guides, revision, or explanations
   const NOTES_INTENT_REGEX = /\b(?:notes?|study\s+notes?|lesson\s+notes?|revision\s+notes?|summary|summarize|surukki|explain|explanation|explain\s+panni|vilakkam|paadam|notes\s+eduthu|kuripu|overview)\b/i;
@@ -2449,9 +2513,18 @@ Respond in ${resolvedLanguage} (if Tamil/Tanglish: use beautiful natural Tamil; 
 
   const isTranslatorMode = activeMode === 'translate';
   const currentDateStr = new Date().toDateString();
-  const languageDirective = isTranslatorMode && !isSingleLangRequested
-    ? `Target Output Mode: 🌐 TRILINGUAL ISLAMIC TRANSLATION (ENGLISH + TAMIL + ARABIC)\n[CRITICAL LANGUAGE OVERRIDE]: Single-language mirroring is STRICTLY DISABLED for this request. You MUST generate ALL THREE sections in your response: 1. ### 🇬🇧 English, 2. ### 🇱🇰 தமிழ் (Tamil), and 3. ### 🇸🇦 العربية (Arabic).`
-    : `Target Output Language: ${resolvedLanguage} (Ensure responses are naturally phrased in ${resolvedLanguage}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).`;
+  let languageDirective = '';
+  if (isTranslatorMode && !isSingleLangRequested) {
+    languageDirective = `Target Output Mode: 🌐 TRILINGUAL ISLAMIC TRANSLATION (ENGLISH + TAMIL + ARABIC)\n[CRITICAL LANGUAGE OVERRIDE]: Single-language mirroring is STRICTLY DISABLED for this request. You MUST generate ALL THREE sections in your response: 1. ### 🇬🇧 English, 2. ### 🇱🇰 தமிழ் (Tamil), and 3. ### 🇸🇦 العربية (Arabic).`;
+  } else if (resolvedLanguage === 'English') {
+    languageDirective = `Target Output Language: English.
+[CRITICAL STRICT LANGUAGE MANDATE]: The user submitted this request in English. You MUST generate the entire response (including all headings, subheadings, table content, and explanations) STRICTLY IN ENGLISH. NEVER output Tamil headings or Tamil paragraphs when the user wrote in English. Any Quranic Ayahs or Hadith should feature Arabic text followed immediately by its English translation.`;
+  } else if (resolvedLanguage === 'Tamil') {
+    languageDirective = `Target Output Language: Tamil.
+[CRITICAL STRICT LANGUAGE MANDATE]: Generate the response in natural, dignified, scholarly Tamil with standard Islamic terminology (வுளூ, தொழுகை, மத்ரஸா, etc.).`;
+  } else {
+    languageDirective = `Target Output Language: ${resolvedLanguage} (Ensure responses are naturally phrased in ${resolvedLanguage}. If Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).`;
+  }
 
   const systemPrompt = `You are the MadrasaNexa Smart AI Copilot, a warm, polite, highly knowledgeable Islamic Educational & Madrasa Operations Assistant.
 Current Date: ${currentDateStr}.
@@ -2500,15 +2573,23 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
       finalUserPrompt = `Please translate the following Madrasa content into ALL THREE languages (🇬🇧 English, 🇱🇰 தமிழ், and 🇸🇦 العربية) preserving authentic Islamic terminology:\n\n"""\n${cleanMessage}\n"""\n\nYou MUST provide all 3 sections:\n### 🇬🇧 English\n[English translation]\n\n### 🇱🇰 தமிழ் (Tamil)\n[Tamil translation in natural scholarly Tamil]\n\n### 🇸🇦 العربية (Arabic)\n[Arabic translation in authentic Modern Standard Arabic]`;
     }
   } else if (isGenericNotice) {
-    finalUserPrompt = `Please generate an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'our Madrasa'}.`;
+    finalUserPrompt = `Please generate an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'our Madrasa'} on the upcoming term examinations and revision schedule. Start immediately at character 0 with '# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ' without any self-introductions or conversational preamble.`;
+  } else if (activeMode === 'circular') {
+    finalUserPrompt = `${userPrompt || cleanMessage}\n\n[INSTRUCTION]: Generate an official, print-ready Madrasa Parent Circular for ${madrasaName || 'our Madrasa'}. Start immediately at character 0 with '# بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ' without self-introductions or conversational preamble.`;
   } else if (hasPdf && isGenericPdfPrompt) {
     finalUserPrompt = 'Please examine the attached PDF document and provide a comprehensive 5-part structured study guide covering document overview and core objectives, detailed section-by-section breakdown, key scriptural proofs and examples from the document, quick revision takeaways, and Ustadh pedagogical tips.';
   } else if (isGenericSpeech) {
     finalUserPrompt = `Please write an inspiring, ready-to-deliver 5-minute Madrasa Morning Assembly Speech on the Importance of Seeking Beneficial Knowledge and Practicing Noble Islamic Character (Akhlaq).`;
   } else if (activeMode === 'exam' && (!cleanMessage || /^(?:exam|quiz|question\s*paper|test\s*paper|exam\s*paper\s*onnu|quiz\s*ready\s*pannu)[\s!.,?]*$/i.test(cleanMessage))) {
-    finalUserPrompt = `Please generate a structured Islamic examination paper and complete answer key on ${hasPdf ? 'the attached document' : 'Islamic Studies core curriculum'}.`;
-  } else if (activeMode === 'lesson' && (!cleanMessage || /^(?:lesson|lesson\s*plan|lesson\s*planner|lesson\s*plan\s*onnu)[\s!.,?]*$/i.test(cleanMessage))) {
-    finalUserPrompt = `Please design a structured 30-minute Madrasa lesson plan on ${hasPdf ? 'the attached document' : 'Islamic Studies / Fiqh core topic'}.`;
+    finalUserPrompt = `Please generate a structured Islamic examination paper and complete answer key on ${hasPdf ? 'the attached document' : 'Islamic Studies core curriculum'}. Start directly with the examination header without self-introductions.`;
+  } else if (activeMode === 'lesson') {
+    const durMatch = cleanMessage.match(/\b(\d{1,3})\s*[-–—]?\s*(?:min|mins|minute|minutes)\b/i);
+    const parsedMins = durMatch ? parseInt(durMatch[1], 10) : (/\b1\s*(?:hr|hour)\b/i.test(cleanMessage) ? 60 : 30);
+    if (!cleanMessage || /^(?:lesson|lesson\s*plan|lesson\s*planner|lesson\s*plan\s*onnu)[\s!.,?]*$/i.test(cleanMessage)) {
+      finalUserPrompt = `Please design a structured ${parsedMins}-minute Madrasa lesson plan on ${hasPdf ? 'the attached document' : 'Islamic Studies / Fiqh core topic'}. Start directly with the lesson overview and dynamic time allocation table without self-introductions.`;
+    } else {
+      finalUserPrompt = `${userPrompt || cleanMessage}\n\n[INSTRUCTION]: Design a structured ${parsedMins}-minute lesson plan. Allocate dynamic phase durations totaling exactly ${parsedMins} minutes. Format scriptural quotes as blockquotes (> ...). Start directly with the lesson overview without self-introductions.`;
+    }
   } else if (activeMode === 'notes' && (!cleanMessage || /^(?:notes|study\s*notes|notes\s*venum|notes\s*eduthu\s*kudu)[\s!.,?]*$/i.test(cleanMessage))) {
     finalUserPrompt = `Please generate comprehensive, detailed study notes and revision guide on ${hasPdf ? 'the attached document' : 'Islamic Studies core concepts'}.`;
   }

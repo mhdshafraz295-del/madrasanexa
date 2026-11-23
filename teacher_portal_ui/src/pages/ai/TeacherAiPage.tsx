@@ -422,54 +422,8 @@ export default function TeacherAiPage() {
             isStreaming: true,
           },
         ]);
-      } else if (resolvedMode === 'exam') {
-        const formData = new FormData();
-        if (file) formData.append('file', file);
-        formData.append('topic', query || 'Islamic Curriculum Examination');
-        formData.append('subject', 'Islamic Studies');
-        formData.append('gradeLevel', 'Standard');
-        formData.append('language', language);
-        formData.append('durationMinutes', '60');
-        formData.append('totalMarks', '50');
-        formData.append('mcqCount', '5');
-        formData.append('shortCount', '4');
-        formData.append('essayCount', '2');
-
-        const res = await teacherAiService.generateExamPaper(formData);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: assistantMsgId,
-            sender: 'assistant',
-            timestamp: new Date(),
-            content: res.examContent,
-            mode: 'exam',
-            isStreaming: true,
-          },
-        ]);
-      } else if (resolvedMode === 'lesson') {
-        const formData = new FormData();
-        if (file) formData.append('file', file);
-        formData.append('topic', query || 'Islamic Studies Lesson');
-        formData.append('subject', 'Ustadh 30-Min Lesson Plan');
-        formData.append('gradeLevel', 'Standard');
-        formData.append('durationMinutes', '30');
-        formData.append('language', language);
-
-        const res = await teacherAiService.generateLessonPlan(formData);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: assistantMsgId,
-            sender: 'assistant',
-            timestamp: new Date(),
-            content: res.lessonPlan,
-            mode: 'lesson',
-            isStreaming: true,
-          },
-        ]);
       } else {
-        // Authentic dedicated output for: 'auto', 'translate', 'circular', 'hifz', 'speech', 'summarizer'
+        // Unified Copilot routing with multi-turn context: 'auto', 'exam', 'lesson', 'translate', 'circular', 'hifz', 'speech', 'summarizer'
         const formData = new FormData();
         if (file) formData.append('file', file);
         formData.append('message', query || (file ? `Attached document: ${file.name}` : 'Assalamu Alaikum'));

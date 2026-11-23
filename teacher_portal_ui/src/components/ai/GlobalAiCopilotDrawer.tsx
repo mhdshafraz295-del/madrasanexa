@@ -384,35 +384,8 @@ export default function GlobalAiCopilotDrawer() {
             isStreaming: false,
           },
         ]);
-      } else if (resolvedMode === 'translate') {
-        const targetLang =
-          language === 'Arabic'
-            ? 'Arabic'
-            : language === 'Tamil'
-            ? 'Tamil'
-            : language.includes('Bilingual')
-            ? 'Bilingual (Tamil + English)'
-            : 'English';
-
-        const res = await teacherAiService.translateContent({
-          text: query,
-          sourceLanguage: 'Auto-Detect',
-          targetLanguage: targetLang,
-          language: targetLang,
-        });
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: assistantMsgId,
-            sender: 'assistant',
-            timestamp: new Date(),
-            content: res.translatedText,
-            mode: 'translate',
-            isStreaming: false,
-          },
-        ]);
       } else {
-        // Authentic dedicated output for: 'auto', 'circular', 'hifz', 'speech', 'summarizer'
+        // Authentic dedicated output for: 'auto', 'translate', 'circular', 'hifz', 'speech', 'summarizer'
         const formData = new FormData();
         if (file) formData.append('file', file);
         formData.append('message', query || (file ? `Attached document: ${file.name}` : 'Assalamu Alaikum'));

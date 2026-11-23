@@ -1366,6 +1366,7 @@ export const getUniversalAiInstructions = () => `
      * Write in natural, grammatically sound, elegant Tamil as used by authentic Islamic scholars, Madrasas, and Muslim educational institutions in Sri Lanka and India.
      * Use authentic, widely recognized Islamic terminology in Tamil script: (வுளூ, தொழுகை/ஸலாஹ், ஜகாத், நோன்பு/ஸவ்ம், ஷரீஆ, ஃபிக்ஹ், திருக்குர்ஆன், ஸஹீஹ் ஹதீஸ், ஸுன்னத், துஆ, அதப், அக்லாக், தஹாரத், இபாத், திக்ர், மத்ரஸா, உஸ்தாத்).
      * NEVER use awkward machine-translated phrasing or dry literal Google Translations.
+   - [TRANSLATOR MODE EXCEPTION]: When the active mode is Translator (translate / translator), single-language mirroring is STRICTLY DISABLED. You MUST output complete translations in ALL THREE LANGUAGES (🇬🇧 English, 🇱🇰 தமிழ், 🇸🇦 العربية) unless the user explicitly requested only one language.
 
 4. STRICT ISLAMIC ACCURACY & SCHOLARLY INTEGRITY GUARDRAILS:
    - ZERO SCRIPTURAL FABRICATION: Never invent or guess Quranic verse numbers or Surah references (e.g., never misquote Surah 2:238 or cite non-existent numbers). If quoting an Ayah, ensure the Surah name and theological context are accurate.
@@ -1932,6 +1933,54 @@ export async function translateContent({
   }
 
   const requestedTarget = targetLanguage || language || 'English';
+  const isTrilingual =
+    requestedTarget.toLowerCase().includes('3') ||
+    requestedTarget.toLowerCase().includes('trilingual') ||
+    requestedTarget.toLowerCase().includes('multilingual') ||
+    requestedTarget.toLowerCase().includes('all') ||
+    requestedTarget.toLowerCase().includes('bilingual');
+
+  if (isTrilingual) {
+    const prompt = `
+You are a master Islamic educational translator specializing in Madrasa circulars, student parent notices, and correspondence.
+Translate the following source text into ALL THREE LANGUAGES: 🇬🇧 English, 🇱🇰 தமிழ் (Tamil), and 🇸🇦 العربية (Arabic).
+
+[MANDATORY 3-LANGUAGE OUTPUT STRUCTURE]
+You MUST generate all three sections:
+
+### 🇬🇧 English
+[High-quality, formal English translation maintaining proper Islamic honorifics and terms]
+
+### 🇱🇰 தமிழ் (Tamil)
+[Natural, grammatically sound Tamil as used by Islamic scholars with authentic Islamic terminology]
+
+### 🇸🇦 العربية (Arabic)
+[Authentic Modern Standard Arabic (Fusha) with standard Islamic phrasing]
+
+[SOURCE TEXT]
+${text}
+`;
+
+    const currentDateStr = new Date().toDateString();
+    const systemPrompt = `You are a certified Islamic multilingual translator. Target Output: 🌐 TRILINGUAL ISLAMIC TRANSLATION (English + Tamil + Arabic). Single-language mirroring is STRICTLY DISABLED.
+Current Date: ${currentDateStr}.
+
+${getUniversalAiInstructions()}`;
+
+    const { text: translatedText } = await generateAiText({
+      prompt,
+      systemPrompt,
+      temperature: 0.1,
+      maxTokens: 32768,
+    });
+
+    return {
+      translatedText,
+      sourceLanguage,
+      targetLanguage: '3 Languages (English, Tamil, Arabic)',
+    };
+  }
+
   const { cleanedText, targetLanguage: resolvedTarget } = detectAndStripLanguageInstruction(text, requestedTarget);
 
   const prompt = `
@@ -2018,7 +2067,7 @@ export async function chatWithCopilot({
     baseMode = 'summarizer';
   } else if (rawMode === 'circular' || rawMode === 'notice') {
     baseMode = 'circular';
-  } else if (rawMode === 'translate' || rawMode === 'translator') {
+  } else if (rawMode === 'translate' || rawMode === 'translator' || rawMode === 'translation' || rawMode === '3-language translator' || rawMode === 'multilingual') {
     baseMode = 'translate';
   } else if (rawMode === 'lesson' || rawMode === 'lesson_plan') {
     baseMode = 'lesson';
@@ -2046,8 +2095,12 @@ export async function chatWithCopilot({
   }
 
   // Detect translation follow-ups (e.g., "arabic lam panni tha", "tamil la tha", "english la tha", "itha translate pannu")
-  const TRANSLATE_FOLLOWUP_REGEX = /\b(?:arabic\s+l[ao]m?\s+(?:panni\s+)?tha|arabic\s+la(?:\s+tha)?|tamil\s+la(?:\s+tha)?|english\s+la(?:\s+tha)?|bilingual\s+la(?:\s+tha)?|translate\s+(?:this|it|above|previous)|indha\s+(?:message|reply|circular|text)-?a\s+translate|itha\s+translate)\b/i;
-  const isTranslationFollowup = Boolean(lastAssistantMessage) && (TRANSLATE_FOLLOWUP_REGEX.test(cleanMessage) || (baseMode === 'translate' && cleanMessage.length < 120));
+  const TRANSLATE_FOLLOWUP_COMMAND_REGEX = /^(?:arabic\s+l[ao]m?\s+(?:panni\s+)?tha|arabic\s+la(?:\s+tha)?|tamil\s+la(?:\s+tha)?|english\s+la(?:\s+tha)?|bilingual\s+la(?:\s+tha)?|translate\s+(?:this|it|above|previous)|indha\s+(?:message|reply|circular|text)-?a\s+translate|itha\s+translate|itha\s+tamil-?la\s+tha|itha\s+arabic-?la\s+tha)[\s!.,?]*$/i;
+  const isTranslationFollowup = Boolean(lastAssistantMessage) && TRANSLATE_FOLLOWUP_COMMAND_REGEX.test(cleanMessage);
+
+  // Check if user explicitly requested only one specific language (e.g. "arabic mattum tha", "only in english")
+  const SINGLE_LANG_OVERRIDE_REGEX = /\b(?:only\s+in\s+(?:arabic|tamil|english)|(?:arabic|tamil|english)\s+mattum|mattum\s+(?:arabic|tamil|english)|strictly\s+(?:arabic|tamil|english)|only\s+(?:arabic|tamil|english))\b/i;
+  const isSingleLangRequested = SINGLE_LANG_OVERRIDE_REGEX.test(cleanMessage);
 
   // STRICTLY ISOLATE NOTICE INTENT FROM PDF SUMMARIZER & TRANSLATOR:
   // Notice / circular generation is strictly bypassed whenever a PDF is attached OR baseMode is summarizer/translate
@@ -2093,41 +2146,37 @@ export async function chatWithCopilot({
   let modeInstructions = '';
 
   if (activeMode === 'translate') {
-    modeInstructions = `
-[SPECIFIC TASK: 3-LANGUAGE ISLAMIC TRANSLATOR (ENGLISH ↔ TAMIL ↔ ARABIC)]
-You are a certified Islamic multilingual translator for Madrasa educational institutions.
+    if (isSingleLangRequested) {
+      modeInstructions = `
+[SPECIFIC TASK: TARGET LANGUAGE ISLAMIC TRANSLATION]
+You are a certified Islamic multilingual translator.
+Translate the requested text directly into ${resolvedLanguage}.
+Maintain authentic Islamic terminology (Du'a, Hadith, Salah, Ustadh, Madrasa, Jalsa, Sunnah, Adab, Akhlaq) with respectful accuracy.
+Output ONLY the clean, polished translation without conversational preamble.`;
+    } else {
+      modeInstructions = `
+[SPECIFIC TASK: 🌐 3-LANGUAGE ISLAMIC TRANSLATION (ENGLISH + TAMIL + ARABIC)]
+You are the official MadrasaNexa 3-Language Islamic Educational Translator.
 
-${isTranslationFollowup ? `
-[CRITICAL TRANSLATION FOLLOW-UP INSTRUCTION]
-The user sent a follow-up request ("${cleanMessage}") referencing the previous message in conversation history:
-"""
-${lastAssistantMessage.slice(0, 4000)}
-"""
-STRICT INSTRUCTION: Translate this previous message directly into the requested language(s). Do NOT generate new lectures, do NOT create unrelated lesson plans, and do NOT ask conversational questions!
-` : ''}
+[CRITICAL MANDATE — TRILINGUAL OUTPUT REQUIRED]:
+1. SINGLE-LANGUAGE MIRRORING IS COMPLETELY DISABLED:
+   - Regardless of whether the input text is in English, Tamil, Arabic, or Tanglish, you MUST NOT output in only one language!
+   - You MUST ALWAYS PROVIDE FULL, AUTHENTIC TRANSLATIONS IN ALL THREE LANGUAGES in this exact structured format:
 
-TRANSLATION RULES:
-1. THREE-LANGUAGE OUTPUT FORMAT:
-   Unless the user explicitly restricts the request to one single language (e.g. "arabic la mattum", "only in english", "tamil la mattum"), provide complete, beautiful translations in ALL THREE LANGUAGES:
+### 🇬🇧 English
+[Polite, formal, high-quality English translation maintaining proper Islamic honorifics and terms]
 
-   ### 🇬🇧 English Translation
-   [Fluent, professional, dignified English preserving Islamic terms with proper spelling]
+### 🇱🇰 தமிழ் (Tamil)
+[Natural, grammatically flawless, scholarly Tamil as spoken by Islamic scholars in Sri Lanka and Tamil Nadu with authentic Islamic terms (வுளூ, தொழுகை, ஜகாத், மத்ரஸா, உஸ்தாத், துஆ, ஸஹீஹ் ஹதீஸ்)]
 
-   ### 🇱🇰 தமிழ் வடிவம் (Tamil Translation)
-   [Natural, grammatically flawless Tamil as spoken by Islamic scholars in Sri Lanka/Tamil Nadu with standard Islamic terminology (வுளூ, தொழுகை, ஜகாத், ஸஹீஹ் ஹதீஸ், ஸுன்னத், துஆ, மத்ரஸா, உஸ்தாத்)]
+### 🇸🇦 العربية (Arabic)
+[Authentic Modern Standard Arabic (الفصحى) with formal Islamic phrasing, greetings, and appropriate honorifics]
 
-   ### 🇸🇦 الترجمة العربية (Arabic Translation)
-   [Authentic Modern Standard Arabic / Fusha with appropriate Islamic honorifics and formal phrasing]
-
-2. SPECIFIC TARGET OVERRIDE:
-   If the user specifically requested a single target language (e.g. "arabic lam panni tha", "tamil la tha", "in english"):
-   Provide that requested language translation directly and thoroughly without conversational meta-commentary.
-
-3. TANGLISH DECODING:
-   If the source text is written in Tanglish (e.g. "naalaikku madrasa leave nu sollunga"), mentally decode the genuine Tamil meaning first, then translate into dignified English, Tamil, and Arabic. Never echo raw colloquial Tanglish words.
-
-4. ISLAMIC REVERENCE & ACCURACY:
-   Preserve authentic Islamic terminology (Du'a, Hadith, Salah, Ustadh, Madrasa, Jalsa, Sunnah, Adab, Akhlaq) with utmost respect and standard transliterations.`;
+2. STRICT CONTENT FIDELITY:
+   - Translate all details (dates, timings, events, guidelines, Du'as) accurately into all three languages.
+   - Do NOT omit any section. Do NOT invent unrelated lectures, do NOT add meta-disclaimers, and do NOT ask conversational questions.
+   - If the source is in Tanglish (conversational Tamil in English letters), mentally decode the genuine Tamil meaning first, then translate into all three languages. Never echo colloquial Tanglish words.`;
+    }
   } else if (activeMode === 'circular') {
     modeInstructions = `
 [SPECIFIC TASK: OFFICIAL MADRASA PARENT CIRCULAR & NOTICE]
@@ -2398,12 +2447,17 @@ YOU MUST PROVIDE A COMPREHENSIVE, WARM, DIGNIFIED GREETING AND FULL ONBOARDING:
 Respond in ${resolvedLanguage} (if Tamil/Tanglish: use beautiful natural Tamil; if English: elegant English; if Arabic: authentic Arabic).`;
   }
 
+  const isTranslatorMode = activeMode === 'translate';
   const currentDateStr = new Date().toDateString();
+  const languageDirective = isTranslatorMode && !isSingleLangRequested
+    ? `Target Output Mode: 🌐 TRILINGUAL ISLAMIC TRANSLATION (ENGLISH + TAMIL + ARABIC)\n[CRITICAL LANGUAGE OVERRIDE]: Single-language mirroring is STRICTLY DISABLED for this request. You MUST generate ALL THREE sections in your response: 1. ### 🇬🇧 English, 2. ### 🇱🇰 தமிழ் (Tamil), and 3. ### 🇸🇦 العربية (Arabic).`
+    : `Target Output Language: ${resolvedLanguage} (Ensure responses are naturally phrased in ${resolvedLanguage}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).`;
+
   const systemPrompt = `You are the MadrasaNexa Smart AI Copilot, a warm, polite, highly knowledgeable Islamic Educational & Madrasa Operations Assistant.
 Current Date: ${currentDateStr}.
 Institution: ${madrasaName || 'Madrasa'}
 User Role: ${role || 'Staff'}
-Target Output Language: ${resolvedLanguage} (Ensure responses are naturally phrased in ${resolvedLanguage}. If Tamil: use natural Tamil with authentic Islamic terminology; if Arabic: use clear classical Arabic; if Bilingual: provide clear Tamil/Arabic with English explanations).
+${languageDirective}
 
 ${getUniversalAiInstructions()}
 
@@ -2434,7 +2488,17 @@ ${pdfContext ? `\n[ATTACHED IN-MEMORY CONTEXT (RAM ONLY)]\n${pdfContext}\n` : ''
 
   let finalUserPrompt = userPrompt || cleanMessage || 'Please examine the attached document and provide an overview and key points.';
   if (isTranslationFollowup) {
-    finalUserPrompt = `Please translate the previous message from our conversation history into ${resolvedLanguage}:\n\n"""\n${lastAssistantMessage.slice(0, 4000)}\n"""`;
+    if (isSingleLangRequested) {
+      finalUserPrompt = `Please translate the previous message from our conversation history into ${resolvedLanguage}:\n\n"""\n${lastAssistantMessage.slice(0, 4000)}\n"""`;
+    } else {
+      finalUserPrompt = `Please translate the previous message from our conversation history into ALL THREE languages (🇬🇧 English, 🇱🇰 தமிழ், and 🇸🇦 العربية) preserving authentic Islamic terminology:\n\n"""\n${lastAssistantMessage.slice(0, 4000)}\n"""\n\nYou MUST provide all 3 sections:\n### 🇬🇧 English\n[English translation]\n\n### 🇱🇰 தமிழ் (Tamil)\n[Tamil translation in natural scholarly Tamil]\n\n### 🇸🇦 العربية (Arabic)\n[Arabic translation in authentic Modern Standard Arabic]`;
+    }
+  } else if (isTranslatorMode) {
+    if (isSingleLangRequested) {
+      finalUserPrompt = `Please translate the following content into ${resolvedLanguage}:\n\n"""\n${cleanMessage}\n"""`;
+    } else {
+      finalUserPrompt = `Please translate the following Madrasa content into ALL THREE languages (🇬🇧 English, 🇱🇰 தமிழ், and 🇸🇦 العربية) preserving authentic Islamic terminology:\n\n"""\n${cleanMessage}\n"""\n\nYou MUST provide all 3 sections:\n### 🇬🇧 English\n[English translation]\n\n### 🇱🇰 தமிழ் (Tamil)\n[Tamil translation in natural scholarly Tamil]\n\n### 🇸🇦 العربية (Arabic)\n[Arabic translation in authentic Modern Standard Arabic]`;
+    }
   } else if (isGenericNotice) {
     finalUserPrompt = `Please generate an official, ready-to-issue Madrasa Parent Notice / Circular for ${madrasaName || 'our Madrasa'}.`;
   } else if (hasPdf && isGenericPdfPrompt) {

@@ -451,6 +451,8 @@ html.dark body {
   position: absolute;
   inset: 0;
   background-color: #A5A477;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0l10 10-10 10-10-10L20 0zm0 20l10 10-10 10-10-10 10-10z' fill='%23FFFFFF' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: repeat;
   transform-origin: bottom left;
   transform: scale(0);
   transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -598,6 +600,8 @@ html.dark body {
   position: absolute;
   inset: 0;
   background-color: #A5A477;
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0l10 10-10 10-10-10L20 0zm0 20l10 10-10 10-10-10 10-10z' fill='%23FFFFFF' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: repeat;
   transform-origin: bottom left;
   transform: scale(0);
   transition: transform 350ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -653,6 +657,23 @@ html.dark body {
 
 .public-section-enter {
   animation: publicSectionEnter 500ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ==========================================================================
+   Islamic Geometric Diamond / Lattice Patterns
+   Extract of the subtle repeating diamond motif used on tenant public portals
+   ========================================================================== */
+
+/* Dark/olive surfaces: white lattice with crisp, soft 5% opacity */
+.bg-islamic-diamond-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0l10 10-10 10-10-10L20 0zm0 20l10 10-10 10-10-10 10-10z' fill='%23FFFFFF' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Light cream / off-white accent cards: olive lattice with ultra-subtle 3.5% opacity */
+.bg-islamic-diamond-subtle {
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0l10 10-10 10-10-10L20 0zm0 20l10 10-10 10-10-10 10-10z' fill='%23504F34' fill-opacity='0.035' fill-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: repeat;
 }
 
 @media (prefers-reduced-motion: reduce) {

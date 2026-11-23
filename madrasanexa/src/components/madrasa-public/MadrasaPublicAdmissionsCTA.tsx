@@ -31,10 +31,8 @@ export const MadrasaPublicAdmissionsCTA: React.FC<MadrasaPublicAdmissionsCTAProp
     >
       {/* Background Islamic Motif Overlay */}
       <div
-        className="absolute inset-0 opacity-[0.05] pointer-events-none"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0l10 10-10 10-10-10L20 0zm0 20l10 10-10 10-10-10 10-10z' fill='%23FFFFFF' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-        }}
+        className="absolute inset-0 bg-islamic-diamond-pattern pointer-events-none"
+        aria-hidden="true"
       />
 
       <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6 sm:gap-8">

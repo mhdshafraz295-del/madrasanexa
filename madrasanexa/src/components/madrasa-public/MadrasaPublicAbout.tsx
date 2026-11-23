@@ -55,7 +55,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
           </div>
 
           {/* Description Card (Transitions to Primary Olive from Bottom-Left on Hover) */}
-          <div className="acju-hover-br flex-1 p-6 sm:p-8 lg:p-10 flex flex-col justify-between transition-colors duration-300">
+          <div className="acju-hover-br flex-1 p-6 sm:p-8 lg:p-10 flex flex-col justify-between transition-colors duration-300 relative bg-islamic-diamond-subtle">
             <div>
               <div className="flex items-center space-x-2 text-xs font-bold text-[#85845C] group-hover:text-white uppercase tracking-wider mb-3 transition-colors duration-300">
                 <div className="w-7 h-7 rounded-lg bg-[#F5F5F1] group-hover:bg-white/20 flex items-center justify-center transition-colors duration-300">
@@ -74,7 +74,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
               </div>
 
               {generatedSummary && (
-                <div className="mt-4 p-4 rounded-xl bg-[#F5F5F1] group-hover:bg-white/10 transition-colors duration-300">
+                <div className="mt-4 p-4 rounded-xl bg-[#F5F5F1] bg-islamic-diamond-subtle group-hover:bg-white/10 transition-colors duration-300 relative">
                   <div className="flex items-center gap-1.5 text-xs font-bold text-[#85845C] group-hover:text-white mb-1.5 transition-colors duration-300">
                     <Sparkles className="w-3.5 h-3.5 text-[#85845C] group-hover:text-white" />
                     <span>Academic & Moral Framework</span>

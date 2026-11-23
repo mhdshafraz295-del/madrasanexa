@@ -144,7 +144,7 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
           return (
             <div
               key={item.id}
-              className="acju-card group bg-white rounded-2xl border border-[#E5E5DF] p-7 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-xs"
+              className="acju-card group bg-white bg-islamic-diamond-subtle rounded-2xl border border-[#E5E5DF] p-7 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-xs"
             >
               <div>
                 <div className="acju-icon-badge w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-5 bg-[#F5F5F1] border border-[#E5E5DF] group-hover:bg-white transition-colors duration-300">

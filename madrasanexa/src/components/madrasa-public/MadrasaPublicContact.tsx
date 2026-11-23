@@ -40,7 +40,7 @@ export const MadrasaPublicContact: React.FC<MadrasaPublicContactProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
 
         {/* Campus Address */}
-        <div className="flex items-start space-x-3.5 sm:space-x-4 p-4 sm:p-5 rounded-2xl bg-[#F5F5F1] border border-[#E5E5DF] min-w-0">
+        <div className="flex items-start space-x-3.5 sm:space-x-4 p-4 sm:p-5 rounded-2xl bg-[#F5F5F1] bg-islamic-diamond-subtle border border-[#E5E5DF] min-w-0 transition-all duration-300 hover:border-[#85845C]/40">
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white border border-[#E5E5DF] flex items-center justify-center shrink-0 shadow-xs" style={{ color: primaryColor }}>
             <MapPin className="w-5 h-5" />
           </div>
@@ -55,7 +55,7 @@ export const MadrasaPublicContact: React.FC<MadrasaPublicContactProps> = ({
         </div>
 
         {/* Official Telephone */}
-        <div className="flex items-start space-x-3.5 sm:space-x-4 p-4 sm:p-5 rounded-2xl bg-[#F5F5F1] border border-[#E5E5DF] min-w-0">
+        <div className="flex items-start space-x-3.5 sm:space-x-4 p-4 sm:p-5 rounded-2xl bg-[#F5F5F1] bg-islamic-diamond-subtle border border-[#E5E5DF] min-w-0 transition-all duration-300 hover:border-[#85845C]/40">
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white border border-[#E5E5DF] flex items-center justify-center shrink-0 shadow-xs" style={{ color: primaryColor }}>
             <Phone className="w-5 h-5" />
           </div>
@@ -79,7 +79,7 @@ export const MadrasaPublicContact: React.FC<MadrasaPublicContactProps> = ({
         </div>
 
         {/* Official Email */}
-        <div className="flex items-start space-x-3.5 sm:space-x-4 p-4 sm:p-5 rounded-2xl bg-[#F5F5F1] border border-[#E5E5DF] min-w-0">
+        <div className="flex items-start space-x-3.5 sm:space-x-4 p-4 sm:p-5 rounded-2xl bg-[#F5F5F1] bg-islamic-diamond-subtle border border-[#E5E5DF] min-w-0 transition-all duration-300 hover:border-[#85845C]/40">
           <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white border border-[#E5E5DF] flex items-center justify-center shrink-0 shadow-xs" style={{ color: primaryColor }}>
             <Mail className="w-5 h-5" />
           </div>

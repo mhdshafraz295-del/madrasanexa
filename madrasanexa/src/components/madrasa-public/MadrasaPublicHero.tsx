@@ -73,6 +73,12 @@ export const MadrasaPublicHero: React.FC<MadrasaPublicHeroProps> = ({
         }}
       />
 
+      {/* Subtle Geometric Diamond Pattern Texture Blend */}
+      <div
+        className="absolute inset-0 bg-islamic-diamond-pattern pointer-events-none opacity-60"
+        aria-hidden="true"
+      />
+
       {/* Hero Content Container */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 

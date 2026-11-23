@@ -17,7 +17,7 @@ export const MadrasaPublicMissionVision: React.FC<MadrasaPublicMissionVisionProp
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
 
         {/* Mission Card */}
-        <div className="acju-card flex flex-col h-full bg-white border border-[#E5E5DF] p-7 sm:p-9 rounded-xl shadow-xs transition-all duration-300 group">
+        <div className="acju-card flex flex-col h-full bg-white bg-islamic-diamond-subtle border border-[#E5E5DF] p-7 sm:p-9 rounded-xl shadow-xs transition-all duration-300 group">
           <div className="acju-icon-badge w-12 h-12 rounded-full bg-[#F5F5F1] group-hover:bg-white flex items-center justify-center text-[#85845C] mb-5 border border-[#E5E5DF] shadow-xs transition-colors">
             <Target className="w-6 h-6 text-[#85845C]" />
           </div>
@@ -37,7 +37,7 @@ export const MadrasaPublicMissionVision: React.FC<MadrasaPublicMissionVisionProp
         </div>
 
         {/* Vision Card */}
-        <div className="acju-card flex flex-col h-full bg-white border border-[#E5E5DF] p-7 sm:p-9 rounded-xl shadow-xs transition-all duration-300 group">
+        <div className="acju-card flex flex-col h-full bg-white bg-islamic-diamond-subtle border border-[#E5E5DF] p-7 sm:p-9 rounded-xl shadow-xs transition-all duration-300 group">
           <div className="acju-icon-badge w-12 h-12 rounded-full bg-[#F5F5F1] group-hover:bg-white flex items-center justify-center text-[#85845C] mb-5 border border-[#E5E5DF] shadow-xs transition-colors">
             <Compass className="w-6 h-6 text-[#85845C]" />
           </div>

@@ -722,3 +722,273 @@ html.dark body {
   }
 }
 
+/* ==========================================================================
+   ANIMATED WHITE DOVE ("PURA") FLIGHT & PERCH ANIMATIONS
+   ========================================================================== */
+@keyframes doveFlightPath {
+  0% {
+    transform: translate3d(min(65vw, 680px), -65px, 0) scale(1.18) rotate(-10deg);
+    opacity: 0;
+  }
+  8% {
+    transform: translate3d(min(56vw, 580px), -45px, 0) scale(1.16) rotate(-7deg);
+    opacity: 1;
+  }
+  30% {
+    transform: translate3d(min(38vw, 390px), -18px, 0) scale(1.12) rotate(-4deg);
+  }
+  55% {
+    transform: translate3d(min(22vw, 220px), 6px, 0) scale(1.08) rotate(1deg);
+  }
+  75% {
+    transform: translate3d(min(10vw, 100px), 3px, 0) scale(1.05) rotate(0deg);
+  }
+  88% {
+    transform: translate3d(12px, -6px, 0) scale(1.03) rotate(-3deg);
+  }
+  96% {
+    transform: translate3d(2px, -1px, 0) scale(1.01) rotate(1deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes doveWingFlapNear {
+  0%, 100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(-36deg) scaleY(0.72) translateY(-3px);
+  }
+}
+
+@keyframes doveWingFlapFar {
+  0%, 100% {
+    transform: rotate(0deg) scaleY(1);
+  }
+  50% {
+    transform: rotate(-32deg) scaleY(0.76) translateY(-2px);
+  }
+}
+
+@keyframes dovePerchedBreath {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.02, 0.985) translateY(0.6px);
+  }
+}
+
+@keyframes doveHeadTilt {
+  0%, 75%, 100% {
+    transform: rotate(0deg);
+  }
+  80% {
+    transform: rotate(-5deg) translateY(-0.8px);
+  }
+  86% {
+    transform: rotate(3deg) translateY(0.2px);
+  }
+  92% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes doveFlutter {
+  0% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+  15% {
+    transform: translateY(-5px) scale(1.06) rotate(-4deg);
+  }
+  35% {
+    transform: translateY(-2px) scale(1.03) rotate(4deg);
+  }
+  55% {
+    transform: translateY(-4px) scale(1.05) rotate(-3deg);
+  }
+  75% {
+    transform: translateY(-1px) scale(1.02) rotate(2deg);
+  }
+  100% {
+    transform: translateY(0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes doveLandingSparkle {
+  0% {
+    transform: scale(0.2);
+    opacity: 1;
+  }
+  60% {
+    transform: scale(1.6);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* 5 Accompanying Flock Doves Aerodynamic Glide Trajectories */
+@keyframes flockFly1 {
+  0% {
+    transform: translate3d(min(75vw, 780px), -75px, 0) scale(1.15) rotate(-9deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.95;
+  }
+  60% {
+    transform: translate3d(min(32vw, 340px), -15px, 0) scale(1.05) rotate(-3deg);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(-120px, -90px, 0) scale(0.92) rotate(-14deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flockFly2 {
+  0% {
+    transform: translate3d(min(82vw, 840px), -40px, 0) scale(1.08) rotate(-6deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.88;
+  }
+  65% {
+    transform: translate3d(min(40vw, 420px), 18px, 0) scale(1.02) rotate(-1deg);
+    opacity: 0.88;
+  }
+  100% {
+    transform: translate3d(-80px, -45px, 0) scale(0.88) rotate(-10deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flockFly3 {
+  0% {
+    transform: translate3d(min(90vw, 920px), -90px, 0) scale(1.12) rotate(-12deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.92;
+  }
+  55% {
+    transform: translate3d(min(45vw, 460px), -35px, 0) scale(1.06) rotate(-5deg);
+    opacity: 0.92;
+  }
+  100% {
+    transform: translate3d(-160px, -110px, 0) scale(0.9) rotate(-16deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flockFly4 {
+  0% {
+    transform: translate3d(min(70vw, 720px), 5px, 0) scale(1.02) rotate(-4deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.85;
+  }
+  70% {
+    transform: translate3d(min(28vw, 290px), 30px, 0) scale(0.98) rotate(0deg);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(-60px, -20px, 0) scale(0.85) rotate(-8deg);
+    opacity: 0;
+  }
+}
+
+@keyframes flockFly5 {
+  0% {
+    transform: translate3d(min(86vw, 880px), -60px, 0) scale(1) rotate(-8deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.8;
+  }
+  60% {
+    transform: translate3d(min(36vw, 370px), -8px, 0) scale(0.95) rotate(-2deg);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(-100px, -70px, 0) scale(0.82) rotate(-12deg);
+    opacity: 0;
+  }
+}
+
+.animate-dove-flight {
+  animation: doveFlightPath 2.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.animate-dove-flap-near {
+  transform-origin: 32px 30px;
+  animation: doveWingFlapNear 0.24s ease-in-out infinite;
+}
+
+.animate-dove-flap-far {
+  transform-origin: 26px 28px;
+  animation: doveWingFlapFar 0.24s ease-in-out infinite;
+}
+
+.animate-dove-breath {
+  transform-origin: bottom center;
+  animation: dovePerchedBreath 3.6s ease-in-out infinite;
+}
+
+.animate-dove-head {
+  transform-origin: 33px 20px;
+  animation: doveHeadTilt 7.2s ease-in-out infinite;
+}
+
+.animate-dove-flutter {
+  transform-origin: bottom center;
+  animation: doveFlutter 0.65s ease-in-out forwards;
+}
+
+.animate-dove-sparkle {
+  animation: doveLandingSparkle 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-flock-1 {
+  animation: flockFly1 3.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.animate-flock-2 {
+  animation: flockFly2 3.3s cubic-bezier(0.22, 1, 0.36, 1) 0.1s forwards;
+}
+.animate-flock-3 {
+  animation: flockFly3 3.4s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+.animate-flock-4 {
+  animation: flockFly4 3.2s cubic-bezier(0.22, 1, 0.36, 1) 0.2s forwards;
+}
+.animate-flock-5 {
+  animation: flockFly5 3.1s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-dove-flight,
+  .animate-dove-flap-near,
+  .animate-dove-flap-far,
+  .animate-dove-breath,
+  .animate-dove-head,
+  .animate-dove-flutter,
+  .animate-dove-sparkle,
+  .animate-flock-1,
+  .animate-flock-2,
+  .animate-flock-3,
+  .animate-flock-4,
+  .animate-flock-5 {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+

@@ -16,7 +16,7 @@ export default function QuranVerseMarquee() {
               <span
                 lang="ar"
                 dir="rtl"
-                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#504F34] font-medium tracking-normal selection:bg-[#A5A477]/20 leading-relaxed"
+                className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-medium tracking-normal selection:bg-[#A5A477]/20 leading-relaxed animate-noor-shimmer"
                 style={{
                   fontFamily: "'Amiri', 'Traditional Arabic', 'Scheherazade', 'Noto Naskh Arabic', serif",
                 }}

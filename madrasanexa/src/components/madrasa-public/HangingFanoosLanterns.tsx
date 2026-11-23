@@ -17,83 +17,88 @@ interface LanternConfig {
   pendulumClass: string;
   flameClass: string;
   glowClass: string;
-  auraSizeDesktop: number;
-  auraSizeMobile: number;
-  hideOnMobile?: boolean;
+  auraCoreSize: number;
+  auraSideWidth: number;
+  auraSideHeight: number;
+  visibilityClass: string;
 }
 
 const LANTERNS: LanternConfig[] = [
-  // 1. Outer Left (Long Chain - Frames Header Edge)
+  // 1. Outer Left: left: 1.2%, chain length 96px (visible on all viewports)
   {
     id: 'outer-left',
     side: 'left',
-    offset: '3.5%',
-    chainHeightDesktop: 108,
-    chainHeightMobile: 64,
-    widthDesktop: 56,
-    widthMobile: 42,
-    heightDesktop: 84,
-    heightMobile: 64,
+    offset: '1.2%',
+    chainHeightDesktop: 96,
+    chainHeightMobile: 56,
+    widthDesktop: 52,
+    widthMobile: 40,
+    heightDesktop: 78,
+    heightMobile: 60,
     pendulumClass: 'animate-fanoos-pendulum-1',
     flameClass: 'animate-fanoos-flame-1',
     glowClass: 'animate-fanoos-glow-1',
-    auraSizeDesktop: 200,
-    auraSizeMobile: 150,
-    hideOnMobile: false,
+    auraCoreSize: 76,
+    auraSideWidth: 110,
+    auraSideHeight: 64,
+    visibilityClass: 'flex',
   },
-  // 2. Inner Left (Short Chain - Cascading Canopy, Clear of Title)
+  // 2. Inner Left: left: 4.8%, chain length 54px (hidden xl:block - only on wide desktop)
   {
     id: 'inner-left',
     side: 'left',
-    offset: '10.5%',
-    chainHeightDesktop: 68,
-    chainHeightMobile: 48,
-    widthDesktop: 48,
-    widthMobile: 38,
-    heightDesktop: 72,
-    heightMobile: 58,
+    offset: '4.8%',
+    chainHeightDesktop: 54,
+    chainHeightMobile: 40,
+    widthDesktop: 44,
+    widthMobile: 34,
+    heightDesktop: 66,
+    heightMobile: 51,
     pendulumClass: 'animate-fanoos-pendulum-2',
     flameClass: 'animate-fanoos-flame-2',
     glowClass: 'animate-fanoos-glow-2',
-    auraSizeDesktop: 168,
-    auraSizeMobile: 130,
-    hideOnMobile: true,
+    auraCoreSize: 64,
+    auraSideWidth: 92,
+    auraSideHeight: 54,
+    visibilityClass: 'hidden xl:flex',
   },
-  // 3. Inner Right (Short Chain - Cascading Canopy, Clear of Title)
+  // 3. Inner Right: right: 4.8%, chain length 54px (hidden xl:block - only on wide desktop)
   {
     id: 'inner-right',
     side: 'right',
-    offset: '10.5%',
-    chainHeightDesktop: 68,
-    chainHeightMobile: 48,
-    widthDesktop: 48,
-    widthMobile: 38,
-    heightDesktop: 72,
-    heightMobile: 58,
+    offset: '4.8%',
+    chainHeightDesktop: 54,
+    chainHeightMobile: 40,
+    widthDesktop: 44,
+    widthMobile: 34,
+    heightDesktop: 66,
+    heightMobile: 51,
     pendulumClass: 'animate-fanoos-pendulum-3',
     flameClass: 'animate-fanoos-flame-3',
     glowClass: 'animate-fanoos-glow-3',
-    auraSizeDesktop: 168,
-    auraSizeMobile: 130,
-    hideOnMobile: true,
+    auraCoreSize: 64,
+    auraSideWidth: 92,
+    auraSideHeight: 54,
+    visibilityClass: 'hidden xl:flex',
   },
-  // 4. Outer Right (Long Chain - Frames Header Edge)
+  // 4. Outer Right: right: 1.2%, chain length 96px (visible on all viewports)
   {
     id: 'outer-right',
     side: 'right',
-    offset: '3.5%',
-    chainHeightDesktop: 108,
-    chainHeightMobile: 64,
-    widthDesktop: 56,
-    widthMobile: 42,
-    heightDesktop: 84,
-    heightMobile: 64,
+    offset: '1.2%',
+    chainHeightDesktop: 96,
+    chainHeightMobile: 56,
+    widthDesktop: 52,
+    widthMobile: 40,
+    heightDesktop: 78,
+    heightMobile: 60,
     pendulumClass: 'animate-fanoos-pendulum-4',
     flameClass: 'animate-fanoos-flame-4',
     glowClass: 'animate-fanoos-glow-4',
-    auraSizeDesktop: 200,
-    auraSizeMobile: 150,
-    hideOnMobile: false,
+    auraCoreSize: 76,
+    auraSideWidth: 110,
+    auraSideHeight: 64,
+    visibilityClass: 'flex',
   },
 ];
 
@@ -101,6 +106,7 @@ const LANTERNS: LanternConfig[] = [
  * Hanging Islamic Fanoos Lanterns
  * Suspended from the bottom border of the sticky top navbar.
  * Non-blocking decorative layer (pointer-events: none, z-45, overflow: visible).
+ * Flame and glow are strictly confined to the lantern glass chamber.
  */
 export const HangingFanoosLanterns: React.FC<HangingFanoosLanternsProps> = ({
   mobileMenuOpen = false,
@@ -120,57 +126,55 @@ export const HangingFanoosLanterns: React.FC<HangingFanoosLanternsProps> = ({
         return (
           <div
             key={lantern.id}
-            className={`absolute top-0 flex flex-col items-center pointer-events-none ${
-              lantern.hideOnMobile ? 'hidden md:flex' : 'flex'
-            } ${lantern.pendulumClass}`}
+            className={`absolute top-0 flex flex-col items-center pointer-events-none ${lantern.visibilityClass} ${lantern.pendulumClass}`}
             style={{
               ...positionStyle,
               transformOrigin: 'top center',
             }}
           >
-            {/* Top Hook Anchor touching navbar bottom border */}
-            <div className="w-2.5 h-1.5 -mt-0.5 rounded-b-xs bg-gradient-to-b from-[#78350f] via-[#b45309] to-[#d97706] shadow-[0_1px_3px_rgba(0,0,0,0.35)] z-20 shrink-0" />
+            {/* 1. Unlit Antique-Brass Mount Hook touching navbar bottom border */}
+            <div className="w-2.5 h-1.5 -mt-0.5 rounded-b-xs bg-[#5a4622] border-t border-[#3a2c13] shadow-xs z-10 shrink-0" />
 
-            {/* Delicate Antique-Gold Chain (Desktop & Mobile) */}
-            <div className="hidden sm:block shrink-0">
+            {/* 2. Plumb-Aligned Delicate Antique-Gold Chain (Desktop & Mobile) */}
+            <div className="hidden sm:flex justify-center items-center shrink-0">
               <FanoosChainSvg height={lantern.chainHeightDesktop} />
             </div>
-            <div className="block sm:hidden shrink-0">
+            <div className="flex sm:hidden justify-center items-center shrink-0">
               <FanoosChainSvg height={lantern.chainHeightMobile} />
             </div>
 
-            {/* Suspended Fanoos Lantern with Warm Radiant Candlelight Aura */}
-            <div className="relative flex items-center justify-center -mt-1 shrink-0">
-              {/* Layer 1: Soft, Wide Radial Candlelight Aura */}
+            {/* 3. Suspended Fanoos Lantern (Glow exclusively confined to lantern body) */}
+            <div className="relative flex flex-col items-center justify-center -mt-1 shrink-0">
+              {/* Core Radial Candlelight Aura (Centered strictly on frosted glass core) */}
               <div
-                className={`absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full z-0 mix-blend-screen ${lantern.glowClass}`}
+                className={`absolute left-1/2 top-[54%] -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full z-0 mix-blend-screen ${lantern.glowClass}`}
                 style={{
-                  width: `${lantern.auraSizeDesktop}px`,
-                  height: `${lantern.auraSizeDesktop}px`,
+                  width: `${lantern.auraCoreSize}px`,
+                  height: `${lantern.auraCoreSize}px`,
                   background:
-                    'radial-gradient(circle, rgba(254, 243, 199, 0.52) 0%, rgba(251, 191, 36, 0.38) 32%, rgba(245, 158, 11, 0.14) 62%, transparent 80%)',
+                    'radial-gradient(circle, rgba(254, 243, 199, 0.58) 0%, rgba(251, 191, 36, 0.38) 36%, rgba(245, 158, 11, 0.12) 65%, transparent 80%)',
                 }}
               />
 
-              {/* Layer 2: Wide horizontal candlelight side-spread */}
+              {/* Wide Horizontal Side-Spread (Radiates outward to sides, never upward to chain) */}
               <div
-                className="absolute left-1/2 top-[52%] -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full z-0 blur-lg opacity-80 mix-blend-screen"
+                className="absolute left-1/2 top-[54%] -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full z-0 blur-md opacity-75 mix-blend-screen"
                 style={{
-                  width: `${Math.round(lantern.auraSizeDesktop * 1.35)}px`,
-                  height: `${Math.round(lantern.auraSizeDesktop * 0.85)}px`,
+                  width: `${lantern.auraSideWidth}px`,
+                  height: `${lantern.auraSideHeight}px`,
                   background:
-                    'radial-gradient(ellipse at center, rgba(251, 191, 36, 0.28) 0%, rgba(245, 158, 11, 0.12) 48%, transparent 72%)',
+                    'radial-gradient(ellipse at center, rgba(251, 191, 36, 0.26) 0%, rgba(245, 158, 11, 0.10) 50%, transparent 75%)',
                 }}
               />
 
-              {/* Layer 3: Downward candlelight cone */}
+              {/* Soft Downward Candlelight Pool */}
               <div
-                className="absolute left-1/2 top-[76%] -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full z-0 blur-md opacity-65 mix-blend-screen"
+                className="absolute left-1/2 top-[72%] -translate-x-1/2 -translate-y-1/2 pointer-events-none rounded-full z-0 blur-sm opacity-60 mix-blend-screen"
                 style={{
-                  width: `${Math.round(lantern.auraSizeDesktop * 0.75)}px`,
-                  height: `${Math.round(lantern.auraSizeDesktop * 0.45)}px`,
+                  width: `${Math.round(lantern.auraCoreSize * 0.85)}px`,
+                  height: `${Math.round(lantern.auraCoreSize * 0.45)}px`,
                   background:
-                    'radial-gradient(ellipse at center, rgba(254, 240, 138, 0.35) 0%, rgba(245, 158, 11, 0.10) 55%, transparent 75%)',
+                    'radial-gradient(ellipse at center, rgba(254, 240, 138, 0.32) 0%, rgba(245, 158, 11, 0.08) 55%, transparent 75%)',
                 }}
               />
 
@@ -201,10 +205,11 @@ export const HangingFanoosLanterns: React.FC<HangingFanoosLanternsProps> = ({
 
 /**
  * Delicate Antique-Gold Chain SVG
- * Alternating vertical and angled elliptical brass links
+ * Plumb vertical axis: links centered precisely along cx="4" (half of width 8).
+ * Simple, clean unlit metallic brass/bronze links.
  */
 const FanoosChainSvg: React.FC<{ height: number }> = ({ height }) => {
-  const linkStep = 5;
+  const linkStep = 5.2;
   const count = Math.max(3, Math.floor(height / linkStep));
   const links = [];
 
@@ -216,10 +221,10 @@ const FanoosChainSvg: React.FC<{ height: number }> = ({ height }) => {
         key={i}
         cx="4"
         cy={y}
-        rx={isEven ? 1.8 : 1.2}
-        ry={isEven ? 3.4 : 2.9}
-        stroke={isEven ? '#D97706' : '#92400E'}
-        strokeWidth={isEven ? 1.25 : 1.05}
+        rx={isEven ? 1.7 : 1.1}
+        ry={isEven ? 3.4 : 2.8}
+        stroke={isEven ? '#B45309' : '#78350F'}
+        strokeWidth={isEven ? 1.2 : 1.0}
         fill="none"
       />
     );
@@ -232,16 +237,8 @@ const FanoosChainSvg: React.FC<{ height: number }> = ({ height }) => {
       viewBox={`0 0 8 ${height}`}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="overflow-visible"
+      className="overflow-visible block"
     >
-      {/* Chain link highlights */}
-      <defs>
-        <linearGradient id="chainShine" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#92400E" />
-          <stop offset="45%" stopColor="#FDE68A" />
-          <stop offset="100%" stopColor="#B45309" />
-        </linearGradient>
-      </defs>
       {links}
     </svg>
   );
@@ -249,8 +246,8 @@ const FanoosChainSvg: React.FC<{ height: number }> = ({ height }) => {
 
 /**
  * Ornate Islamic Geometric Fanoos SVG
- * Classical onion dome, crescent finial, arabesque lattice cutouts,
- * frosted amber glass, and living flickering candle flame.
+ * Centered top suspension ring, onion dome with crescent finial,
+ * arabesque ogee arches, frosted amber glass, and living flickering candle flame.
  */
 interface FanoosLanternSvgProps {
   width: number;
@@ -270,10 +267,10 @@ const FanoosLanternSvg: React.FC<FanoosLanternSvgProps> = ({
       height={height}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="overflow-visible"
+      className="overflow-visible block"
       style={{
         filter:
-          'drop-shadow(0 0 10px rgba(251, 191, 36, 0.45)) drop-shadow(0 4px 12px rgba(217, 119, 6, 0.35))',
+          'drop-shadow(0 4px 10px rgba(251, 191, 36, 0.4)) drop-shadow(0 8px 16px rgba(217, 119, 6, 0.25))',
       }}
     >
       <defs>
@@ -321,7 +318,7 @@ const FanoosLanternSvg: React.FC<FanoosLanternSvgProps> = ({
         </linearGradient>
       </defs>
 
-      {/* 1. TOP SUSPENSION RING & STUD */}
+      {/* 1. TOP SUSPENSION RING & STUD (Plumb centered at cx="32") */}
       <circle
         cx="32"
         cy="7"
@@ -355,7 +352,6 @@ const FanoosLanternSvg: React.FC<FanoosLanternSvgProps> = ({
       <circle cx="32" cy="19.5" r="1.2" fill="url(#fanoosGoldTrim)" />
 
       {/* 3. ARCHED ONION / MINARET DOME CAP */}
-      {/* Dome Main Body */}
       <path
         d="M 32 20 C 30 23 24 26 18 30.5 C 14.5 32 13 33 13 34 L 51 34 C 51 33 49.5 32 46 30.5 C 40 26 34 23 32 20 Z"
         fill="url(#fanoosBrassGrad)"
@@ -395,8 +391,7 @@ const FanoosLanternSvg: React.FC<FanoosLanternSvgProps> = ({
         strokeWidth="0.6"
       />
 
-      {/* 4. RADIANT AMBER GLASS CHAMBER */}
-      {/* Background Radiant Amber Glow */}
+      {/* 4. RADIANT FROSTED AMBER GLASS CHAMBER */}
       <rect
         x="14"
         y="36"
@@ -475,11 +470,11 @@ const FanoosLanternSvg: React.FC<FanoosLanternSvgProps> = ({
         strokeLinecap="round"
       />
 
-      {/* Animated Flickering Teardrop Flame */}
+      {/* Animated Flickering Teardrop Flame (Strictly inside glass core) */}
       <g className={flameClass} style={{ transformOrigin: '32px 53px' }}>
-        {/* Outer Flame Halos */}
-        <circle cx="32" cy="51" r="9" fill="#FDE047" fillOpacity="0.3" filter="blur(2px)" />
-        <circle cx="32" cy="51" r="5" fill="#FEF08A" fillOpacity="0.45" filter="blur(1px)" />
+        {/* Core Flame Halos */}
+        <circle cx="32" cy="51" r="7" fill="#FDE047" fillOpacity="0.35" filter="blur(1.5px)" />
+        <circle cx="32" cy="51" r="4" fill="#FEF08A" fillOpacity="0.5" filter="blur(0.8px)" />
 
         {/* Outer Teardrop Flame */}
         <path
@@ -544,7 +539,6 @@ const FanoosLanternSvg: React.FC<FanoosLanternSvgProps> = ({
       />
 
       {/* 7. TAPERED HEXAGONAL BASE & ORNAMENTAL DROP PENDANT */}
-      {/* Tapered Base Apron */}
       <path
         d="M 13 70.5 L 21 80 L 43 80 L 51 70.5 Z"
         fill="url(#fanoosBrassGrad)"

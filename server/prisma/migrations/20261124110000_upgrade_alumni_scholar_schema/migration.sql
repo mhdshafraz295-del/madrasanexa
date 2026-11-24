@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE `alumni_scholars` 
+  MODIFY COLUMN `photoUrl` MEDIUMTEXT NULL,
+  MODIFY COLUMN `bio` MEDIUMTEXT NULL,
+  ADD COLUMN `studentId` VARCHAR(191) NULL,
+  ADD COLUMN `alumniProfileId` VARCHAR(191) NULL;

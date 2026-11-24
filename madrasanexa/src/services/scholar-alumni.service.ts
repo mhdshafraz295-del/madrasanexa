@@ -25,6 +25,8 @@ export interface AlumniScholarItem {
   batchYear: string;
   classOrDivision?: string | null;
   classId?: string | null;
+  studentId?: string | null;
+  alumniProfileId?: string | null;
   academicStatus: AcademicStatus;
   customStatusLabel?: string | null;
   qualification: string;
@@ -88,22 +90,29 @@ export interface ScholarCreatePayload {
   fullName: string;
   photoUrl?: string | null;
   batchYear: string;
+  year?: string | null;
   classOrDivision?: string | null;
   classId?: string | null;
+  studentId?: string | null;
+  alumniProfileId?: string | null;
+  alumniId?: string | null;
   academicStatus: AcademicStatus;
   customStatusLabel?: string | null;
   qualification?: string;
+  degree?: string;
   university?: string;
   qualificationsList?: QualificationEntry[] | null;
   facultyOrDepartment?: string | null;
   currentRole?: string | null;
   cityCountry?: string | null;
   bio?: string | null;
+  academicBio?: string | null;
   email?: string | null;
   phone?: string | null;
   linkedinUrl?: string | null;
   showContactPublicly?: boolean;
   availableForMentorship?: boolean;
+  openForMentorship?: boolean;
   approvalStatus?: ScholarApprovalStatus;
   isFeatured?: boolean;
 }

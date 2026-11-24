@@ -16,7 +16,7 @@ function normalizeQualifications(payload, isRequired = true) {
         .filter((q) => q.degree || q.university)
     : null;
 
-  let qualification = (payload.qualification || '').trim();
+  let qualification = (payload.qualification || payload.degree || '').trim();
   let university = (payload.university || '').trim();
 
   if (qualificationsList && qualificationsList.length > 0) {
@@ -27,11 +27,12 @@ function normalizeQualifications(payload, isRequired = true) {
       university = qualificationsList[0].university;
     }
   } else if (qualification || university) {
+    const defaultYear = (payload.batchYear || payload.year) ? String(payload.batchYear || payload.year).trim() : null;
     qualificationsList = [
       {
         degree: qualification,
         university: university,
-        year: payload.batchYear ? String(payload.batchYear).trim() : null,
+        year: defaultYear,
       },
     ];
   }
@@ -162,14 +163,22 @@ export async function submitPublicAlumni(madrasaCode, payload) {
   const madrasa = await resolveMadrasa(madrasaCode);
   const { qualification, university, qualificationsList } = normalizeQualifications(payload, true);
 
+  const batchYear = (payload.batchYear || payload.year || '').trim();
+  const bio = (payload.bio !== undefined ? payload.bio : payload.academicBio) ? String(payload.bio !== undefined ? payload.bio : payload.academicBio).trim() : null;
+  const availableForMentorship = payload.availableForMentorship !== undefined
+    ? Boolean(payload.availableForMentorship)
+    : (payload.openForMentorship !== undefined ? Boolean(payload.openForMentorship) : true);
+
   const created = await prisma.alumniScholar.create({
     data: {
       madrasaId: madrasa.id,
       fullName: payload.fullName.trim(),
       photoUrl: payload.photoUrl ? payload.photoUrl.trim() : null,
-      batchYear: payload.batchYear.trim(),
+      batchYear,
       classOrDivision: payload.classOrDivision ? payload.classOrDivision.trim() : null,
       classId: payload.classId ? payload.classId.trim() : null,
+      studentId: payload.studentId ? payload.studentId.trim() : null,
+      alumniProfileId: (payload.alumniProfileId || payload.alumniId) ? String(payload.alumniProfileId || payload.alumniId).trim() : null,
       academicStatus: payload.academicStatus || 'UNDERGRADUATE',
       customStatusLabel: payload.customStatusLabel ? payload.customStatusLabel.trim() : null,
       qualification,
@@ -178,12 +187,12 @@ export async function submitPublicAlumni(madrasaCode, payload) {
       facultyOrDepartment: payload.facultyOrDepartment ? payload.facultyOrDepartment.trim() : null,
       currentRole: payload.currentRole ? payload.currentRole.trim() : null,
       cityCountry: payload.cityCountry ? payload.cityCountry.trim() : null,
-      bio: payload.bio ? payload.bio.trim() : null,
+      bio,
       email: payload.email ? payload.email.trim() : null,
       phone: payload.phone ? payload.phone.trim() : null,
       linkedinUrl: payload.linkedinUrl ? payload.linkedinUrl.trim() : null,
       showContactPublicly: Boolean(payload.showContactPublicly),
-      availableForMentorship: payload.availableForMentorship !== false,
+      availableForMentorship,
       approvalStatus: 'PENDING',
       isFeatured: false,
     },
@@ -318,14 +327,38 @@ export async function toggleWebsiteVisibility(madrasaId, showAlumniOnWebsite) {
 export async function adminCreateScholar(madrasaId, payload, userId) {
   const { qualification, university, qualificationsList } = normalizeQualifications(payload, true);
 
+  const batchYear = (payload.batchYear || payload.year || '').trim();
+  const bio = (payload.bio !== undefined ? payload.bio : payload.academicBio) ? String(payload.bio !== undefined ? payload.bio : payload.academicBio).trim() : null;
+  const availableForMentorship = payload.availableForMentorship !== undefined
+    ? Boolean(payload.availableForMentorship)
+    : (payload.openForMentorship !== undefined ? Boolean(payload.openForMentorship) : true);
+
+  // Safely verify if reviewing user exists to prevent foreign-key failure
+  let validReviewedByUserId = null;
+  if (userId) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true },
+      });
+      if (user) {
+        validReviewedByUserId = user.id;
+      }
+    } catch {
+      validReviewedByUserId = null;
+    }
+  }
+
   const created = await prisma.alumniScholar.create({
     data: {
       madrasaId,
       fullName: payload.fullName.trim(),
       photoUrl: payload.photoUrl ? payload.photoUrl.trim() : null,
-      batchYear: payload.batchYear.trim(),
+      batchYear,
       classOrDivision: payload.classOrDivision ? payload.classOrDivision.trim() : null,
       classId: payload.classId ? payload.classId.trim() : null,
+      studentId: payload.studentId ? payload.studentId.trim() : null,
+      alumniProfileId: (payload.alumniProfileId || payload.alumniId) ? String(payload.alumniProfileId || payload.alumniId).trim() : null,
       academicStatus: payload.academicStatus || 'UNDERGRADUATE',
       customStatusLabel: payload.customStatusLabel ? payload.customStatusLabel.trim() : null,
       qualification,
@@ -334,15 +367,15 @@ export async function adminCreateScholar(madrasaId, payload, userId) {
       facultyOrDepartment: payload.facultyOrDepartment ? payload.facultyOrDepartment.trim() : null,
       currentRole: payload.currentRole ? payload.currentRole.trim() : null,
       cityCountry: payload.cityCountry ? payload.cityCountry.trim() : null,
-      bio: payload.bio ? payload.bio.trim() : null,
+      bio,
       email: payload.email ? payload.email.trim() : null,
       phone: payload.phone ? payload.phone.trim() : null,
       linkedinUrl: payload.linkedinUrl ? payload.linkedinUrl.trim() : null,
       showContactPublicly: Boolean(payload.showContactPublicly),
-      availableForMentorship: payload.availableForMentorship !== false,
+      availableForMentorship,
       approvalStatus: payload.approvalStatus || 'APPROVED',
       isFeatured: Boolean(payload.isFeatured),
-      reviewedByUserId: userId,
+      reviewedByUserId: validReviewedByUserId,
       reviewedAt: new Date(),
     },
   });
@@ -365,17 +398,23 @@ export async function adminUpdateScholar(madrasaId, id, payload) {
   const updateData = {};
   if (payload.fullName !== undefined) updateData.fullName = payload.fullName.trim();
   if (payload.photoUrl !== undefined) updateData.photoUrl = payload.photoUrl ? payload.photoUrl.trim() : null;
-  if (payload.batchYear !== undefined) updateData.batchYear = payload.batchYear.trim();
+  if (payload.batchYear !== undefined || payload.year !== undefined) {
+    updateData.batchYear = (payload.batchYear || payload.year || '').trim();
+  }
   if (payload.classOrDivision !== undefined) updateData.classOrDivision = payload.classOrDivision ? payload.classOrDivision.trim() : null;
   if (payload.classId !== undefined) updateData.classId = payload.classId ? payload.classId.trim() : null;
+  if (payload.studentId !== undefined) updateData.studentId = payload.studentId ? payload.studentId.trim() : null;
+  if (payload.alumniProfileId !== undefined || payload.alumniId !== undefined) {
+    updateData.alumniProfileId = (payload.alumniProfileId || payload.alumniId) ? String(payload.alumniProfileId || payload.alumniId).trim() : null;
+  }
   if (payload.academicStatus !== undefined) updateData.academicStatus = payload.academicStatus;
   if (payload.customStatusLabel !== undefined) updateData.customStatusLabel = payload.customStatusLabel ? payload.customStatusLabel.trim() : null;
 
-  if (payload.qualificationsList !== undefined || payload.qualification !== undefined || payload.university !== undefined) {
+  if (payload.qualificationsList !== undefined || payload.qualification !== undefined || payload.degree !== undefined || payload.university !== undefined) {
     const { qualification, university, qualificationsList } = normalizeQualifications(
       {
         qualificationsList: payload.qualificationsList !== undefined ? payload.qualificationsList : existing.qualificationsList,
-        qualification: payload.qualification !== undefined ? payload.qualification : existing.qualification,
+        qualification: payload.qualification !== undefined ? payload.qualification : (payload.degree !== undefined ? payload.degree : existing.qualification),
         university: payload.university !== undefined ? payload.university : existing.university,
         batchYear: payload.batchYear !== undefined ? payload.batchYear : existing.batchYear,
       },
@@ -389,12 +428,19 @@ export async function adminUpdateScholar(madrasaId, id, payload) {
   if (payload.facultyOrDepartment !== undefined) updateData.facultyOrDepartment = payload.facultyOrDepartment ? payload.facultyOrDepartment.trim() : null;
   if (payload.currentRole !== undefined) updateData.currentRole = payload.currentRole ? payload.currentRole.trim() : null;
   if (payload.cityCountry !== undefined) updateData.cityCountry = payload.cityCountry ? payload.cityCountry.trim() : null;
-  if (payload.bio !== undefined) updateData.bio = payload.bio ? payload.bio.trim() : null;
+  if (payload.bio !== undefined || payload.academicBio !== undefined) {
+    const b = payload.bio !== undefined ? payload.bio : payload.academicBio;
+    updateData.bio = b ? b.trim() : null;
+  }
   if (payload.email !== undefined) updateData.email = payload.email ? payload.email.trim() : null;
   if (payload.phone !== undefined) updateData.phone = payload.phone ? payload.phone.trim() : null;
   if (payload.linkedinUrl !== undefined) updateData.linkedinUrl = payload.linkedinUrl ? payload.linkedinUrl.trim() : null;
   if (payload.showContactPublicly !== undefined) updateData.showContactPublicly = Boolean(payload.showContactPublicly);
-  if (payload.availableForMentorship !== undefined) updateData.availableForMentorship = Boolean(payload.availableForMentorship);
+  if (payload.availableForMentorship !== undefined || payload.openForMentorship !== undefined) {
+    updateData.availableForMentorship = payload.availableForMentorship !== undefined
+      ? Boolean(payload.availableForMentorship)
+      : Boolean(payload.openForMentorship);
+  }
   if (payload.approvalStatus !== undefined) updateData.approvalStatus = payload.approvalStatus;
   if (payload.isFeatured !== undefined) updateData.isFeatured = Boolean(payload.isFeatured);
 

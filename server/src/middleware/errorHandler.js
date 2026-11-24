@@ -47,7 +47,11 @@ export const errorHandler = (err, req, res, _next) => {
     let statusCode = 400;
     let message = 'Database request failed';
 
-    if (err.code === 'P2002') {
+    if (err.code === 'P2000') {
+      statusCode = 400;
+      const col = err.meta?.column_name || 'field';
+      message = `The provided value is too large for ${col}.`;
+    } else if (err.code === 'P2002') {
       statusCode = 409;
       const target = Array.isArray(err.meta?.target)
         ? err.meta.target.join(', ')
@@ -58,7 +62,29 @@ export const errorHandler = (err, req, res, _next) => {
       message = 'Resource not found.';
     } else if (err.code === 'P2003') {
       statusCode = 400;
-      message = 'Related resource not found or invalid foreign key.';
+      const field = err.meta?.field_name || (typeof err.meta?.target === 'string' ? err.meta.target : 'foreign key');
+      message = `Related resource not found or invalid ${field}.`;
+    } else if (err.code === 'P2011') {
+      statusCode = 400;
+      const constraint = err.meta?.constraint || 'required field';
+      message = `Null constraint violation on ${constraint}.`;
+    } else if (err.code === 'P2012') {
+      statusCode = 400;
+      const path = err.meta?.path || 'field';
+      message = `Missing a required value for ${path}.`;
+    } else if (err.code === 'P2014') {
+      statusCode = 400;
+      message = 'The requested change violates a required relation constraint.';
+    } else {
+      statusCode = 400;
+      if (err.meta?.message) {
+        message = String(err.meta.message);
+      } else if (typeof err.message === 'string') {
+        const lastLine = err.message.trim().split('\n').pop()?.trim();
+        if (lastLine && !lastLine.includes('PrismaClientKnownRequestError') && lastLine.length < 120) {
+          message = lastLine;
+        }
+      }
     }
 
     return res.status(statusCode).json({
@@ -68,9 +94,17 @@ export const errorHandler = (err, req, res, _next) => {
   }
 
   if (err?.name === 'PrismaClientValidationError') {
+    let message = 'Invalid database query parameters.';
+    if (typeof err.message === 'string') {
+      const lines = err.message.split('\n').map((l) => l.trim()).filter(Boolean);
+      const relevant = lines.find((l) => l.startsWith('Argument') || l.startsWith('Unknown argument'));
+      if (relevant) {
+        message = relevant;
+      }
+    }
     return res.status(400).json({
       success: false,
-      message: 'Invalid database query parameters.',
+      message,
     });
   }
 

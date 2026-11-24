@@ -2935,10 +2935,12 @@ model AlumniScholar {
   id                     String    @id @default(cuid())
   madrasaId              String
   fullName               String
-  photoUrl               String?   @db.Text
+  photoUrl               String?   @db.MediumText
   batchYear              String
   classOrDivision        String?
   classId                String?
+  studentId              String?
+  alumniProfileId        String?
   academicStatus         String    @default("UNDERGRADUATE") // "UNDERGRADUATE" | "GRADUATE" | "POSTGRADUATE" | "WORKING_SCHOLAR" | "HAFIL" | "AL_AALIM" | "OTHER"
   customStatusLabel      String?
   qualification          String
@@ -2947,7 +2949,7 @@ model AlumniScholar {
   facultyOrDepartment    String?
   currentRole            String?
   cityCountry            String?
-  bio                    String?   @db.Text
+  bio                    String?   @db.MediumText
   email                  String?
   phone                  String?
   linkedinUrl            String?

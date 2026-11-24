@@ -16,20 +16,48 @@ export interface IdCardFrontProps {
   academicYear?: string;
   cardVersion?: number;
   issuedAt?: string | null;
+  orientation?: 'vertical' | 'horizontal';
+  localPhotoUrl?: string | null;
   className?: string;
 }
 
 /**
- * IdCardFront - ISO/IEC 7810 ID-1 (CR80) Standard Student ID Card Front Layout.
+ * Rub el Hizb (۞) 8-point geometric star emblem SVG
+ */
+const RubElHizbEmblem: React.FC<{ sizeMm?: number; color?: string; innerColor?: string }> = ({
+  sizeMm = 4,
+  color = '#C5A059',
+  innerColor = '#193B32',
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    style={{ width: `${sizeMm}mm`, height: `${sizeMm}mm`, flexShrink: 0 }}
+    aria-hidden="true"
+  >
+    <polygon
+      points="12,1.5 14.8,5.5 19.5,4.8 18.8,9.5 22.5,12 18.8,14.5 19.5,19.2 14.8,18.5 12,22.5 9.2,18.5 4.5,19.2 5.2,14.5 1.5,12 5.2,9.5 4.5,4.8 9.2,5.5"
+      fill={color}
+    />
+    <circle cx="12" cy="12" r="3.2" fill="none" stroke={innerColor} strokeWidth="1.2" />
+    <circle cx="12" cy="12" r="1.1" fill={innerColor} />
+  </svg>
+);
+
+// High-fidelity Islamic geometric star lattice background pattern
+const ISLAMIC_STAR_PATTERN = `radial-gradient(circle at 50% 50%, rgba(197, 160, 89, 0.18) 1px, transparent 1px), linear-gradient(45deg, rgba(197, 160, 89, 0.08) 25%, transparent 25%, transparent 75%, rgba(197, 160, 89, 0.08) 75%), linear-gradient(-45deg, rgba(197, 160, 89, 0.08) 25%, transparent 25%, transparent 75%, rgba(197, 160, 89, 0.08) 75%)`;
+
+/**
+ * IdCardFront - ISO/IEC 7810 ID-1 (CR80) Student ID Card Front Layout.
  *
- * Exact Physical Dimensions:
- * - Width: 85.60 mm (3.370 in)
- * - Height: 53.98 mm (2.125 in)
- * - Corner Radius: 3.18 mm (0.125 in)
+ * Supports Dual Orientation Modes:
+ * 1. Vertical Portrait (Lanyard Style): 53.98 mm W × 85.60 mm H (Default)
+ * 2. Horizontal Landscape (Classic CR80): 85.60 mm W × 53.98 mm H
  *
- * Privacy Invariants:
- * - Omits student home address, date of birth, guardian mobile phone, and blood group.
- * - Displays only verified institutional identity attributes.
+ * Luxury Theme:
+ * - Deep Emerald Forest Green (#193B32, gradient #133129 to #1E463B)
+ * - Warm Antique Gold (#C5A059 / #D4AF37)
+ * - Crisp Off-White (#F6F6F3) lower typography section
+ * - Rub el Hizb (۞) 8-point geometric star accents
  */
 export const IdCardFront: React.FC<IdCardFrontProps> = ({
   student,
@@ -39,196 +67,474 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
   academicYear = '2025/2026',
   cardVersion = 1,
   issuedAt,
+  orientation = 'horizontal',
+  localPhotoUrl,
   className = '',
 }) => {
   const [logoFailed, setLogoFailed] = useState(false);
   const [photoFailed, setPhotoFailed] = useState(false);
 
-  const initials = student.fullName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase() || 'ST';
+  // Active photo: prioritize memory-only print photo, then saved photoFileId
+  const activePhoto = localPhotoUrl || student.photoFileId;
 
-  // Dynamic font sizing based on name character length to ensure graceful 2-line rendering
+  const initials =
+    student.fullName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase() || 'ST';
+
   const nameLength = (student.fullName || '').trim().length;
-  const nameTypographyClass =
-    nameLength > 32
-      ? 'text-[2.2mm] leading-[2.6mm]'
-      : nameLength > 22
-      ? 'text-[2.5mm] leading-[2.9mm]'
-      : 'text-[2.9mm] leading-[3.4mm]';
 
   const formattedIssueDate = issuedAt
     ? new Date(issuedAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
     : new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 
+  // -------------------------------------------------------------
+  // 1. VERTICAL PORTRAIT MODE (53.98mm × 85.60mm)
+  // -------------------------------------------------------------
+  if (orientation === 'vertical') {
+    const verticalNameFontSize =
+      nameLength > 30 ? '2.1mm' : nameLength > 20 ? '2.4mm' : '2.7mm';
+    const verticalNameLineHeight =
+      nameLength > 30 ? '2.5mm' : nameLength > 20 ? '2.8mm' : '3.2mm';
+
+    return (
+      <div
+        className={`relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
+        style={{
+          width: '53.98mm',
+          height: '85.60mm',
+          borderRadius: '3.18mm',
+          boxSizing: 'border-box',
+          backgroundColor: '#F6F6F3',
+        }}
+        data-card-side="front"
+        data-card-orientation="vertical"
+      >
+        {/* UPPER ZONE: Deep Emerald Forest Green (#193B32 with gold lattice) */}
+        <div
+          className="relative flex flex-col items-center justify-between"
+          style={{
+            height: '47.5mm',
+            padding: '2.4mm 2.4mm 1.6mm 2.4mm',
+            background: 'linear-gradient(180deg, #133129 0%, #193B32 50%, #1E463B 100%)',
+            boxSizing: 'border-box',
+            position: 'relative',
+          }}
+        >
+          {/* Subtle Islamic Lattice Security Overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none opacity-20"
+            style={{
+              backgroundImage: ISLAMIC_STAR_PATTERN,
+              backgroundSize: '4mm 4mm, 8mm 8mm, 8mm 8mm',
+            }}
+          />
+
+          {/* Top Brand & Institution Header */}
+          <div className="relative z-10 w-full flex items-center justify-between gap-[1.5mm]">
+            {/* Institution Logo */}
+            <div
+              className="shrink-0 flex items-center justify-center bg-white/10 rounded-[1.2mm] overflow-hidden border border-[#C5A059]/40"
+              style={{
+                width: '7.2mm',
+                height: '7.2mm',
+                flexShrink: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.12)',
+              }}
+            >
+              {logoUrl && !logoFailed ? (
+                <img
+                  src={logoUrl}
+                  alt={madrasaName}
+                  onError={() => setLogoFailed(true)}
+                  className="w-full h-full object-contain p-[0.3mm]"
+                />
+              ) : (
+                <Building2 className="w-[4.2mm] h-[4.2mm] text-[#C5A059]" />
+              )}
+            </div>
+
+            {/* Title & Badge */}
+            <div className="flex-1 min-w-0 text-left">
+              <h1
+                className="text-white font-extrabold uppercase truncate tracking-tight"
+                style={{
+                  fontSize: '2.1mm',
+                  lineHeight: '2.5mm',
+                  color: '#FFFFFF',
+                  textShadow: '0 0.5px 1px rgba(0,0,0,0.4)',
+                }}
+              >
+                {madrasaName}
+              </h1>
+              <div className="flex items-center gap-[1mm] mt-[0.3mm]">
+                <span
+                  className="font-bold tracking-wider uppercase font-mono"
+                  style={{ fontSize: '1.4mm', color: '#C5A059', letterSpacing: '0.04em' }}
+                >
+                  Student Identity Card
+                </span>
+                <span
+                  className="font-mono text-emerald-200"
+                  style={{ fontSize: '1.3mm' }}
+                >
+                  • {academicYear}
+                </span>
+              </div>
+            </div>
+
+            {/* Rub el Hizb Emblem */}
+            <RubElHizbEmblem sizeMm={3.6} color="#C5A059" innerColor="#133129" />
+          </div>
+
+          {/* Student Portrait Frame */}
+          <div
+            className="relative z-10 mt-[1.2mm] rounded-[2.0mm] overflow-hidden shadow-md flex items-center justify-center bg-stone-100"
+            style={{
+              width: '24.0mm',
+              height: '29.5mm',
+              border: '0.8mm solid #C5A059',
+              boxSizing: 'border-box',
+            }}
+          >
+            {activePhoto && !photoFailed ? (
+              <img
+                src={activePhoto}
+                alt={student.fullName}
+                onError={() => setPhotoFailed(true)}
+                className="w-full h-full object-cover object-top"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+              />
+            ) : (
+              <div
+                className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#133129] to-[#1E463B] text-stone-200"
+                style={{ width: '100%', height: '100%' }}
+              >
+                <div
+                  className="w-[10mm] h-[10mm] rounded-full bg-[#193B32] border border-[#C5A059] text-[#C5A059] font-bold flex items-center justify-center shadow-xs mb-[1mm]"
+                  style={{ fontSize: '3.6mm' }}
+                >
+                  {initials}
+                </div>
+                <User className="w-[3.2mm] h-[3.2mm] text-emerald-200/70" />
+              </div>
+            )}
+            {/* Thin bottom gold trim inside frame */}
+            <div
+              className="absolute bottom-0 inset-x-0 h-[1mm]"
+              style={{ backgroundColor: '#C5A059' }}
+            />
+          </div>
+
+          {/* Gold Decorative Dividing Border */}
+          <div
+            className="absolute bottom-0 inset-x-0 h-[0.7mm]"
+            style={{
+              background: 'linear-gradient(90deg, #193B32 0%, #C5A059 50%, #193B32 100%)',
+            }}
+          />
+        </div>
+
+        {/* LOWER ZONE: Crisp Off-White (#F6F6F3) Typography */}
+        <div
+          className="relative flex flex-col justify-between"
+          style={{
+            height: '38.10mm',
+            padding: '2.0mm 2.6mm 1.8mm 2.6mm',
+            boxSizing: 'border-box',
+            backgroundColor: '#F6F6F3',
+          }}
+        >
+          {/* Student Full Name */}
+          <div className="text-center pt-[0.2mm]">
+            <span
+              className="font-bold uppercase tracking-wider block text-stone-400"
+              style={{ fontSize: '1.4mm', letterSpacing: '0.06em', lineHeight: '1.8mm' }}
+            >
+              Full Student Name
+            </span>
+            <h2
+              className="font-extrabold text-[#0D251F] tracking-tight mt-[0.3mm] line-clamp-2"
+              style={{
+                fontSize: verticalNameFontSize,
+                lineHeight: verticalNameLineHeight,
+                color: '#0D251F',
+                wordBreak: 'break-word',
+              }}
+            >
+              {student.fullName}
+            </h2>
+          </div>
+
+          {/* Information Grid: 2 Columns */}
+          <div
+            className="grid grid-cols-2 gap-x-[2mm] gap-y-[1.0mm] bg-white rounded-[1.8mm] p-[1.8mm] border border-stone-200/90 shadow-2xs mt-[1mm]"
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gap: '1.0mm 2.0mm',
+              padding: '1.8mm',
+            }}
+          >
+            {/* Admission No */}
+            <div>
+              <span
+                className="font-bold uppercase tracking-wider text-stone-400 block"
+                style={{ fontSize: '1.4mm', lineHeight: '1.8mm' }}
+              >
+                Admission No
+              </span>
+              <span
+                className="font-mono font-extrabold block truncate"
+                style={{ fontSize: '2.2mm', color: '#9A7B38', lineHeight: '2.6mm' }}
+              >
+                {student.admissionNo}
+              </span>
+            </div>
+
+            {/* Class / Section */}
+            <div>
+              <span
+                className="font-bold uppercase tracking-wider text-stone-400 block"
+                style={{ fontSize: '1.4mm', lineHeight: '1.8mm' }}
+              >
+                Class / Section
+              </span>
+              <span
+                className="font-bold text-[#193B32] block truncate"
+                style={{ fontSize: '2.0mm', lineHeight: '2.6mm' }}
+              >
+                {student.className || 'General'}
+              </span>
+            </div>
+
+            {/* Issued Date */}
+            <div>
+              <span
+                className="font-bold uppercase tracking-wider text-stone-400 block"
+                style={{ fontSize: '1.4mm', lineHeight: '1.8mm' }}
+              >
+                Issued Date
+              </span>
+              <span
+                className="font-mono text-stone-600 block"
+                style={{ fontSize: '1.7mm', lineHeight: '2.1mm' }}
+              >
+                {formattedIssueDate}
+              </span>
+            </div>
+
+            {/* Card Version */}
+            <div>
+              <span
+                className="font-bold uppercase tracking-wider text-stone-400 block"
+                style={{ fontSize: '1.4mm', lineHeight: '1.8mm' }}
+              >
+                Card Version
+              </span>
+              <span
+                className="font-mono text-stone-600 font-semibold block"
+                style={{ fontSize: '1.7mm', lineHeight: '2.1mm' }}
+              >
+                v{cardVersion}.0
+              </span>
+            </div>
+          </div>
+
+          {/* Bottom Security Footer Stripe */}
+          <div
+            className="flex items-center justify-between pt-[1.2mm] border-t border-stone-200/90"
+            style={{
+              paddingTop: '1.2mm',
+              borderTop: '1px solid #E2DFD2',
+            }}
+          >
+            <div
+              className="flex items-center gap-[1mm] font-semibold"
+              style={{ fontSize: '1.5mm', color: '#193B32' }}
+            >
+              <ShieldCheck className="w-[2.4mm] h-[2.4mm] text-[#C5A059]" />
+              <span>MadrasaNexa Verified Card</span>
+            </div>
+            <span
+              className="font-mono text-stone-400"
+              style={{ fontSize: '1.4mm' }}
+            >
+              {madrasaCode ? `${madrasaCode}-${student.admissionNo}` : student.admissionNo}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // 2. HORIZONTAL LANDSCAPE MODE (85.60mm × 53.98mm)
+  // -------------------------------------------------------------
+  const horizontalNameFontSize =
+    nameLength > 32 ? '2.2mm' : nameLength > 22 ? '2.5mm' : '2.8mm';
+  const horizontalNameLineHeight =
+    nameLength > 32 ? '2.6mm' : nameLength > 22 ? '2.9mm' : '3.3mm';
+
   return (
     <div
-      className={`relative bg-white text-stone-900 overflow-hidden select-none border border-stone-200/90 shadow-sm print:shadow-none print:border-none ${className}`}
+      className={`relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
       style={{
         width: '85.60mm',
         height: '53.98mm',
         borderRadius: '3.18mm',
         boxSizing: 'border-box',
+        backgroundColor: '#F6F6F3',
       }}
       data-card-side="front"
+      data-card-orientation="horizontal"
     >
-      {/* Background Guilloche Security Accents */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.035]"
-        style={{
-          backgroundImage: `radial-gradient(circle at 50% 50%, #0F5A47 1px, transparent 1px)`,
-          backgroundSize: '4mm 4mm',
-        }}
-      />
-      <div className="absolute -right-8 -bottom-8 w-28 h-28 rounded-full bg-emerald-500/5 pointer-events-none" />
-      <div className="absolute right-12 -top-10 w-24 h-24 rounded-full bg-[#0F5A47]/5 pointer-events-none" />
-
       {/* Outer Card Container */}
       <div
-        className="relative h-full flex flex-col justify-between p-[2.8mm]"
+        className="relative h-full flex flex-col justify-between"
         style={{
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          padding: '2.8mm',
           position: 'relative',
           boxSizing: 'border-box',
         }}
       >
-        {/* Top Header Band */}
+        {/* TOP HEADER BAND: Deep Emerald (#193B32 with Gold Accents) */}
         <div
-          className="flex items-center gap-[2.2mm] pb-[1.8mm] border-b border-stone-200/80"
+          className="relative px-[2.8mm] py-[1.8mm] flex items-center justify-between gap-[2mm]"
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '2.2mm',
-            paddingBottom: '1.8mm',
-            borderBottom: '1px solid #e2e8f0',
+            background: 'linear-gradient(90deg, #133129 0%, #193B32 60%, #1E463B 100%)',
+            borderBottom: '0.6mm solid #C5A059',
+            boxSizing: 'border-box',
           }}
         >
-          {/* Institution Logo */}
+          {/* Subtle Islamic Lattice Background */}
           <div
-            className="w-[8.5mm] h-[8.5mm] shrink-0 flex items-center justify-center bg-stone-50 rounded-[1.2mm] overflow-hidden border border-stone-200/60"
+            className="absolute inset-0 pointer-events-none opacity-15"
             style={{
-              width: '8.5mm',
-              height: '8.5mm',
-              flexShrink: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: '#f8fafc',
-              borderRadius: '1.2mm',
-              overflow: 'hidden',
-              border: '1px solid #e2e8f0',
+              backgroundImage: ISLAMIC_STAR_PATTERN,
+              backgroundSize: '4mm 4mm, 8mm 8mm, 8mm 8mm',
             }}
-          >
-            {logoUrl && !logoFailed ? (
-              <img
-                src={logoUrl}
-                alt={madrasaName}
-                onError={() => setLogoFailed(true)}
-                className="w-full h-full object-contain p-[0.3mm]"
-                style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '0.3mm' }}
-              />
-            ) : (
-              <Building2 className="w-[5.2mm] h-[5.2mm] text-[#0F5A47]" style={{ width: '5.2mm', height: '5.2mm', color: '#0F5A47' }} />
-            )}
-          </div>
+          />
 
-          {/* Institution Title & Subtitle */}
-          <div className="flex-1 min-w-0 pr-1" style={{ flex: 1, minWidth: 0, paddingRight: '1mm' }}>
-            <h1
-              className="text-[2.8mm] font-extrabold text-[#0F172A] leading-[3.2mm] truncate tracking-tight uppercase"
+          <div className="relative z-10 flex items-center gap-[2mm] min-w-0 flex-1">
+            {/* Institution Logo */}
+            <div
+              className="shrink-0 flex items-center justify-center bg-white/10 rounded-[1.2mm] overflow-hidden border border-[#C5A059]/40"
               style={{
-                fontSize: '2.8mm',
-                lineHeight: '3.2mm',
-                fontWeight: 800,
-                color: '#0F172A',
-                textTransform: 'uppercase',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
+                width: '8.2mm',
+                height: '8.2mm',
+                flexShrink: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.12)',
               }}
             >
-              {madrasaName}
-            </h1>
-            <div
-              className="flex items-center justify-between gap-1 mt-[0.3mm]"
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1mm', marginTop: '0.3mm' }}
-            >
-              <span
-                className="text-[1.8mm] font-bold text-[#0F5A47] tracking-wider uppercase"
-                style={{ fontSize: '1.8mm', fontWeight: 700, color: '#0F5A47', textTransform: 'uppercase', letterSpacing: '0.05em' }}
-              >
-                Student Identity Card
-              </span>
-              <span
-                className="text-[1.7mm] font-semibold text-stone-500 font-mono"
-                style={{ fontSize: '1.7mm', fontWeight: 600, color: '#64748b', fontFamily: 'monospace' }}
-              >
-                {academicYear}
-              </span>
+              {logoUrl && !logoFailed ? (
+                <img
+                  src={logoUrl}
+                  alt={madrasaName}
+                  onError={() => setLogoFailed(true)}
+                  className="w-full h-full object-contain p-[0.3mm]"
+                />
+              ) : (
+                <Building2 className="w-[5mm] h-[5mm] text-[#C5A059]" />
+              )}
             </div>
+
+            {/* Institution Title */}
+            <div className="flex-1 min-w-0 pr-1">
+              <h1
+                className="text-white font-extrabold uppercase truncate tracking-tight"
+                style={{
+                  fontSize: '2.7mm',
+                  lineHeight: '3.1mm',
+                  color: '#FFFFFF',
+                  textShadow: '0 0.5px 1px rgba(0,0,0,0.3)',
+                }}
+              >
+                {madrasaName}
+              </h1>
+              <div className="flex items-center justify-between gap-1 mt-[0.3mm]">
+                <span
+                  className="font-bold tracking-wider uppercase font-mono"
+                  style={{ fontSize: '1.6mm', color: '#C5A059', letterSpacing: '0.04em' }}
+                >
+                  Student Identity Card
+                </span>
+                <span
+                  className="font-mono text-emerald-200"
+                  style={{ fontSize: '1.5mm' }}
+                >
+                  {academicYear}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Emblem */}
+          <div className="relative z-10 shrink-0">
+            <RubElHizbEmblem sizeMm={4.2} color="#C5A059" innerColor="#133129" />
           </div>
         </div>
 
-        {/* Center Card Body: Photo & Credentials */}
+        {/* CENTER BODY: Photo & Student Credentials on Crisp Off-White */}
         <div
-          className="flex-1 flex items-center gap-[3.0mm] py-[1.5mm]"
-          style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '3.0mm', padding: '1.5mm 0' }}
+          className="flex-1 flex items-center gap-[3.2mm] px-[2.8mm] py-[1.6mm]"
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3.2mm',
+            padding: '1.6mm 2.8mm',
+            backgroundColor: '#F6F6F3',
+          }}
         >
-          {/* Student Photo */}
+          {/* Student Photo Container */}
           <div
-            className="w-[21.5mm] h-[27.0mm] shrink-0 rounded-[1.8mm] bg-stone-100 border border-stone-300 overflow-hidden flex flex-col items-center justify-center shadow-xs relative"
+            className="rounded-[1.8mm] bg-stone-100 overflow-hidden flex flex-col items-center justify-center shadow-xs relative shrink-0"
             style={{
               width: '21.5mm',
               height: '27.0mm',
               flexShrink: 0,
-              borderRadius: '1.8mm',
-              backgroundColor: '#f1f5f9',
-              border: '1px solid #cbd5e1',
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
+              border: '0.7mm solid #C5A059',
               boxSizing: 'border-box',
             }}
           >
-            {student.photoFileId && !photoFailed ? (
+            {activePhoto && !photoFailed ? (
               <img
-                src={student.photoFileId}
+                src={activePhoto}
                 alt={student.fullName}
                 onError={() => setPhotoFailed(true)}
-                className="w-full h-full object-cover"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                className="w-full h-full object-cover object-top"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
               />
             ) : (
               <div
-                className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-stone-100 to-stone-200 text-stone-400 p-1"
-                style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f1f5f9', padding: '1mm' }}
+                className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#133129] to-[#1E463B] text-stone-200 p-1"
+                style={{ width: '100%', height: '100%' }}
               >
                 <div
-                  className="w-[9mm] h-[9mm] rounded-full bg-[#0F172A] text-emerald-400 font-bold text-[3.2mm] flex items-center justify-center mb-[1mm] shadow-xs"
-                  style={{ width: '9mm', height: '9mm', borderRadius: '50%', backgroundColor: '#0F172A', color: '#34d399', fontWeight: 700, fontSize: '3.2mm', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1mm' }}
+                  className="w-[9mm] h-[9mm] rounded-full bg-[#193B32] border border-[#C5A059] text-[#C5A059] font-bold text-[3.2mm] flex items-center justify-center mb-[1mm] shadow-xs"
                 >
                   {initials}
                 </div>
-                <User className="w-[3.5mm] h-[3.5mm] text-stone-400" style={{ width: '3.5mm', height: '3.5mm', color: '#94a3b8' }} />
+                <User className="w-[3.5mm] h-[3.5mm] text-emerald-200/70" />
               </div>
             )}
-            <div className="absolute bottom-0 inset-x-0 h-[1.2mm] bg-[#0F5A47]" style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '1.2mm', backgroundColor: '#0F5A47' }} />
+            <div
+              className="absolute bottom-0 inset-x-0 h-[1.2mm]"
+              style={{ backgroundColor: '#193B32' }}
+            />
           </div>
 
           {/* Student Identity Information */}
           <div
-            className="flex-1 min-w-0 flex flex-col justify-between h-[27.0mm] py-[0.5mm]"
+            className="flex-1 min-w-0 flex flex-col justify-between h-[27.0mm] py-[0.4mm]"
             style={{
               flex: 1,
               minWidth: 0,
@@ -236,25 +542,21 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
               flexDirection: 'column',
               justifyContent: 'space-between',
               height: '27.0mm',
-              padding: '0.5mm 0',
             }}
           >
             <div>
               <span
-                className="text-[1.6mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
-                style={{ fontSize: '1.6mm', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', display: 'block', lineHeight: 1.2 }}
+                className="text-[1.5mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
+                style={{ letterSpacing: '0.05em' }}
               >
                 Student Name
               </span>
               <h2
-                className={`${nameTypographyClass} font-bold text-[#0F172A] line-clamp-2 tracking-tight mt-[0.2mm] break-words`}
+                className="font-extrabold text-[#0D251F] line-clamp-2 tracking-tight mt-[0.2mm] break-words"
                 style={{
-                  fontSize: nameLength > 32 ? '2.2mm' : nameLength > 22 ? '2.5mm' : '2.9mm',
-                  lineHeight: nameLength > 32 ? '2.6mm' : nameLength > 22 ? '2.9mm' : '3.4mm',
-                  fontWeight: 700,
-                  color: '#0F172A',
-                  marginTop: '0.2mm',
-                  wordBreak: 'break-word',
+                  fontSize: horizontalNameFontSize,
+                  lineHeight: horizontalNameLineHeight,
+                  color: '#0D251F',
                 }}
               >
                 {student.fullName}
@@ -262,25 +564,24 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
             </div>
 
             <div
-              className="grid grid-cols-2 gap-x-[2mm] gap-y-[0.8mm] mt-[0.5mm]"
+              className="grid grid-cols-2 gap-x-[2.2mm] gap-y-[0.8mm] mt-[0.5mm] bg-white rounded-[1.5mm] p-[1.5mm] border border-stone-200/80 shadow-2xs"
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                columnGap: '2mm',
+                columnGap: '2.2mm',
                 rowGap: '0.8mm',
-                marginTop: '0.5mm',
+                padding: '1.5mm',
               }}
             >
               <div>
                 <span
-                  className="text-[1.6mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
-                  style={{ fontSize: '1.6mm', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', display: 'block', lineHeight: 1.2 }}
+                  className="text-[1.4mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
                 >
                   Admission No
                 </span>
                 <span
-                  className="text-[2.2mm] font-mono font-bold text-[#0F5A47] leading-tight block"
-                  style={{ fontSize: '2.2mm', fontFamily: 'monospace', fontWeight: 700, color: '#0F5A47', display: 'block', lineHeight: 1.2 }}
+                  className="text-[2.2mm] font-mono font-extrabold block leading-tight"
+                  style={{ color: '#9A7B38' }}
                 >
                   {student.admissionNo}
                 </span>
@@ -288,14 +589,12 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
 
               <div>
                 <span
-                  className="text-[1.6mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
-                  style={{ fontSize: '1.6mm', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', display: 'block', lineHeight: 1.2 }}
+                  className="text-[1.4mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
                 >
                   Class / Section
                 </span>
                 <span
-                  className="text-[2.2mm] font-semibold text-stone-800 leading-tight block truncate"
-                  style={{ fontSize: '2.2mm', fontWeight: 600, color: '#1e293b', display: 'block', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  className="text-[2.0mm] font-bold text-[#193B32] leading-tight block truncate"
                 >
                   {student.className || 'General'}
                 </span>
@@ -303,14 +602,12 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
 
               <div>
                 <span
-                  className="text-[1.6mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
-                  style={{ fontSize: '1.6mm', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', display: 'block', lineHeight: 1.2 }}
+                  className="text-[1.4mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
                 >
                   Issued
                 </span>
                 <span
-                  className="text-[1.9mm] font-medium text-stone-600 leading-tight block font-mono"
-                  style={{ fontSize: '1.9mm', fontWeight: 500, color: '#475569', display: 'block', lineHeight: 1.2, fontFamily: 'monospace' }}
+                  className="text-[1.8mm] font-mono font-medium text-stone-600 leading-tight block"
                 >
                   {formattedIssueDate}
                 </span>
@@ -318,14 +615,12 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
 
               <div>
                 <span
-                  className="text-[1.6mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
-                  style={{ fontSize: '1.6mm', fontWeight: 700, textTransform: 'uppercase', color: '#94a3b8', display: 'block', lineHeight: 1.2 }}
+                  className="text-[1.4mm] font-bold tracking-wider uppercase text-stone-400 block leading-tight"
                 >
                   Card Ver
                 </span>
                 <span
-                  className="text-[1.9mm] font-mono text-stone-500 leading-tight block"
-                  style={{ fontSize: '1.9mm', fontFamily: 'monospace', color: '#64748b', display: 'block', lineHeight: 1.2 }}
+                  className="text-[1.8mm] font-mono text-stone-600 font-semibold leading-tight block"
                 >
                   v{cardVersion}.0
                 </span>
@@ -334,24 +629,29 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
           </div>
         </div>
 
-        {/* Bottom Security Footer Stripe */}
+        {/* BOTTOM SECURITY FOOTER STRIPE */}
         <div
-          className="flex items-center justify-between pt-[1.2mm] border-t border-stone-200/80 text-[1.6mm] text-stone-500"
+          className="flex items-center justify-between px-[2.8mm] py-[1.2mm] border-t border-[#E2DFD2] bg-[#FAF9F5] text-[1.6mm]"
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            paddingTop: '1.2mm',
-            borderTop: '1px solid #e2e8f0',
-            fontSize: '1.6mm',
-            color: '#64748b',
+            padding: '1.2mm 2.8mm',
+            borderTop: '1px solid #E2DFD2',
+            backgroundColor: '#FAF9F5',
           }}
         >
-          <div className="flex items-center gap-[1mm] text-[#0F5A47] font-semibold" style={{ display: 'flex', alignItems: 'center', gap: '1mm', color: '#0F5A47', fontWeight: 600 }}>
-            <ShieldCheck className="w-[2.4mm] h-[2.4mm]" style={{ width: '2.4mm', height: '2.4mm' }} />
+          <div
+            className="flex items-center gap-[1mm] font-semibold text-[#193B32]"
+            style={{ display: 'flex', alignItems: 'center', gap: '1mm', color: '#193B32' }}
+          >
+            <ShieldCheck className="w-[2.4mm] h-[2.4mm] text-[#C5A059]" />
             <span>MadrasaNexa Verified Card</span>
           </div>
-          <span className="font-mono text-stone-400 tracking-wider" style={{ fontFamily: 'monospace', color: '#94a3b8', letterSpacing: '0.05em' }}>
+          <span
+            className="font-mono text-stone-400 tracking-wider"
+            style={{ fontFamily: 'monospace', letterSpacing: '0.04em' }}
+          >
             {madrasaCode ? `ID: ${madrasaCode}-${student.admissionNo}` : `ID: ${student.admissionNo}`}
           </span>
         </div>

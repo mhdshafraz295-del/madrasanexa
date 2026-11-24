@@ -1,5 +1,5 @@
 import React from 'react';
-import { Phone, Building2 } from 'lucide-react';
+import { Phone, Building2, Shield } from 'lucide-react';
 import { StudentQrCode } from './StudentQrCode';
 import { StudentBarcode } from './StudentBarcode';
 
@@ -17,21 +17,48 @@ export interface IdCardBackProps {
   tokenHint?: string | null;
   rawToken?: string | null;
   credentialType?: 'both' | 'qr' | 'barcode';
+  orientation?: 'vertical' | 'horizontal';
   className?: string;
 }
 
 /**
+ * Rub el Hizb (۞) 8-point geometric star emblem SVG
+ */
+const RubElHizbEmblem: React.FC<{ sizeMm?: number; color?: string; innerColor?: string }> = ({
+  sizeMm = 4,
+  color = '#C5A059',
+  innerColor = '#193B32',
+}) => (
+  <svg
+    viewBox="0 0 24 24"
+    style={{ width: `${sizeMm}mm`, height: `${sizeMm}mm`, flexShrink: 0 }}
+    aria-hidden="true"
+  >
+    <polygon
+      points="12,1.5 14.8,5.5 19.5,4.8 18.8,9.5 22.5,12 18.8,14.5 19.5,19.2 14.8,18.5 12,22.5 9.2,18.5 4.5,19.2 5.2,14.5 1.5,12 5.2,9.5 4.5,4.8 9.2,5.5"
+      fill={color}
+    />
+    <circle cx="12" cy="12" r="3.2" fill="none" stroke={innerColor} strokeWidth="1.2" />
+    <circle cx="12" cy="12" r="1.1" fill={innerColor} />
+  </svg>
+);
+
+// High-fidelity Islamic geometric star lattice background pattern
+const ISLAMIC_STAR_PATTERN = `radial-gradient(circle at 50% 50%, rgba(197, 160, 89, 0.18) 1px, transparent 1px), linear-gradient(45deg, rgba(197, 160, 89, 0.08) 25%, transparent 25%, transparent 75%, rgba(197, 160, 89, 0.08) 75%), linear-gradient(-45deg, rgba(197, 160, 89, 0.08) 25%, transparent 25%, transparent 75%, rgba(197, 160, 89, 0.08) 75%)`;
+
+/**
  * IdCardBack - ISO/IEC 7810 ID-1 (CR80) Standard Student ID Card Back Layout.
  *
- * Exact Physical Dimensions:
- * - Width: 85.60 mm (3.370 in)
- * - Height: 53.98 mm (2.125 in)
- * - Corner Radius: 3.18 mm (0.125 in)
+ * Supports Dual Orientation Modes:
+ * 1. Vertical Portrait (Lanyard Style): 53.98 mm W × 85.60 mm H (Default)
+ * 2. Horizontal Landscape (Classic CR80): 85.60 mm W × 53.98 mm H
  *
- * Credential Zones:
- * - Left: 25.0 mm x 25.0 mm vector QR code container encoding canonical scan token (ISO/IEC 18004 Version 3-M).
- * - Right: Code128 1D vector barcode container encoding student admission number.
- * - Bottom: Official return notice and madrasa institutional emergency contact.
+ * Full Deep Emerald Geometric Luxury Theme:
+ * - Full Deep Emerald (#193B32, gradient #133129 to #1E463B)
+ * - Subtle Antique Gold geometric star lattice
+ * - Centered gold Rub el Hizb (۞) emblem
+ * - High-contrast Pure White rounded container for optical scanners
+ * - Institutional property & helpdesk emergency notice in gold & off-white typography
  */
 export const IdCardBack: React.FC<IdCardBackProps> = ({
   student,
@@ -42,70 +69,298 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
   tokenHint,
   rawToken,
   credentialType = 'qr',
+  orientation = 'horizontal',
   className = '',
 }) => {
+  // -------------------------------------------------------------
+  // 1. VERTICAL PORTRAIT MODE (53.98mm × 85.60mm)
+  // -------------------------------------------------------------
+  if (orientation === 'vertical') {
+    return (
+      <div
+        className={`relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
+        style={{
+          width: '53.98mm',
+          height: '85.60mm',
+          borderRadius: '3.18mm',
+          boxSizing: 'border-box',
+          background: 'linear-gradient(180deg, #133129 0%, #193B32 50%, #1E463B 100%)',
+          color: '#F6F6F3',
+        }}
+        data-card-side="back"
+        data-card-orientation="vertical"
+      >
+        {/* Subtle Islamic Lattice Background Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-20"
+          style={{
+            backgroundImage: ISLAMIC_STAR_PATTERN,
+            backgroundSize: '4mm 4mm, 8mm 8mm, 8mm 8mm',
+          }}
+        />
+
+        {/* Outer Card Container */}
+        <div
+          className="relative z-10 h-full flex flex-col justify-between"
+          style={{
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            padding: '2.4mm',
+            boxSizing: 'border-box',
+          }}
+        >
+          {/* Top Header */}
+          <div
+            className="flex items-center justify-between pb-[1.4mm] border-b border-[#C5A059]/40"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              paddingBottom: '1.4mm',
+              borderBottom: '0.6mm solid rgba(197, 160, 89, 0.4)',
+            }}
+          >
+            <div className="flex items-center gap-[1.2mm] min-w-0 flex-1">
+              <Building2 className="w-[3.6mm] h-[3.6mm] text-[#C5A059] shrink-0" />
+              <div className="min-w-0">
+                <h3
+                  className="text-white font-extrabold uppercase truncate tracking-tight"
+                  style={{
+                    fontSize: '2.1mm',
+                    lineHeight: '2.5mm',
+                    color: '#FFFFFF',
+                  }}
+                >
+                  {madrasaName}
+                </h3>
+                <span
+                  className="font-bold tracking-widest uppercase block font-mono"
+                  style={{ fontSize: '1.3mm', color: '#C5A059', letterSpacing: '0.05em' }}
+                >
+                  Official Student Badge
+                </span>
+              </div>
+            </div>
+
+            <RubElHizbEmblem sizeMm={3.6} color="#C5A059" innerColor="#133129" />
+          </div>
+
+          {/* Center Credential Zone: High-Contrast Pure White Rounded Container */}
+          <div
+            className="flex-1 flex flex-col items-center justify-center py-[2mm]"
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '2mm 0',
+            }}
+          >
+            {credentialType === 'qr' ? (
+              /* Dedicated QR Code Center View */
+              <div className="flex flex-col items-center justify-center gap-[1.5mm]">
+                <div
+                  className="bg-white rounded-[2.2mm] flex items-center justify-center p-[1mm] shadow-lg border border-[#C5A059]/60"
+                  style={{
+                    width: '30.0mm',
+                    height: '30.0mm',
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '2.2mm',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1mm',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <StudentQrCode
+                    token={rawToken}
+                    tokenHint={tokenHint}
+                    sizeMm={28}
+                  />
+                </div>
+
+                <div
+                  className="inline-flex items-center gap-[1mm] bg-[#133129]/90 border border-[#C5A059]/40 rounded-md px-[2mm] py-[0.5mm] mt-[0.5mm]"
+                >
+                  <Shield className="w-[2.2mm] h-[2.2mm] text-[#C5A059]" />
+                  <span className="font-mono text-[#C5A059] font-bold" style={{ fontSize: '1.6mm' }}>
+                    {tokenHint || 'MNX1_SECURE'}
+                  </span>
+                </div>
+
+                <span
+                  className="font-mono text-emerald-100/90 text-center"
+                  style={{ fontSize: '1.5mm', letterSpacing: '0.02em' }}
+                >
+                  Secure Attendance • ISO/IEC 18004
+                </span>
+              </div>
+            ) : credentialType === 'barcode' ? (
+              /* Dedicated Barcode Center View */
+              <div className="flex flex-col items-center justify-center w-full gap-[1.5mm]">
+                <div
+                  className="w-full bg-white rounded-[2.0mm] px-[2mm] py-[2mm] flex flex-col items-center justify-center shadow-lg border border-[#C5A059]/60"
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '2.0mm',
+                    padding: '2mm',
+                    boxSizing: 'border-box',
+                  }}
+                >
+                  <StudentBarcode
+                    admissionNo={student.admissionNo}
+                    barWidth={1.3}
+                    heightPx={34}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between w-full px-1">
+                  <span className="font-mono text-[#C5A059] font-semibold" style={{ fontSize: '1.5mm' }}>
+                    Code128 Standard
+                  </span>
+                  <span className="font-mono text-emerald-100/80" style={{ fontSize: '1.5mm' }}>
+                    ID: {student.admissionNo}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              /* Dual Mode: Both QR and Barcode */
+              <div className="flex flex-col items-center justify-center w-full gap-[1.5mm]">
+                <div
+                  className="bg-white rounded-[2mm] flex items-center justify-center p-[0.8mm] shadow-lg border border-[#C5A059]/60"
+                  style={{ width: '22mm', height: '22mm' }}
+                >
+                  <StudentQrCode
+                    token={rawToken}
+                    tokenHint={tokenHint}
+                    sizeMm={20.4}
+                  />
+                </div>
+                <div
+                  className="w-full bg-white rounded-[1.8mm] px-[1.5mm] py-[1mm] flex flex-col items-center justify-center shadow-md border border-[#C5A059]/50"
+                >
+                  <StudentBarcode
+                    admissionNo={student.admissionNo}
+                    barWidth={1.2}
+                    heightPx={20}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Property Notice & Institutional Contact */}
+          <div
+            className="pt-[1.4mm] border-t border-[#C5A059]/30 flex flex-col justify-between gap-[0.8mm]"
+            style={{
+              paddingTop: '1.4mm',
+              borderTop: '0.6mm solid rgba(197, 160, 89, 0.3)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.8mm',
+            }}
+          >
+            <p
+              className="text-[#E2DFD2] leading-[2.0mm] text-center"
+              style={{ fontSize: '1.5mm', lineHeight: '2.0mm', color: '#E2DFD2' }}
+            >
+              This card is the property of <strong className="text-white">{madrasaName}</strong>. If found, please return to the administration office.
+            </p>
+
+            <div
+              className="flex items-center justify-between font-medium pt-[0.4mm]"
+              style={{ fontSize: '1.5mm' }}
+            >
+              <div className="flex items-center gap-[1mm] truncate">
+                <Phone className="w-[2.2mm] h-[2.2mm] text-[#C5A059] shrink-0" />
+                <span className="text-[#C5A059] truncate">
+                  {madrasaPhone || madrasaEmail || 'Admin Office'}
+                </span>
+              </div>
+              <span className="font-mono text-emerald-200/70 shrink-0">
+                Not Transferable
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // 2. HORIZONTAL LANDSCAPE MODE (85.60mm × 53.98mm)
+  // -------------------------------------------------------------
   return (
     <div
-      className={`relative bg-white text-stone-900 overflow-hidden select-none border border-stone-200/90 shadow-sm print:shadow-none print:border-none ${className}`}
+      className={`relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
       style={{
         width: '85.60mm',
         height: '53.98mm',
         borderRadius: '3.18mm',
         boxSizing: 'border-box',
+        background: 'linear-gradient(135deg, #133129 0%, #193B32 50%, #1E463B 100%)',
+        color: '#F6F6F3',
       }}
       data-card-side="back"
+      data-card-orientation="horizontal"
     >
-      {/* Background Guilloche Security Texture */}
+      {/* Subtle Islamic Lattice Background Overlay */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        className="absolute inset-0 pointer-events-none opacity-20"
         style={{
-          backgroundImage: `radial-gradient(circle at 50% 50%, #0F172A 1px, transparent 1px)`,
-          backgroundSize: '4mm 4mm',
+          backgroundImage: ISLAMIC_STAR_PATTERN,
+          backgroundSize: '4mm 4mm, 8mm 8mm, 8mm 8mm',
         }}
       />
 
       {/* Outer Card Container */}
       <div
-        className="relative h-full flex flex-col justify-between p-[2.8mm]"
+        className="relative z-10 h-full flex flex-col justify-between p-[2.8mm]"
         style={{
           height: '100%',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
           padding: '2.8mm',
-          position: 'relative',
           boxSizing: 'border-box',
         }}
       >
         {/* Top Header */}
         <div
-          className="flex items-center justify-between pb-[1.4mm] border-b border-stone-200/80"
+          className="flex items-center justify-between pb-[1.4mm] border-b border-[#C5A059]/40"
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             paddingBottom: '1.4mm',
-            borderBottom: '1px solid #e2e8f0',
+            borderBottom: '0.6mm solid rgba(197, 160, 89, 0.4)',
           }}
         >
           <div className="flex items-center gap-[1.5mm] min-w-0" style={{ display: 'flex', alignItems: 'center', gap: '1.5mm', minWidth: 0 }}>
-            <Building2 className="w-[3.6mm] h-[3.6mm] text-[#0F5A47] shrink-0" style={{ width: '3.6mm', height: '3.6mm', color: '#0F5A47', flexShrink: 0 }} />
+            <Building2 className="w-[3.6mm] h-[3.6mm] text-[#C5A059] shrink-0" />
             <h3
-              className="text-[2.2mm] font-bold text-[#0F172A] truncate uppercase tracking-tight"
-              style={{ fontSize: '2.2mm', fontWeight: 700, color: '#0F172A', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+              className="text-white font-extrabold uppercase truncate tracking-tight"
+              style={{ fontSize: '2.3mm', fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
             >
               {madrasaName}
             </h3>
           </div>
-          <span
-            className="text-[1.7mm] font-semibold text-stone-400 uppercase tracking-widest font-mono shrink-0"
-            style={{ fontSize: '1.7mm', fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontFamily: 'monospace', flexShrink: 0 }}
-          >
-            Official Badge
-          </span>
+          <div className="flex items-center gap-[1.5mm] shrink-0">
+            <span
+              className="font-bold uppercase tracking-widest font-mono text-[#C5A059]"
+              style={{ fontSize: '1.6mm', letterSpacing: '0.05em' }}
+            >
+              Official Badge
+            </span>
+            <RubElHizbEmblem sizeMm={3.6} color="#C5A059" innerColor="#133129" />
+          </div>
         </div>
 
-        {/* Center Section: Credential Zone */}
+        {/* Center Section: Credential Zone with High-Contrast Pure White Rounded Container */}
         <div
           className="flex-1 flex items-center justify-center py-[1.2mm]"
           style={{
@@ -118,22 +373,19 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
         >
           {credentialType === 'qr' ? (
             /* Dedicated QR Code Center View */
-            <div className="flex items-center justify-center gap-[4mm] w-full" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4mm', width: '100%' }}>
+            <div className="flex items-center justify-center gap-[4.5mm] w-full" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4.5mm', width: '100%' }}>
               <div
-                className="w-[27.0mm] h-[27.0mm] shrink-0 bg-white border border-stone-200/90 rounded-[2.0mm] flex items-center justify-center p-[0.8mm] relative overflow-hidden shadow-2xs"
+                className="shrink-0 bg-white border border-[#C5A059]/60 rounded-[2.0mm] flex items-center justify-center p-[0.8mm] shadow-lg"
                 style={{
                   width: '27.0mm',
                   height: '27.0mm',
                   flexShrink: 0,
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#FFFFFF',
                   borderRadius: '2.0mm',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   padding: '0.8mm',
-                  position: 'relative',
-                  overflow: 'hidden',
                   boxSizing: 'border-box',
                 }}
               >
@@ -143,19 +395,20 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
                   sizeMm={25.4}
                 />
               </div>
-              <div className="flex flex-col justify-center gap-[1mm] text-left" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '1mm', textAlign: 'left' }}>
-                <span className="text-[2.0mm] font-bold text-[#0F172A] tracking-tight" style={{ fontSize: '2.0mm', fontWeight: 700, color: '#0F172A' }}>
+
+              <div className="flex flex-col justify-center gap-[1.2mm] text-left">
+                <span className="font-extrabold text-white tracking-tight" style={{ fontSize: '2.1mm' }}>
                   Secure Digital Attendance
                 </span>
-                <span className="text-[1.6mm] text-stone-500 font-mono" style={{ fontSize: '1.6mm', color: '#64748b', fontFamily: 'monospace' }}>
+                <span className="text-emerald-100/90 font-mono" style={{ fontSize: '1.6mm' }}>
                   ISO/IEC 18004 • Version 3-M
                 </span>
                 <div
-                  className="inline-flex items-center gap-[1mm] bg-stone-50 border border-stone-200/60 rounded px-[1.5mm] py-[0.5mm] mt-[0.5mm]"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '1mm', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '1mm', padding: '0.5mm 1.5mm', marginTop: '0.5mm' }}
+                  className="inline-flex items-center gap-[1.2mm] bg-[#133129] border border-[#C5A059]/40 rounded px-[2mm] py-[0.6mm] mt-[0.5mm]"
                 >
-                  <span className="text-[1.5mm] text-stone-500 font-semibold" style={{ fontSize: '1.5mm', color: '#64748b', fontWeight: 600 }}>Token:</span>
-                  <span className="text-[1.5mm] font-mono text-[#0F5A47] font-bold" style={{ fontSize: '1.5mm', fontFamily: 'monospace', color: '#0F5A47', fontWeight: 700 }}>
+                  <Shield className="w-[2.2mm] h-[2.2mm] text-[#C5A059]" />
+                  <span className="text-emerald-200/90 font-semibold" style={{ fontSize: '1.5mm' }}>Token:</span>
+                  <span className="font-mono text-[#C5A059] font-bold" style={{ fontSize: '1.5mm' }}>
                     {tokenHint || 'MNX1_SECURE'}
                   </span>
                 </div>
@@ -163,10 +416,9 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
             </div>
           ) : credentialType === 'barcode' ? (
             /* Dedicated Barcode Center View */
-            <div className="flex flex-col items-center justify-center w-full max-w-[70mm] gap-[1.5mm]" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: '70mm', gap: '1.5mm' }}>
+            <div className="flex flex-col items-center justify-center w-full max-w-[70mm] gap-[1.5mm]">
               <div
-                className="w-full bg-white border border-stone-200/90 rounded-[2.0mm] px-[2mm] py-[1.2mm] flex flex-col items-center justify-center shadow-2xs overflow-hidden"
-                style={{ width: '100%', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '2.0mm', padding: '1.2mm 2mm', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}
+                className="w-full bg-white rounded-[2.0mm] px-[2.5mm] py-[1.5mm] flex flex-col items-center justify-center shadow-lg border border-[#C5A059]/60 overflow-hidden"
               >
                 <StudentBarcode
                   admissionNo={student.admissionNo}
@@ -174,32 +426,18 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
                   heightPx={30}
                 />
               </div>
-              <div className="flex items-center justify-between w-full px-1 text-[1.6mm] text-stone-500" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', fontSize: '1.6mm', color: '#64748b' }}>
-                <span className="font-mono text-[#0F5A47] font-semibold" style={{ fontFamily: 'monospace', color: '#0F5A47', fontWeight: 600 }}>Code128 Standard</span>
-                <span className="truncate" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Student ID: {student.admissionNo}</span>
+              <div className="flex items-center justify-between w-full px-1 text-[1.6mm]">
+                <span className="font-mono text-[#C5A059] font-semibold">Code128 Standard</span>
+                <span className="text-emerald-100/80 font-mono">Student ID: {student.admissionNo}</span>
               </div>
             </div>
           ) : (
             /* Dual Mode (Both QR & Barcode) */
-            <div className="flex items-center justify-between gap-[3mm] w-full" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '3mm', width: '100%' }}>
+            <div className="flex items-center justify-between gap-[3mm] w-full">
               {/* Left: 2D QR Code Container */}
               <div
-                className="w-[25.0mm] h-[25.0mm] shrink-0 bg-white border border-stone-200/90 rounded-[1.8mm] flex items-center justify-center p-[0.8mm] relative overflow-hidden shadow-2xs"
-                style={{
-                  width: '25.0mm',
-                  height: '25.0mm',
-                  flexShrink: 0,
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: '1.8mm',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '0.8mm',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  boxSizing: 'border-box',
-                }}
+                className="shrink-0 bg-white border border-[#C5A059]/60 rounded-[1.8mm] flex items-center justify-center p-[0.8mm] shadow-lg"
+                style={{ width: '25.0mm', height: '25.0mm' }}
               >
                 <StudentQrCode
                   token={rawToken}
@@ -209,10 +447,9 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
               </div>
 
               {/* Right: 1D Code128 Barcode Container */}
-              <div className="flex-1 min-w-0 flex flex-col justify-between h-[25.0mm] py-[0.5mm]" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: '25.0mm', padding: '0.5mm 0' }}>
+              <div className="flex-1 min-w-0 flex flex-col justify-between h-[25.0mm] py-[0.4mm]">
                 <div
-                  className="bg-white border border-stone-200/90 rounded-[1.8mm] px-[1mm] py-[0.8mm] flex flex-col items-center justify-center h-[17.5mm] shadow-2xs overflow-hidden"
-                  style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '1.8mm', padding: '0.8mm 1mm', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '17.5mm', overflow: 'hidden' }}
+                  className="bg-white rounded-[1.8mm] px-[1mm] py-[0.8mm] flex flex-col items-center justify-center h-[17.5mm] shadow-lg border border-[#C5A059]/50 overflow-hidden"
                 >
                   <StudentBarcode
                     admissionNo={student.admissionNo}
@@ -221,9 +458,9 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
                   />
                 </div>
 
-                <div className="flex items-center justify-between text-[1.6mm] text-stone-500 pt-[0.8mm]" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.6mm', color: '#64748b', paddingTop: '0.8mm' }}>
-                  <span className="truncate" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>Auth: MadrasaNexa</span>
-                  <span className="font-mono text-[#0F5A47] font-semibold shrink-0" style={{ fontFamily: 'monospace', color: '#0F5A47', fontWeight: 600, flexShrink: 0 }}>CR80 • ISO-7810</span>
+                <div className="flex items-center justify-between text-[1.6mm] pt-[0.8mm]">
+                  <span className="text-emerald-100/80">Auth: MadrasaNexa</span>
+                  <span className="font-mono text-[#C5A059] font-semibold">CR80 • ISO-7810</span>
                 </div>
               </div>
             </div>
@@ -232,28 +469,28 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
 
         {/* Bottom Notice & Institutional Contact */}
         <div
-          className="pt-[1.4mm] border-t border-stone-200/80 flex flex-col justify-between gap-[0.8mm]"
+          className="pt-[1.4mm] border-t border-[#C5A059]/30 flex flex-col justify-between gap-[0.8mm]"
           style={{
             paddingTop: '1.4mm',
-            borderTop: '1px solid #e2e8f0',
+            borderTop: '0.6mm solid rgba(197, 160, 89, 0.3)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
             gap: '0.8mm',
           }}
         >
-          <p className="text-[1.6mm] text-stone-500 leading-[2.1mm] text-justify" style={{ fontSize: '1.6mm', color: '#64748b', lineHeight: '2.1mm', textAlign: 'justify' }}>
-            This card is the property of <strong className="text-stone-700" style={{ color: '#334155' }}>{madrasaName}</strong>. It must be presented upon entry for digital attendance. If found, please return to the administration office.
+          <p className="text-[1.6mm] text-[#E2DFD2] leading-[2.1mm] text-justify">
+            This card is the property of <strong className="text-white">{madrasaName}</strong>. It must be presented upon entry for digital attendance. If found, please return to the administration office.
           </p>
 
-          <div className="flex items-center justify-between text-[1.6mm] text-stone-600 font-medium" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.6mm', color: '#475569', fontWeight: 500 }}>
-            <div className="flex items-center gap-[1mm] truncate" style={{ display: 'flex', alignItems: 'center', gap: '1mm', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              <Phone className="w-[2.2mm] h-[2.2mm] text-[#0F5A47] shrink-0" style={{ width: '2.2mm', height: '2.2mm', color: '#0F5A47', flexShrink: 0 }} />
-              <span className="truncate" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div className="flex items-center justify-between text-[1.6mm] font-medium">
+            <div className="flex items-center gap-[1mm] truncate">
+              <Phone className="w-[2.2mm] h-[2.2mm] text-[#C5A059] shrink-0" />
+              <span className="text-[#C5A059] truncate">
                 Helpdesk: {madrasaPhone || madrasaEmail || 'Contact Madrasa Admin Office'}
               </span>
             </div>
-            <span className="font-mono text-stone-400 shrink-0 text-[1.5mm]" style={{ fontFamily: 'monospace', color: '#94a3b8', flexShrink: 0, fontSize: '1.5mm' }}>
+            <span className="font-mono text-emerald-200/70 shrink-0 text-[1.5mm]">
               Not Transferable
             </span>
           </div>

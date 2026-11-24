@@ -22,7 +22,7 @@ const qualificationItemSchema = z.object({
   year: z.string().max(50).optional().nullable().or(z.literal('')),
 });
 
-export const publicSubmitScholarSchema = z.object({
+export const baseScholarObjectSchema = z.object({
   fullName: z.string().min(2, 'Full name must be at least 2 characters').max(191),
   photoUrl: z.string().optional().nullable().or(z.literal('')),
   batchYear: z.string().max(50).optional(),
@@ -49,17 +49,27 @@ export const publicSubmitScholarSchema = z.object({
   showContactPublicly: z.boolean().default(false),
   availableForMentorship: z.boolean().default(true),
   openForMentorship: z.boolean().optional(),
-}).refine(
-  (data) => Boolean((data.batchYear && data.batchYear.trim()) || (data.year && data.year.trim())),
+});
+
+const validateBatchYear = (data) =>
+  Boolean((data.batchYear && data.batchYear.trim()) || (data.year && data.year.trim()));
+
+export const publicSubmitScholarSchema = baseScholarObjectSchema.refine(
+  validateBatchYear,
   { message: 'Batch year is required', path: ['batchYear'] }
 );
 
-export const adminCreateScholarSchema = publicSubmitScholarSchema.extend({
+export const baseAdminCreateScholarObject = baseScholarObjectSchema.extend({
   approvalStatus: approvalStatusEnum.default('APPROVED'),
   isFeatured: z.boolean().default(false),
 });
 
-export const adminUpdateScholarSchema = adminCreateScholarSchema.partial();
+export const adminCreateScholarSchema = baseAdminCreateScholarObject.refine(
+  validateBatchYear,
+  { message: 'Batch year is required', path: ['batchYear'] }
+);
+
+export const adminUpdateScholarSchema = baseAdminCreateScholarObject.partial();
 
 export const updateScholarStatusSchema = z.object({
   approvalStatus: approvalStatusEnum.optional(),

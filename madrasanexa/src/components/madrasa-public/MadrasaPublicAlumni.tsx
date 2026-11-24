@@ -15,7 +15,8 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
-  X,
+  ChevronDown,
+  ChevronUp,
   User,
   Quote,
 } from 'lucide-react';
@@ -52,8 +53,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
   // Persistent-Card Expanding Deck active scholar
   const [activeScholarId, setActiveScholarId] = useState<string | null>(null);
 
-  // Royal Scholar Dossier Modal state
-  const [dossierScholar, setDossierScholar] = useState<AlumniScholarItem | null>(null);
+  // 4-Side Expanding Royal Dossier Stage state
+  const [isDossierExpanded, setIsDossierExpanded] = useState<boolean>(false);
 
   const loadAlumni = async () => {
     try {
@@ -115,6 +116,11 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
     }
   }, [filteredAlumni, activeScholarId]);
 
+  // Automatically reset dossier expansion on scholar selection or filter change
+  useEffect(() => {
+    setIsDossierExpanded(false);
+  }, [activeScholarId, selectedBatch, selectedClass, selectedStatus, searchQuery]);
+
   const activeScholarIdx = Math.max(
     0,
     filteredAlumni.findIndex((s) => s.id === activeScholarId)
@@ -149,16 +155,6 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
   };
 
   const visibleScholarCards = getVisibleScholarCards();
-
-  // Keyboard navigation for Dossier Modal (Esc to close)
-  useEffect(() => {
-    if (!dossierScholar) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setDossierScholar(null);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dossierScholar]);
 
   const getInitials = (name: string) =>
     name
@@ -306,7 +302,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. PERSISTENT-CARD WIDTH-MORPHING EXPANDING DECK                          */}
+      {/* 2. 4-SIDE EXPANDING ROYAL DOSSIER STAGE & EXPANDING DECK                  */}
       {/* ========================================================================= */}
       {loading ? (
         <div className="py-16 flex flex-col items-center justify-center">
@@ -327,14 +323,30 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
         </div>
       ) : filteredAlumni.length === 1 && activeScholar ? (
         /* ========================================================================= */
-        /* SINGLE SCHOLAR SPOTLIGHT VIEW (When only 1 scholar matches filters)       */
+        /* SINGLE SCHOLAR: 4-SIDE SMOOTH EXPANDING ROYAL DOSSIER STAGE               */
         /* ========================================================================= */
-        <div className="w-full max-w-4xl mx-auto rounded-3xl bg-white border border-[#D8D5C0] shadow-xl overflow-hidden relative">
+        <div
+          className={`w-full mx-auto rounded-3xl bg-white overflow-hidden relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            isDossierExpanded
+              ? 'max-w-5xl border border-[#C5A059] ring-2 ring-[#C5A059]/35 shadow-[0_24px_60px_rgba(107,106,69,0.22)]'
+              : 'max-w-3xl border border-[#D8D5C0] shadow-xl'
+          }`}
+        >
+          {/* Top Olive-Gold Gradient Accent Bar */}
           <div className="h-1.5 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] w-full" />
+
           <div className="grid grid-cols-1 md:grid-cols-12 items-stretch">
             {/* Left Portrait */}
-            <div className="md:col-span-5 p-6 sm:p-7 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-[#E2E0D0]">
-              <div className="relative w-full max-w-[220px] aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20">
+            <div
+              className={`p-6 sm:p-7 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-[#E2E0D0] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                isDossierExpanded ? 'md:col-span-4' : 'md:col-span-5'
+              }`}
+            >
+              <div
+                className={`relative w-full aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  isDossierExpanded ? 'max-w-[250px]' : 'max-w-[210px]'
+                }`}
+              >
                 <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] relative">
                   {activeScholar.photoUrl ? (
                     <img
@@ -369,14 +381,19 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
               </div>
             </div>
 
-            {/* Right Details */}
-            <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-between bg-islamic-diamond-subtle relative">
-              <div className="space-y-4">
+            {/* Right Details & 4-Side Expanding Dossier Stage */}
+            <div
+              className={`p-6 sm:p-7 flex flex-col justify-between bg-islamic-diamond-subtle relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                isDossierExpanded ? 'md:col-span-8' : 'md:col-span-7'
+              }`}
+            >
+              <div className="space-y-3.5">
+                {/* Header Pills */}
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF8F2] text-[#8C8A58] border border-[#C5A059]/40 shadow-2xs flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-[#C5A059]" />
-                      <span>Distinguished Scholar Spotlight</span>
+                      <span>{isDossierExpanded ? 'Royal Scholar Dossier Stage' : 'Distinguished Scholar Spotlight'}</span>
                     </span>
                     {(() => {
                       const sInfo = getScholarStatusInfo(activeScholar.academicStatus, activeScholar.customStatusLabel);
@@ -394,10 +411,12 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   )}
                 </div>
 
+                {/* Full Name */}
                 <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#232215] tracking-tight">
                   {activeScholar.fullName}
                 </h3>
 
+                {/* Role & Location */}
                 {(activeScholar.currentRole || activeScholar.cityCountry) && (
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-slate-700">
                     {activeScholar.currentRole && (
@@ -415,66 +434,200 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   </div>
                 )}
 
-                {activeScholar.bio && (
-                  <p className="text-xs sm:text-sm leading-relaxed text-slate-700 italic bg-[#FAF8F2]/90 p-3.5 rounded-2xl border border-[#E2E0D0]/80">
-                    "{activeScholar.bio}"
-                  </p>
+                {/* ============================================================= */}
+                {/* COMPACT VIEW: Short Quote & 2-Item Track Preview              */}
+                {/* ============================================================= */}
+                {!isDossierExpanded && (
+                  <div className="space-y-3 pt-1 animate-in fade-in duration-300">
+                    {activeScholar.bio && (
+                      <p className="text-xs sm:text-sm leading-relaxed text-slate-700 italic bg-[#FAF8F2]/90 p-3 rounded-2xl border border-[#E2E0D0]/80 line-clamp-3">
+                        "{activeScholar.bio}"
+                      </p>
+                    )}
+
+                    <div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] mb-2 flex items-center gap-1.5">
+                        <BookOpen className="w-3.5 h-3.5 text-[#8C8A58]" />
+                        <span>Academic Progression Track</span>
+                      </div>
+                      {(() => {
+                        const quals =
+                          activeScholar.qualificationsList && activeScholar.qualificationsList.length > 0
+                            ? activeScholar.qualificationsList
+                            : activeScholar.qualification
+                            ? [{ degree: activeScholar.qualification, university: activeScholar.university, year: activeScholar.batchYear }]
+                            : [];
+                        return (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            {quals.slice(0, 2).map((q, idx) => (
+                              <div
+                                key={idx}
+                                className="bg-white/95 rounded-2xl p-2.5 border border-[#E2E0D0] shadow-2xs hover:border-[#C5A059] transition-all"
+                              >
+                                <div className="flex items-center justify-between gap-1 mb-1">
+                                  <span className="w-4 h-4 rounded-full bg-[#F4F3EC] text-[#6B6A45] text-[9px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0]">
+                                    {idx + 1}
+                                  </span>
+                                  {q.year && (
+                                    <span className="text-[10px] font-mono font-bold text-[#8C8A58]">
+                                      {q.year}
+                                    </span>
+                                  )}
+                                </div>
+                                <h4 className="font-bold text-xs text-[#232215] truncate">
+                                  {q.degree || 'Degree / Award'}
+                                </h4>
+                                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                                  {q.university || 'University / Academy'}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
                 )}
 
-                {/* Academic Progression Track */}
-                <div className="pt-2">
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] mb-2 flex items-center gap-1.5">
-                    <BookOpen className="w-3.5 h-3.5 text-[#8C8A58]" />
-                    <span>Academic Progression Track</span>
-                  </div>
-                  {(() => {
-                    const quals =
-                      activeScholar.qualificationsList && activeScholar.qualificationsList.length > 0
-                        ? activeScholar.qualificationsList
-                        : activeScholar.qualification
-                        ? [{ degree: activeScholar.qualification, university: activeScholar.university, year: activeScholar.batchYear }]
-                        : [];
-                    return (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                        {quals.map((q, idx) => (
-                          <div
-                            key={idx}
-                            className="bg-white/95 rounded-2xl p-3 border border-[#E2E0D0] shadow-2xs hover:border-[#C5A059] transition-all duration-300"
-                          >
-                            <div className="flex items-center justify-between gap-1 mb-1">
-                              <span className="w-5 h-5 rounded-full bg-[#F4F3EC] text-[#6B6A45] text-[10px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0]">
-                                {idx + 1}
-                              </span>
-                              {q.year && (
-                                <span className="text-[10px] font-mono font-bold text-[#8C8A58]">
-                                  {q.year}
-                                </span>
+                {/* ============================================================= */}
+                {/* 4-SIDE EXPANDED VIEW: Complete Vertical Timeline & Dossier     */}
+                {/* ============================================================= */}
+                {isDossierExpanded && (
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2 animate-in fade-in duration-400">
+                    {/* Left Column: Complete Academic Journey Timeline */}
+                    <div className="md:col-span-7 space-y-2.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1.5">
+                        <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58]" />
+                        <span>Complete Academic Journey</span>
+                      </div>
+                      {(() => {
+                        const quals =
+                          activeScholar.qualificationsList && activeScholar.qualificationsList.length > 0
+                            ? activeScholar.qualificationsList
+                            : activeScholar.qualification
+                            ? [{ degree: activeScholar.qualification, university: activeScholar.university, year: activeScholar.batchYear }]
+                            : [];
+                        return (
+                          <div className="border-l-2 border-[#C5A059]/70 pl-3.5 space-y-2.5 relative ml-1.5">
+                            {quals.map((q, idx) => (
+                              <div key={idx} className="relative">
+                                <span
+                                  className="absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C5A059] ring-2 ring-white shadow-2xs"
+                                  aria-hidden="true"
+                                />
+                                <div className="bg-white/95 p-2.5 rounded-xl border border-[#E2E0D0] shadow-2xs flex items-start justify-between gap-2">
+                                  <div className="min-w-0">
+                                    <h4 className="font-bold text-xs text-[#232215] truncate">
+                                      {q.degree || 'Degree / Award'}
+                                    </h4>
+                                    <p className="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5 truncate">
+                                      <Building2 className="w-3 h-3 text-[#8C8A58] shrink-0" />
+                                      <span className="truncate">{q.university || 'University'}</span>
+                                    </p>
+                                  </div>
+                                  {q.year && (
+                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] border border-[#C5A059]/40 text-[#8C8A58] shrink-0">
+                                      {q.year}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
+
+                    {/* Right Column: Statement, Mentorship & Connect */}
+                    <div className="md:col-span-5 space-y-2.5">
+                      {activeScholar.bio && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                            Scholarly Statement
+                          </span>
+                          <p className="text-xs leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-3 rounded-xl border border-[#E2E0D0]/80">
+                            "{activeScholar.bio}"
+                          </p>
+                        </div>
+                      )}
+
+                      {activeScholar.availableForMentorship && (
+                        <div className="p-2.5 bg-emerald-50/90 border border-emerald-200/90 rounded-xl flex items-start gap-2 text-xs text-emerald-900">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold block text-[11px]">Academic Mentorship</span>
+                            <span className="text-emerald-800 text-[10px] leading-tight block">
+                              Open to guide students in higher studies & scholarship.
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Connect Buttons */}
+                      {activeScholar.showContactPublicly &&
+                        (activeScholar.email || activeScholar.phone || activeScholar.linkedinUrl) && (
+                          <div className="pt-2 border-t border-[#E2E0D0]/80 space-y-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                              Connect with Scholar
+                            </span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {activeScholar.email && (
+                                <a
+                                  href={`mailto:${activeScholar.email}`}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                >
+                                  <Mail className="w-3 h-3 text-[#6B6A45]" />
+                                  <span>Email</span>
+                                </a>
+                              )}
+                              {activeScholar.phone && (
+                                <a
+                                  href={`tel:${activeScholar.phone}`}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                >
+                                  <Phone className="w-3 h-3 text-[#6B6A45]" />
+                                  <span>Call / WhatsApp</span>
+                                </a>
+                              )}
+                              {activeScholar.linkedinUrl && (
+                                <a
+                                  href={activeScholar.linkedinUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-lg text-[11px] font-bold transition-colors"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  <span>LinkedIn</span>
+                                </a>
                               )}
                             </div>
-                            <h4 className="font-bold text-xs text-[#232215] line-clamp-1">
-                              {q.degree || 'Degree / Award'}
-                            </h4>
-                            <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                              {q.university || 'University / Academy'}
-                            </p>
                           </div>
-                        ))}
-                      </div>
-                    );
-                  })()}
-                </div>
+                        )}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Bottom Actions */}
+              {/* Bottom Action Button (Toggles 4-Side Expansion) */}
               <div className="pt-5 mt-4 border-t border-[#E2E0D0]/80 flex flex-wrap items-center justify-between gap-3">
                 <button
                   type="button"
-                  onClick={() => setDossierScholar(activeScholar)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#6B6A45] hover:bg-[#504F34] text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  onClick={() => setIsDossierExpanded((prev) => !prev)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer active:scale-95 shadow-xs ${
+                    isDossierExpanded
+                      ? 'bg-[#504F34] hover:bg-[#3D3C27] text-white border border-[#C5A059]/60 ring-2 ring-[#C5A059]/20'
+                      : 'bg-[#6B6A45] hover:bg-[#504F34] text-white'
+                  }`}
                 >
                   <Award className="w-3.5 h-3.5 text-[#EFEFD0]" />
-                  <span>View Full Royal Dossier</span>
+                  <span>{isDossierExpanded ? 'Collapse Royal Dossier' : 'View Full Royal Dossier'}</span>
+                  {isDossierExpanded ? (
+                    <ChevronUp className="w-3.5 h-3.5 text-[#DFC076]" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5 text-[#DFC076]" />
+                  )}
                 </button>
+
                 {activeScholar.availableForMentorship && (
                   <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-2xs">
                     <Sparkles className="w-3 h-3 text-emerald-600" />
@@ -487,14 +640,14 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
         </div>
       ) : (
         /* ========================================================================= */
-        /* MULTIPLE SCHOLARS: PERSISTENT-CARD WIDTH-MORPHING EXPANDING DECK          */
+        /* MULTIPLE SCHOLARS: 4-SIDE EXPANDING PERSISTENT-CARD DECK                  */
         /* ========================================================================= */
         <div className="w-full">
           {/* --------------------------------------------------------------------- */}
-          {/* DESKTOP VIEW: PERSISTENT-CARD WIDTH-MORPHING DECK (lg+)               */}
+          {/* DESKTOP VIEW: PERSISTENT-CARD DECK (lg+)                              */}
           {/* --------------------------------------------------------------------- */}
           <div className="hidden lg:block">
-            <div className="flex items-stretch justify-center gap-3.5 max-w-6xl mx-auto overflow-hidden py-3">
+            <div className="flex items-stretch justify-center gap-3 xl:gap-3.5 max-w-6xl mx-auto overflow-hidden py-3">
               {visibleScholarCards.map((scholar) => {
                 const isCurrent = scholar.id === activeScholarId;
                 const quals =
@@ -507,20 +660,37 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                 return (
                   <div
                     key={scholar.id}
-                    onClick={() => !isCurrent && setActiveScholarId(scholar.id)}
-                    className={`min-h-[410px] overflow-hidden shrink-0 transition-[width,flex-basis,transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                    onClick={() => {
+                      if (!isCurrent) {
+                        setActiveScholarId(scholar.id);
+                        setIsDossierExpanded(false);
+                      }
+                    }}
+                    className={`overflow-hidden shrink-0 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                       isCurrent
-                        ? 'w-[620px] xl:w-[700px] rounded-3xl bg-white border border-[#D8D5C0] shadow-xl relative flex select-text'
-                        : 'w-[115px] xl:w-[130px] rounded-2xl cursor-pointer relative group border border-[#E2E0D0] bg-[#F3F1E6] shadow-sm hover:shadow-md hover:-translate-y-1.5 select-none'
+                        ? isDossierExpanded
+                          ? 'w-[860px] xl:w-[960px] min-h-[500px] rounded-3xl bg-white border border-[#C5A059] ring-2 ring-[#C5A059]/35 shadow-[0_24px_60px_rgba(107,106,69,0.22)] relative flex select-text'
+                          : 'w-[580px] xl:w-[640px] min-h-[410px] rounded-3xl bg-white border border-[#D8D5C0] shadow-xl relative flex select-text'
+                        : isDossierExpanded
+                        ? 'w-[75px] xl:w-[85px] min-h-[500px] rounded-2xl cursor-pointer relative group border border-[#E2E0D0] bg-[#F3F1E6] shadow-sm hover:shadow-md hover:-translate-y-1.5 select-none opacity-80 hover:opacity-100'
+                        : 'w-[115px] xl:w-[130px] min-h-[410px] rounded-2xl cursor-pointer relative group border border-[#E2E0D0] bg-[#F3F1E6] shadow-sm hover:shadow-md hover:-translate-y-1.5 select-none'
                     }`}
                     title={!isCurrent ? `View ${scholar.fullName} (Batch ${scholar.batchYear})` : undefined}
                   >
                     {isCurrent ? (
-                      /* ACTIVE CARD: FULL DISTINGUISHED SCHOLAR SPOTLIGHT LAYOUT */
+                      /* ACTIVE CARD: 4-SIDE EXPANDING STAGE */
                       <div className="w-full h-full flex items-stretch">
                         {/* Left Portrait Frame */}
-                        <div className="w-[230px] xl:w-[250px] shrink-0 p-5 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center justify-between border-r border-[#E2E0D0] relative">
-                          <div className="relative w-full max-w-[200px] aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20">
+                        <div
+                          className={`shrink-0 p-5 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center justify-between border-r border-[#E2E0D0] relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                            isDossierExpanded ? 'w-[250px] xl:w-[270px]' : 'w-[220px] xl:w-[240px]'
+                          }`}
+                        >
+                          <div
+                            className={`relative w-full aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                              isDossierExpanded ? 'max-w-[230px]' : 'max-w-[190px]'
+                            }`}
+                          >
                             <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] relative">
                               {scholar.photoUrl ? (
                                 <img
@@ -556,18 +726,24 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                         </div>
 
                         {/* Right Details Pane */}
-                        <div className="flex-1 p-5 xl:p-6 flex flex-col justify-between bg-islamic-diamond-subtle relative overflow-hidden">
+                        <div className="flex-1 p-5 xl:p-6 flex flex-col justify-between bg-islamic-diamond-subtle relative overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]">
                           <div className="space-y-3">
                             {/* Status & Class */}
                             <div className="flex items-center justify-between gap-2 flex-wrap">
-                              {(() => {
-                                const sInfo = getScholarStatusInfo(scholar.academicStatus, scholar.customStatusLabel);
-                                return (
-                                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6B6A45] text-[#F8F7F2] border border-[#8C8A58]/60 shadow-2xs">
-                                    {sInfo.label}
-                                  </span>
-                                );
-                              })()}
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#FAF8F2] text-[#8C8A58] border border-[#C5A059]/40 shadow-2xs flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3 text-[#C5A059]" />
+                                  <span>{isDossierExpanded ? 'Royal Scholar Dossier Stage' : 'Distinguished Spotlight'}</span>
+                                </span>
+                                {(() => {
+                                  const sInfo = getScholarStatusInfo(scholar.academicStatus, scholar.customStatusLabel);
+                                  return (
+                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6B6A45] text-[#F8F7F2] border border-[#8C8A58]/60 shadow-2xs">
+                                      {sInfo.label}
+                                    </span>
+                                  );
+                                })()}
+                              </div>
                               {scholar.classOrDivision && (
                                 <span className="text-[11px] text-slate-500 font-semibold font-mono">
                                   {scholar.classOrDivision}
@@ -598,59 +774,177 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                               </div>
                             )}
 
-                            {/* Statement Quote */}
-                            {scholar.bio && (
-                              <div className="relative my-1">
-                                <Quote className="w-4 h-4 text-[#6B6A45]/20 absolute -top-1 -left-1 pointer-events-none" />
-                                <p className="text-xs leading-relaxed text-slate-700 italic pl-3 line-clamp-2">
-                                  "{scholar.bio}"
-                                </p>
+                            {/* COMPACT MODE PREVIEW */}
+                            {!isDossierExpanded && (
+                              <div className="space-y-2.5 animate-in fade-in duration-300">
+                                {scholar.bio && (
+                                  <div className="relative my-1">
+                                    <Quote className="w-4 h-4 text-[#6B6A45]/20 absolute -top-1 -left-1 pointer-events-none" />
+                                    <p className="text-xs leading-relaxed text-slate-700 italic pl-3 line-clamp-2">
+                                      "{scholar.bio}"
+                                    </p>
+                                  </div>
+                                )}
+
+                                <div>
+                                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#6B6A45] mb-1.5 flex items-center gap-1">
+                                    <BookOpen className="w-3 h-3 text-[#8C8A58]" />
+                                    <span>Academic Progression Track</span>
+                                  </div>
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {quals.slice(0, 2).map((q, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="bg-white/95 rounded-xl p-2 border border-[#E2E0D0] shadow-2xs"
+                                      >
+                                        <div className="flex items-center justify-between gap-1 mb-0.5">
+                                          <span className="w-4 h-4 rounded-full bg-[#F4F3EC] text-[#6B6A45] text-[9px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0]">
+                                            {idx + 1}
+                                          </span>
+                                          {q.year && (
+                                            <span className="text-[9px] font-mono font-bold text-[#8C8A58]">
+                                              {q.year}
+                                            </span>
+                                          )}
+                                        </div>
+                                        <h4 className="font-bold text-xs text-[#232215] truncate">
+                                          {q.degree || 'Degree / Award'}
+                                        </h4>
+                                        <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                                          {q.university || 'University'}
+                                        </p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
                               </div>
                             )}
 
-                            {/* Academic Progression Track */}
-                            <div>
-                              <div className="text-[9px] font-bold uppercase tracking-wider text-[#6B6A45] mb-1.5 flex items-center gap-1">
-                                <BookOpen className="w-3 h-3 text-[#8C8A58]" />
-                                <span>Academic Progression Track</span>
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                {quals.slice(0, 2).map((q, idx) => (
-                                  <div
-                                    key={idx}
-                                    className="bg-white/95 rounded-xl p-2 border border-[#E2E0D0] shadow-2xs"
-                                  >
-                                    <div className="flex items-center justify-between gap-1 mb-0.5">
-                                      <span className="w-4 h-4 rounded-full bg-[#F4F3EC] text-[#6B6A45] text-[9px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0]">
-                                        {idx + 1}
-                                      </span>
-                                      {q.year && (
-                                        <span className="text-[9px] font-mono font-bold text-[#8C8A58]">
-                                          {q.year}
-                                        </span>
-                                      )}
-                                    </div>
-                                    <h4 className="font-bold text-xs text-[#232215] truncate">
-                                      {q.degree || 'Degree / Award'}
-                                    </h4>
-                                    <p className="text-[10px] text-slate-500 truncate mt-0.5">
-                                      {q.university || 'University'}
-                                    </p>
+                            {/* 4-SIDE EXPANDED STAGE (2-Column Dossier Body) */}
+                            {isDossierExpanded && (
+                              <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 pt-1 animate-in fade-in duration-400">
+                                {/* Left Column: Complete Academic Journey Timeline */}
+                                <div className="md:col-span-7 space-y-2">
+                                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1">
+                                    <GraduationCap className="w-3 h-3 text-[#8C8A58]" />
+                                    <span>Complete Academic Journey</span>
                                   </div>
-                                ))}
+                                  <div className="border-l-2 border-[#C5A059]/70 pl-3 space-y-2 relative ml-1 max-h-[175px] overflow-y-auto pr-1">
+                                    {quals.map((q, idx) => (
+                                      <div key={idx} className="relative">
+                                        <span
+                                          className="absolute -left-[17px] top-1.5 w-2 h-2 rounded-full bg-[#C5A059] ring-2 ring-white shadow-2xs"
+                                          aria-hidden="true"
+                                        />
+                                        <div className="bg-white/95 p-2 rounded-xl border border-[#E2E0D0] shadow-2xs flex items-start justify-between gap-2">
+                                          <div className="min-w-0">
+                                            <h4 className="font-bold text-xs text-[#232215] truncate">
+                                              {q.degree || 'Degree / Award'}
+                                            </h4>
+                                            <p className="text-[10px] text-slate-600 flex items-center gap-1 mt-0.5 truncate">
+                                              <Building2 className="w-3 h-3 text-[#8C8A58] shrink-0" />
+                                              <span className="truncate">{q.university || 'University'}</span>
+                                            </p>
+                                          </div>
+                                          {q.year && (
+                                            <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] border border-[#C5A059]/40 text-[#8C8A58] shrink-0">
+                                              {q.year}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                {/* Right Column: Statement, Mentorship & Connect */}
+                                <div className="md:col-span-5 space-y-2">
+                                  {scholar.bio && (
+                                    <div className="space-y-0.5">
+                                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
+                                        Scholarly Statement
+                                      </span>
+                                      <p className="text-[11px] leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-2.5 rounded-xl border border-[#E2E0D0]/80 line-clamp-3">
+                                        "{scholar.bio}"
+                                      </p>
+                                    </div>
+                                  )}
+
+                                  {scholar.availableForMentorship && (
+                                    <div className="p-2 bg-emerald-50/90 border border-emerald-200/90 rounded-xl flex items-start gap-1.5 text-xs text-emerald-900">
+                                      <Sparkles className="w-3 h-3 text-emerald-600 shrink-0 mt-0.5" />
+                                      <div>
+                                        <span className="font-bold block text-[10px]">Academic Mentorship</span>
+                                        <span className="text-emerald-800 text-[9px] leading-tight block">
+                                          Open to guide junior students in higher studies.
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Direct Connect Buttons */}
+                                  {scholar.showContactPublicly &&
+                                    (scholar.email || scholar.phone || scholar.linkedinUrl) && (
+                                      <div className="pt-1 border-t border-[#E2E0D0]/80 space-y-1">
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
+                                          Connect with Scholar
+                                        </span>
+                                        <div className="flex flex-wrap items-center gap-1">
+                                          {scholar.email && (
+                                            <a
+                                              href={`mailto:${scholar.email}`}
+                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-md text-[10px] font-semibold transition-colors"
+                                            >
+                                              <Mail className="w-2.5 h-2.5 text-[#6B6A45]" />
+                                              <span>Email</span>
+                                            </a>
+                                          )}
+                                          {scholar.phone && (
+                                            <a
+                                              href={`tel:${scholar.phone}`}
+                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-md text-[10px] font-semibold transition-colors"
+                                            >
+                                              <Phone className="w-2.5 h-2.5 text-[#6B6A45]" />
+                                              <span>Call</span>
+                                            </a>
+                                          )}
+                                          {scholar.linkedinUrl && (
+                                            <a
+                                              href={scholar.linkedinUrl}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-md text-[10px] font-bold transition-colors"
+                                            >
+                                              <ExternalLink className="w-2.5 h-2.5" />
+                                              <span>LinkedIn</span>
+                                            </a>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </div>
 
-                          {/* Action Button */}
+                          {/* Action Button: Smooth Toggle */}
                           <div className="pt-3 mt-3 border-t border-[#E2E0D0]/70 flex items-center justify-between gap-2">
                             <button
                               type="button"
-                              onClick={() => setDossierScholar(scholar)}
-                              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#6B6A45] hover:bg-[#504F34] text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                              onClick={() => setIsDossierExpanded((prev) => !prev)}
+                              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 shadow-xs ${
+                                isDossierExpanded
+                                  ? 'bg-[#504F34] hover:bg-[#3D3C27] text-white border border-[#C5A059]/60 ring-2 ring-[#C5A059]/20'
+                                  : 'bg-[#6B6A45] hover:bg-[#504F34] text-white'
+                              }`}
                             >
                               <Award className="w-3.5 h-3.5 text-[#EFEFD0]" />
-                              <span>View Full Royal Dossier</span>
+                              <span>{isDossierExpanded ? 'Collapse Royal Dossier' : 'View Full Royal Dossier'}</span>
+                              {isDossierExpanded ? (
+                                <ChevronUp className="w-3.5 h-3.5 text-[#DFC076]" />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5 text-[#DFC076]" />
+                              )}
                             </button>
                             {scholar.availableForMentorship && (
                               <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
@@ -678,11 +972,11 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                           </div>
                         )}
                         {/* Bottom Dark Olive Gradient Overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#1F1E12]/95 via-[#1F1E12]/35 to-transparent flex flex-col justify-end p-2.5 text-center">
-                          <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#6B6A45]/90 text-white truncate max-w-full mb-1">
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#1F1E12]/95 via-[#1F1E12]/35 to-transparent flex flex-col justify-end p-2 text-center">
+                          <span className="inline-block px-1 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-[#6B6A45]/90 text-white truncate max-w-full mb-0.5">
                             Batch {scholar.batchYear}
                           </span>
-                          <span className="text-xs font-bold text-white truncate drop-shadow-sm">
+                          <span className="text-[11px] font-bold text-white truncate drop-shadow-sm">
                             {scholar.fullName.split(' ')[0]}
                           </span>
                         </div>
@@ -710,7 +1004,10 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setActiveScholarId(s.id)}
+                    onClick={() => {
+                      setActiveScholarId(s.id);
+                      setIsDossierExpanded(false);
+                    }}
                     className={`h-7 px-2.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center justify-center shrink-0 ${
                       s.id === activeScholarId
                         ? 'bg-[#6B6A45] text-white ring-2 ring-[#C5A059] shadow-xs'
@@ -740,10 +1037,20 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
           {/* --------------------------------------------------------------------- */}
           <div className="lg:hidden w-full max-w-lg mx-auto">
             {activeScholar && (
-              <div className="rounded-3xl bg-white border border-[#D8D5C0] shadow-xl overflow-hidden relative">
+              <div
+                className={`rounded-3xl bg-white overflow-hidden relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  isDossierExpanded
+                    ? 'border border-[#C5A059] ring-2 ring-[#C5A059]/35 shadow-[0_24px_60px_rgba(107,106,69,0.22)]'
+                    : 'border border-[#D8D5C0] shadow-xl'
+                }`}
+              >
                 <div className="h-1.5 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] w-full" />
                 <div className="p-6 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center border-b border-[#E2E0D0]">
-                  <div className="relative w-40 aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20">
+                  <div
+                    className={`relative aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20 transition-all duration-500 ${
+                      isDossierExpanded ? 'w-48' : 'w-40'
+                    }`}
+                  >
                     <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] relative">
                       {activeScholar.photoUrl ? (
                         <img
@@ -773,7 +1080,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   </div>
                 </div>
 
-                <div className="p-6 bg-islamic-diamond-subtle space-y-3.5">
+                <div className="p-5 sm:p-6 bg-islamic-diamond-subtle space-y-3.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     {(() => {
                       const sInfo = getScholarStatusInfo(activeScholar.academicStatus, activeScholar.customStatusLabel);
@@ -811,23 +1118,148 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                     </div>
                   )}
 
-                  {activeScholar.bio && (
-                    <p className="text-xs leading-relaxed text-slate-700 italic bg-[#FAF8F2]/90 p-3 rounded-2xl border border-[#E2E0D0]/80">
+                  {/* Compact Statement */}
+                  {!isDossierExpanded && activeScholar.bio && (
+                    <p className="text-xs leading-relaxed text-slate-700 italic bg-[#FAF8F2]/90 p-3 rounded-2xl border border-[#E2E0D0]/80 line-clamp-3">
                       "{activeScholar.bio}"
                     </p>
                   )}
 
-                  {/* Mobile Actions */}
+                  {/* Expanded 4-Side Mobile Body */}
+                  {isDossierExpanded && (
+                    <div className="space-y-3 pt-1 animate-in fade-in duration-300">
+                      {/* Timeline */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1.5">
+                          <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58]" />
+                          <span>Complete Academic Journey</span>
+                        </span>
+                        {(() => {
+                          const quals =
+                            activeScholar.qualificationsList && activeScholar.qualificationsList.length > 0
+                              ? activeScholar.qualificationsList
+                              : activeScholar.qualification
+                              ? [{ degree: activeScholar.qualification, university: activeScholar.university, year: activeScholar.batchYear }]
+                              : [];
+                          return (
+                            <div className="border-l-2 border-[#C5A059]/70 pl-3.5 space-y-2.5 relative ml-1">
+                              {quals.map((q, idx) => (
+                                <div key={idx} className="relative">
+                                  <span
+                                    className="absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C5A059] ring-2 ring-white shadow-2xs"
+                                    aria-hidden="true"
+                                  />
+                                  <div className="bg-white/95 p-2.5 rounded-xl border border-[#E2E0D0] shadow-2xs flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <h4 className="font-bold text-xs text-[#232215] truncate">
+                                        {q.degree || 'Degree / Award'}
+                                      </h4>
+                                      <p className="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5 truncate">
+                                        <Building2 className="w-3 h-3 text-[#8C8A58] shrink-0" />
+                                        <span className="truncate">{q.university || 'University'}</span>
+                                      </p>
+                                    </div>
+                                    {q.year && (
+                                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] border border-[#C5A059]/40 text-[#8C8A58] shrink-0">
+                                        {q.year}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Full Bio */}
+                      {activeScholar.bio && (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                            Scholarly Statement
+                          </span>
+                          <p className="text-xs leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-3 rounded-xl border border-[#E2E0D0]/80">
+                            "{activeScholar.bio}"
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Mentorship */}
+                      {activeScholar.availableForMentorship && (
+                        <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-xl flex items-start gap-2 text-xs text-emerald-900">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold block text-[11px]">Academic Mentorship</span>
+                            <span className="text-emerald-800 text-[10px] leading-tight block">
+                              Open to guide junior students in higher studies.
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Connect Buttons */}
+                      {activeScholar.showContactPublicly &&
+                        (activeScholar.email || activeScholar.phone || activeScholar.linkedinUrl) && (
+                          <div className="pt-2 border-t border-[#E2E0D0]/80 space-y-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                              Connect with Scholar
+                            </span>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {activeScholar.email && (
+                                <a
+                                  href={`mailto:${activeScholar.email}`}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                >
+                                  <Mail className="w-3 h-3 text-[#6B6A45]" />
+                                  <span>Email</span>
+                                </a>
+                              )}
+                              {activeScholar.phone && (
+                                <a
+                                  href={`tel:${activeScholar.phone}`}
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                >
+                                  <Phone className="w-3 h-3 text-[#6B6A45]" />
+                                  <span>Call</span>
+                                </a>
+                              )}
+                              {activeScholar.linkedinUrl && (
+                                <a
+                                  href={activeScholar.linkedinUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-lg text-[11px] font-bold transition-colors"
+                                >
+                                  <ExternalLink className="w-3 h-3" />
+                                  <span>LinkedIn</span>
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                    </div>
+                  )}
+
+                  {/* Mobile Actions: Smooth Toggle Button */}
                   <div className="pt-3 border-t border-[#E2E0D0]/80 flex flex-col gap-2">
                     <button
                       type="button"
-                      onClick={() => setDossierScholar(activeScholar)}
-                      className="w-full py-2.5 rounded-xl text-xs font-bold bg-[#6B6A45] hover:bg-[#504F34] text-white shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      onClick={() => setIsDossierExpanded((prev) => !prev)}
+                      className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                        isDossierExpanded
+                          ? 'bg-[#504F34] hover:bg-[#3D3C27] text-white border border-[#C5A059]/60 ring-2 ring-[#C5A059]/20'
+                          : 'bg-[#6B6A45] hover:bg-[#504F34] text-white shadow-xs'
+                      }`}
                     >
                       <Award className="w-3.5 h-3.5 text-[#EFEFD0]" />
-                      <span>View Full Royal Dossier</span>
+                      <span>{isDossierExpanded ? 'Collapse Royal Dossier' : 'View Full Royal Dossier'}</span>
+                      {isDossierExpanded ? (
+                        <ChevronUp className="w-3.5 h-3.5 text-[#DFC076]" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5 text-[#DFC076]" />
+                      )}
                     </button>
-                    {activeScholar.availableForMentorship && (
+                    {!isDossierExpanded && activeScholar.availableForMentorship && (
                       <span className="text-xs text-center font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center justify-center gap-1.5 shadow-2xs">
                         <Sparkles className="w-3 h-3 text-emerald-600" />
                         <span>Open to Mentor Students</span>
@@ -854,7 +1286,10 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   <button
                     key={s.id}
                     type="button"
-                    onClick={() => setActiveScholarId(s.id)}
+                    onClick={() => {
+                      setActiveScholarId(s.id);
+                      setIsDossierExpanded(false);
+                    }}
                     className={`w-7 h-7 rounded-full text-xs font-bold transition-all shrink-0 flex items-center justify-center ${
                       s.id === activeScholarId
                         ? 'bg-[#6B6A45] text-white ring-2 ring-[#C5A059]'
@@ -873,209 +1308,6 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                 aria-label="Next Scholar"
               >
                 <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 3. ROYAL SCHOLAR DOSSIER MODAL                                            */}
-      {/* ========================================================================= */}
-      {dossierScholar && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
-          onClick={() => setDossierScholar(null)}
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="bg-white rounded-3xl max-w-2xl w-full border border-[#D8D5C0] shadow-2xl overflow-hidden relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Top Olive-Gold Accent Line */}
-            <div className="h-1.5 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] w-full" />
-
-            {/* Modal Header */}
-            <div className="p-6 bg-gradient-to-b from-[#F8F7F2] to-white border-b border-[#E2E0D0] flex items-start justify-between gap-4">
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="p-1 rounded-2xl bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-md shrink-0">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-[#F3F1E6] relative">
-                    {dossierScholar.photoUrl ? (
-                      <img
-                        src={dossierScholar.photoUrl}
-                        alt={dossierScholar.fullName}
-                        className="w-full h-full object-cover object-top"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
-                        <span className="text-xl sm:text-2xl font-serif font-bold">
-                          {getInitials(dossierScholar.fullName)}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#232215]/85 text-[#F8F7F2] font-mono">
-                      Batch {dossierScholar.batchYear}
-                    </span>
-                    {(() => {
-                      const sInfo = getScholarStatusInfo(dossierScholar.academicStatus, dossierScholar.customStatusLabel);
-                      return (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6B6A45] text-[#F8F7F2]">
-                          {sInfo.label}
-                        </span>
-                      );
-                    })()}
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#232215] truncate">
-                    {dossierScholar.fullName}
-                  </h3>
-                  {dossierScholar.currentRole && (
-                    <p className="text-xs sm:text-sm font-semibold text-[#504F34] truncate mt-0.5">
-                      {dossierScholar.currentRole}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setDossierScholar(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-xl hover:bg-[#F4F3EC] transition-colors cursor-pointer shrink-0"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body */}
-            <div className="p-6 sm:p-7 space-y-6 max-h-[70vh] overflow-y-auto">
-              {/* Biography Quote */}
-              {dossierScholar.bio && (
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    Scholarly Statement
-                  </span>
-                  <p className="text-xs sm:text-sm leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-4 rounded-2xl border border-[#E2E0D0]/80 whitespace-pre-line">
-                    "{dossierScholar.bio}"
-                  </p>
-                </div>
-              )}
-
-              {/* Complete Academic Timeline */}
-              {(() => {
-                const modalQuals =
-                  dossierScholar.qualificationsList && dossierScholar.qualificationsList.length > 0
-                    ? dossierScholar.qualificationsList
-                    : dossierScholar.qualification
-                    ? [{ degree: dossierScholar.qualification, university: dossierScholar.university, year: dossierScholar.batchYear }]
-                    : [];
-
-                if (modalQuals.length === 0) return null;
-
-                return (
-                  <div className="space-y-3">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1.5">
-                      <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58]" />
-                      <span>Complete Academic Journey</span>
-                    </span>
-
-                    <div className="border-l-2 border-[#C5A059]/60 pl-4 space-y-3.5 relative ml-2">
-                      {modalQuals.map((q, idx) => (
-                        <div key={idx} className="relative">
-                          <span
-                            className="absolute -left-[22px] top-1.5 w-3 h-3 rounded-full bg-[#C5A059] ring-4 ring-white shadow-xs"
-                            aria-hidden="true"
-                          />
-                          <div className="bg-[#F8F7F2] p-3 rounded-2xl border border-[#E2E0D0] flex items-start justify-between gap-3">
-                            <div>
-                              <h4 className="font-bold text-xs sm:text-sm text-[#232215]">
-                                {q.degree || 'Degree / Award'}
-                              </h4>
-                              <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-0.5">
-                                <Building2 className="w-3 h-3 text-[#8C8A58]" />
-                                <span>{q.university || 'University / Institution'}</span>
-                              </p>
-                            </div>
-                            {q.year && (
-                              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-white border border-[#C5A059]/40 text-[#8C8A58] shadow-2xs">
-                                {q.year}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Mentorship Box */}
-              {dossierScholar.availableForMentorship && (
-                <div className="p-4 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl flex items-start gap-3 text-xs text-emerald-900">
-                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold block">Open for Academic Guidance & Mentorship</span>
-                    <span className="text-emerald-800 text-[11px] mt-0.5 block">
-                      This scholar is open to guide junior students and prospective researchers in academic pathways, university applications, and sacred scholarship.
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Public Contact Channels */}
-              {dossierScholar.showContactPublicly && (dossierScholar.email || dossierScholar.phone || dossierScholar.linkedinUrl) && (
-                <div className="pt-4 border-t border-[#E2E0D0] space-y-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    Connect with Scholar
-                  </span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    {dossierScholar.email && (
-                      <a
-                        href={`mailto:${dossierScholar.email}`}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-xl text-xs font-semibold transition-colors"
-                      >
-                        <Mail className="w-3.5 h-3.5 text-[#6B6A45]" />
-                        <span>{dossierScholar.email}</span>
-                      </a>
-                    )}
-                    {dossierScholar.phone && (
-                      <a
-                        href={`tel:${dossierScholar.phone}`}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-xl text-xs font-semibold transition-colors"
-                      >
-                        <Phone className="w-3.5 h-3.5 text-[#6B6A45]" />
-                        <span>{dossierScholar.phone}</span>
-                      </a>
-                    )}
-                    {dossierScholar.linkedinUrl && (
-                      <a
-                        href={dossierScholar.linkedinUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-xl text-xs font-bold transition-colors"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>LinkedIn Profile</span>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 sm:p-5 bg-[#FAF9F5] border-t border-[#E2E0D0] flex items-center justify-end">
-              <button
-                type="button"
-                onClick={() => setDossierScholar(null)}
-                className="px-5 py-2 border border-[#E2E0D0] text-slate-700 hover:text-slate-900 rounded-xl text-xs font-bold hover:bg-white transition-colors cursor-pointer"
-              >
-                Close Dossier
               </button>
             </div>
           </div>

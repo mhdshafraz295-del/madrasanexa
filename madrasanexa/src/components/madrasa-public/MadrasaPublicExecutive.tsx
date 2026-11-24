@@ -44,26 +44,26 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
     if (idx === activeIndex || isAnimating) return;
     setIsAnimating(true);
     setActiveIndex(idx);
-    setTimeout(() => setIsAnimating(false), 400);
+    setTimeout(() => setIsAnimating(false), 450);
   };
 
   const handlePrev = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     setActiveIndex((prev) => (prev === 0 ? totalMembers - 1 : prev - 1));
-    setTimeout(() => setIsAnimating(false), 400);
+    setTimeout(() => setIsAnimating(false), 450);
   };
 
   const handleNext = () => {
     if (isAnimating) return;
     setIsAnimating(true);
     setActiveIndex((prev) => (prev === totalMembers - 1 ? 0 : prev + 1));
-    setTimeout(() => setIsAnimating(false), 400);
+    setTimeout(() => setIsAnimating(false), 450);
   };
 
   const currentMember = members[activeIndex] || members[0];
 
-  // Derive initials
+  // Helper: derive initials
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -73,16 +73,41 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
       .join('');
   };
 
-  // Safe adjacent indices for desktop deck preview
-  const prevIndex = (activeIndex - 1 + totalMembers) % totalMembers;
-  const nextIndex = (activeIndex + 1) % totalMembers;
-  const showAdjacentCards = totalMembers >= 3;
+  // Derive visible flanking cards for desktop Calendly-style deck (up to 2 left, 2 right)
+  const getFlankingCards = () => {
+    if (totalMembers <= 1) {
+      return { left: [], right: [] };
+    }
+    if (totalMembers === 2) {
+      const otherIdx = (activeIndex + 1) % 2;
+      return { left: [otherIdx], right: [] };
+    }
+    if (totalMembers === 3) {
+      const leftIdx = (activeIndex - 1 + 3) % 3;
+      const rightIdx = (activeIndex + 1) % 3;
+      return { left: [leftIdx], right: [rightIdx] };
+    }
+    if (totalMembers === 4) {
+      const leftIdx = (activeIndex - 1 + 4) % 4;
+      const right1 = (activeIndex + 1) % 4;
+      const right2 = (activeIndex + 2) % 4;
+      return { left: [leftIdx], right: [right1, right2] };
+    }
+    // 5 or more members: 2 on left, 2 on right
+    const left2 = (activeIndex - 2 + totalMembers) % totalMembers;
+    const left1 = (activeIndex - 1 + totalMembers) % totalMembers;
+    const right1 = (activeIndex + 1) % totalMembers;
+    const right2 = (activeIndex + 2) % totalMembers;
+    return { left: [left2, left1], right: [right1, right2] };
+  };
+
+  const { left: leftIndices, right: rightIndices } = getFlankingCards();
 
   return (
     <section
       id="executive-committee"
       ref={containerRef}
-      className="public-section-enter scroll-mt-28 py-6 sm:py-8 overflow-x-clip"
+      className="public-section-enter scroll-mt-28 py-8 sm:py-12 overflow-x-clip"
       aria-label="Executive Committee & Board of Management"
     >
       {/* Section Header */}
@@ -102,168 +127,267 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
         </p>
       </div>
 
-      {/* Spotlight Deck Showcase Area */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 relative">
-        {/* Desktop Expanding Spotlight Deck Container */}
-        <div className="relative flex items-center justify-center min-h-[440px] sm:min-h-[400px]">
-          {/* Left Preview Card (Desktop Only: lg+ and if 3+ members) */}
-          {showAdjacentCards && (
-            <div
-              onClick={handlePrev}
-              className="hidden lg:flex flex-col items-center justify-center absolute left-0 w-64 h-80 bg-white/70 backdrop-blur-sm rounded-2xl border border-[#E2E0D0]/80 p-5 shadow-sm transform -translate-x-8 scale-90 opacity-60 hover:opacity-90 hover:scale-95 transition-all duration-500 cursor-pointer z-10 select-none group"
-              title={`View ${members[prevIndex].fullName}`}
-            >
-              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-[#F4F3EC] border border-[#E2E0D0] mb-3 group-hover:border-[#6B6A45] transition-colors flex items-center justify-center shrink-0">
-                {members[prevIndex].photoUrl ? (
+      {/* ========================================================= */}
+      {/* DESKTOP CALENDLY-STYLE EXPANDING DECK (Hidden on < lg)   */}
+      {/* ========================================================= */}
+      <div className="hidden lg:block max-w-6xl mx-auto px-4 xl:px-6 relative">
+        <div className="flex items-stretch justify-center gap-3.5 xl:gap-4.5 max-w-6xl mx-auto overflow-hidden py-3">
+          {/* Left Collapsed Cards */}
+          {leftIndices.map((idx) => {
+            const member = members[idx];
+            return (
+              <div
+                key={`left-${member.id}-${idx}`}
+                onClick={() => handleSelectMember(idx)}
+                className="w-[115px] xl:w-[135px] h-[380px] rounded-2xl overflow-hidden cursor-pointer relative group transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 shrink-0 border border-[#E2E0D0] bg-[#F3F1E6] shadow-sm hover:shadow-md select-none"
+                title={`View ${member.fullName} (${member.position})`}
+              >
+                {member.photoUrl ? (
                   <img
-                    src={members[prevIndex].photoUrl}
-                    alt={members[prevIndex].fullName}
-                    className="w-full h-full object-cover"
+                    src={member.photoUrl}
+                    alt={member.fullName}
+                    className="w-full h-full object-cover object-top brightness-90 group-hover:brightness-100 group-hover:scale-105 transition-all duration-500"
+                    loading="lazy"
                   />
                 ) : (
-                  <span className="text-sm font-bold text-[#6B6A45]">
-                    {getInitials(members[prevIndex].fullName)}
-                  </span>
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
+                    <span className="text-xl font-bold font-serif">{getInitials(member.fullName)}</span>
+                    <User className="w-4 h-4 mt-1 opacity-50" />
+                  </div>
                 )}
+                {/* Subtle dark-olive gradient overlay with name & position */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1F1E12]/95 via-[#1F1E12]/35 to-transparent flex flex-col justify-end p-2.5 text-center">
+                  <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#6B6A45]/90 text-white truncate max-w-full mb-1">
+                    {member.position}
+                  </span>
+                  <span className="text-xs font-bold text-white truncate drop-shadow-sm">
+                    {member.fullName.split(' ')[0]}
+                  </span>
+                </div>
               </div>
-              <h4 className="text-xs font-bold text-slate-800 text-center truncate w-full">
-                {members[prevIndex].fullName}
-              </h4>
-              <span className="text-[11px] font-semibold text-[#6B6A45] mt-1 text-center truncate w-full">
-                {members[prevIndex].position}
-              </span>
-            </div>
-          )}
+            );
+          })}
 
-          {/* Central Expanding Spotlight Card */}
+          {/* Expanded Active Card (Center Spotlight) */}
           <div
-            className={`w-full max-w-2xl bg-[#FDFCF7] border border-[#E2E0D0] rounded-3xl p-5 sm:p-7 md:p-9 shadow-xl shadow-[#6B6A45]/5 relative overflow-hidden bg-islamic-diamond-subtle transition-all duration-500 z-20 ${
-              isAnimating ? 'opacity-85 scale-[0.99]' : 'opacity-100 scale-100'
+            className={`w-[580px] xl:w-[660px] h-[380px] rounded-3xl bg-white border border-[#E2E0D0] shadow-xl transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 flex overflow-hidden relative bg-islamic-diamond-subtle ${
+              isAnimating ? 'opacity-90 scale-[0.995]' : 'opacity-100 scale-100'
             }`}
           >
-            {/* Corner Rub el Hizb Star Watermark Accent */}
+            {/* Background Geometric Accent */}
             <div
-              className="absolute -top-6 -right-6 text-[#6B6A45]/5 pointer-events-none select-none"
+              className="absolute -top-10 -right-10 text-[#6B6A45]/5 pointer-events-none select-none"
               aria-hidden="true"
             >
-              <svg width="140" height="140" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="180" height="180" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M12 2l2.4 2.4H18v3.6L20.4 10.4 22 12l-1.6 1.6-2.4 2.4V20h-3.6L12 22.4 9.6 20H6v-4L3.6 13.6 2 12l1.6-1.6L6 8V4.4h3.6L12 2z" />
               </svg>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8 relative z-10">
-              {/* Member Portrait Column */}
-              <div className="flex flex-col items-center shrink-0 text-center">
-                <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-44 md:h-44 rounded-2xl md:rounded-3xl overflow-hidden bg-[#F4F3EC] border-2 border-[#8C8A58]/40 shadow-md ring-4 ring-[#6B6A45]/10 flex items-center justify-center">
-                  {currentMember.photoUrl ? (
-                    <img
-                      src={currentMember.photoUrl}
-                      alt={currentMember.fullName}
-                      className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                      loading="eager"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-[#6B6A45] bg-gradient-to-b from-[#F4F3EC] to-[#EAE8DD]">
-                      <span className="text-2xl sm:text-3xl font-serif font-bold tracking-tight">
-                        {getInitials(currentMember.fullName)}
-                      </span>
-                      <User className="w-5 h-5 mt-1 opacity-50" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Position Pill */}
-                <div className="mt-3.5 inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold tracking-wide bg-[#6B6A45] text-white shadow-xs">
+            {/* Left Content Pane */}
+            <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between overflow-hidden relative z-10">
+              {/* Top: Position Pill + Term Period */}
+              <div className="flex items-center flex-wrap gap-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#6B6A45] text-white shadow-xs">
                   {currentMember.position}
-                </div>
-
-                {/* Term Period */}
+                </span>
                 {currentMember.termPeriod && (
-                  <div className="flex items-center space-x-1 text-[11px] font-medium text-slate-500 mt-2">
+                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4F3EC] border border-[#E2E0D0] text-slate-600">
                     <Calendar className="w-3 h-3 text-[#8C8A58]" />
                     <span>{currentMember.termPeriod}</span>
-                  </div>
+                  </span>
                 )}
               </div>
 
-              {/* Bio & Information Column */}
-              <div className="flex-1 text-center sm:text-left min-w-0">
-                {/* Full Name */}
-                <h3 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-[#232215] tracking-tight">
+              {/* Middle: Crisp Quote / Message */}
+              <div className="relative my-auto py-2">
+                <Quote className="w-5 h-5 text-[#6B6A45]/20 absolute -top-1 -left-1 pointer-events-none" />
+                <p className="text-xs sm:text-sm xl:text-[14.5px] leading-relaxed text-[#232215] font-medium italic pl-4 line-clamp-4">
+                  {currentMember.messageOrBio
+                    ? `"${currentMember.messageOrBio}"`
+                    : '"Devoted to preserving sacred Islamic knowledge, nurturing steadfast character, and serving the students and community with vision and integrity."'}
+                </p>
+              </div>
+
+              {/* Bottom: Name & Qualifications */}
+              <div className="pt-2 border-t border-[#E2E0D0]/60">
+                <h3 className="text-lg xl:text-xl font-bold font-serif text-[#232215] truncate tracking-tight">
                   {currentMember.fullName}
                 </h3>
-
-                {/* Qualification / Honorific */}
                 {currentMember.qualification && (
-                  <div className="inline-flex items-center space-x-1.5 mt-1 text-xs sm:text-sm font-semibold text-[#8C8A58]">
-                    <Award className="w-3.5 h-3.5 shrink-0" />
-                    <span>{currentMember.qualification}</span>
+                  <div className="text-xs font-semibold text-[#6B6A45] mt-0.5 flex items-center space-x-1.5 truncate">
+                    <Award className="w-3.5 h-3.5 text-[#8C8A58] shrink-0" />
+                    <span className="truncate">{currentMember.qualification}</span>
                   </div>
                 )}
+              </div>
+            </div>
 
-                {/* Decorative Divider */}
-                <div className="my-3.5 flex items-center justify-center sm:justify-start space-x-2">
-                  <div className="h-[1px] w-12 bg-gradient-to-r from-[#6B6A45]/40 to-transparent" />
-                  <span className="text-xs text-[#8C8A58]">۞</span>
-                  <div className="h-[1px] w-12 bg-gradient-to-l from-[#6B6A45]/40 to-transparent" />
-                </div>
-
-                {/* Message / Bio / Quote */}
-                <div className="relative mt-2">
-                  <Quote className="w-6 h-6 text-[#6B6A45]/20 absolute -top-2 -left-2 hidden sm:block pointer-events-none" />
-                  <p className="text-xs sm:text-sm md:text-base leading-relaxed text-[#2C2B22] font-medium italic sm:pl-5">
-                    {currentMember.messageOrBio
-                      ? `"${currentMember.messageOrBio}"`
-                      : 'Devoted to preserving sacred knowledge, nurturing authentic Islamic ethics, and serving the students, faculty, and broader community with sincerity and vision.'}
-                  </p>
-                </div>
+            {/* Right Portrait Pane */}
+            <div className="w-[230px] xl:w-[260px] shrink-0 p-3 flex items-center justify-center bg-gradient-to-r from-transparent to-[#F8F7F2]/60">
+              <div className="w-full h-full rounded-2xl overflow-hidden bg-[#F3F1E6] border border-[#E2E0D0]/80 relative shadow-inner">
+                {currentMember.photoUrl ? (
+                  <img
+                    src={currentMember.photoUrl}
+                    alt={currentMember.fullName}
+                    className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
+                    loading="eager"
+                  />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
+                    <span className="text-3xl font-bold font-serif">{getInitials(currentMember.fullName)}</span>
+                    <User className="w-6 h-6 mt-1.5 opacity-40" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Right Preview Card (Desktop Only: lg+ and if 3+ members) */}
-          {showAdjacentCards && (
-            <div
-              onClick={handleNext}
-              className="hidden lg:flex flex-col items-center justify-center absolute right-0 w-64 h-80 bg-white/70 backdrop-blur-sm rounded-2xl border border-[#E2E0D0]/80 p-5 shadow-sm transform translate-x-8 scale-90 opacity-60 hover:opacity-90 hover:scale-95 transition-all duration-500 cursor-pointer z-10 select-none group"
-              title={`View ${members[nextIndex].fullName}`}
-            >
-              <div className="w-20 h-20 rounded-2xl overflow-hidden bg-[#F4F3EC] border border-[#E2E0D0] mb-3 group-hover:border-[#6B6A45] transition-colors flex items-center justify-center shrink-0">
-                {members[nextIndex].photoUrl ? (
+          {/* Right Collapsed Cards */}
+          {rightIndices.map((idx) => {
+            const member = members[idx];
+            return (
+              <div
+                key={`right-${member.id}-${idx}`}
+                onClick={() => handleSelectMember(idx)}
+                className="w-[115px] xl:w-[135px] h-[380px] rounded-2xl overflow-hidden cursor-pointer relative group transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-1.5 shrink-0 border border-[#E2E0D0] bg-[#F3F1E6] shadow-sm hover:shadow-md select-none"
+                title={`View ${member.fullName} (${member.position})`}
+              >
+                {member.photoUrl ? (
                   <img
-                    src={members[nextIndex].photoUrl}
-                    alt={members[nextIndex].fullName}
-                    className="w-full h-full object-cover"
+                    src={member.photoUrl}
+                    alt={member.fullName}
+                    className="w-full h-full object-cover object-top brightness-90 group-hover:brightness-100 group-hover:scale-105 transition-all duration-500"
+                    loading="lazy"
                   />
                 ) : (
-                  <span className="text-sm font-bold text-[#6B6A45]">
-                    {getInitials(members[nextIndex].fullName)}
-                  </span>
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
+                    <span className="text-xl font-bold font-serif">{getInitials(member.fullName)}</span>
+                    <User className="w-4 h-4 mt-1 opacity-50" />
+                  </div>
                 )}
+                {/* Subtle dark-olive gradient overlay with name & position */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1F1E12]/95 via-[#1F1E12]/35 to-transparent flex flex-col justify-end p-2.5 text-center">
+                  <span className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-[#6B6A45]/90 text-white truncate max-w-full mb-1">
+                    {member.position}
+                  </span>
+                  <span className="text-xs font-bold text-white truncate drop-shadow-sm">
+                    {member.fullName.split(' ')[0]}
+                  </span>
+                </div>
               </div>
-              <h4 className="text-xs font-bold text-slate-800 text-center truncate w-full">
-                {members[nextIndex].fullName}
-              </h4>
-              <span className="text-[11px] font-semibold text-[#6B6A45] mt-1 text-center truncate w-full">
-                {members[nextIndex].position}
-              </span>
-            </div>
-          )}
+            );
+          })}
         </div>
 
-        {/* Navigation Controls & Pagination */}
+        {/* Desktop Controls: Prev/Next & Counter */}
         {totalMembers > 1 && (
-          <div className="mt-6 flex flex-col items-center space-y-4">
-            {/* Arrow Controls & Counter */}
+          <div className="mt-5 flex items-center justify-center space-x-4">
+            <button
+              type="button"
+              onClick={handlePrev}
+              disabled={isAnimating}
+              aria-label="Previous Executive Member"
+              className="w-9 h-9 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            <span className="text-xs font-semibold text-slate-600 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">
+              {activeIndex + 1} of {totalMembers}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isAnimating}
+              aria-label="Next Executive Member"
+              className="w-9 h-9 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ========================================================= */}
+      {/* MOBILE / TABLET LAYOUT (< lg, 360px to 1023px)            */}
+      {/* ========================================================= */}
+      <div className="block lg:hidden max-w-md mx-auto px-4">
+        {/* Single-Column Spotlight Card */}
+        <div
+          className={`w-full rounded-3xl bg-white border border-[#E2E0D0] shadow-lg overflow-hidden bg-islamic-diamond-subtle transition-all duration-400 ${
+            isAnimating ? 'opacity-85 scale-[0.99]' : 'opacity-100 scale-100'
+          }`}
+        >
+          {/* Portrait Image Frame */}
+          <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-[#F3F1E6]">
+            {currentMember.photoUrl ? (
+              <img
+                src={currentMember.photoUrl}
+                alt={currentMember.fullName}
+                className="w-full h-full object-cover object-top"
+                loading="eager"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
+                <span className="text-4xl font-serif font-bold">{getInitials(currentMember.fullName)}</span>
+                <User className="w-7 h-7 mt-2 opacity-40" />
+              </div>
+            )}
+
+            {/* Position Pill Floating on Bottom Left */}
+            <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#6B6A45] text-white shadow-md">
+              {currentMember.position}
+            </div>
+
+            {/* Term Period Floating on Bottom Right */}
+            {currentMember.termPeriod && (
+              <div className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 backdrop-blur-xs border border-[#E2E0D0] text-slate-700 shadow-xs flex items-center space-x-1">
+                <Calendar className="w-3 h-3 text-[#8C8A58]" />
+                <span>{currentMember.termPeriod}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Member Details */}
+          <div className="p-5 sm:p-6 space-y-3">
+            <div>
+              <h3 className="text-lg sm:text-xl font-bold font-serif text-[#232215] tracking-tight">
+                {currentMember.fullName}
+              </h3>
+              {currentMember.qualification && (
+                <div className="text-xs sm:text-sm font-semibold text-[#6B6A45] mt-0.5 flex items-center space-x-1.5">
+                  <Award className="w-3.5 h-3.5 text-[#8C8A58] shrink-0" />
+                  <span>{currentMember.qualification}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Quote / Message */}
+            <div className="relative pl-3 border-l-2 border-[#6B6A45]/40 py-1">
+              <p className="text-xs sm:text-sm text-[#232215] italic leading-relaxed line-clamp-4">
+                {currentMember.messageOrBio
+                  ? `"${currentMember.messageOrBio}"`
+                  : '"Devoted to preserving sacred Islamic knowledge, nurturing steadfast character, and serving the community with vision and integrity."'}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Navigation Controls & Avatar Row */}
+        {totalMembers > 1 && (
+          <div className="mt-5 space-y-3.5">
+            {/* Prev/Next and Counter */}
             <div className="flex items-center justify-center space-x-4">
               <button
                 type="button"
                 onClick={handlePrev}
                 disabled={isAnimating}
                 aria-label="Previous Executive Member"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="w-9 h-9 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
               >
-                <ChevronLeft className="w-5 h-5" />
+                <ChevronLeft className="w-4 h-4" />
               </button>
 
               <span className="text-xs font-semibold text-slate-600 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">
@@ -275,41 +399,39 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                 onClick={handleNext}
                 disabled={isAnimating}
                 aria-label="Next Executive Member"
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                className="w-9 h-9 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
               >
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Horizontal Touch-Friendly Member Avatar Selector Row */}
-            <div className="w-full overflow-x-auto no-scrollbar py-2 px-1 flex items-center justify-center">
-              <div className="inline-flex items-center space-x-2 sm:space-x-3">
+            {/* Circular Avatar Selector Bar */}
+            <div className="w-full overflow-x-auto no-scrollbar py-1 px-1 flex items-center justify-center">
+              <div className="inline-flex items-center space-x-2">
                 {members.map((member, idx) => {
                   const isCurrent = idx === activeIndex;
                   return (
                     <button
-                      key={member.id}
+                      key={`mob-avatar-${member.id}-${idx}`}
                       type="button"
                       onClick={() => handleSelectMember(idx)}
-                      className={`group relative flex flex-col items-center shrink-0 p-1 rounded-xl transition-all ${
-                        isCurrent
-                          ? 'scale-110 opacity-100'
-                          : 'opacity-60 hover:opacity-100 hover:scale-105'
+                      className={`relative shrink-0 p-0.5 rounded-xl transition-all ${
+                        isCurrent ? 'scale-110 opacity-100' : 'opacity-60 hover:opacity-100'
                       }`}
                       title={`${member.fullName} (${member.position})`}
                     >
                       <div
-                        className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl overflow-hidden bg-[#F4F3EC] flex items-center justify-center border-2 transition-all ${
+                        className={`w-11 h-11 rounded-xl overflow-hidden bg-[#F3F1E6] flex items-center justify-center border-2 transition-all ${
                           isCurrent
                             ? 'border-[#6B6A45] ring-2 ring-[#6B6A45]/30 shadow-sm'
-                            : 'border-[#E2E0D0] group-hover:border-[#8C8A58]'
+                            : 'border-[#E2E0D0]'
                         }`}
                       >
                         {member.photoUrl ? (
                           <img
                             src={member.photoUrl}
                             alt={member.fullName}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover object-top"
                           />
                         ) : (
                           <span className="text-[11px] font-bold text-[#6B6A45]">
@@ -317,13 +439,6 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                           </span>
                         )}
                       </div>
-                      <span
-                        className={`text-[10px] font-semibold mt-1 max-w-[64px] truncate text-center ${
-                          isCurrent ? 'text-[#6B6A45] font-bold' : 'text-slate-500'
-                        }`}
-                      >
-                        {member.fullName.split(' ')[0]}
-                      </span>
                     </button>
                   );
                 })}

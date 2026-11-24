@@ -241,19 +241,19 @@ export default function SuperAdminAiSubscriptionsPage() {
   );
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-3.5 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 overflow-x-clip">
       {/* Header */}
-      <div className="bg-white rounded-3xl p-6 border border-[#E7E9EE] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs">
+      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#0F172A] text-[#37C6A3] flex items-center justify-center font-bold shadow-xs shrink-0">
             <Sparkles className="w-6 h-6" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-extrabold text-[#0F172A] tracking-tight">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-lg sm:text-xl font-extrabold text-[#0F172A] tracking-tight">
                 AI Subscriptions & Activation Center
               </h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0F172A] text-white">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#0F172A] text-white shrink-0">
                 Super Admin
               </span>
             </div>
@@ -265,7 +265,7 @@ export default function SuperAdminAiSubscriptionsPage() {
 
         <button
           onClick={loadRequests}
-          className="px-4 py-2 text-xs font-semibold rounded-xl border border-[#E7E9EE] hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer self-start md:self-auto"
+          className="px-4 py-2 text-xs font-semibold rounded-xl border border-[#E7E9EE] hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto shrink-0"
         >
           <RefreshCw className="w-3.5 h-3.5 text-[#7C8A9A]" />
           <span>Refresh</span>
@@ -273,47 +273,49 @@ export default function SuperAdminAiSubscriptionsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-2">
-        <button
-          onClick={() => setActiveTab('requests')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
-            activeTab === 'requests'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Receipt className="w-4 h-4" />
-          <span>Bank Payment Requests</span>
-          {pagination.totalCount > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#37C6A3] text-[#0F172A] font-extrabold">
-              {pagination.totalCount}
-            </span>
-          )}
-        </button>
+      <div className="w-full overflow-x-auto no-scrollbar pb-1">
+        <div className="flex items-center gap-2 border-b border-[#E7E9EE] pb-2 min-w-max">
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+              activeTab === 'requests'
+                ? 'bg-[#0F172A] text-white shadow-xs'
+                : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
+            }`}
+          >
+            <Receipt className="w-4 h-4" />
+            <span>Bank Payment Requests</span>
+            {pagination.totalCount > 0 && (
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-[#37C6A3] text-[#0F172A] font-extrabold">
+                {pagination.totalCount}
+              </span>
+            )}
+          </button>
 
-        <button
-          onClick={() => setActiveTab('madrasas')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
-            activeTab === 'madrasas'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Building2 className="w-4 h-4" />
-          <span>Madrasa AI Overrides</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('madrasas')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+              activeTab === 'madrasas'
+                ? 'bg-[#0F172A] text-white shadow-xs'
+                : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>Madrasa AI Overrides</span>
+          </button>
 
-        <button
-          onClick={() => setActiveTab('settings')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer ${
-            activeTab === 'settings'
-              ? 'bg-[#0F172A] text-white shadow-xs'
-              : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
-          }`}
-        >
-          <Landmark className="w-4 h-4" />
-          <span>Pricing & Bank Settings</span>
-        </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2.5 rounded-2xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+              activeTab === 'settings'
+                ? 'bg-[#0F172A] text-white shadow-xs'
+                : 'text-[#7C8A9A] hover:text-[#0F172A] hover:bg-white'
+            }`}
+          >
+            <Landmark className="w-4 h-4" />
+            <span>Pricing & Bank Settings</span>
+          </button>
+        </div>
       </div>
 
       {/* ========================================================================= */}
@@ -366,8 +368,8 @@ export default function SuperAdminAiSubscriptionsPage() {
                 <p className="text-xs mt-1">There are currently no AI subscription requests matching this filter.</p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-left text-xs min-w-[640px]">
                   <thead className="bg-[#F7F6F1] border-b border-[#E7E9EE] text-[#7C8A9A] uppercase tracking-wider text-[10px]">
                     <tr>
                       <th className="py-3 px-4 font-bold">Madrasa Tenant</th>
@@ -518,61 +520,63 @@ export default function SuperAdminAiSubscriptionsPage() {
                 <span className="text-xs">No Madrasas found.</span>
               </div>
             ) : (
-              <table className="w-full text-left text-xs">
-                <thead className="bg-[#F7F6F1] border-b border-[#E7E9EE] text-[#7C8A9A] uppercase tracking-wider text-[10px]">
-                  <tr>
-                    <th className="py-3 px-4 font-bold">Madrasa</th>
-                    <th className="py-3 px-4 font-bold">Code</th>
-                    <th className="py-3 px-4 font-bold">AI Status</th>
-                    <th className="py-3 px-4 font-bold">AI Expiry Date</th>
-                    <th className="py-3 px-4 font-bold text-right">Direct Toggle</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E7E9EE]">
-                  {filteredMadrasas.map((m) => {
-                    const isAiOn = Boolean(m.aiEnabled);
-                    const isToggling = togglingId === m.id;
-                    const isExpired = Boolean(m.aiExpiresAt && new Date(m.aiExpiresAt) < new Date());
+              <div className="w-full overflow-x-auto">
+                <table className="w-full text-left text-xs min-w-[540px]">
+                  <thead className="bg-[#F7F6F1] border-b border-[#E7E9EE] text-[#7C8A9A] uppercase tracking-wider text-[10px]">
+                    <tr>
+                      <th className="py-3 px-4 font-bold">Madrasa</th>
+                      <th className="py-3 px-4 font-bold">Code</th>
+                      <th className="py-3 px-4 font-bold">AI Status</th>
+                      <th className="py-3 px-4 font-bold">AI Expiry Date</th>
+                      <th className="py-3 px-4 font-bold text-right">Direct Toggle</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#E7E9EE]">
+                    {filteredMadrasas.map((m) => {
+                      const isAiOn = Boolean(m.aiEnabled);
+                      const isToggling = togglingId === m.id;
+                      const isExpired = Boolean(m.aiExpiresAt && new Date(m.aiExpiresAt) < new Date());
 
-                    return (
-                      <tr key={m.id} className="hover:bg-slate-50/60 transition">
-                        <td className="py-3.5 px-4 font-bold text-[#0F172A]">{m.name}</td>
-                        <td className="py-3.5 px-4 font-mono text-[#7C8A9A]">{m.code}</td>
-                        <td className="py-3.5 px-4">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                              isAiOn && !isExpired
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : isExpired
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            {isAiOn && !isExpired ? 'ACTIVE ✅' : isExpired ? 'EXPIRED ⏳' : 'DISABLED 🔒'}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 font-mono text-[11px] text-[#7C8A9A]">
-                          {m.aiExpiresAt ? new Date(m.aiExpiresAt).toLocaleDateString() : '—'}
-                        </td>
-                        <td className="py-3.5 px-4 text-right">
-                          <button
-                            type="button"
-                            disabled={isToggling}
-                            onClick={() => handleToggleMadrasa(m, !isAiOn)}
-                            className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer disabled:opacity-50 ${
-                              isAiOn
-                                ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
-                                : 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
-                            }`}
-                          >
-                            {isToggling ? 'Updating...' : isAiOn ? 'Disable AI' : 'Enable AI'}
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                      return (
+                        <tr key={m.id} className="hover:bg-slate-50/60 transition">
+                          <td className="py-3.5 px-4 font-bold text-[#0F172A]">{m.name}</td>
+                          <td className="py-3.5 px-4 font-mono text-[#7C8A9A]">{m.code}</td>
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                                isAiOn && !isExpired
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : isExpired
+                                  ? 'bg-amber-100 text-amber-800'
+                                  : 'bg-slate-100 text-slate-600'
+                              }`}
+                            >
+                              {isAiOn && !isExpired ? 'ACTIVE ✅' : isExpired ? 'EXPIRED ⏳' : 'DISABLED 🔒'}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 font-mono text-[11px] text-[#7C8A9A]">
+                            {m.aiExpiresAt ? new Date(m.aiExpiresAt).toLocaleDateString() : '—'}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <button
+                              type="button"
+                              disabled={isToggling}
+                              onClick={() => handleToggleMadrasa(m, !isAiOn)}
+                              className={`px-3 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer disabled:opacity-50 ${
+                                isAiOn
+                                  ? 'bg-red-50 text-red-600 border border-red-200 hover:bg-red-100'
+                                  : 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
+                              }`}
+                            >
+                              {isToggling ? 'Updating...' : isAiOn ? 'Disable AI' : 'Enable AI'}
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

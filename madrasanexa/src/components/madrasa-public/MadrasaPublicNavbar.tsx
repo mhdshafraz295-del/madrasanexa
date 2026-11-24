@@ -130,26 +130,26 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
 
   return (
     <header
-      className={`sticky top-0 z-40 transition-all duration-300 print:hidden ${
+      className={`sticky top-0 z-40 transition-all duration-300 print:hidden w-full max-w-full overflow-x-clip ${
         scrolled
           ? 'shadow-xs border-b border-[#E5E5DF] backdrop-blur-md'
           : 'border-b border-[#E5E5DF]'
       }`}
       style={{ backgroundColor: navBg }}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="h-20 flex items-center justify-between gap-2 sm:gap-4">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 w-full">
+        <div className="h-16 sm:h-20 flex items-center justify-between gap-1.5 sm:gap-4 w-full">
 
           {/* Brand Logo & Institution Name */}
           <Link
             to={`/madrasa/${slug}`}
-            className="flex items-center space-x-2.5 sm:space-x-3.5 group focus:outline-hidden focus:ring-2 rounded-xl p-1 -m-1 transition-transform min-w-0 max-w-[260px] sm:max-w-xs md:max-w-sm lg:max-w-xs xl:max-w-sm 2xl:max-w-md shrink-0"
+            className="flex items-center space-x-2 sm:space-x-3 group focus:outline-hidden focus:ring-2 rounded-xl p-1 -m-1 transition-transform flex-1 min-w-0 overflow-hidden md:flex-initial md:max-w-sm lg:max-w-xs xl:max-w-sm 2xl:max-w-md md:shrink-0"
           >
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt={madrasaName}
-                className="w-10 h-10 sm:w-12 sm:h-12 object-contain rounded-xl border border-[#E5E5DF] bg-white p-1 shadow-xs transition-transform group-hover:scale-102 shrink-0"
+                className="w-9 h-9 sm:w-11 sm:h-11 object-contain rounded-xl border border-[#E5E5DF] bg-white p-1 shadow-xs transition-transform group-hover:scale-102 shrink-0"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   const fallback = e.currentTarget.parentElement?.querySelector('.logo-fallback-avatar');
@@ -159,7 +159,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
             ) : null}
 
             <div
-              className={`logo-fallback-avatar w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white shadow-xs font-bold text-sm sm:text-lg border border-white/20 shrink-0 ${
+              className={`logo-fallback-avatar w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center text-white shadow-xs font-bold text-xs sm:text-base border border-white/20 shrink-0 ${
                 logoUrl ? 'hidden' : 'flex'
               }`}
               style={{ backgroundColor: primaryColor }}
@@ -167,8 +167,8 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
               {initials || madrasaName.slice(0, 2).toUpperCase() || 'AM'}
             </div>
 
-            <div className="flex flex-col justify-center min-w-0">
-              <span className="font-serif font-bold text-sm sm:text-base lg:text-lg xl:text-xl tracking-tight leading-tight truncate text-[#252525]">
+            <div className="flex flex-col justify-center min-w-0 overflow-hidden">
+              <span className="font-serif font-bold text-xs sm:text-base lg:text-lg xl:text-xl tracking-tight leading-tight truncate text-[#252525]">
                 {madrasaName}
               </span>
               <div className="flex items-center space-x-2 mt-0.5 hidden sm:flex">
@@ -272,21 +272,21 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
           </nav>
 
           {/* Right Action: Admissions CTA & Mobile Hamburger */}
-          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          <div className="shrink-0 flex items-center gap-1.5 sm:gap-2.5">
             <Link
               to={`/madrasa/${slug}/admissions`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4.5 sm:py-2 rounded-xl text-xs font-semibold shadow-xs whitespace-nowrap shrink-0 transition-all hover:opacity-95"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs sm:px-3.5 sm:py-2 sm:text-sm font-semibold rounded-xl shadow-xs whitespace-nowrap shrink-0 transition-all hover:opacity-95"
               style={{
                 backgroundColor: primaryColor,
                 color: theme.primaryBtnText || '#ffffff',
               }}
             >
-              <GraduationCap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0" />
+              <GraduationCap className="w-3.5 h-3.5 text-white shrink-0" />
               <span>Admissions</span>
               {hasActiveAdmissions && (
-                <span className="flex h-2 w-2 relative shrink-0">
+                <span className="flex h-1.5 w-1.5 sm:h-2 sm:w-2 relative shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-white" />
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 sm:h-2 sm:w-2 bg-white" />
                 </span>
               )}
             </Link>
@@ -299,7 +299,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
               aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={mobileMenuOpen}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-[#252525] shrink-0" /> : <Menu className="w-5 h-5 text-[#252525] shrink-0" />}
+              {mobileMenuOpen ? <X className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-[#252525] shrink-0" /> : <Menu className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-[#252525] shrink-0" />}
             </button>
           </div>
         </div>

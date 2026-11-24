@@ -1,5 +1,15 @@
 import { prisma } from '../lib/prisma.js';
-import { NotFoundError, BadRequestError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError, ForbiddenError } from '../utils/errors.js';
+
+/**
+ * Asserts and guarantees valid madrasa tenant ID for strict multi-tenant isolation.
+ */
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 
 /**
  * Helper to normalize and synchronize multiple qualifications
@@ -205,8 +215,10 @@ export async function submitPublicAlumni(madrasaCode, payload) {
  * Madrasa Admin: List Alumni & Scholars Hub directory + KPIs
  */
 export async function getMadrasaAdminAlumniHub(madrasaId, query = {}) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const madrasa = await prisma.madrasa.findUnique({
-    where: { id: madrasaId },
+    where: { id: validTenantId },
     select: {
       id: true,
       code: true,
@@ -222,7 +234,7 @@ export async function getMadrasaAdminAlumniHub(madrasaId, query = {}) {
 
   const { status, batchYear, classOrDivision, search } = query;
 
-  const where = { madrasaId };
+  const where = { madrasaId: validTenantId };
 
   if (status && status !== 'ALL') {
     where.approvalStatus = status;
@@ -253,7 +265,7 @@ export async function getMadrasaAdminAlumniHub(madrasaId, query = {}) {
       ],
     }),
     prisma.alumniScholar.findMany({
-      where: { madrasaId },
+      where: { madrasaId: validTenantId },
       select: {
         id: true,
         approvalStatus: true,
@@ -307,8 +319,10 @@ export async function getMadrasaAdminAlumniHub(madrasaId, query = {}) {
  * Madrasa Admin: Toggle website visibility
  */
 export async function toggleWebsiteVisibility(madrasaId, showAlumniOnWebsite) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const updated = await prisma.madrasa.update({
-    where: { id: madrasaId },
+    where: { id: validTenantId },
     data: {
       showAlumniOnWebsite: Boolean(showAlumniOnWebsite),
     },
@@ -325,6 +339,7 @@ export async function toggleWebsiteVisibility(madrasaId, showAlumniOnWebsite) {
  * Madrasa Admin: Create Scholar Profile
  */
 export async function adminCreateScholar(madrasaId, payload, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const { qualification, university, qualificationsList } = normalizeQualifications(payload, true);
 
   const batchYear = (payload.batchYear || payload.year || '').trim();
@@ -351,7 +366,7 @@ export async function adminCreateScholar(madrasaId, payload, userId) {
 
   const created = await prisma.alumniScholar.create({
     data: {
-      madrasaId,
+      madrasaId: validTenantId,
       fullName: payload.fullName.trim(),
       photoUrl: payload.photoUrl ? payload.photoUrl.trim() : null,
       batchYear,
@@ -387,8 +402,14 @@ export async function adminCreateScholar(madrasaId, payload, userId) {
  * Madrasa Admin: Update Scholar Profile
  */
 export async function adminUpdateScholar(madrasaId, id, payload) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!id || typeof id !== 'string' || !id.trim()) {
+    throw new BadRequestError('Scholar identifier is required.');
+  }
+  const cleanId = id.trim();
+
   const existing = await prisma.alumniScholar.findFirst({
-    where: { id, madrasaId },
+    where: { id: cleanId, madrasaId: validTenantId },
   });
 
   if (!existing) {
@@ -444,8 +465,11 @@ export async function adminUpdateScholar(madrasaId, id, payload) {
   if (payload.approvalStatus !== undefined) updateData.approvalStatus = payload.approvalStatus;
   if (payload.isFeatured !== undefined) updateData.isFeatured = Boolean(payload.isFeatured);
 
+  // Security: Prevent modifying tenant ownership under any circumstances
+  delete updateData.madrasaId;
+
   const updated = await prisma.alumniScholar.update({
-    where: { id },
+    where: { id: existing.id },
     data: updateData,
   });
 
@@ -456,8 +480,14 @@ export async function adminUpdateScholar(madrasaId, id, payload) {
  * Madrasa Admin: Update Status (Approve / Reject / Toggle Feature)
  */
 export async function adminUpdateScholarStatus(madrasaId, id, { approvalStatus, isFeatured }, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!id || typeof id !== 'string' || !id.trim()) {
+    throw new BadRequestError('Scholar identifier is required.');
+  }
+  const cleanId = id.trim();
+
   const existing = await prisma.alumniScholar.findFirst({
-    where: { id, madrasaId },
+    where: { id: cleanId, madrasaId: validTenantId },
   });
 
   if (!existing) {
@@ -475,7 +505,7 @@ export async function adminUpdateScholarStatus(madrasaId, id, { approvalStatus, 
   }
 
   const updated = await prisma.alumniScholar.update({
-    where: { id },
+    where: { id: existing.id },
     data,
   });
 
@@ -486,8 +516,14 @@ export async function adminUpdateScholarStatus(madrasaId, id, { approvalStatus, 
  * Madrasa Admin: Delete Scholar
  */
 export async function adminDeleteScholar(madrasaId, id) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!id || typeof id !== 'string' || !id.trim()) {
+    throw new BadRequestError('Scholar identifier is required.');
+  }
+  const cleanId = id.trim();
+
   const existing = await prisma.alumniScholar.findFirst({
-    where: { id, madrasaId },
+    where: { id: cleanId, madrasaId: validTenantId },
   });
 
   if (!existing) {
@@ -495,7 +531,7 @@ export async function adminDeleteScholar(madrasaId, id) {
   }
 
   await prisma.alumniScholar.delete({
-    where: { id },
+    where: { id: existing.id },
   });
 
   return { success: true, message: 'Profile deleted successfully.' };
@@ -505,9 +541,11 @@ export async function adminDeleteScholar(madrasaId, id) {
  * Teacher Portal: Get read-only list of approved alumni
  */
 export async function getTeacherAlumni(madrasaId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const alumni = await prisma.alumniScholar.findMany({
     where: {
-      madrasaId,
+      madrasaId: validTenantId,
       approvalStatus: 'APPROVED',
     },
     orderBy: [

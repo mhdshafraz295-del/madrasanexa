@@ -9,9 +9,16 @@ import {
 } from './r2.service.js';
 import { isR2Configured } from '../config/r2.js';
 import { generateInitials } from './branding.service.js';
-import { NotFoundError, BadRequestError, AppError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError, AppError, ForbiddenError } from '../utils/errors.js';
 import { logTenantActivity } from './tenant.service.js';
 import { DEFAULT_THEME_TOKENS } from './madrasa-theme.service.js';
+
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 
 const ALLOWED_HERO_FORMATS = new Set(['jpeg', 'png', 'webp']);
 const MAX_HERO_UPLOAD_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -287,12 +294,14 @@ export function buildDeterministicSummary({
  * Retrieves the Madrasa Profile for a tenant, initializing a default draft if none exists.
  */
 export async function getTenantProfile(madrasaId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   let profile = await prisma.madrasaProfile.findUnique({
-    where: { madrasaId }
+    where: { madrasaId: validTenantId }
   });
 
   const madrasa = await prisma.madrasa.findUnique({
-    where: { id: madrasaId },
+    where: { id: validTenantId },
     include: {
       settings: true
     }
@@ -937,6 +946,8 @@ export async function uploadHeroImage(
   ipAddress = null,
   userAgent = null
 ) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   if (!fileBuffer || !Buffer.isBuffer(fileBuffer) || fileBuffer.length === 0) {
     throw new BadRequestError('No image file provided. Please upload a valid image.');
   }
@@ -1112,8 +1123,10 @@ export async function removeHeroImage(
   ipAddress = null,
   userAgent = null
 ) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const profile = await prisma.madrasaProfile.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     select: { id: true, heroImageFileId: true },
   });
 
@@ -1209,6 +1222,8 @@ export async function uploadHomepagePoster(
   ipAddress = null,
   userAgent = null
 ) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   if (!fileBuffer || !Buffer.isBuffer(fileBuffer) || fileBuffer.length === 0) {
     throw new BadRequestError('No image file provided. Please upload a valid image.');
   }
@@ -1337,6 +1352,8 @@ export async function uploadHomepagePoster(
  * Removes a homepage poster and safely deletes the R2 object.
  */
 export async function removeHomepagePoster(madrasaId, fileId, userId = null, ipAddress = null, userAgent = null) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   if (!fileId) {
     throw new BadRequestError('fileId is required.');
   }
@@ -1344,7 +1361,7 @@ export async function removeHomepagePoster(madrasaId, fileId, userId = null, ipA
   const fileObject = await prisma.fileObject.findFirst({
     where: {
       id: fileId,
-      madrasaId,
+      madrasaId: validTenantId,
     },
   });
 
@@ -1390,6 +1407,8 @@ export async function uploadEventImages(
   ipAddress = null,
   userAgent = null
 ) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   if (!files || !Array.isArray(files) || files.length === 0) {
     throw new BadRequestError('No image files provided.');
   }
@@ -1401,7 +1420,7 @@ export async function uploadEventImages(
   const results = [];
   for (const file of files) {
     const singleResult = await uploadHomepagePoster(
-      madrasaId,
+      validTenantId,
       file.buffer,
       file.originalname,
       userId,

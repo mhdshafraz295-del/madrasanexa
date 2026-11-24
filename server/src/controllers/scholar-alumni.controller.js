@@ -6,6 +6,26 @@ import {
   updateScholarStatusSchema,
   toggleWebsiteVisibilitySchema,
 } from '../validations/scholar-alumni.validation.js';
+import { ForbiddenError } from '../utils/errors.js';
+
+/**
+ * Extracts and strictly validates the tenant madrasa context.
+ * Guaranteed to return a non-empty string madrasaId, or throws ForbiddenError (403).
+ */
+function getTenantMadrasaId(req) {
+  const madrasaId =
+    req.tenant?.madrasaId ||
+    req.tenant?.id ||
+    req.auth?.madrasaId ||
+    req.user?.madrasaId ||
+    req.teacher?.madrasaId;
+
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Tenant madrasa context is missing or unauthorized.');
+  }
+
+  return madrasaId.trim();
+}
 
 export async function getPublicAlumniList(req, res, next) {
   try {
@@ -37,7 +57,7 @@ export async function submitPublicAlumniProfile(req, res, next) {
 
 export async function getAdminAlumniHub(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const result = await scholarAlumniService.getMadrasaAdminAlumniHub(madrasaId, req.query);
     return res.status(200).json({
       success: true,
@@ -50,7 +70,7 @@ export async function getAdminAlumniHub(req, res, next) {
 
 export async function toggleWebsiteVisibility(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = toggleWebsiteVisibilitySchema.parse(req.body);
     const result = await scholarAlumniService.toggleWebsiteVisibility(
       madrasaId,
@@ -68,8 +88,8 @@ export async function toggleWebsiteVisibility(req, res, next) {
 
 export async function createAdminScholar(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
-    const userId = req.auth?.userId || req.user?.id;
+    const madrasaId = getTenantMadrasaId(req);
+    const userId = req.auth?.userId || req.user?.id || null;
     const validated = adminCreateScholarSchema.parse(req.body);
     const created = await scholarAlumniService.adminCreateScholar(madrasaId, validated, userId);
     return res.status(201).json({
@@ -84,7 +104,7 @@ export async function createAdminScholar(req, res, next) {
 
 export async function updateAdminScholar(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const { id } = req.params;
     const validated = adminUpdateScholarSchema.parse(req.body);
     const updated = await scholarAlumniService.adminUpdateScholar(madrasaId, id, validated);
@@ -100,8 +120,8 @@ export async function updateAdminScholar(req, res, next) {
 
 export async function updateAdminScholarStatus(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
-    const userId = req.auth?.userId || req.user?.id;
+    const madrasaId = getTenantMadrasaId(req);
+    const userId = req.auth?.userId || req.user?.id || null;
     const { id } = req.params;
     const validated = updateScholarStatusSchema.parse(req.body);
     const updated = await scholarAlumniService.adminUpdateScholarStatus(
@@ -122,7 +142,7 @@ export async function updateAdminScholarStatus(req, res, next) {
 
 export async function deleteAdminScholar(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const { id } = req.params;
     const result = await scholarAlumniService.adminDeleteScholar(madrasaId, id);
     return res.status(200).json(result);
@@ -133,7 +153,7 @@ export async function deleteAdminScholar(req, res, next) {
 
 export async function getTeacherAlumniList(req, res, next) {
   try {
-    const madrasaId = req.user?.madrasaId || req.teacher?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const alumni = await scholarAlumniService.getTeacherAlumni(madrasaId);
     return res.status(200).json({
       success: true,

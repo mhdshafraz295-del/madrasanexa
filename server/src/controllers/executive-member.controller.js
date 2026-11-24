@@ -1,5 +1,6 @@
 import multer from 'multer';
 import * as executiveService from '../services/executive-member.service.js';
+import { ForbiddenError } from '../utils/errors.js';
 
 // Configure Multer for executive photo memory storage with 5 MB hard limit
 const upload = multer({
@@ -35,10 +36,27 @@ export const uploadExecutivePhotoMiddleware = (req, res, next) => {
   });
 };
 
+/**
+ * Extracts and strictly validates tenant madrasa ID.
+ */
+function getTenantMadrasaId(req) {
+  const madrasaId =
+    req.tenant?.madrasaId ||
+    req.tenant?.id ||
+    req.auth?.madrasaId ||
+    req.user?.madrasaId;
+
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Tenant madrasa context is missing or unauthorized.');
+  }
+
+  return madrasaId.trim();
+}
+
 export async function uploadExecutivePhoto(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
-    const userId = req.auth?.userId || req.user?.id;
+    const madrasaId = getTenantMadrasaId(req);
+    const userId = req.auth?.userId || req.user?.id || null;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');
 
@@ -66,7 +84,7 @@ export async function uploadExecutivePhoto(req, res, next) {
 
 export async function listExecutiveMembers(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const members = await executiveService.listExecutiveMembers(madrasaId, req.query);
     return res.status(200).json({
       success: true,
@@ -79,7 +97,7 @@ export async function listExecutiveMembers(req, res, next) {
 
 export async function getExecutiveMemberById(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const { id } = req.params;
     const member = await executiveService.getExecutiveMemberById(madrasaId, id);
     return res.status(200).json({
@@ -93,8 +111,8 @@ export async function getExecutiveMemberById(req, res, next) {
 
 export async function createExecutiveMember(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
-    const userId = req.auth?.userId || req.user?.id;
+    const madrasaId = getTenantMadrasaId(req);
+    const userId = req.auth?.userId || req.user?.id || null;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');
 
@@ -118,9 +136,9 @@ export async function createExecutiveMember(req, res, next) {
 
 export async function updateExecutiveMember(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const { id } = req.params;
-    const userId = req.auth?.userId || req.user?.id;
+    const userId = req.auth?.userId || req.user?.id || null;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');
 
@@ -145,9 +163,9 @@ export async function updateExecutiveMember(req, res, next) {
 
 export async function deleteExecutiveMember(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const { id } = req.params;
-    const userId = req.auth?.userId || req.user?.id;
+    const userId = req.auth?.userId || req.user?.id || null;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');
 

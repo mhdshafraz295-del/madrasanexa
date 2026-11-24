@@ -8,8 +8,15 @@ import {
   resolveObjectAccessUrl,
 } from './r2.service.js';
 import { isR2Configured } from '../config/r2.js';
-import { AppError, BadRequestError, NotFoundError } from '../utils/errors.js';
+import { AppError, BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors.js';
 import { logTenantActivity } from './tenant.service.js';
+
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_PHOTO_FORMATS = new Set(['jpeg', 'png', 'webp']);
@@ -23,7 +30,9 @@ const sanitizeFilename = (name) => {
  * List executive members for a specific madrasa with optional active filter.
  */
 export async function listExecutiveMembers(madrasaId, { isActive } = {}) {
-  const where = { madrasaId };
+  const validTenantId = assertValidTenantId(madrasaId);
+
+  const where = { madrasaId: validTenantId };
   if (typeof isActive === 'boolean') {
     where.isActive = isActive;
   } else if (isActive === 'true') {
@@ -47,7 +56,7 @@ export async function listExecutiveMembers(madrasaId, { isActive } = {}) {
       if (m.photoFileId) {
         try {
           const file = await prisma.fileObject.findFirst({
-            where: { id: m.photoFileId, madrasaId },
+            where: { id: m.photoFileId, madrasaId: validTenantId },
             select: { objectKey: true, publicUrl: true },
           });
           if (file) {
@@ -71,8 +80,14 @@ export async function listExecutiveMembers(madrasaId, { isActive } = {}) {
  * Get an executive member by ID (tenant isolated).
  */
 export async function getExecutiveMemberById(madrasaId, id) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!id || typeof id !== 'string' || !id.trim()) {
+    throw new BadRequestError('Executive member identifier is required.');
+  }
+  const cleanId = id.trim();
+
   const member = await prisma.executiveMember.findFirst({
-    where: { id, madrasaId },
+    where: { id: cleanId, madrasaId: validTenantId },
   });
 
   if (!member) {
@@ -83,7 +98,7 @@ export async function getExecutiveMemberById(madrasaId, id) {
   if (member.photoFileId) {
     try {
       const file = await prisma.fileObject.findFirst({
-        where: { id: member.photoFileId, madrasaId },
+        where: { id: member.photoFileId, madrasaId: validTenantId },
         select: { objectKey: true, publicUrl: true },
       });
       if (file) {
@@ -104,6 +119,8 @@ export async function getExecutiveMemberById(madrasaId, id) {
  * Create a new executive member.
  */
 export async function createExecutiveMember(madrasaId, data, userId = null, ipAddress = null, userAgent = null) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const fullName = typeof data.fullName === 'string' ? data.fullName.trim() : '';
   const position = typeof data.position === 'string' ? data.position.trim() : '';
 
@@ -124,7 +141,7 @@ export async function createExecutiveMember(madrasaId, data, userId = null, ipAd
 
   const newMember = await prisma.executiveMember.create({
     data: {
-      madrasaId,
+      madrasaId: validTenantId,
       fullName: fullName.slice(0, 200),
       position: position.slice(0, 100),
       displayOrder,
@@ -140,7 +157,7 @@ export async function createExecutiveMember(madrasaId, data, userId = null, ipAd
   if (userId) {
     try {
       await logTenantActivity({
-        madrasaId,
+        madrasaId: validTenantId,
         userId,
         action: 'EXECUTIVE_MEMBER_CREATED',
         details: `Executive member created: ${newMember.fullName} (${newMember.position})`,
@@ -159,8 +176,14 @@ export async function createExecutiveMember(madrasaId, data, userId = null, ipAd
  * Update an existing executive member.
  */
 export async function updateExecutiveMember(madrasaId, id, data, userId = null, ipAddress = null, userAgent = null) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!id || typeof id !== 'string' || !id.trim()) {
+    throw new BadRequestError('Executive member identifier is required.');
+  }
+  const cleanId = id.trim();
+
   const existing = await prisma.executiveMember.findFirst({
-    where: { id, madrasaId },
+    where: { id: cleanId, madrasaId: validTenantId },
   });
 
   if (!existing) {
@@ -216,15 +239,18 @@ export async function updateExecutiveMember(madrasaId, id, data, userId = null, 
     updateData.isActive = Boolean(data.isActive);
   }
 
+  // Security: Prevent modifying tenant ownership under any circumstances
+  delete updateData.madrasaId;
+
   const updated = await prisma.executiveMember.update({
-    where: { id },
+    where: { id: existing.id },
     data: updateData,
   });
 
   if (userId) {
     try {
       await logTenantActivity({
-        madrasaId,
+        madrasaId: validTenantId,
         userId,
         action: 'EXECUTIVE_MEMBER_UPDATED',
         details: `Executive member updated: ${updated.fullName}`,
@@ -243,8 +269,14 @@ export async function updateExecutiveMember(madrasaId, id, data, userId = null, 
  * Delete an executive member.
  */
 export async function deleteExecutiveMember(madrasaId, id, userId = null, ipAddress = null, userAgent = null) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!id || typeof id !== 'string' || !id.trim()) {
+    throw new BadRequestError('Executive member identifier is required.');
+  }
+  const cleanId = id.trim();
+
   const existing = await prisma.executiveMember.findFirst({
-    where: { id, madrasaId },
+    where: { id: cleanId, madrasaId: validTenantId },
   });
 
   if (!existing) {
@@ -252,13 +284,13 @@ export async function deleteExecutiveMember(madrasaId, id, userId = null, ipAddr
   }
 
   await prisma.executiveMember.delete({
-    where: { id },
+    where: { id: existing.id },
   });
 
   if (userId) {
     try {
       await logTenantActivity({
-        madrasaId,
+        madrasaId: validTenantId,
         userId,
         action: 'EXECUTIVE_MEMBER_DELETED',
         details: `Executive member deleted: ${existing.fullName} (${existing.position})`,
@@ -284,6 +316,8 @@ export async function uploadExecutivePhoto(
   ipAddress = null,
   userAgent = null
 ) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   if (!fileBuffer || !Buffer.isBuffer(fileBuffer) || fileBuffer.length === 0) {
     throw new BadRequestError('No image file provided. Please upload a valid image.');
   }
@@ -332,7 +366,7 @@ export async function uploadExecutivePhoto(
   }
 
   const uniqueId = `exec_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  const objectKey = buildMadrasaKey(madrasaId, 'executive', `${uniqueId}.webp`);
+  const objectKey = buildMadrasaKey(validTenantId, 'executive', `${uniqueId}.webp`);
 
   try {
     await uploadBufferToR2(objectKey, processedBuffer, 'image/webp');
@@ -347,7 +381,7 @@ export async function uploadExecutivePhoto(
   try {
     fileRecord = await prisma.fileObject.create({
       data: {
-        madrasaId,
+        madrasaId: validTenantId,
         type: 'OTHER',
         objectKey,
         originalName: sanitizeFilename(originalName),
@@ -360,7 +394,7 @@ export async function uploadExecutivePhoto(
     if (userId) {
       try {
         await logTenantActivity({
-          madrasaId,
+          madrasaId: validTenantId,
           userId,
           action: 'EXECUTIVE_PHOTO_UPLOADED',
           details: `Executive photo uploaded (${fileRecord.id}).`,

@@ -1,6 +1,24 @@
 import multer from 'multer';
 import * as profileService from '../services/madrasa-profile.service.js';
 import { updateMadrasaProfileSchema, broadcastNoticeSchema } from '../validations/madrasa-profile.validation.js';
+import { ForbiddenError } from '../utils/errors.js';
+
+/**
+ * Extracts and strictly validates tenant madrasa ID.
+ */
+function getTenantMadrasaId(req) {
+  const madrasaId =
+    req.tenant?.madrasaId ||
+    req.tenant?.id ||
+    req.auth?.madrasaId ||
+    req.user?.madrasaId;
+
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Tenant madrasa context is missing or unauthorized.');
+  }
+
+  return madrasaId.trim();
+}
 
 // Configure Multer for hero image memory storage with 5 MB hard limit
 const upload = multer({
@@ -45,7 +63,7 @@ export const uploadHeroImageMiddleware = (req, res, next) => {
 
 export async function getMyProfile(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const profile = await profileService.getTenantProfile(madrasaId);
 
     return res.status(200).json({
@@ -59,7 +77,7 @@ export async function getMyProfile(req, res, next) {
 
 export async function updateMyProfile(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth.userId;
     const validated = updateMadrasaProfileSchema.parse(req.body);
 
@@ -77,7 +95,7 @@ export async function updateMyProfile(req, res, next) {
 
 export async function generateSummary(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth.userId;
 
     const updated = await profileService.generateProfileSummary(madrasaId, userId);
@@ -94,7 +112,7 @@ export async function generateSummary(req, res, next) {
 
 export async function publishProfile(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth.userId;
 
     const updated = await profileService.publishTenantProfile(madrasaId, userId);
@@ -111,7 +129,7 @@ export async function publishProfile(req, res, next) {
 
 export async function unpublishProfile(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth.userId;
 
     const updated = await profileService.unpublishTenantProfile(madrasaId, userId);
@@ -128,7 +146,7 @@ export async function unpublishProfile(req, res, next) {
 
 export async function broadcastNotice(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth.userId;
     const { noticeId } = broadcastNoticeSchema.parse(req.body);
 
@@ -160,7 +178,7 @@ export async function getPublicMadrasaProfile(req, res, next) {
 
 export async function uploadHeroImage(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');
@@ -189,7 +207,7 @@ export async function uploadHeroImage(req, res, next) {
 
 export async function removeHeroImage(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');
@@ -235,7 +253,7 @@ export const uploadPosterMiddleware = (req, res, next) => {
 
 export async function uploadPoster(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');
@@ -264,7 +282,7 @@ export async function uploadPoster(req, res, next) {
 
 export async function removePoster(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const { fileId } = req.params;
     const userId = req.auth?.userId;
     const ip = req.ip || req.connection?.remoteAddress;
@@ -327,7 +345,7 @@ export const uploadEventImagesMiddleware = (req, res, next) => {
 
 export async function uploadEventImages(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId;
     const ip = req.ip || req.connection?.remoteAddress;
     const ua = req.get('user-agent');

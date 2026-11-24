@@ -1,8 +1,15 @@
 import { prisma } from '../lib/prisma.js';
 import sharp from 'sharp';
-import { uploadBufferToR2, deleteObjectFromR2, isR2Configured, getR2PublicUrl, buildMadrasaKey, resolveObjectAccessUrl } from './r2.service.js';
-import { AppError, BadRequestError, NotFoundError } from '../errors/index.js';
-import { logTenantActivity } from './activity-log.service.js';
+import {
+  uploadBufferToR2,
+  deleteObjectFromR2,
+  getR2PublicUrl,
+  buildMadrasaKey,
+  resolveObjectAccessUrl,
+} from './r2.service.js';
+import { isR2Configured } from '../config/r2.js';
+import { AppError, BadRequestError, NotFoundError } from '../utils/errors.js';
+import { logTenantActivity } from './tenant.service.js';
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_PHOTO_FORMATS = new Set(['jpeg', 'png', 'webp']);

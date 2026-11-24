@@ -139,8 +139,46 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
 
   return (
     <>
-      {/* Dynamic Print-Specific Stylesheet Injection */}
+      {/* Dynamic Print-Specific Stylesheet Injection & Razor-Sharp HD Vector Preview Styles */}
       <style>{`
+        /* HD Preview Antialiasing & Sharp Vector Text Rendering */
+        .id-card-hd-stage {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          text-rendering: optimizeLegibility;
+          image-rendering: -webkit-optimize-contrast;
+          transform: translateZ(0);
+          backface-visibility: hidden;
+        }
+
+        .id-card-stage-vertical {
+          zoom: 1.25;
+        }
+        @media (min-width: 480px) {
+          .id-card-stage-vertical {
+            zoom: 1.42;
+          }
+        }
+        @media (min-width: 640px) {
+          .id-card-stage-vertical {
+            zoom: 1.54;
+          }
+        }
+
+        .id-card-stage-horizontal {
+          zoom: 1.05;
+        }
+        @media (min-width: 480px) {
+          .id-card-stage-horizontal {
+            zoom: 1.24;
+          }
+        }
+        @media (min-width: 640px) {
+          .id-card-stage-horizontal {
+            zoom: 1.48;
+          }
+        }
+
         @media print {
           /* Enforce exact physical page geometry with 0 margins */
           @page {
@@ -435,12 +473,12 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
             )}
 
             {/* Interactive Screen Preview Container with 3D Flip */}
-            <div className="w-full p-4 sm:p-6 bg-gradient-to-b from-stone-50/90 to-stone-100/70 border border-stone-200/90 rounded-2xl flex items-center justify-center shadow-inner overflow-hidden min-h-[320px]">
+            <div className="w-full p-4 sm:p-6 bg-gradient-to-b from-stone-50/90 to-stone-100/70 border border-stone-200/90 rounded-2xl flex items-center justify-center shadow-inner overflow-hidden min-h-[340px]">
               <div
-                className={`transition-all duration-300 transform ${
+                className={`id-card-hd-stage transition-all duration-300 ${
                   orientation === 'vertical'
-                    ? 'scale-95 sm:scale-100 lg:scale-105 my-2'
-                    : 'scale-100 sm:scale-110 lg:scale-115 my-3'
+                    ? 'id-card-stage-vertical my-2'
+                    : 'id-card-stage-horizontal my-3'
                 }`}
                 style={{
                   transformOrigin: 'center center',
@@ -492,6 +530,7 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
                       madrasaName={madrasaName}
                       madrasaPhone={madrasaPhone}
                       madrasaEmail={madrasaEmail}
+                      logoUrl={logoUrl}
                       tokenHint={tokenHint}
                       rawToken={rawToken}
                       credentialType={credentialType}
@@ -621,6 +660,7 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
                 madrasaName={madrasaName}
                 madrasaPhone={madrasaPhone}
                 madrasaEmail={madrasaEmail}
+                logoUrl={logoUrl}
                 tokenHint={tokenHint}
                 rawToken={rawToken}
                 credentialType={credentialType}
@@ -649,6 +689,7 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
               madrasaName={madrasaName}
               madrasaPhone={madrasaPhone}
               madrasaEmail={madrasaEmail}
+              logoUrl={logoUrl}
               tokenHint={tokenHint}
               rawToken={rawToken}
               credentialType={credentialType}

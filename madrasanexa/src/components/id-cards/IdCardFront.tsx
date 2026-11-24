@@ -110,6 +110,8 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
           borderRadius: '3.18mm',
           boxSizing: 'border-box',
           backgroundColor: '#F6F6F3',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
         }}
         data-card-side="front"
         data-card-orientation="vertical"
@@ -136,14 +138,17 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
 
           {/* Top Brand & Institution Header */}
           <div className="relative z-10 w-full flex items-center justify-between gap-[1.5mm]">
-            {/* Institution Logo */}
+            {/* Institution Logo: Crisp Light-Mode White/Cream Badge */}
             <div
-              className="shrink-0 flex items-center justify-center bg-white/10 rounded-[1.2mm] overflow-hidden border border-[#C5A059]/40"
+              className="shrink-0 flex items-center justify-center bg-white rounded-[1.4mm] overflow-hidden shadow-xs"
               style={{
-                width: '7.2mm',
-                height: '7.2mm',
+                width: '7.8mm',
+                height: '7.8mm',
                 flexShrink: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                backgroundColor: '#FFFFFF',
+                border: '0.45mm solid #C5A059',
+                padding: '0.4mm',
+                boxSizing: 'border-box',
               }}
             >
               {logoUrl && !logoFailed ? (
@@ -151,10 +156,11 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
                   src={logoUrl}
                   alt={madrasaName}
                   onError={() => setLogoFailed(true)}
-                  className="w-full h-full object-contain p-[0.3mm]"
+                  className="w-full h-full object-contain"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
               ) : (
-                <Building2 className="w-[4.2mm] h-[4.2mm] text-[#C5A059]" />
+                <Building2 className="w-[4.4mm] h-[4.4mm] text-[#193B32]" />
               )}
             </div>
 
@@ -389,6 +395,8 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
         borderRadius: '3.18mm',
         boxSizing: 'border-box',
         backgroundColor: '#F6F6F3',
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
       }}
       data-card-side="front"
       data-card-orientation="horizontal"
@@ -424,14 +432,17 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
           />
 
           <div className="relative z-10 flex items-center gap-[2mm] min-w-0 flex-1">
-            {/* Institution Logo */}
+            {/* Institution Logo: Crisp Light-Mode White/Cream Badge */}
             <div
-              className="shrink-0 flex items-center justify-center bg-white/10 rounded-[1.2mm] overflow-hidden border border-[#C5A059]/40"
+              className="shrink-0 flex items-center justify-center bg-white rounded-[1.4mm] overflow-hidden shadow-xs"
               style={{
-                width: '8.2mm',
-                height: '8.2mm',
+                width: '8.4mm',
+                height: '8.4mm',
                 flexShrink: 0,
-                backgroundColor: 'rgba(255, 255, 255, 0.12)',
+                backgroundColor: '#FFFFFF',
+                border: '0.45mm solid #C5A059',
+                padding: '0.4mm',
+                boxSizing: 'border-box',
               }}
             >
               {logoUrl && !logoFailed ? (
@@ -439,10 +450,11 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
                   src={logoUrl}
                   alt={madrasaName}
                   onError={() => setLogoFailed(true)}
-                  className="w-full h-full object-contain p-[0.3mm]"
+                  className="w-full h-full object-contain"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
               ) : (
-                <Building2 className="w-[5mm] h-[5mm] text-[#C5A059]" />
+                <Building2 className="w-[5.2mm] h-[5.2mm] text-[#193B32]" />
               )}
             </div>
 

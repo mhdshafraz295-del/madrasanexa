@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Phone, Building2, Shield } from 'lucide-react';
 import { StudentQrCode } from './StudentQrCode';
 import { StudentBarcode } from './StudentBarcode';
@@ -14,6 +14,7 @@ export interface IdCardBackProps {
   madrasaPhone?: string | null;
   madrasaEmail?: string | null;
   madrasaAddress?: string | null;
+  logoUrl?: string | null;
   tokenHint?: string | null;
   rawToken?: string | null;
   credentialType?: 'both' | 'qr' | 'barcode';
@@ -66,12 +67,15 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
   madrasaPhone,
   madrasaEmail,
   madrasaAddress: _madrasaAddress,
+  logoUrl,
   tokenHint,
   rawToken,
   credentialType = 'qr',
   orientation = 'horizontal',
   className = '',
 }) => {
+  const [logoFailed, setLogoFailed] = useState(false);
+
   // -------------------------------------------------------------
   // 1. VERTICAL PORTRAIT MODE (53.98mm × 85.60mm)
   // -------------------------------------------------------------
@@ -86,6 +90,8 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
           boxSizing: 'border-box',
           background: 'linear-gradient(180deg, #133129 0%, #193B32 50%, #1E463B 100%)',
           color: '#F6F6F3',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale',
         }}
         data-card-side="back"
         data-card-orientation="vertical"
@@ -122,8 +128,32 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
               borderBottom: '0.6mm solid rgba(197, 160, 89, 0.4)',
             }}
           >
-            <div className="flex items-center gap-[1.2mm] min-w-0 flex-1">
-              <Building2 className="w-[3.6mm] h-[3.6mm] text-[#C5A059] shrink-0" />
+            <div className="flex items-center gap-[1.5mm] min-w-0 flex-1">
+              {/* Institution Logo: Crisp Light-Mode White/Cream Badge */}
+              <div
+                className="shrink-0 flex items-center justify-center bg-white rounded-[1.2mm] overflow-hidden shadow-xs"
+                style={{
+                  width: '5.8mm',
+                  height: '5.8mm',
+                  flexShrink: 0,
+                  backgroundColor: '#FFFFFF',
+                  border: '0.4mm solid #C5A059',
+                  padding: '0.3mm',
+                  boxSizing: 'border-box',
+                }}
+              >
+                {logoUrl && !logoFailed ? (
+                  <img
+                    src={logoUrl}
+                    alt={madrasaName}
+                    onError={() => setLogoFailed(true)}
+                    className="w-full h-full object-contain"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <Building2 className="w-[3.8mm] h-[3.8mm] text-[#193B32]" />
+                )}
+              </div>
               <div className="min-w-0">
                 <h3
                   className="text-white font-extrabold uppercase truncate tracking-tight"
@@ -304,6 +334,8 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
         boxSizing: 'border-box',
         background: 'linear-gradient(135deg, #133129 0%, #193B32 50%, #1E463B 100%)',
         color: '#F6F6F3',
+        WebkitFontSmoothing: 'antialiased',
+        MozOsxFontSmoothing: 'grayscale',
       }}
       data-card-side="back"
       data-card-orientation="horizontal"
@@ -340,8 +372,32 @@ export const IdCardBack: React.FC<IdCardBackProps> = ({
             borderBottom: '0.6mm solid rgba(197, 160, 89, 0.4)',
           }}
         >
-          <div className="flex items-center gap-[1.5mm] min-w-0" style={{ display: 'flex', alignItems: 'center', gap: '1.5mm', minWidth: 0 }}>
-            <Building2 className="w-[3.6mm] h-[3.6mm] text-[#C5A059] shrink-0" />
+          <div className="flex items-center gap-[1.8mm] min-w-0" style={{ display: 'flex', alignItems: 'center', gap: '1.8mm', minWidth: 0 }}>
+            {/* Institution Logo: Crisp Light-Mode White/Cream Badge */}
+            <div
+              className="shrink-0 flex items-center justify-center bg-white rounded-[1.2mm] overflow-hidden shadow-xs"
+              style={{
+                width: '6.0mm',
+                height: '6.0mm',
+                flexShrink: 0,
+                backgroundColor: '#FFFFFF',
+                border: '0.4mm solid #C5A059',
+                padding: '0.3mm',
+                boxSizing: 'border-box',
+              }}
+            >
+              {logoUrl && !logoFailed ? (
+                <img
+                  src={logoUrl}
+                  alt={madrasaName}
+                  onError={() => setLogoFailed(true)}
+                  className="w-full h-full object-contain"
+                  style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                />
+              ) : (
+                <Building2 className="w-[4mm] h-[4mm] text-[#193B32]" />
+              )}
+            </div>
             <h3
               className="text-white font-extrabold uppercase truncate tracking-tight"
               style={{ fontSize: '2.3mm', fontWeight: 700, color: '#FFFFFF', textTransform: 'uppercase', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}

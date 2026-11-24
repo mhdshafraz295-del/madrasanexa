@@ -120,6 +120,27 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
       className="public-section-enter scroll-mt-28 py-8 sm:py-12 overflow-x-clip"
       aria-label="Executive Board & Leadership"
     >
+      {/* Leadership Gold Shimmer & Sheen Keyframes */}
+      <style>{`
+        @keyframes executiveGoldSweep {
+          0% { background-position: 200% center; }
+          100% { background-position: -200% center; }
+        }
+        @keyframes executiveGoldSheen {
+          0% { transform: translateX(-150%); opacity: 0; }
+          25% { opacity: 0.65; }
+          50% { opacity: 0.65; }
+          100% { transform: translateX(250%); opacity: 0; }
+        }
+        .executive-gold-pill-shimmer {
+          background-size: 200% 100%;
+          animation: executiveGoldSweep 4s ease-in-out infinite;
+        }
+        .executive-gold-pill-sheen {
+          animation: executiveGoldSheen 3.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+      `}</style>
+
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 px-4">
         <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#6B6A45] mb-3 px-3.5 py-1 rounded-full bg-[#F4F3EC] border border-[#E2E0D0] shadow-2xs">
@@ -164,11 +185,16 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
 
                 {/* Left Content Pane */}
                 <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between space-y-4 relative z-10">
-                  {/* Badges: Olive-Gold Leadership Crest Pill + Term Period */}
+                  {/* Badges: Animated Antique Gold Leadership Crest Pill + Term Period */}
                   <div className="flex items-center flex-wrap gap-2">
-                    <span className="inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#6B6A45] text-white shadow-xs">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#EFEFD0]" />
-                      <span>{leader.position}</span>
+                    <span className="relative inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#B58D3D] via-[#DFC076] to-[#B58D3D] bg-[length:200%_100%] executive-gold-pill-shimmer text-[#1F1B0E] border border-[#F0D999]/80 shadow-[0_4px_16px_rgba(197,160,89,0.4)] overflow-hidden">
+                      {/* Subtle continuous gold-sweep sheen overlay */}
+                      <span
+                        className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none executive-gold-pill-sheen"
+                        aria-hidden="true"
+                      />
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#1F1B0E] shrink-0 relative z-10" />
+                      <span className="relative z-10">{leader.position}</span>
                     </span>
                     {leader.termPeriod && (
                       <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4F3EC] border border-[#E2E0D0] text-slate-600">

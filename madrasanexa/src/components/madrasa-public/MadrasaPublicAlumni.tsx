@@ -14,6 +14,10 @@ import {
   Filter,
   Loader2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  User,
 } from 'lucide-react';
 import type { MadrasaThemeTokens } from '../../services/api';
 import {
@@ -50,19 +54,19 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
   const [page, setPage] = useState<number>(1);
   const pageSize = 9;
 
+  // Spotlight Stage carousel state
+  const [spotlightIndex, setSpotlightIndex] = useState(0);
+  const [isSpotlightPaused, setIsSpotlightPaused] = useState(false);
+
+  // Royal Scholar Dossier Modal state
+  const [dossierScholar, setDossierScholar] = useState<AlumniScholarItem | null>(null);
+
+  // Expanded qualifications map for directory cards
+  const [expandedQualMap, setExpandedQualMap] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     setPage(1);
   }, [selectedBatch, selectedClass, selectedStatus, searchQuery]);
-
-  // Expanded profile state for Mobile Tap / Desktop Hover Details Drawer
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  // Expanded qualifications map for scholars with > 2 qualifications
-  const [expandedQualMap, setExpandedQualMap] = useState<Record<string, boolean>>({});
-
-  const toggleExpand = (id: string) => {
-    setExpandedId((prev) => (prev === id ? null : id));
-  };
 
   const loadAlumni = async () => {
     try {
@@ -115,13 +119,44 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
 
   const paginatedAlumni = filteredAlumni.slice((page - 1) * pageSize, page * pageSize);
 
+  // Spotlight Scholars Pool: Prioritize featured scholars or all alumni
+  const spotlightPool = alumni.length > 0 ? (alumni.some((a) => a.isFeatured) ? alumni.filter((a) => a.isFeatured) : alumni) : [];
+  const activeSpotlight = spotlightPool[spotlightIndex % (spotlightPool.length || 1)] || null;
+
+  // Auto-advance spotlight carousel every 6s when > 1 scholar exists and not paused
+  useEffect(() => {
+    if (spotlightPool.length <= 1 || isSpotlightPaused) return;
+    const interval = setInterval(() => {
+      setSpotlightIndex((prev) => (prev + 1) % spotlightPool.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [spotlightPool.length, isSpotlightPaused]);
+
+  // Keyboard navigation for Dossier Modal (Esc to close)
+  useEffect(() => {
+    if (!dossierScholar) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setDossierScholar(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dossierScholar]);
+
+  const getInitials = (name: string) =>
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase())
+      .join('');
+
   return (
     <section
       id="alumni"
       className="public-section-enter scroll-mt-28 py-8 sm:py-12 overflow-x-clip w-full max-w-full"
       aria-label="Alumni & Scholars Dossier Wall"
     >
-      {/* Dynamic Keyframes for Staggered Reveal and Metallic Shimmer */}
+      {/* Keyframes for Staggered Reveal, Shimmer, and Sheen */}
       <style>{`
         @keyframes scholarCardReveal {
           from {
@@ -169,12 +204,239 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             Scholarly Alumni & Graduates
           </h2>
           <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Celebrating {madrasaName} graduates and researchers pursuing sacred knowledge, higher academic degrees, and leadership across universities and communities worldwide.
+            Celebrating {madrasaName} graduates pursuing sacred knowledge, higher academic degrees, and community leadership worldwide.
           </p>
         </div>
       </div>
 
-      {/* Regal Filter Strip */}
+      {/* ========================================================================= */}
+      {/* 1. FEATURED INTERACTIVE SCHOLAR SPOTLIGHT STAGE (Top Showcase)            */}
+      {/* ========================================================================= */}
+      {activeSpotlight && (
+        <div
+          className="max-w-5xl mx-auto rounded-3xl bg-white border border-[#D8D5C0] shadow-xl overflow-hidden mb-12 sm:mb-16 relative"
+          onMouseEnter={() => setIsSpotlightPaused(true)}
+          onMouseLeave={() => setIsSpotlightPaused(false)}
+        >
+          {/* Top Olive-Gold Gradient Accent Bar */}
+          <div className="h-1.5 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] w-full" />
+
+          <div className="grid grid-cols-1 md:grid-cols-12 items-stretch">
+            {/* Left Pane: Tall Gold-Bordered Portrait with Shimmer Halo */}
+            <div className="md:col-span-5 lg:col-span-4 p-6 sm:p-7 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-[#E2E0D0] relative">
+              {/* Portrait Frame */}
+              <div className="relative w-full max-w-[240px] aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20">
+                <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] relative">
+                  {activeSpotlight.photoUrl ? (
+                    <img
+                      src={activeSpotlight.photoUrl}
+                      alt={activeSpotlight.fullName}
+                      className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
+                      <span className="text-4xl font-serif font-bold">{getInitials(activeSpotlight.fullName)}</span>
+                      <User className="w-8 h-8 mt-2 opacity-40" />
+                    </div>
+                  )}
+
+                  {/* Batch Year Badge Overlay */}
+                  <div className="absolute top-2.5 left-2.5">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#232215]/85 text-[#F8F7F2] backdrop-blur-xs border border-white/20 shadow-xs font-mono">
+                      Batch {activeSpotlight.batchYear}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Animated Antique Gold "VERIFIED SCHOLAR" Seal */}
+              <div className="mt-4 flex items-center justify-center">
+                <div className="relative inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-gradient-to-r from-[#B58D3D] via-[#DFC076] to-[#B58D3D] bg-[length:200%_100%] animate-scholar-gold-shimmer text-[#1F1B0E] border border-[#F0D999]/90 shadow-[0_4px_14px_rgba(197,160,89,0.4)] overflow-hidden">
+                  <span
+                    className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none animate-scholar-gold-sheen"
+                    aria-hidden="true"
+                  />
+                  <CheckCircle2 className="w-4 h-4 text-[#1F1B0E] shrink-0 relative z-10" />
+                  <span className="relative z-10">Verified Scholar</span>
+                </div>
+              </div>
+
+              {/* Multi-Scholar Carousel Controls */}
+              {spotlightPool.length > 1 && (
+                <div className="w-full flex items-center justify-between pt-4 mt-4 border-t border-[#E2E0D0]/80">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSpotlightIndex((prev) => (prev - 1 + spotlightPool.length) % spotlightPool.length)
+                    }
+                    className="p-1.5 rounded-xl border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] transition-all cursor-pointer shadow-2xs"
+                    title="Previous Scholar"
+                    aria-label="Previous Scholar"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {/* Clickable Scholar Avatar Pills */}
+                  <div className="flex items-center gap-1.5 max-w-[150px] overflow-x-auto no-scrollbar py-1">
+                    {spotlightPool.map((s, idx) => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setSpotlightIndex(idx)}
+                        className={`w-6 h-6 rounded-full text-[10px] font-bold transition-all cursor-pointer flex items-center justify-center shrink-0 ${
+                          idx === spotlightIndex % spotlightPool.length
+                            ? 'bg-[#6B6A45] text-white ring-2 ring-[#C5A059] scale-110 shadow-xs'
+                            : 'bg-white text-slate-600 border border-[#E2E0D0] hover:bg-[#F4F3EC]'
+                        }`}
+                        title={s.fullName}
+                      >
+                        {idx + 1}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSpotlightIndex((prev) => (prev + 1) % spotlightPool.length)}
+                    className="p-1.5 rounded-xl border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] transition-all cursor-pointer shadow-2xs"
+                    title="Next Scholar"
+                    aria-label="Next Scholar"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Right Pane: Scholar Details & Animated Gold Academic Journey Track */}
+            <div className="md:col-span-7 lg:col-span-8 p-6 sm:p-8 flex flex-col justify-between bg-islamic-diamond-subtle relative">
+              <div className="space-y-4">
+                {/* Header Badge & Islamic Title */}
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF8F2] text-[#8C8A58] border border-[#C5A059]/40 shadow-2xs flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-[#C5A059]" />
+                      <span>Distinguished Scholar Spotlight</span>
+                    </span>
+                    {(() => {
+                      const sInfo = getScholarStatusInfo(activeSpotlight.academicStatus, activeSpotlight.customStatusLabel);
+                      return (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6B6A45] text-[#F8F7F2] border border-[#8C8A58]/60 shadow-2xs">
+                          {sInfo.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+
+                  {activeSpotlight.classOrDivision && (
+                    <span className="text-xs text-slate-500 font-semibold font-mono">
+                      {activeSpotlight.classOrDivision}
+                    </span>
+                  )}
+                </div>
+
+                {/* Scholar Full Name */}
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#232215] tracking-tight">
+                  {activeSpotlight.fullName}
+                </h3>
+
+                {/* Role & Location */}
+                {(activeSpotlight.currentRole || activeSpotlight.cityCountry) && (
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-slate-700">
+                    {activeSpotlight.currentRole && (
+                      <div className="flex items-center gap-1.5 font-semibold text-[#504F34]">
+                        <Award className="w-4 h-4 text-[#8C8A58] shrink-0" />
+                        <span>{activeSpotlight.currentRole}</span>
+                      </div>
+                    )}
+                    {activeSpotlight.cityCountry && (
+                      <div className="flex items-center gap-1.5 text-slate-600">
+                        <MapPin className="w-3.5 h-3.5 text-[#8C8A58] shrink-0" />
+                        <span>{activeSpotlight.cityCountry}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Biography Quote */}
+                {activeSpotlight.bio && (
+                  <p className="text-xs sm:text-sm leading-relaxed text-slate-700 italic bg-[#FAF8F2]/90 p-3.5 rounded-2xl border border-[#E2E0D0]/80">
+                    "{activeSpotlight.bio}"
+                  </p>
+                )}
+
+                {/* Animated Gold Academic Journey Track */}
+                <div className="pt-2">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] mb-2.5 flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-[#8C8A58]" />
+                    <span>Academic Progression Track</span>
+                  </div>
+
+                  {(() => {
+                    const spotlightQuals =
+                      activeSpotlight.qualificationsList && activeSpotlight.qualificationsList.length > 0
+                        ? activeSpotlight.qualificationsList
+                        : activeSpotlight.qualification
+                        ? [{ degree: activeSpotlight.qualification, university: activeSpotlight.university, year: activeSpotlight.batchYear }]
+                        : [];
+
+                    return (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {spotlightQuals.map((q, idx) => (
+                          <div
+                            key={idx}
+                            className="bg-white/95 rounded-2xl p-3 border border-[#E2E0D0] shadow-2xs hover:border-[#C5A059] transition-all duration-300"
+                          >
+                            <div className="flex items-center justify-between gap-1 mb-1">
+                              <span className="w-5 h-5 rounded-full bg-[#F4F3EC] text-[#6B6A45] text-[10px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0]">
+                                {idx + 1}
+                              </span>
+                              {q.year && (
+                                <span className="text-[10px] font-mono font-bold text-[#8C8A58]">
+                                  {q.year}
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="font-bold text-xs sm:text-sm text-[#232215] line-clamp-1">
+                              {q.degree || 'Degree / Award'}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                              {q.university || 'University / Academy'}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Spotlight Bottom Actions */}
+              <div className="pt-5 mt-4 border-t border-[#E2E0D0]/80 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDossierScholar(activeSpotlight)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#6B6A45] hover:bg-[#504F34] text-white shadow-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <Award className="w-3.5 h-3.5 text-[#EFEFD0]" />
+                  <span>View Full Royal Dossier</span>
+                </button>
+
+                {activeSpotlight.availableForMentorship && (
+                  <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full inline-flex items-center gap-1.5 shadow-2xs">
+                    <Sparkles className="w-3 h-3 text-emerald-600" />
+                    <span>Open to Mentor Students</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 2. REGAL FILTER STRIP                                                     */}
+      {/* ========================================================================= */}
       <div className="bg-[#F8F7F2] border border-[#E2E0D0] rounded-3xl p-4 sm:p-5 mb-8 space-y-4 shadow-xs">
         {/* Row 1: Full-Width Search Input */}
         <div className="relative w-full">
@@ -263,7 +525,9 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
         </div>
       </div>
 
-      {/* Directory Grid */}
+      {/* ========================================================================= */}
+      {/* 3. INTERACTIVE DIRECTORY GRID BELOW (Centered for 1 or 2 scholars)        */}
+      {/* ========================================================================= */}
       {loading ? (
         <div className="py-16 flex flex-col items-center justify-center">
           <Loader2 className="w-8 h-8 animate-spin text-[#6B6A45] mb-3" />
@@ -283,15 +547,17 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start w-full">
+          <div
+            className={`w-full ${
+              filteredAlumni.length === 1
+                ? 'max-w-xl mx-auto'
+                : filteredAlumni.length === 2
+                ? 'max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6'
+                : 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+            } items-start`}
+          >
             {paginatedAlumni.map((item, index) => {
-              const isExpanded = expandedId === item.id;
-              const initials = item.fullName
-                .split(' ')
-                .filter(Boolean)
-                .slice(0, 2)
-                .map((w) => w[0]?.toUpperCase())
-                .join('');
+              const initials = getInitials(item.fullName);
 
               const qualList =
                 item.qualificationsList && item.qualificationsList.length > 0
@@ -304,20 +570,13 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
               const displayedQuals = isQualExpanded ? qualList : qualList.slice(0, 2);
               const hasMoreQuals = qualList.length > 2;
 
-              const hasExpandableContent = Boolean(
-                item.bio ||
-                  item.availableForMentorship ||
-                  (item.showContactPublicly && (item.email || item.phone || item.linkedinUrl))
-              );
-
               const sInfo = getScholarStatusInfo(item.academicStatus, item.customStatusLabel);
 
               return (
                 <div
                   key={`${item.id}-${selectedBatch}-${selectedStatus}-${page}`}
-                  className={`group relative bg-white rounded-3xl border border-[#E2E0D0] overflow-hidden flex flex-col shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_14px_34px_rgba(107,106,69,0.14)] hover:border-[#C5A059]/60 animate-scholar-reveal ${
-                    isExpanded ? 'shadow-md border-[#6B6A45]' : ''
-                  }`}
+                  onClick={() => setDossierScholar(item)}
+                  className="group relative bg-white rounded-3xl border border-[#E2E0D0] overflow-hidden flex flex-col shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_14px_34px_rgba(107,106,69,0.14)] hover:border-[#C5A059]/70 animate-scholar-reveal cursor-pointer"
                   style={{ animationDelay: `${(index % pageSize) * 60}ms` }}
                 >
                   {/* Top Olive-Gold Accent Bar */}
@@ -364,7 +623,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                           </div>
 
                           <h3
-                            className="font-serif font-bold text-base sm:text-lg text-[#232215] mt-1 line-clamp-1 tracking-tight"
+                            className="font-serif font-bold text-base sm:text-lg text-[#232215] mt-1 line-clamp-1 tracking-tight group-hover:text-[#6B6A45] transition-colors"
                             style={{ color: theme.headingColor || '#232215' }}
                           >
                             {item.fullName}
@@ -480,106 +739,24 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                       )}
                     </div>
 
-                    {/* Mentorship Badge */}
-                    {item.availableForMentorship && (
-                      <div className="pt-1">
+                    {/* Card Footer: View Dossier Trigger & Mentorship Badge */}
+                    <div className="pt-2 border-t border-[#E2E0D0]/70 flex items-center justify-between text-xs">
+                      {item.availableForMentorship ? (
                         <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 shadow-2xs">
                           <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
                           Open to Mentor
                         </span>
-                      </div>
-                    )}
-
-                    {/* Desktop Hover & Mobile Tap Details Drawer */}
-                    {hasExpandableContent && (
-                      <div
-                        className={`space-y-3 transition-all duration-300 ease-in-out ${
-                          isExpanded
-                            ? 'max-h-[600px] opacity-100 pt-3 border-t border-[#E2E0D0]'
-                            : 'max-h-0 opacity-0 lg:group-hover:max-h-[600px] lg:group-hover:opacity-100 lg:group-hover:pt-3 lg:group-hover:border-t lg:group-hover:border-[#E2E0D0] overflow-hidden'
-                        }`}
-                      >
-                        {/* Biography Quote */}
-                        {item.bio && (
-                          <div className="space-y-1">
-                            <p className="text-xs text-slate-700 leading-relaxed italic whitespace-pre-line p-2.5 bg-[#FAF8F2] rounded-2xl border border-[#E2E0D0]/70">
-                              "{item.bio}"
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Mentorship Note */}
-                        {item.availableForMentorship && (
-                          <div className="p-2.5 bg-emerald-50/90 border border-emerald-200/80 rounded-2xl flex items-start gap-2 text-[11px] text-emerald-800">
-                            <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                            <span>Open to guide and mentor junior students in higher academic degrees and research.</span>
-                          </div>
-                        )}
-
-                        {/* Contact Channels */}
-                        {item.showContactPublicly && (item.email || item.phone || item.linkedinUrl) && (
-                          <div className="pt-1 border-t border-[#E2E0D0]/70 flex flex-wrap items-center gap-1.5">
-                            {item.email && (
-                              <a
-                                href={`mailto:${item.email}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-xl text-[11px] font-medium transition-colors"
-                                title="Email Scholar"
-                              >
-                                <Mail className="w-3 h-3 text-[#6B6A45]" />
-                                <span className="truncate max-w-[130px]">{item.email}</span>
-                              </a>
-                            )}
-                            {item.phone && (
-                              <a
-                                href={`tel:${item.phone}`}
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-xl text-[11px] font-medium transition-colors"
-                                title="Call / WhatsApp"
-                              >
-                                <Phone className="w-3 h-3 text-[#6B6A45]" />
-                                <span>{item.phone}</span>
-                              </a>
-                            )}
-                            {item.linkedinUrl && (
-                              <a
-                                href={item.linkedinUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-xl text-[11px] font-bold transition-colors"
-                                title="View LinkedIn Profile"
-                              >
-                                <ExternalLink className="w-3 h-3" />
-                                <span>LinkedIn</span>
-                              </a>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Mobile Tap-To-Expand Details Button */}
-                    {hasExpandableContent && (
-                      <div className="mt-2 pt-2.5 border-t border-[#E2E0D0] flex items-center justify-between lg:hidden">
-                        <button
-                          type="button"
-                          onClick={() => toggleExpand(item.id)}
-                          aria-expanded={isExpanded}
-                          className="inline-flex items-center space-x-1.5 text-xs font-bold text-[#6B6A45] hover:text-[#504F34] transition-colors focus:outline-hidden cursor-pointer"
-                        >
-                          <span>{isExpanded ? 'Hide Details' : 'More Details'}</span>
-                          <ChevronDown
-                            className={`w-3.5 h-3.5 transition-transform duration-300 ${
-                              isExpanded ? 'rotate-180 text-[#6B6A45]' : ''
-                            }`}
-                          />
-                        </button>
-                        <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">
+                      ) : (
+                        <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
                           {item.classOrDivision || 'Alumnus'}
                         </span>
-                      </div>
-                    )}
+                      )}
+
+                      <span className="text-xs font-bold text-[#6B6A45] group-hover:text-[#504F34] flex items-center gap-1">
+                        <span>View Dossier</span>
+                        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </span>
+                    </div>
                   </div>
                 </div>
               );
@@ -595,6 +772,210 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             className="mt-8 rounded-2xl border border-[#E2E0D0] shadow-2xs"
           />
         </>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 4. ROYAL SCHOLAR DOSSIER MODAL                                            */}
+      {/* ========================================================================= */}
+      {dossierScholar && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/75 backdrop-blur-xs overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setDossierScholar(null)}
+        >
+          <div
+            className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-[#D8D5C0] overflow-hidden my-auto animate-scholar-reveal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Olive-Gold Accent Bar */}
+            <div className="h-1.5 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] w-full" />
+
+            {/* Modal Header */}
+            <div className="p-6 sm:p-7 border-b border-[#E2E0D0] bg-islamic-diamond-subtle flex items-start justify-between gap-4">
+              <div className="flex items-center gap-4 min-w-0">
+                <div className="p-1 rounded-full bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-md shrink-0">
+                  <div className="p-0.5 rounded-full bg-white">
+                    {dossierScholar.photoUrl ? (
+                      <img
+                        src={dossierScholar.photoUrl}
+                        alt={dossierScholar.fullName}
+                        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover object-top border border-[#C5A059]/40"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white font-serif font-bold text-xl sm:text-2xl border border-[#C5A059]/40 bg-gradient-to-br from-[#6B6A45] to-[#504F34]">
+                        {getInitials(dossierScholar.fullName)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#FAF8F2] text-[#504F34] border border-[#C5A059]/40">
+                      Batch {dossierScholar.batchYear}
+                    </span>
+                    {(() => {
+                      const sInfo = getScholarStatusInfo(dossierScholar.academicStatus, dossierScholar.customStatusLabel);
+                      return (
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6B6A45] text-[#F8F7F2] border border-[#8C8A58]/60 shadow-2xs">
+                          {sInfo.label}
+                        </span>
+                      );
+                    })()}
+                  </div>
+
+                  <h3 className="text-xl sm:text-2xl font-serif font-bold text-[#232215] mt-1 tracking-tight">
+                    {dossierScholar.fullName}
+                  </h3>
+
+                  {dossierScholar.currentRole && (
+                    <p className="text-xs sm:text-sm font-semibold text-[#6B6A45] mt-0.5 flex items-center gap-1.5">
+                      <Award className="w-3.5 h-3.5 text-[#8C8A58]" />
+                      <span>{dossierScholar.currentRole}</span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setDossierScholar(null)}
+                className="p-2 text-stone-400 hover:text-stone-700 hover:bg-[#F4F3EC] rounded-xl transition-colors cursor-pointer"
+                aria-label="Close dossier dialog"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 sm:p-7 space-y-6 max-h-[70vh] overflow-y-auto">
+              {/* Biography Quote */}
+              {dossierScholar.bio && (
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Scholarly Statement
+                  </span>
+                  <p className="text-xs sm:text-sm leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-4 rounded-2xl border border-[#E2E0D0]/80 whitespace-pre-line">
+                    "{dossierScholar.bio}"
+                  </p>
+                </div>
+              )}
+
+              {/* Complete Academic Timeline */}
+              {(() => {
+                const modalQuals =
+                  dossierScholar.qualificationsList && dossierScholar.qualificationsList.length > 0
+                    ? dossierScholar.qualificationsList
+                    : dossierScholar.qualification
+                    ? [{ degree: dossierScholar.qualification, university: dossierScholar.university, year: dossierScholar.batchYear }]
+                    : [];
+
+                if (modalQuals.length === 0) return null;
+
+                return (
+                  <div className="space-y-3">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1.5">
+                      <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58]" />
+                      <span>Complete Academic Journey</span>
+                    </span>
+
+                    <div className="border-l-2 border-[#C5A059]/60 pl-4 space-y-3.5 relative ml-2">
+                      {modalQuals.map((q, idx) => (
+                        <div key={idx} className="relative">
+                          <span
+                            className="absolute -left-[22px] top-1.5 w-3 h-3 rounded-full bg-[#C5A059] ring-4 ring-white shadow-xs"
+                            aria-hidden="true"
+                          />
+                          <div className="bg-[#F8F7F2] p-3 rounded-2xl border border-[#E2E0D0] flex items-start justify-between gap-3">
+                            <div>
+                              <h4 className="font-bold text-xs sm:text-sm text-[#232215]">
+                                {q.degree || 'Degree / Award'}
+                              </h4>
+                              <p className="text-xs text-slate-600 flex items-center gap-1.5 mt-0.5">
+                                <Building2 className="w-3 h-3 text-[#8C8A58]" />
+                                <span>{q.university || 'University / Institution'}</span>
+                              </p>
+                            </div>
+                            {q.year && (
+                              <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-white border border-[#C5A059]/40 text-[#8C8A58] shadow-2xs">
+                                {q.year}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Mentorship Box */}
+              {dossierScholar.availableForMentorship && (
+                <div className="p-4 bg-emerald-50/90 border border-emerald-200/90 rounded-2xl flex items-start gap-3 text-xs text-emerald-900">
+                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block">Open for Academic Guidance & Mentorship</span>
+                    <span className="text-emerald-800 text-[11px] mt-0.5 block">
+                      This scholar is open to guide junior students and prospective researchers in academic pathways, university applications, and sacred scholarship.
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Public Contact Channels */}
+              {dossierScholar.showContactPublicly && (dossierScholar.email || dossierScholar.phone || dossierScholar.linkedinUrl) && (
+                <div className="pt-4 border-t border-[#E2E0D0] space-y-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Connect with Scholar
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {dossierScholar.email && (
+                      <a
+                        href={`mailto:${dossierScholar.email}`}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-xl text-xs font-semibold transition-colors"
+                      >
+                        <Mail className="w-3.5 h-3.5 text-[#6B6A45]" />
+                        <span>{dossierScholar.email}</span>
+                      </a>
+                    )}
+                    {dossierScholar.phone && (
+                      <a
+                        href={`tel:${dossierScholar.phone}`}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-xl text-xs font-semibold transition-colors"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-[#6B6A45]" />
+                        <span>{dossierScholar.phone}</span>
+                      </a>
+                    )}
+                    {dossierScholar.linkedinUrl && (
+                      <a
+                        href={dossierScholar.linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-xl text-xs font-bold transition-colors"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>LinkedIn Profile</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 bg-[#FAF9F5] border-t border-[#E2E0D0] flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => setDossierScholar(null)}
+                className="px-5 py-2 border border-[#E2E0D0] text-slate-700 hover:text-slate-900 rounded-xl text-xs font-bold hover:bg-white transition-colors cursor-pointer"
+              >
+                Close Dossier
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

@@ -827,6 +827,52 @@ export async function getPublicProfileBySlug(slug) {
     }
   }
 
+  // Fetch active executive committee members
+  let executiveMembers = [];
+  try {
+    const rawExec = await prisma.executiveMember.findMany({
+      where: {
+        madrasaId: madrasa.id,
+        isActive: true,
+      },
+      orderBy: [
+        { displayOrder: 'asc' },
+        { createdAt: 'asc' },
+      ],
+    });
+
+    executiveMembers = await Promise.all(
+      rawExec.map(async (m) => {
+        let photoUrl = m.photoUrl;
+        if (m.photoFileId) {
+          try {
+            const file = await prisma.fileObject.findFirst({
+              where: { id: m.photoFileId, madrasaId: madrasa.id },
+              select: { objectKey: true, publicUrl: true },
+            });
+            if (file) {
+              photoUrl = file.publicUrl || (await resolveObjectAccessUrl(file.objectKey));
+            }
+          } catch {
+            // Keep existing photoUrl
+          }
+        }
+        return {
+          id: m.id,
+          fullName: m.fullName,
+          position: m.position,
+          displayOrder: m.displayOrder,
+          photoUrl,
+          qualification: m.qualification,
+          messageOrBio: m.messageOrBio,
+          termPeriod: m.termPeriod,
+        };
+      })
+    );
+  } catch (err) {
+    console.warn('[MadrasaProfileService] Failed to load executive members:', err.message);
+  }
+
   return {
     madrasa: {
       id: madrasa.id,
@@ -849,6 +895,7 @@ export async function getPublicProfileBySlug(slug) {
     curriculum: sanitizeCurriculumForPublic(madrasa.profile.curriculumJson),
     stats,
     staff,
+    executiveMembers,
     generatedSummary: madrasa.profile.generatedSummary,
     contactPhone: madrasa.profile.contactPhone || madrasa.phone,
     contactEmail: madrasa.profile.contactEmail || madrasa.email,

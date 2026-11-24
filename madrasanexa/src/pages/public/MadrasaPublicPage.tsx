@@ -15,6 +15,7 @@ import { MadrasaPublicNotices } from '../../components/madrasa-public/MadrasaPub
 import { MadrasaPublicEvents } from '../../components/madrasa-public/MadrasaPublicEvents';
 import { MadrasaPublicStats } from '../../components/madrasa-public/MadrasaPublicStats';
 import { MadrasaPublicStaff } from '../../components/madrasa-public/MadrasaPublicStaff';
+import { MadrasaPublicExecutive } from '../../components/madrasa-public/MadrasaPublicExecutive';
 import { MadrasaPublicAlumni } from '../../components/madrasa-public/MadrasaPublicAlumni';
 import { MadrasaPublicAdmissionsCTA } from '../../components/madrasa-public/MadrasaPublicAdmissionsCTA';
 import { MadrasaPublicContact } from '../../components/madrasa-public/MadrasaPublicContact';
@@ -104,6 +105,7 @@ export const MadrasaPublicPage: React.FC = () => {
   const hasEvents = Boolean(profile.events && profile.events.length > 0);
   const hasNotices = Boolean(profile.notices && profile.notices.length > 0);
   const hasStaff = Boolean(profile.staff && profile.staff.isEnabled && profile.staff.members && profile.staff.members.length > 0);
+  const hasExecutive = Boolean(profile.executiveMembers && profile.executiveMembers.length > 0);
   const hasAlumni = Boolean((madrasa as any).showAlumniOnWebsite);
 
   return (
@@ -192,6 +194,17 @@ export const MadrasaPublicPage: React.FC = () => {
             <IslamicSectionDivider />
             <MadrasaPublicStaff
               staff={profile.staff}
+              theme={theme}
+            />
+          </>
+        ) : null}
+
+        {/* 7.2. Executive Committee & Board of Management */}
+        {hasExecutive && profile.executiveMembers ? (
+          <>
+            <IslamicSectionDivider />
+            <MadrasaPublicExecutive
+              executiveMembers={profile.executiveMembers}
               theme={theme}
             />
           </>

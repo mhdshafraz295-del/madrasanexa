@@ -393,6 +393,7 @@ model Madrasa {
   pollVotes                      PlatformPollVote[]              @relation("MadrasaPollVotes")
   showAlumniOnWebsite            Boolean                         @default(false)
   alumniScholars                 AlumniScholar[]                 @relation("MadrasaAlumniScholars")
+  executiveMembers               ExecutiveMember[]
   aiEnabled                      Boolean                         @default(false) @map("ai_enabled")
   aiExpiresAt                    DateTime?                       @map("ai_expires_at")
   aiSubscriptionRequests         AiSubscriptionRequest[]
@@ -2966,6 +2967,28 @@ model AlumniScholar {
   @@index([madrasaId, batchYear])
   @@index([madrasaId, isFeatured])
   @@map("alumni_scholars")
+}
+
+/// Executive Committee / Board of Management Member
+model ExecutiveMember {
+  id            String    @id @default(cuid())
+  madrasaId     String
+  fullName      String
+  position      String
+  displayOrder  Int       @default(0)
+  photoUrl      String?   @db.Text
+  photoFileId   String?
+  qualification String?
+  messageOrBio  String?   @db.Text
+  termPeriod    String?
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  madrasa       Madrasa   @relation(fields: [madrasaId], references: [id], onDelete: Cascade)
+
+  @@index([madrasaId, isActive, displayOrder])
+  @@map("madrasa_executive_members")
 }
 
 

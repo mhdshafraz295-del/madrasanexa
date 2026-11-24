@@ -3354,6 +3354,7 @@ export interface PublicMadrasaProfile {
   curriculum?: CurriculumPayload | null;
   curriculumJson?: CurriculumPayload | null;
   staff?: PublicStaffSection | null;
+  executiveMembers?: ExecutiveMember[];
   stats?: PublicStatsData | null;
   generatedSummary: string | null;
   contactPhone: string | null;
@@ -3487,6 +3488,76 @@ export const apiRemoveMadrasaPoster = async (fileId: string): Promise<void> => {
 
 export const apiGetPublicMadrasaProfile = async (slug: string): Promise<PublicMadrasaProfile> => {
   const response = await apiClient.get<ApiResponse<PublicMadrasaProfile>>(`/public/madrasa/${slug}`);
+  return response.data.data;
+};
+
+// ==========================================
+// EXECUTIVE COMMITTEE / BOARD OF MANAGEMENT
+// ==========================================
+
+export interface ExecutiveMember {
+  id: string;
+  madrasaId: string;
+  fullName: string;
+  position: string;
+  displayOrder: number;
+  photoUrl?: string | null;
+  photoFileId?: string | null;
+  qualification?: string | null;
+  messageOrBio?: string | null;
+  termPeriod?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateExecutiveMemberPayload {
+  fullName: string;
+  position: string;
+  displayOrder?: number;
+  photoUrl?: string | null;
+  photoFileId?: string | null;
+  qualification?: string | null;
+  messageOrBio?: string | null;
+  termPeriod?: string | null;
+  isActive?: boolean;
+}
+
+export type UpdateExecutiveMemberPayload = Partial<CreateExecutiveMemberPayload>;
+
+export const apiGetExecutiveMembers = async (isActive?: boolean): Promise<ExecutiveMember[]> => {
+  const params: Record<string, any> = {};
+  if (typeof isActive === 'boolean') params.isActive = isActive;
+  const response = await apiClient.get<ApiResponse<ExecutiveMember[]>>('/madrasa-admin/executive-members', { params });
+  return response.data.data;
+};
+
+export const apiCreateExecutiveMember = async (payload: CreateExecutiveMemberPayload): Promise<ExecutiveMember> => {
+  const response = await apiClient.post<ApiResponse<ExecutiveMember>>('/madrasa-admin/executive-members', payload);
+  return response.data.data;
+};
+
+export const apiUpdateExecutiveMember = async (id: string, payload: UpdateExecutiveMemberPayload): Promise<ExecutiveMember> => {
+  const response = await apiClient.patch<ApiResponse<ExecutiveMember>>(`/madrasa-admin/executive-members/${id}`, payload);
+  return response.data.data;
+};
+
+export const apiDeleteExecutiveMember = async (id: string): Promise<void> => {
+  await apiClient.delete<ApiResponse<null>>(`/madrasa-admin/executive-members/${id}`);
+};
+
+export const apiUploadExecutivePhoto = async (file: File): Promise<{ fileId: string; url: string }> => {
+  const formData = new FormData();
+  formData.append('photo', file);
+  const response = await apiClient.post<ApiResponse<{ fileId: string; url: string }>>(
+    '/madrasa-admin/executive-members/upload-photo',
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
   return response.data.data;
 };
 

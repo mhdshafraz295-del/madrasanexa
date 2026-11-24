@@ -36,6 +36,15 @@ import {
   uploadEventImages,
 } from '../controllers/madrasa-profile.controller.js';
 import {
+  listExecutiveMembers,
+  getExecutiveMemberById,
+  createExecutiveMember,
+  updateExecutiveMember,
+  deleteExecutiveMember,
+  uploadExecutivePhotoMiddleware,
+  uploadExecutivePhoto,
+} from '../controllers/executive-member.controller.js';
+import {
   getTheme,
   saveDraft,
   publish as publishTheme,
@@ -405,6 +414,14 @@ router.put('/portal-cms/theme/draft', saveDraft);
 router.post('/portal-cms/theme/publish', publishTheme);
 router.post('/portal-cms/theme/reset', resetTheme);
 router.post('/portal-cms/theme/discard', discardTheme);
+
+// Executive Committee / Board of Management
+router.get('/executive-members', listExecutiveMembers);
+router.post('/executive-members', createExecutiveMember);
+router.post('/executive-members/upload-photo', uploadExecutivePhotoMiddleware, uploadExecutivePhoto);
+router.get('/executive-members/:id', getExecutiveMemberById);
+router.patch('/executive-members/:id', updateExecutiveMember);
+router.delete('/executive-members/:id', deleteExecutiveMember);
 
 // Online Admissions & Applications Management
 router.get('/admissions/periods', listPeriods);

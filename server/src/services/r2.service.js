@@ -10,7 +10,7 @@ import {
 import { env } from '../config/env.js';
 
 // Permitted tenant storage categories
-const ALLOWED_CATEGORIES = new Set(['logos', 'students', 'reports', 'receipts', 'documents', 'uploads', 'hero', 'posters', 'ai-receipts']);
+const ALLOWED_CATEGORIES = new Set(['logos', 'students', 'reports', 'receipts', 'documents', 'uploads', 'hero', 'posters', 'ai-receipts', 'executive']);
 
 /**
  * Validates and builds a secure scoped object key for multi-tenant Madrasa data.

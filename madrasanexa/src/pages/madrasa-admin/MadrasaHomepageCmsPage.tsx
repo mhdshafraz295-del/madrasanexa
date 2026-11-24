@@ -24,6 +24,7 @@ import type {
 } from '../../services/api';
 import { CurriculumManagerTab } from '../../components/portal-cms/CurriculumManagerTab';
 import { StaffManagerTab } from '../../components/portal-cms/StaffManagerTab';
+import { ExecutiveManagerTab } from '../../components/portal-cms/ExecutiveManagerTab';
 import {
   Globe,
   Save,
@@ -67,7 +68,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState<'hero' | 'about' | 'syllabus' | 'staff' | 'events' | 'notices' | 'theme'>('hero');
+  const [activeTab, setActiveTab] = useState<'hero' | 'about' | 'syllabus' | 'staff' | 'executive' | 'events' | 'notices' | 'theme'>('hero');
 
   // Form Fields
   const [heroTitle, setHeroTitle] = useState('');
@@ -972,6 +973,19 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
 
         <button
           type="button"
+          onClick={() => setActiveTab('executive')}
+          className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 flex items-center space-x-1.5 ${
+            activeTab === 'executive'
+              ? 'bg-emerald-700 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-100'
+          }`}
+        >
+          <Building2 className="w-4 h-4" />
+          <span>Executive Committee</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => setActiveTab('events')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 flex items-center space-x-1.5 ${
             activeTab === 'events'
@@ -1653,6 +1667,11 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onChange={(newConfig) => setStaffConfig(newConfig)}
           disabled={saving}
         />
+      )}
+
+      {/* Tab: Executive Committee & Board of Management */}
+      {activeTab === 'executive' && (
+        <ExecutiveManagerTab disabled={saving} />
       )}
 
       {/* Tab 6: Theme & Appearance */}

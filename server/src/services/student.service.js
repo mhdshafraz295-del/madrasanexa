@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
-import { findTenantRecordOrThrow, assertTenantOwnership } from '../lib/tenant-prisma.js';
+import { findTenantRecordOrThrow, assertTenantOwnership, assertValidTenantId } from '../lib/tenant-prisma.js';
 import { ConflictError, NotFoundError, BadRequestError } from '../utils/errors.js';
 import { getEffectiveStudentFee, getStudentFeeHistory } from './student-fee.service.js';
 
@@ -16,12 +16,13 @@ import { getEffectiveStudentFee, getStudentFeeHistory } from './student-fee.serv
  * @returns {Promise<{ items: Array<object>, total: number, page: number, pageSize: number, totalPages: number }>}
  */
 export async function listStudents(madrasaId, query = {}) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const page = Math.max(1, Number(query.page) || 1);
   const pageSize = Math.min(100, Math.max(1, Number(query.pageSize) || 20));
   const skip = (page - 1) * pageSize;
 
   const where = {
-    madrasaId,
+    madrasaId: validTenantId,
   };
 
   if (query.status) {
@@ -287,11 +288,12 @@ export async function getStudentById(madrasaId, studentId) {
  * @returns {Promise<object>}
  */
 export async function createStudent(madrasaId, data, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const admissionNo = data.admissionNo.trim();
 
   // 1. Pre-check admissionNo uniqueness
   const existingAdmission = await prisma.student.findFirst({
-    where: { madrasaId, admissionNo },
+    where: { madrasaId: validTenantId, admissionNo },
   });
   if (existingAdmission) {
     throw new ConflictError('A student with this admission number already exists in your Madrasa.');
@@ -301,7 +303,7 @@ export async function createStudent(madrasaId, data, userId) {
   let targetClass = null;
   if (data.classId) {
     targetClass = await prisma.class.findFirst({
-      where: { id: data.classId, madrasaId },
+      where: { id: data.classId, madrasaId: validTenantId },
       include: {
         academicSection: {
           select: {

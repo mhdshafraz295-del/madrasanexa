@@ -52,6 +52,10 @@ export const TENANT_MODELS = Object.freeze([
   'studentIncident',
   'studentMeeting',
   'studentFollowUp',
+  'alumniScholar',
+  'executiveMember',
+  'madrasaProfile',
+  'madrasaThemeSetting',
 ]);
 
 /**

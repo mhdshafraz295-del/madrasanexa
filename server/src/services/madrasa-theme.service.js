@@ -1,5 +1,12 @@
 import prisma from '../lib/prisma.js';
-import { NotFoundError, BadRequestError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError, ForbiddenError } from '../utils/errors.js';
+
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 import { themeTokensSchema, analyzeThemeContrast } from '../validations/theme.validation.js';
 import { logTenantActivity } from './tenant.service.js';
 
@@ -293,8 +300,10 @@ export const DEFAULT_THEME_TOKENS = {
  * Retrieves the theme settings (draft, published, defaults, presets) for a tenant.
  */
 export async function getPortalTheme(madrasaId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const profile = await prisma.madrasaProfile.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     select: {
       id: true,
       isPublished: true,
@@ -339,10 +348,11 @@ export async function getPortalTheme(madrasaId) {
  * Saves draft theme customization for the Madrasa.
  */
 export async function saveDraftTheme(madrasaId, rawTokens, userId = null) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const validatedTokens = themeTokensSchema.parse(rawTokens);
 
   const profile = await prisma.madrasaProfile.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     select: { id: true },
   });
 
@@ -364,7 +374,7 @@ export async function saveDraftTheme(madrasaId, rawTokens, userId = null) {
 
   if (userId) {
     await logTenantActivity({
-      madrasaId,
+      madrasaId: validTenantId,
       userId,
       action: 'SAVE_PORTAL_THEME_DRAFT',
       details: 'Updated theme draft settings.',
@@ -385,8 +395,9 @@ export async function saveDraftTheme(madrasaId, rawTokens, userId = null) {
  * Atomically copies draft (or supplied tokens) to themePublishedJson.
  */
 export async function publishTheme(madrasaId, rawTokens = null, userId = null) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const profile = await prisma.madrasaProfile.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     select: { id: true, themeDraftJson: true },
   });
 
@@ -413,7 +424,7 @@ export async function publishTheme(madrasaId, rawTokens = null, userId = null) {
 
   if (userId) {
     await logTenantActivity({
-      madrasaId,
+      madrasaId: validTenantId,
       userId,
       action: 'PUBLISH_PORTAL_THEME',
       details: 'Published theme customization to public website.',
@@ -433,8 +444,9 @@ export async function publishTheme(madrasaId, rawTokens = null, userId = null) {
  * Resets draft theme back to default.
  */
 export async function resetThemeToDefault(madrasaId, userId = null) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const profile = await prisma.madrasaProfile.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     select: { id: true },
   });
 
@@ -456,7 +468,7 @@ export async function resetThemeToDefault(madrasaId, userId = null) {
 
   if (userId) {
     await logTenantActivity({
-      madrasaId,
+      madrasaId: validTenantId,
       userId,
       action: 'RESET_PORTAL_THEME_DRAFT',
       details: 'Reset theme draft to system default.',
@@ -474,8 +486,9 @@ export async function resetThemeToDefault(madrasaId, userId = null) {
  * Reverts unsaved draft changes back to the currently published theme.
  */
 export async function discardDraftChanges(madrasaId) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const profile = await prisma.madrasaProfile.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     select: { id: true, themePublishedJson: true },
   });
 

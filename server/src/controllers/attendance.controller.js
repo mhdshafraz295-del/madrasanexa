@@ -11,10 +11,28 @@ import {
   ingestAdmissionBarcodeSchema,
 } from '../validations/attendance.validation.js';
 import { logTenantActivity } from '../services/tenant.service.js';
+import { ForbiddenError } from '../utils/errors.js';
+
+/**
+ * Extracts and strictly validates tenant madrasa ID.
+ */
+function getTenantMadrasaId(req) {
+  const madrasaId =
+    req.tenant?.madrasaId ||
+    req.tenant?.id ||
+    req.auth?.madrasaId ||
+    req.user?.madrasaId;
+
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Tenant madrasa context is missing or unauthorized.');
+  }
+
+  return madrasaId.trim();
+}
 
 export async function getDailyAttendance(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = getDailyAttendanceSchema.parse(req.query);
     const data = await attendanceService.getClassDailyAttendance(madrasaId, validated);
     res.json({ success: true, data });
@@ -25,7 +43,7 @@ export async function getDailyAttendance(req, res, next) {
 
 export async function saveDailyAttendance(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId || req.user?.id;
     const validated = saveDailyAttendanceSchema.parse(req.body);
     const data = await attendanceService.saveClassDailyAttendance(madrasaId, userId, validated);
@@ -41,7 +59,7 @@ export async function saveDailyAttendance(req, res, next) {
 
 export async function verifyScanToken(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = verifyScanTokenSchema.parse(req.body);
     const data = await attendanceService.verifyScanTokenForAttendance({
       madrasaId,
@@ -68,7 +86,7 @@ export async function verifyScanToken(req, res, next) {
 
 export async function ingestScannedAttendance(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId || req.user?.id;
     const validated = ingestScannedAttendanceSchema.parse(req.body);
     const data = await attendanceService.ingestScannedAttendanceRecord({
@@ -99,7 +117,7 @@ export async function ingestScannedAttendance(req, res, next) {
 
 export async function verifyAdmissionBarcode(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId || req.user?.id;
     const validated = verifyAdmissionBarcodeSchema.parse(req.body);
     const data = await attendanceService.verifyAdmissionBarcodeForAttendance({
@@ -129,7 +147,7 @@ export async function verifyAdmissionBarcode(req, res, next) {
 
 export async function ingestAdmissionBarcode(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId || req.user?.id;
     const validated = ingestAdmissionBarcodeSchema.parse(req.body);
     const data = await attendanceService.ingestAdmissionBarcodeAttendanceRecord({
@@ -160,7 +178,7 @@ export async function ingestAdmissionBarcode(req, res, next) {
 
 export async function getAttendanceHistory(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = getAttendanceHistorySchema.parse(req.query);
     const data = await attendanceService.getAttendanceHistory(madrasaId, validated);
     res.json({ success: true, data });
@@ -171,7 +189,7 @@ export async function getAttendanceHistory(req, res, next) {
 
 export async function getMonthlySummary(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = getMonthlySummarySchema.parse(req.query);
     const data = await attendanceService.getMonthlySummary(madrasaId, validated);
     res.json({ success: true, data });
@@ -182,7 +200,7 @@ export async function getMonthlySummary(req, res, next) {
 
 export async function getStudentAttendance(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const { studentId } = req.params;
     const validated = getStudentAttendanceSchema.parse(req.query);
     const data = await attendanceService.getStudentAttendanceSummary(madrasaId, studentId, validated);
@@ -194,7 +212,7 @@ export async function getStudentAttendance(req, res, next) {
 
 export async function exportDailyPdf(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = getDailyAttendanceSchema.parse(req.query);
     const pdfBuffer = await attendanceService.generateDailyAttendancePdf(madrasaId, validated);
 
@@ -221,7 +239,7 @@ export async function exportDailyPdf(req, res, next) {
 
 export async function exportMonthlyPdf(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = getMonthlySummarySchema.parse(req.query);
     const pdfBuffer = await attendanceService.generateMonthlyAttendancePdf(madrasaId, validated);
 
@@ -248,7 +266,7 @@ export async function exportMonthlyPdf(req, res, next) {
 
 export async function exportDailyCsv(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = getDailyAttendanceSchema.parse(req.query);
     const csvString = await attendanceService.generateDailyAttendanceCsv(madrasaId, validated);
 
@@ -274,7 +292,7 @@ export async function exportDailyCsv(req, res, next) {
 
 export async function exportMonthlyCsv(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = getMonthlySummarySchema.parse(req.query);
     const csvString = await attendanceService.generateMonthlyAttendanceCsv(madrasaId, validated);
 

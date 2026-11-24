@@ -9,13 +9,31 @@ import {
   testMadrasaEmailSenderConnection,
 } from '../services/madrasa-email-setting.service.js';
 import { successResponse } from '../utils/response.js';
+import { ForbiddenError } from '../utils/errors.js';
+
+/**
+ * Extracts and strictly validates tenant madrasa ID.
+ */
+function getTenantMadrasaId(req) {
+  const madrasaId =
+    req.tenant?.madrasaId ||
+    req.tenant?.id ||
+    req.auth?.madrasaId ||
+    req.user?.madrasaId;
+
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Tenant madrasa context is missing or unauthorized.');
+  }
+
+  return madrasaId.trim();
+}
 
 /**
  * GET /api/madrasa-admin/settings/email-sender
  */
 export async function getEmailSenderSettingsHandler(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.auth?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const settings = await getMadrasaEmailSettings(madrasaId);
     return successResponse(res, 'Email sender settings fetched successfully.', settings);
   } catch (err) {
@@ -28,7 +46,7 @@ export async function getEmailSenderSettingsHandler(req, res, next) {
  */
 export async function updateEmailSenderSettingsHandler(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.auth?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId;
     const validatedData = updateEmailSenderSettingsSchema.parse(req.body);
     const updated = await updateMadrasaEmailSettings(madrasaId, validatedData, userId);
@@ -43,7 +61,7 @@ export async function updateEmailSenderSettingsHandler(req, res, next) {
  */
 export async function testEmailSenderConnectionHandler(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.auth?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId;
 
     let userEmail = req.user?.email;

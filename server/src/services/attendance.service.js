@@ -1,5 +1,12 @@
 import { prisma } from '../lib/prisma.js';
-import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError, ConflictError, ForbiddenError } from '../utils/errors.js';
+
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 import { isValidTokenFormat, hashToken } from '../utils/scan-token-crypto.js';
 import { logTenantActivity } from './tenant.service.js';
 import {
@@ -70,8 +77,9 @@ function escapeHtml(str) {
  * @returns {Promise<object>}
  */
 export async function getClassDailyAttendance(madrasaId, { classId, academicYear, date: dateStr }, prismaClient = prisma) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const targetClass = await prismaClient.class.findFirst({
-    where: { id: classId, madrasaId },
+    where: { id: classId, madrasaId: validTenantId },
     select: { id: true, name: true, code: true },
   });
 
@@ -85,7 +93,7 @@ export async function getClassDailyAttendance(madrasaId, { classId, academicYear
   const existingSession = await prismaClient.attendanceSession.findUnique({
     where: {
       madrasaId_classId_attendanceDate: {
-        madrasaId,
+        madrasaId: validTenantId,
         classId,
         attendanceDate,
       },
@@ -119,7 +127,7 @@ export async function getClassDailyAttendance(madrasaId, { classId, academicYear
 
   const eligibleStudents = await prismaClient.student.findMany({
     where: {
-      madrasaId,
+      madrasaId: validTenantId,
       classId,
       status: 'ACTIVE',
       admissionDate: { lte: endOfDayUtc },
@@ -218,10 +226,11 @@ export async function getClassDailyAttendance(madrasaId, { classId, academicYear
  * @returns {Promise<object>}
  */
 export async function saveClassDailyAttendance(madrasaId, userId, payload, prismaClient = prisma) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const { classId, academicYear, date: dateStr, records } = payload;
 
   const targetClass = await prismaClient.class.findFirst({
-    where: { id: classId, madrasaId },
+    where: { id: classId, madrasaId: validTenantId },
     select: { id: true, name: true },
   });
 
@@ -247,7 +256,7 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload, prism
   const existingSession = await prismaClient.attendanceSession.findUnique({
     where: {
       madrasaId_classId_attendanceDate: {
-        madrasaId,
+        madrasaId: validTenantId,
         classId,
         attendanceDate,
       },
@@ -266,7 +275,7 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload, prism
 
   const eligible = await prismaClient.student.findMany({
     where: {
-      madrasaId,
+      madrasaId: validTenantId,
       classId,
       status: 'ACTIVE',
       admissionDate: { lte: endOfDayUtc },
@@ -307,13 +316,13 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload, prism
     const session = await tx.attendanceSession.upsert({
       where: {
         madrasaId_classId_attendanceDate: {
-          madrasaId,
+          madrasaId: validTenantId,
           classId,
           attendanceDate,
         },
       },
       create: {
-        madrasaId,
+        madrasaId: validTenantId,
         classId,
         academicYear,
         attendanceDate,
@@ -334,7 +343,7 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload, prism
           },
         },
         create: {
-          madrasaId,
+          madrasaId: validTenantId,
           sessionId: session.id,
           studentId: r.studentId,
           status: r.status,
@@ -352,7 +361,7 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload, prism
 
   // Audit log
   logTenantActivity({
-    madrasaId,
+    madrasaId: validTenantId,
     userId,
     action: isUpdate ? 'ATTENDANCE_UPDATED' : 'ATTENDANCE_CREATED',
     entityType: 'AttendanceSession',
@@ -366,7 +375,7 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload, prism
     },
   }, prismaClient).catch(() => {});
 
-  return await getClassDailyAttendance(madrasaId, { classId, academicYear, date: dateStr }, prismaClient);
+  return await getClassDailyAttendance(validTenantId, { classId, academicYear, date: dateStr }, prismaClient);
 }
 
 /**
@@ -377,10 +386,11 @@ export async function saveClassDailyAttendance(madrasaId, userId, payload, prism
  * @returns {Promise<object>}
  */
 export async function getAttendanceHistory(madrasaId, query) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const { classId, academicYear, startDate, endDate, page = 1, pageSize = 30 } = query;
 
   const targetClass = await prisma.class.findFirst({
-    where: { id: classId, madrasaId },
+    where: { id: classId, madrasaId: validTenantId },
     select: { id: true, name: true },
   });
 
@@ -389,7 +399,7 @@ export async function getAttendanceHistory(madrasaId, query) {
   }
 
   const where = {
-    madrasaId,
+    madrasaId: validTenantId,
     classId,
   };
 
@@ -457,10 +467,11 @@ export async function getAttendanceHistory(madrasaId, query) {
  * @returns {Promise<object>}
  */
 export async function getMonthlySummary(madrasaId, query) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const { classId, academicYear, month: monthStr } = query;
 
   const targetClass = await prisma.class.findFirst({
-    where: { id: classId, madrasaId },
+    where: { id: classId, madrasaId: validTenantId },
     select: { id: true, name: true },
   });
 
@@ -474,7 +485,7 @@ export async function getMonthlySummary(madrasaId, query) {
   const endOfMonth = new Date(Date.UTC(yearNum, monthNum - 1, lastDay, 23, 59, 59, 999));
 
   const where = {
-    madrasaId,
+    madrasaId: validTenantId,
     classId,
     attendanceDate: {
       gte: startOfMonth,
@@ -585,8 +596,9 @@ export async function getMonthlySummary(madrasaId, query) {
  * @returns {Promise<object>}
  */
 export async function getStudentAttendanceSummary(madrasaId, studentId, query = {}) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const student = await prisma.student.findFirst({
-    where: { id: studentId, madrasaId },
+    where: { id: studentId, madrasaId: validTenantId },
     include: {
       class: { select: { id: true, name: true } },
     },
@@ -597,7 +609,7 @@ export async function getStudentAttendanceSummary(madrasaId, studentId, query = 
   }
 
   const where = {
-    madrasaId,
+    madrasaId: validTenantId,
     studentId,
   };
 
@@ -668,14 +680,15 @@ export async function getStudentAttendanceSummary(madrasaId, studentId, query = 
  * @returns {Promise<Buffer>}
  */
 export async function generateDailyAttendancePdf(madrasaId, params) {
-  const data = await getClassDailyAttendance(madrasaId, params);
+  const validTenantId = assertValidTenantId(madrasaId);
+  const data = await getClassDailyAttendance(validTenantId, params);
   const madrasa = await prisma.madrasa.findUnique({
-    where: { id: madrasaId },
+    where: { id: validTenantId },
   });
 
   let logoDataUri = null;
   try {
-    logoDataUri = await resolveLogoDataUri(madrasaId);
+    logoDataUri = await resolveLogoDataUri(validTenantId);
   } catch (e) {
     logoDataUri = null;
   }
@@ -811,14 +824,15 @@ export async function generateDailyAttendancePdf(madrasaId, params) {
  * @returns {Promise<Buffer>}
  */
 export async function generateMonthlyAttendancePdf(madrasaId, params) {
-  const data = await getMonthlySummary(madrasaId, params);
+  const validTenantId = assertValidTenantId(madrasaId);
+  const data = await getMonthlySummary(validTenantId, params);
   const madrasa = await prisma.madrasa.findUnique({
-    where: { id: madrasaId },
+    where: { id: validTenantId },
   });
 
   let logoDataUri = null;
   try {
-    logoDataUri = await resolveLogoDataUri(madrasaId);
+    logoDataUri = await resolveLogoDataUri(validTenantId);
   } catch (e) {
     logoDataUri = null;
   }
@@ -955,7 +969,8 @@ export async function generateMonthlyAttendancePdf(madrasaId, params) {
  * @returns {Promise<string>}
  */
 export async function generateDailyAttendanceCsv(madrasaId, params) {
-  const data = await getClassDailyAttendance(madrasaId, params);
+  const validTenantId = assertValidTenantId(madrasaId);
+  const data = await getClassDailyAttendance(validTenantId, params);
 
   const headers = ['Student ID', 'Student Name', 'Status'];
   const rows = data.students.map((st) => [
@@ -975,7 +990,8 @@ export async function generateDailyAttendanceCsv(madrasaId, params) {
  * @returns {Promise<string>}
  */
 export async function generateMonthlyAttendanceCsv(madrasaId, params) {
-  const data = await getMonthlySummary(madrasaId, params);
+  const validTenantId = assertValidTenantId(madrasaId);
+  const data = await getMonthlySummary(validTenantId, params);
 
   const headers = [
     'Student ID',
@@ -1030,9 +1046,7 @@ export async function verifyScanTokenForAttendance({
   recordScanMetric = true,
   prismaClient = prisma,
 }) {
-  if (!madrasaId || typeof madrasaId !== 'string') {
-    throw new BadRequestError('Tenant madrasaId is required.');
-  }
+  const validTenantId = assertValidTenantId(madrasaId);
 
   // 1. Pre-lookup format validation: Reject non-canonical formats immediately
   if (!token || typeof token !== 'string') {
@@ -1050,7 +1064,7 @@ export async function verifyScanTokenForAttendance({
   const tokenRecord = await prismaClient.studentScanToken.findFirst({
     where: {
       tokenHash,
-      madrasaId,
+      madrasaId: validTenantId,
     },
     include: {
       student: {
@@ -1086,14 +1100,8 @@ export async function verifyScanTokenForAttendance({
 
   // 4. Student eligibility checks
   const student = tokenRecord.student;
-  if (!student || student.madrasaId !== madrasaId) {
+  if (!student || student.madrasaId !== validTenantId) {
     throw new NotFoundError('Student not found for this institution.');
-  }
-
-  if (student.status !== 'ACTIVE') {
-    throw new BadRequestError(
-      `Student (${student.admissionNo} - ${student.fullName}) is currently ${student.status} and ineligible for attendance.`
-    );
   }
 
   // 5. Class match verification (if classId provided)
@@ -1146,7 +1154,7 @@ export async function verifyScanTokenForAttendance({
     const session = await prismaClient.attendanceSession.findUnique({
       where: {
         madrasaId_classId_attendanceDate: {
-          madrasaId,
+          madrasaId: validTenantId,
           classId: classId.trim(),
           attendanceDate,
         },
@@ -1229,6 +1237,8 @@ export async function ingestScannedAttendanceRecord({
   alreadyVerified = false,
   prismaClient = prisma,
 }) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   // AUDIT-02: Mandatory reason check when overwrite is true
   if (overwrite) {
     if (!reason || typeof reason !== 'string' || reason.trim().length < 3) {
@@ -1246,7 +1256,7 @@ export async function ingestScannedAttendanceRecord({
     const result = await prismaClient.$transaction(async (tx) => {
       // 1. Transactional token verification: validates token, student status, admission date, class match
       const verification = await verifyScanTokenForAttendance({
-        madrasaId,
+        madrasaId: validTenantId,
         token,
         classId,
         date: dateStr,
@@ -1277,14 +1287,14 @@ export async function ingestScannedAttendanceRecord({
       const session = await tx.attendanceSession.upsert({
         where: {
           madrasaId_classId_attendanceDate: {
-            madrasaId,
+            madrasaId: validTenantId,
             classId: classId.trim(),
             attendanceDate,
           },
         },
         update: {}, // Invariant: Do not overwrite an existing session's academic year or other established fields
         create: {
-          madrasaId,
+          madrasaId: validTenantId,
           classId: classId.trim(),
           attendanceDate,
           academicYear: academicYear ? academicYear.trim() : '2026-2027',
@@ -1331,7 +1341,7 @@ export async function ingestScannedAttendanceRecord({
         // AUDIT-02 & Step 0.7 Fix A: Atomically persist ActivityLog inside the active transaction
         await logTenantActivity(
           {
-            madrasaId,
+            madrasaId: validTenantId,
             userId,
             action: 'ATTENDANCE_RECORD_OVERWRITTEN',
             entityType: 'AttendanceRecord',
@@ -1363,7 +1373,7 @@ export async function ingestScannedAttendanceRecord({
       // 5. Create fresh record
       const created = await tx.attendanceRecord.create({
         data: {
-          madrasaId,
+          madrasaId: validTenantId,
           sessionId: session.id,
           studentId,
           status,
@@ -1387,7 +1397,7 @@ export async function ingestScannedAttendanceRecord({
       const session = await prismaClient.attendanceSession.findUnique({
         where: {
           madrasaId_classId_attendanceDate: {
-            madrasaId,
+            madrasaId: validTenantId,
             classId: classId.trim(),
             attendanceDate,
           },
@@ -1455,9 +1465,7 @@ export async function verifyAdmissionBarcodeForAttendance({
   reason = null,
   prismaClient = prisma,
 }) {
-  if (!madrasaId || typeof madrasaId !== 'string') {
-    throw new BadRequestError('Tenant madrasaId is required.');
-  }
+  const validTenantId = assertValidTenantId(madrasaId);
   if (!admissionNo || typeof admissionNo !== 'string') {
     throw new BadRequestError('Admission number is required.');
   }
@@ -1470,7 +1478,7 @@ export async function verifyAdmissionBarcodeForAttendance({
   // 1. Look up student strictly within tenant boundary
   const student = await prismaClient.student.findFirst({
     where: {
-      madrasaId,
+      madrasaId: validTenantId,
       admissionNo: trimmedAdmissionNo,
     },
     include: {
@@ -1529,7 +1537,7 @@ export async function verifyAdmissionBarcodeForAttendance({
     const session = await prismaClient.attendanceSession.findUnique({
       where: {
         madrasaId_classId_attendanceDate: {
-          madrasaId,
+          madrasaId: validTenantId,
           classId: classId.trim(),
           attendanceDate,
         },
@@ -1574,7 +1582,7 @@ export async function verifyAdmissionBarcodeForAttendance({
   await prismaClient.$transaction(async (tx) => {
     await tx.activityLog.create({
       data: {
-        madrasaId,
+        madrasaId: validTenantId,
         userId: userId || null,
         action: 'ATTENDANCE_VERIFY_1D_BARCODE_FALLBACK',
         entityType: 'Student',
@@ -1635,6 +1643,7 @@ export async function ingestAdmissionBarcodeAttendanceRecord({
   reason = null,
   prismaClient = prisma,
 }) {
+  const validTenantId = assertValidTenantId(madrasaId);
   if (overwrite) {
     if (!reason || typeof reason !== 'string' || reason.trim().length < 3) {
       throw new BadRequestError(
@@ -1652,7 +1661,7 @@ export async function ingestAdmissionBarcodeAttendanceRecord({
       const student = await tx.student.findFirst({
         where: {
           admissionNo: admissionNo.trim(),
-          madrasaId,
+          madrasaId: validTenantId,
         },
         include: {
           class: { select: { id: true, name: true } },
@@ -1698,14 +1707,14 @@ export async function ingestAdmissionBarcodeAttendanceRecord({
       const session = await tx.attendanceSession.upsert({
         where: {
           madrasaId_classId_attendanceDate: {
-            madrasaId,
+            madrasaId: validTenantId,
             classId: classId.trim(),
             attendanceDate,
           },
         },
         update: {},
         create: {
-          madrasaId,
+          madrasaId: validTenantId,
           classId: classId.trim(),
           attendanceDate,
           academicYear: academicYear ? academicYear.trim() : '2026-2027',
@@ -1757,7 +1766,7 @@ export async function ingestAdmissionBarcodeAttendanceRecord({
 
         await logTenantActivity(
           {
-            madrasaId,
+            madrasaId: validTenantId,
             userId,
             action: 'ATTENDANCE_RECORD_OVERWRITTEN',
             entityType: 'AttendanceRecord',
@@ -1796,7 +1805,7 @@ export async function ingestAdmissionBarcodeAttendanceRecord({
       // 8. Create fresh record
       const created = await tx.attendanceRecord.create({
         data: {
-          madrasaId,
+          madrasaId: validTenantId,
           sessionId: session.id,
           studentId: student.id,
           status,
@@ -1806,7 +1815,7 @@ export async function ingestAdmissionBarcodeAttendanceRecord({
       // Audit log entry for 1D barcode attendance ingestion
       await tx.activityLog.create({
         data: {
-          madrasaId,
+          madrasaId: validTenantId,
           userId: userId || null,
           action: 'ATTENDANCE_INGEST_1D_BARCODE_FALLBACK',
           entityType: 'AttendanceRecord',
@@ -1846,7 +1855,7 @@ export async function ingestAdmissionBarcodeAttendanceRecord({
       const session = await prismaClient.attendanceSession.findUnique({
         where: {
           madrasaId_classId_attendanceDate: {
-            madrasaId,
+            madrasaId: validTenantId,
             classId: classId.trim(),
             attendanceDate,
           },

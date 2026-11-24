@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
-import { findTenantRecordOrThrow, assertTenantOwnership } from '../lib/tenant-prisma.js';
+import { findTenantRecordOrThrow, assertTenantOwnership, assertValidTenantId } from '../lib/tenant-prisma.js';
 import { ConflictError, NotFoundError, BadRequestError } from '../utils/errors.js';
 import { ensureClassroomForClass } from './classroom.service.js';
 
@@ -12,12 +12,13 @@ import { ensureClassroomForClass } from './classroom.service.js';
  * @returns {Promise<{ items: Array<object>, total: number, page: number, pageSize: number, totalPages: number }>}
  */
 export async function listClasses(madrasaId, query = {}) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const page = Math.max(1, Number(query.page) || 1);
   const pageSize = Math.min(200, Math.max(1, Number(query.pageSize) || 20));
   const skip = (page - 1) * pageSize;
 
   const where = {
-    madrasaId,
+    madrasaId: validTenantId,
   };
 
   if (query.isActive !== undefined) {
@@ -168,6 +169,7 @@ export async function getClassById(madrasaId, classId) {
  * @returns {Promise<object>}
  */
 export async function createClass(madrasaId, data, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const { academicSectionId, name, code, description, defaultMonthlyFee } = data;
 
   if (!academicSectionId) {
@@ -176,7 +178,7 @@ export async function createClass(madrasaId, data, userId) {
 
   // Verify academic section exists and belongs to this madrasa
   const section = await prisma.academicSection.findFirst({
-    where: { id: academicSectionId, madrasaId },
+    where: { id: academicSectionId, madrasaId: validTenantId },
   });
   if (!section) {
     throw new NotFoundError('Academic section not found.');
@@ -187,7 +189,7 @@ export async function createClass(madrasaId, data, userId) {
 
   // Pre-check for duplicate name within this academic section
   const existingName = await prisma.class.findFirst({
-    where: { madrasaId, academicSectionId, name },
+    where: { madrasaId: validTenantId, academicSectionId, name },
   });
   if (existingName) {
     throw new ConflictError('A class with this name already exists in this academic section.');
@@ -195,7 +197,7 @@ export async function createClass(madrasaId, data, userId) {
 
   if (code) {
     const existingCode = await prisma.class.findFirst({
-      where: { madrasaId, code },
+      where: { madrasaId: validTenantId, code },
     });
     if (existingCode) {
       throw new ConflictError('A class with this code already exists in your Madrasa.');
@@ -205,7 +207,7 @@ export async function createClass(madrasaId, data, userId) {
   try {
     const createdClass = await prisma.class.create({
       data: {
-        madrasaId,
+        madrasaId: validTenantId,
         academicSectionId,
         name,
         code: code || null,

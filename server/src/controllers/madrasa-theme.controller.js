@@ -5,11 +5,21 @@ import {
   resetThemeToDefault,
   discardDraftChanges,
 } from '../services/madrasa-theme.service.js';
+import { ForbiddenError } from '../utils/errors.js';
 
 function getAuthContext(req) {
-  const madrasaId = req.tenant?.madrasaId || req.auth?.madrasaId || req.user?.madrasaId;
+  const madrasaId =
+    req.tenant?.madrasaId ||
+    req.tenant?.id ||
+    req.auth?.madrasaId ||
+    req.user?.madrasaId;
+
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Tenant madrasa context is missing or unauthorized.');
+  }
+
   const userId = req.auth?.userId || req.user?.id || req.auth?.id;
-  return { madrasaId, userId };
+  return { madrasaId: madrasaId.trim(), userId };
 }
 
 export async function getTheme(req, res, next) {

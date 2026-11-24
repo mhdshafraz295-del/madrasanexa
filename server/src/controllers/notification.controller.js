@@ -5,10 +5,28 @@ import {
   listNotificationJobsQuerySchema,
   finalizeTimetableSchema,
 } from '../validations/notification.validation.js';
+import { ForbiddenError } from '../utils/errors.js';
+
+/**
+ * Extracts and strictly validates tenant madrasa ID.
+ */
+function getTenantMadrasaId(req) {
+  const madrasaId =
+    req.tenant?.madrasaId ||
+    req.tenant?.id ||
+    req.auth?.madrasaId ||
+    req.user?.madrasaId;
+
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Tenant madrasa context is missing or unauthorized.');
+  }
+
+  return madrasaId.trim();
+}
 
 export async function getSettings(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const data = await notificationService.getNotificationSettings(madrasaId);
     res.json({ success: true, data });
   } catch (err) {
@@ -18,7 +36,7 @@ export async function getSettings(req, res, next) {
 
 export async function updateSettings(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId || req.user?.id;
     const validated = updateNotificationSettingsSchema.parse(req.body);
     const data = await notificationService.updateNotificationSettings(madrasaId, validated, userId);
@@ -30,7 +48,7 @@ export async function updateSettings(req, res, next) {
 
 export async function listJobs(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const validated = listNotificationJobsQuerySchema.parse(req.query);
     const result = await notificationService.listNotificationJobs(madrasaId, validated);
     res.json({ success: true, ...result });
@@ -41,7 +59,7 @@ export async function listJobs(req, res, next) {
 
 export async function getJobById(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const data = await notificationService.getNotificationJobById(madrasaId, req.params.id);
     res.json({ success: true, data });
   } catch (err) {
@@ -51,7 +69,7 @@ export async function getJobById(req, res, next) {
 
 export async function retryJob(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId || req.user?.id;
     const data = await notificationService.retryNotificationJob(madrasaId, req.params.id, userId);
     res.json({ success: true, message: 'Notification job queued for retry.', data });
@@ -62,7 +80,7 @@ export async function retryJob(req, res, next) {
 
 export async function listPublications(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const data = await notificationService.listTimetablePublications(madrasaId);
     res.json({ success: true, data });
   } catch (err) {
@@ -72,7 +90,7 @@ export async function listPublications(req, res, next) {
 
 export async function finalizeTimetable(req, res, next) {
   try {
-    const madrasaId = req.tenant?.madrasaId || req.user?.madrasaId;
+    const madrasaId = getTenantMadrasaId(req);
     const userId = req.auth?.userId || req.user?.id;
     const validated = finalizeTimetableSchema.parse(req.body);
     const data = await timetableService.finalizeTimetable(madrasaId, validated, userId);

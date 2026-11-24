@@ -1,5 +1,12 @@
 import { prisma } from '../lib/prisma.js';
-import { NotFoundError, BadRequestError, ConflictError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError, ConflictError, ForbiddenError } from '../utils/errors.js';
+
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 import { logTenantActivity } from './tenant.service.js';
 import { Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
@@ -160,8 +167,9 @@ export async function createUstadh(madrasaId, userId, data) {
  * @returns {Promise<object>}
  */
 export async function listUstadhs(madrasaId, query = {}) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const { search, isActive, staffType, page = 1, pageSize = 50 } = query;
-  const where = { madrasaId };
+  const where = { madrasaId: validTenantId };
 
   if (isActive !== undefined && isActive !== '') {
     where.isActive = isActive === 'true' || isActive === true;
@@ -218,8 +226,9 @@ export async function listUstadhs(madrasaId, query = {}) {
  * @returns {Promise<object>}
  */
 export async function getUstadhById(madrasaId, ustadhId) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const ustadh = await prisma.ustadh.findFirst({
-    where: { id: ustadhId, madrasaId },
+    where: { id: ustadhId, madrasaId: validTenantId },
     include: {
       schedules: {
         where: { isActive: true },

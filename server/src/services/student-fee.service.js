@@ -1,6 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
-import { assertTenantOwnership } from '../lib/tenant-prisma.js';
+import { assertTenantOwnership, assertValidTenantId } from '../lib/tenant-prisma.js';
 import { ConflictError, NotFoundError } from '../utils/errors.js';
 
 /**
@@ -22,12 +22,13 @@ import { ConflictError, NotFoundError } from '../utils/errors.js';
  * @returns {Promise<{ effectiveMonthlyFee: string|null, feeSource: 'STUDENT_OVERRIDE'|'CLASS_DEFAULT'|'UNCONFIGURED', settingId?: string, classId?: string, className?: string }>}
  */
 export async function getEffectiveStudentFee(studentId, madrasaId, targetDate = new Date(), db = prisma) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const dateObj = targetDate instanceof Date ? targetDate : new Date(targetDate);
 
   // 1. Check StudentFeeSetting for the target date interval
   const overrideSetting = await db.studentFeeSetting.findFirst({
     where: {
-      madrasaId,
+      madrasaId: validTenantId,
       studentId,
       effectiveFrom: { lte: dateObj },
       OR: [
@@ -48,7 +49,7 @@ export async function getEffectiveStudentFee(studentId, madrasaId, targetDate = 
 
   // 2. No override for target date: use assigned Class default fee
   const student = await db.student.findFirst({
-    where: { id: studentId, madrasaId },
+    where: { id: studentId, madrasaId: validTenantId },
     select: {
       class: {
         select: {

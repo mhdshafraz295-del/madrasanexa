@@ -1,5 +1,12 @@
 import prisma from '../lib/prisma.js';
-import { NotFoundError, BadRequestError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError, ForbiddenError } from '../utils/errors.js';
+
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 import { logTenantActivity } from './tenant.service.js';
 import { maskPhoneNumber } from './sms.service.js';
 
@@ -229,10 +236,11 @@ export function buildFeeReminderMessage({ madrasaName, studentName, remainingBal
  * Retrieves paginated notification jobs for the tenant.
  */
 export async function listNotificationJobs(madrasaId, query) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const { page = 1, pageSize = 20, channel, status, eventType, search, startDate, endDate } = query;
   const skip = (page - 1) * pageSize;
 
-  const where = { madrasaId };
+  const where = { madrasaId: validTenantId };
 
   if (channel && channel !== 'ALL') {
     where.channel = channel;
@@ -282,8 +290,13 @@ export async function listNotificationJobs(madrasaId, query) {
  * Retrieves a single notification job by ID (sanitized).
  */
 export async function getNotificationJobById(madrasaId, jobId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!jobId || typeof jobId !== 'string' || !jobId.trim()) {
+    throw new BadRequestError('Job identifier is required.');
+  }
+
   const job = await prisma.notificationJob.findFirst({
-    where: { id: jobId, madrasaId },
+    where: { id: jobId.trim(), madrasaId: validTenantId },
   });
 
   if (!job) {
@@ -297,8 +310,14 @@ export async function getNotificationJobById(madrasaId, jobId) {
  * Manually retries an eligible failed or delivery-unknown job.
  */
 export async function retryNotificationJob(madrasaId, jobId, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+  if (!jobId || typeof jobId !== 'string' || !jobId.trim()) {
+    throw new BadRequestError('Job identifier is required.');
+  }
+  const cleanJobId = jobId.trim();
+
   const job = await prisma.notificationJob.findFirst({
-    where: { id: jobId, madrasaId },
+    where: { id: cleanJobId, madrasaId: validTenantId },
   });
 
   if (!job) {
@@ -310,7 +329,7 @@ export async function retryNotificationJob(madrasaId, jobId, userId) {
   }
 
   const updated = await prisma.notificationJob.update({
-    where: { id: jobId },
+    where: { id: job.id },
     data: {
       status: 'PENDING',
       attemptCount: 0,
@@ -322,7 +341,7 @@ export async function retryNotificationJob(madrasaId, jobId, userId) {
   });
 
   await logTenantActivity({
-    madrasaId,
+    madrasaId: validTenantId,
     userId,
     action: 'NOTIFICATION_RETRY_REQUESTED',
     entityType: 'NotificationJob',
@@ -343,13 +362,15 @@ export async function retryNotificationJob(madrasaId, jobId, userId) {
  * Retrieves notification settings for a madrasa.
  */
 export async function getNotificationSettings(madrasaId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   let settings = await prisma.madrasaSetting.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
   });
 
   if (!settings) {
     settings = await prisma.madrasaSetting.create({
-      data: { madrasaId },
+      data: { madrasaId: validTenantId },
     });
   }
 
@@ -370,10 +391,12 @@ export async function getNotificationSettings(madrasaId) {
  * Updates notification settings for a madrasa.
  */
 export async function updateNotificationSettings(madrasaId, data, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const updated = await prisma.madrasaSetting.upsert({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     create: {
-      madrasaId,
+      madrasaId: validTenantId,
       ...data,
     },
     update: {
@@ -382,7 +405,7 @@ export async function updateNotificationSettings(madrasaId, data, userId) {
   });
 
   await logTenantActivity({
-    madrasaId,
+    madrasaId: validTenantId,
     userId,
     action: 'NOTIFICATION_SETTINGS_UPDATED',
     entityType: 'MadrasaSetting',
@@ -407,8 +430,10 @@ export async function updateNotificationSettings(madrasaId, data, userId) {
  * Lists timetable publications for the tenant.
  */
 export async function listTimetablePublications(madrasaId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const publications = await prisma.timetablePublication.findMany({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
     include: {
       publishedBy: {
         select: { id: true, name: true, email: true },

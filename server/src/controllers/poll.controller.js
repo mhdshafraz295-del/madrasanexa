@@ -4,6 +4,7 @@ import {
   updatePollStatusSchema,
   submitVoteSchema,
 } from '../validations/poll.validation.js';
+import { ForbiddenError } from '../utils/errors.js';
 
 export async function createPoll(req, res, next) {
   try {
@@ -74,8 +75,12 @@ export async function deletePoll(req, res, next) {
 export async function getUserPolls(req, res, next) {
   try {
     const userId = req.auth.userId;
-    const madrasaId = req.tenant?.madrasaId || req.auth?.madrasaId;
     const role = req.auth.role;
+    const madrasaId = req.tenant?.madrasaId || req.tenant?.id || req.auth?.madrasaId || null;
+
+    if (role !== 'SUPER_ADMIN' && (!madrasaId || typeof madrasaId !== 'string')) {
+      throw new ForbiddenError('Tenant madrasa context is required.');
+    }
 
     const data = await pollService.getActivePollsForUser({
       userId,
@@ -97,8 +102,12 @@ export async function submitVote(req, res, next) {
     const { id } = req.params;
     const validated = submitVoteSchema.parse(req.body);
     const userId = req.auth.userId;
-    const madrasaId = req.tenant?.madrasaId || req.auth?.madrasaId;
     const role = req.auth.role;
+    const madrasaId = req.tenant?.madrasaId || req.tenant?.id || req.auth?.madrasaId || null;
+
+    if (role !== 'SUPER_ADMIN' && (!madrasaId || typeof madrasaId !== 'string')) {
+      throw new ForbiddenError('Tenant madrasa context is required.');
+    }
 
     const data = await pollService.submitVote({
       pollId: id,

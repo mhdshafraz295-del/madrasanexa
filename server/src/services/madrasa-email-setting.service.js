@@ -1,5 +1,12 @@
 import { prisma } from '../lib/prisma.js';
-import { BadRequestError, NotFoundError } from '../utils/errors.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors.js';
+
+function assertValidTenantId(madrasaId) {
+  if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
+    throw new ForbiddenError('Madrasa tenant identifier is required for tenant isolation.');
+  }
+  return madrasaId.trim();
+}
 import { logTenantActivity } from './tenant.service.js';
 import {
   encryptCredential,
@@ -62,8 +69,9 @@ export function sanitizeMadrasaEmailSetting(setting) {
  * @returns {Promise<object>}
  */
 export async function getMadrasaEmailSettings(madrasaId) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const setting = await prisma.madrasaEmailSetting.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
   });
   return sanitizeMadrasaEmailSetting(setting);
 }
@@ -78,8 +86,9 @@ export async function getMadrasaEmailSettings(madrasaId) {
  * @returns {Promise<object>}
  */
 export async function updateMadrasaEmailSettings(madrasaId, payload, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
   const existing = await prisma.madrasaEmailSetting.findUnique({
-    where: { madrasaId },
+    where: { madrasaId: validTenantId },
   });
 
   const mode = payload.mode || 'PLATFORM';
@@ -145,9 +154,9 @@ export async function updateMadrasaEmailSettings(madrasaId, payload, userId) {
 
   const [saved] = await prisma.$transaction([
     prisma.madrasaEmailSetting.upsert({
-      where: { madrasaId },
+      where: { madrasaId: validTenantId },
       create: {
-        madrasaId,
+        madrasaId: validTenantId,
         ...dataToSave,
       },
       update: {
@@ -157,7 +166,7 @@ export async function updateMadrasaEmailSettings(madrasaId, payload, userId) {
   ]);
 
   await logTenantActivity({
-    madrasaId,
+    madrasaId: validTenantId,
     userId,
     action: 'MADRASA_EMAIL_SETTINGS_UPDATED',
     entityType: 'MadrasaEmailSetting',
@@ -190,9 +199,11 @@ export async function updateMadrasaEmailSettings(madrasaId, payload, userId) {
  * @returns {Promise<object>}
  */
 export async function testMadrasaEmailSenderConnection(madrasaId, payload, userEmail, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
   const [madrasa, saved] = await Promise.all([
-    prisma.madrasa.findUnique({ where: { id: madrasaId }, select: { name: true, email: true } }),
-    prisma.madrasaEmailSetting.findUnique({ where: { madrasaId } }),
+    prisma.madrasa.findUnique({ where: { id: validTenantId }, select: { name: true, email: true } }),
+    prisma.madrasaEmailSetting.findUnique({ where: { madrasaId: validTenantId } }),
   ]);
 
   if (!saved || saved.mode !== 'CUSTOM_SMTP') {

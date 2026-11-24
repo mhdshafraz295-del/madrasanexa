@@ -12,6 +12,7 @@ import {
   Sparkles,
   Users,
   ChevronDown,
+  ShieldCheck,
 } from 'lucide-react';
 import type { MadrasaThemeTokens } from '../../services/api';
 
@@ -26,6 +27,7 @@ interface MadrasaPublicNavbarProps {
   hasNotices?: boolean;
   hasStaff?: boolean;
   hasAlumni?: boolean;
+  hasExecutive?: boolean;
   activeIntakeCount?: number;
 }
 
@@ -40,6 +42,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
   hasNotices = false,
   hasStaff = false,
   hasAlumni = false,
+  hasExecutive = false,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [quickLinksOpen, setQuickLinksOpen] = useState(false);
@@ -103,16 +106,16 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
 
   const navLinks = [
     { label: 'About', href: '#about', icon: Building2 },
-    { label: 'Curriculum & Rules', href: '#curriculum', icon: BookOpen },
+    ...(hasExecutive ? [{ label: 'Board', href: '#executive-board', icon: ShieldCheck }] : []),
+    { label: 'Curriculum', href: '#curriculum', icon: BookOpen },
     ...(hasStaff ? [{ label: 'Faculty', href: '#staff', icon: Users }] : []),
-    ...(hasAlumni ? [{ label: 'Alumni & Scholars', href: '#alumni', icon: GraduationCap }] : []),
     ...(hasEvents ? [{ label: 'Events', href: '#events', icon: Calendar }] : []),
-    ...(hasNotices ? [{ label: 'Notices', href: '#notices', icon: BellRing }] : []),
     { label: 'Contact', href: '#contact', icon: Phone },
   ];
 
   const quickLinks = [
     { label: 'Institutional Profile', href: '#about', icon: Building2, desc: 'History, foundation, & vision' },
+    ...(hasExecutive ? [{ label: 'Executive Board', href: '#executive-board', icon: ShieldCheck, desc: 'Leadership, trustees, & committee' }] : []),
     { label: 'Academic Curriculum', href: '#curriculum', icon: BookOpen, desc: 'Syllabus, subjects & code of conduct' },
     ...(hasStaff ? [{ label: 'Faculty & Scholars', href: '#staff', icon: Users, desc: 'Academic leadership directory' }] : []),
     ...(hasAlumni ? [{ label: 'Alumni & Scholars', href: '#alumni', icon: GraduationCap, desc: 'Class & batch-wise scholar directory' }] : []),
@@ -140,7 +143,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
           {/* Brand Logo & Institution Name */}
           <Link
             to={`/madrasa/${slug}`}
-            className="flex items-center space-x-2.5 sm:space-x-3.5 group focus:outline-hidden focus:ring-2 rounded-xl p-1 -m-1 transition-transform min-w-0 flex-1"
+            className="flex items-center space-x-2.5 sm:space-x-3.5 group focus:outline-hidden focus:ring-2 rounded-xl p-1 -m-1 transition-transform min-w-0 max-w-[260px] sm:max-w-xs md:max-w-sm lg:max-w-xs xl:max-w-sm 2xl:max-w-md shrink-0"
           >
             {logoUrl ? (
               <img
@@ -165,12 +168,12 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
             </div>
 
             <div className="flex flex-col justify-center min-w-0">
-              <span className="font-serif font-bold text-sm sm:text-lg lg:text-xl tracking-tight leading-tight truncate text-[#252525]">
+              <span className="font-serif font-bold text-sm sm:text-base lg:text-lg xl:text-xl tracking-tight leading-tight truncate text-[#252525]">
                 {madrasaName}
               </span>
               <div className="flex items-center space-x-2 mt-0.5 hidden sm:flex">
                 <span
-                  className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider flex items-center gap-1 min-w-0"
+                  className="text-[10px] xl:text-xs font-semibold uppercase tracking-wider flex items-center gap-1 min-w-0"
                   style={{ color: primaryColor }}
                 >
                   <Sparkles className="w-3 h-3 shrink-0" />

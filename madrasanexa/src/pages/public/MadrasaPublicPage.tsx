@@ -128,6 +128,7 @@ export const MadrasaPublicPage: React.FC = () => {
         hasNotices={hasNotices}
         hasStaff={hasStaff}
         hasAlumni={hasAlumni}
+        hasExecutive={hasExecutive}
         activeIntakeCount={profile.activeAdmissionPeriods?.length || 0}
       />
 

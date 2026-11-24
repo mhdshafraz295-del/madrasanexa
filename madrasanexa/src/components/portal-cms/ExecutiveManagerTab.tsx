@@ -146,17 +146,28 @@ export const ExecutiveManagerTab: React.FC<ExecutiveManagerTabProps> = ({ disabl
 
     try {
       setUploadingPhoto(true);
-      const result = await apiUploadExecutivePhoto(file);
-      setPhotoUrl(result.url);
-      setPhotoFileId(result.fileId);
+      setFeedback(null);
+      const res: any = await apiUploadExecutivePhoto(file);
+      const resolvedUrl = res?.photoUrl || res?.url || res?.data?.photoUrl || res?.data?.url || '';
+      const resolvedFileId = res?.photoFileId || res?.fileId || res?.data?.photoFileId || res?.data?.fileId || '';
+
+      if (!resolvedUrl) {
+        throw new Error('Server did not return a valid photo URL.');
+      }
+
+      setPhotoUrl(resolvedUrl);
+      setPhotoFileId(resolvedFileId);
       setFeedback({ type: 'success', message: 'Portrait photo uploaded successfully.' });
     } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || 'Failed to upload photo.';
       setFeedback({
         type: 'error',
-        message: err?.response?.data?.message || 'Failed to upload photo.',
+        message: msg,
       });
     } finally {
       setUploadingPhoto(false);
+      // Reset input value so the same file can be selected again if needed
+      e.target.value = '';
     }
   };
 

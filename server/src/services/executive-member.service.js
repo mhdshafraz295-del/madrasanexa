@@ -384,7 +384,16 @@ export async function uploadExecutivePhoto(
 
   return {
     success: true,
+    message: 'Executive photo uploaded successfully.',
+    data: {
+      fileId: fileRecord.id,
+      url: accessUrl,
+      photoUrl: accessUrl,
+      photoFileId: fileRecord.id,
+    },
     fileId: fileRecord.id,
     url: accessUrl,
+    photoUrl: accessUrl,
+    photoFileId: fileRecord.id,
   };
 }

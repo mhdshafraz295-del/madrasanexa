@@ -3546,10 +3546,17 @@ export const apiDeleteExecutiveMember = async (id: string): Promise<void> => {
   await apiClient.delete<ApiResponse<null>>(`/madrasa-admin/executive-members/${id}`);
 };
 
-export const apiUploadExecutivePhoto = async (file: File): Promise<{ fileId: string; url: string }> => {
+export interface ExecutivePhotoUploadResult {
+  fileId: string;
+  url: string;
+  photoUrl: string;
+  photoFileId: string;
+}
+
+export const apiUploadExecutivePhoto = async (file: File): Promise<ExecutivePhotoUploadResult> => {
   const formData = new FormData();
   formData.append('photo', file);
-  const response = await apiClient.post<ApiResponse<{ fileId: string; url: string }>>(
+  const response = await apiClient.post<any>(
     '/madrasa-admin/executive-members/upload-photo',
     formData,
     {
@@ -3558,7 +3565,15 @@ export const apiUploadExecutivePhoto = async (file: File): Promise<{ fileId: str
       },
     }
   );
-  return response.data.data;
+  const payload = response.data?.data || response.data || {};
+  const fileId = payload.fileId || payload.photoFileId || '';
+  const url = payload.url || payload.photoUrl || payload.posterUrl || '';
+  return {
+    fileId,
+    url,
+    photoUrl: url,
+    photoFileId: fileId,
+  };
 };
 
 // ==========================================

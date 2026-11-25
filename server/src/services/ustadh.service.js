@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import { NotFoundError, BadRequestError, ConflictError, ForbiddenError } from '../utils/errors.js';
+import { getTeacherPortalUrl } from '../config/env.js';
 
 function assertValidTenantId(madrasaId) {
   if (!madrasaId || typeof madrasaId !== 'string' || !madrasaId.trim()) {
@@ -487,12 +488,10 @@ export function generateReadableOtp(prefix = 'Mdx') {
  */
 export function resolveTeacherPortalUrl(customUrl = null) {
   if (customUrl && typeof customUrl === 'string' && customUrl.trim()) {
-    return customUrl.trim().replace(/\/+$/, '').replace(/\/login\/?$/i, '').replace(/\/+$/, '');
+    const first = customUrl.split(',')[0].trim();
+    return first.replace(/\/+$/, '').replace(/\/login\/?$/i, '').replace(/\/+$/, '');
   }
-  if (process.env.TEACHER_PORTAL_URL && process.env.TEACHER_PORTAL_URL.trim()) {
-    return process.env.TEACHER_PORTAL_URL.trim().replace(/\/+$/, '').replace(/\/login\/?$/i, '').replace(/\/+$/, '');
-  }
-  return 'http://localhost:5174';
+  return getTeacherPortalUrl().replace(/\/login\/?$/i, '').replace(/\/+$/, '');
 }
 
 /**

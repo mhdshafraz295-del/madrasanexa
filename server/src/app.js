@@ -98,9 +98,20 @@ export function resolveAllowedOrigins(config = env) {
     }
   }
 
-  // 2. Backward compatibility with FRONTEND_URL
+  // 2. Backward compatibility with FRONTEND_URL & TEACHER_PORTAL_URL
   if (config.FRONTEND_URL) {
-    origins.add(String(config.FRONTEND_URL).trim().replace(/\/+$/, ''));
+    String(config.FRONTEND_URL)
+      .split(',')
+      .map((s) => s.trim().replace(/\/+$/, ''))
+      .filter(Boolean)
+      .forEach((u) => origins.add(u));
+  }
+  if (config.TEACHER_PORTAL_URL) {
+    String(config.TEACHER_PORTAL_URL)
+      .split(',')
+      .map((s) => s.trim().replace(/\/+$/, ''))
+      .filter(Boolean)
+      .forEach((u) => origins.add(u));
   }
 
   // 3. Localhost development environments only

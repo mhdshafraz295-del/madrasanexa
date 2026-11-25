@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { env } from '../config/env.js';
+import { env, getPrimaryFrontendUrl, getTeacherPortalUrl } from '../config/env.js';
 import { resolveEmailSenderForMadrasa } from './email-sender-resolver.service.js';
 
 /**
@@ -19,25 +19,35 @@ export function escapeHtml(str) {
 }
 
 /**
- * Normalizes the application login URL from the FRONTEND_URL environment variable.
- * Safely removes trailing slashes to prevent double-slashes (e.g., https://app.example.com//login).
+ * Normalizes the application login URL from the sanitized primary frontend URL.
+ * Safely removes trailing slashes and handles comma-separated URLs cleanly.
  *
  * @returns {string} Normalized login URL
  */
 export function getLoginUrl() {
-  const base = (env.FRONTEND_URL || 'http://localhost:5173').trim().replace(/\/+$/, '');
+  const base = getPrimaryFrontendUrl();
   return `${base}/login`;
 }
 
 /**
- * Constructs the secure one-time password setup URL from the FRONTEND_URL environment variable.
+ * Constructs the secure one-time password setup URL from the sanitized primary frontend URL.
  *
  * @param {string} token Cryptographic setup token
  * @returns {string} Fully qualified setup URL
  */
 export function getSetupPasswordUrl(token) {
-  const base = (env.FRONTEND_URL || 'http://localhost:5173').trim().replace(/\/+$/, '');
+  const base = getPrimaryFrontendUrl();
   return `${base}/setup-password?token=${encodeURIComponent(token)}`;
+}
+
+/**
+ * Normalizes the teacher portal login URL from the sanitized primary teacher portal URL.
+ *
+ * @returns {string} Normalized teacher portal login URL
+ */
+export function getTeacherLoginUrl() {
+  const base = getTeacherPortalUrl();
+  return `${base}/login`;
 }
 
 /**

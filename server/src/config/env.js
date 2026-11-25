@@ -13,10 +13,47 @@ export const isRailwayDeployment = () => Boolean(
   process.env.RAILWAY_DEPLOYMENT_ID
 );
 
+/**
+ * Resolves the primary frontend URL for single-URL email links and redirects.
+ * Reads process.env.FRONTEND_URL || process.env.CLIENT_URL || process.env.APP_URL,
+ * splits on ',', trims whitespace, strips trailing slashes, and returns ONLY the first clean URL.
+ *
+ * @returns {string} Sanitized primary frontend URL
+ */
+export function getPrimaryFrontendUrl() {
+  const raw =
+    process.env.FRONTEND_URL ||
+    process.env.CLIENT_URL ||
+    process.env.APP_URL ||
+    (typeof env !== 'undefined' && env?.FRONTEND_URL) ||
+    'http://localhost:5173';
+  const first = String(raw).split(',')[0].trim().replace(/\/+$/, '');
+  return first || 'http://localhost:5173';
+}
+
+/**
+ * Resolves the primary teacher portal URL for teacher-portal-specific emails.
+ * Reads process.env.TEACHER_PORTAL_URL, splits on ',', trims whitespace,
+ * strips trailing slashes, and falls back to getPrimaryFrontendUrl() if unset.
+ *
+ * @returns {string} Sanitized primary teacher portal URL
+ */
+export function getTeacherPortalUrl() {
+  const raw =
+    process.env.TEACHER_PORTAL_URL ||
+    (typeof env !== 'undefined' && env?.TEACHER_PORTAL_URL);
+  if (raw && typeof raw === 'string' && raw.trim()) {
+    const first = raw.split(',')[0].trim().replace(/\/+$/, '');
+    if (first) return first;
+  }
+  return getPrimaryFrontendUrl();
+}
+
 export const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(5000),
-  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  FRONTEND_URL: z.string().default('http://localhost:5173'),
+  TEACHER_PORTAL_URL: z.string().optional(),
 
   // Multi-Origin Production CORS Support: comma-separated list of allowed origins.
   // Backward-compatible: combined with FRONTEND_URL in server/src/app.js.

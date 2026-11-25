@@ -52,7 +52,7 @@ export const updateSettingsSchema = z.object({
   address: z
     .string()
     .trim()
-    .max(500, 'Address must not exceed 500 characters.')
+    .max(5000, 'Address must not exceed 5000 characters.')
     .optional()
     .nullable(),
 

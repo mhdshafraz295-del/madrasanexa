@@ -10,8 +10,8 @@ export const teacherProfileUpdateSchema = z.object({
   arabicName: z.string().trim().max(100).optional().nullable(),
   phoneNumber: z.string().trim().max(30).optional().nullable(),
   whatsappNumber: z.string().trim().max(30).optional().nullable(),
-  address: z.string().trim().max(500).optional().nullable(),
-  residentialAddress: z.string().trim().max(500).optional().nullable(),
+  address: z.string().trim().max(5000).optional().nullable(),
+  residentialAddress: z.string().trim().max(5000).optional().nullable(),
   nicPassport: z.string().trim().max(50).optional().nullable(),
   dateOfBirth: z.string().trim().max(50).optional().nullable(),
   gender: z.string().trim().max(20).optional().nullable(),
@@ -20,7 +20,7 @@ export const teacherProfileUpdateSchema = z.object({
   district: z.string().trim().max(100).optional().nullable(),
   postalCode: z.string().trim().max(30).optional().nullable(),
   country: z.string().trim().max(100).optional().nullable(),
-  avatarUrl: z.string().trim().max(500).optional().nullable(),
+  avatarUrl: z.string().trim().max(5000).optional().nullable(),
   emergencyContact: z
     .object({
       name: z.string().trim().min(1).max(100),
@@ -60,7 +60,7 @@ export const teacherVerifyQrSchema = z.object({
     .trim()
     .min(1, 'scheduleId cannot be empty.'),
   method: z.enum(['Classroom QR', 'Manual Fallback', 'Camera QR Scan']).default('Classroom QR'),
-  notes: z.string().trim().max(255).optional(),
+  notes: z.string().trim().max(5000).optional(),
 });
 
 /**
@@ -97,7 +97,7 @@ export const studentPeriodMarkSchema = z.object({
         status: z.enum(['Present', 'Late', 'Excused', 'Absent'], {
           required_error: 'status must be Present, Late, Excused, or Absent.',
         }),
-        remarks: z.string().trim().max(255).optional(),
+        remarks: z.string().trim().max(5000).optional(),
         method: z.string().trim().optional().default('Teacher Manual'),
       })
     )

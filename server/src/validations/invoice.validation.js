@@ -14,7 +14,7 @@ export const generateInvoicesSchema = z.object({
   dueDate: z.string().min(1, 'Due date is required.'),
   classId: z.string().optional().nullable(),
   studentIds: z.array(z.string()).optional().nullable(),
-  notes: z.string().max(1000).optional().nullable(),
+  notes: z.string().max(5000).optional().nullable(),
 });
 
 export const listInvoicesQuerySchema = z.object({

@@ -51,7 +51,7 @@ export const updateBankDetailsSchema = z
     accountName: z.string().trim().min(2, 'Account name is required').max(100),
     accountNumber: z.string().trim().min(2, 'Account number is required').max(50),
     branch: z.string().trim().min(2, 'Branch is required').max(100),
-    instructions: z.string().trim().max(1000).optional().nullable(),
+    instructions: z.string().trim().max(5000).optional().nullable(),
   })
   .strict();
 

@@ -26,7 +26,7 @@ export const approveOnboardingSchema = z.object({
   startsAt: z.coerce.date().optional(),
   paymentMethod: z.enum(['CASH', 'BANK_TRANSFER', 'CARD', 'OTHER']).optional(),
   paymentReference: z.string().trim().max(100).optional().nullable(),
-  paymentNotes: z.string().trim().max(500).optional().nullable(),
+  paymentNotes: z.string().trim().max(5000).optional().nullable(),
   recordInitialPayment: z.boolean().default(false),
   temporaryPassword: z.string().min(10).max(100).optional(),
 }).strict();
@@ -43,7 +43,7 @@ export const updateMadrasaSchema = z.object({
   name: z.string().trim().min(2).max(120).optional(),
   email: createOptionalNormalizedEmailSchema('Invalid madrasa email address format.').optional(),
   phone: z.string().trim().min(7).max(25).optional().nullable(),
-  address: z.string().trim().max(500).optional().nullable(),
+  address: z.string().trim().max(5000).optional().nullable(),
 }).strict();
 
 const planDurationSchema = z.union([z.number(), z.string()])
@@ -222,7 +222,7 @@ export const renewSubscriptionSchema = z.object({
   planId: z.string({ required_error: 'Plan is required' }).min(1),
   paymentMethod: z.enum(['CASH', 'BANK_TRANSFER', 'CARD', 'OTHER']).default('BANK_TRANSFER'),
   reference: z.string().trim().max(100).optional().nullable(),
-  notes: z.string().trim().max(500).optional().nullable(),
+  notes: z.string().trim().max(5000).optional().nullable(),
 }).strict();
 
 export const adminPasswordResetSchema = z.object({
@@ -240,7 +240,7 @@ export const listMadrasasQuerySchema = z.object({
 
 export const updateMadrasaStatusSchema = z.object({
   status: z.enum(['ACTIVE', 'SUSPENDED', 'ARCHIVED'], { required_error: 'Status is required' }),
-  reason: z.string().trim().max(500).optional().nullable(),
+  reason: z.string().trim().max(5000).optional().nullable(),
 }).strict();
 
 export const dashboardQuerySchema = z.object({

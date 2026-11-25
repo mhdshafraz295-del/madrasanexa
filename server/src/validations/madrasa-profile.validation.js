@@ -6,7 +6,7 @@ export const curriculumBookSchema = z.object({
   author: z.string().max(200).optional().nullable(),
   description: z.string().max(2000).optional().nullable(),
   displayOrder: z.number().int().default(0),
-  completionNotes: z.string().max(500).optional().nullable(),
+  completionNotes: z.string().max(5000).optional().nullable(),
   chapters: z.array(z.string().max(200)).optional().nullable().default([])
 });
 
@@ -91,9 +91,9 @@ export const staffPresentationItemSchema = z.object({
   department: z.string().max(100).optional().nullable(),
   qualification: z.string().max(150).optional().nullable(),
   experienceYears: z.union([z.number().min(0).max(80), z.string().max(50)]).optional().nullable(),
-  bio: z.string().max(500).optional().nullable(),
+  bio: z.string().max(5000).optional().nullable(),
   photoFileId: z.string().max(191).optional().nullable(),
-  photoUrl: z.string().url().max(1000).optional().nullable(),
+  photoUrl: z.string().url().max(5000).optional().nullable(),
 });
 
 export const staffSectionSchema = z.object({
@@ -114,7 +114,7 @@ export const updateMadrasaProfileSchema = z.object({
   rulesAndRegulations: z.string().max(5000).optional().nullable(),
   contactPhone: z.string().max(50).optional().nullable(),
   contactEmail: z.string().email().max(255).optional().nullable().or(z.literal('')),
-  address: z.string().max(1000).optional().nullable(),
+  address: z.string().max(5000).optional().nullable(),
   curriculumJson: curriculumPayloadSchema.optional().nullable(),
   staffJson: staffSectionSchema.optional().nullable(),
   eventsJson: z.array(eventAlbumSchema).optional().nullable(),

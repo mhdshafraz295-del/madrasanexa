@@ -19,6 +19,7 @@ import {
   type PaymentListItem,
 } from '../../services/api';
 import { StudentRecordsPanels } from '../../components/students/StudentRecordsPanels';
+import { parseNotesField } from '../../utils/photoNotesSanitizer';
 import {
   ArrowLeft,
   Edit2,
@@ -1305,9 +1306,9 @@ export default function StudentDetailPage() {
                 <h2 className="text-sm font-bold text-[#0F172A]">Institutional Notes</h2>
               </div>
 
-              {student.notes ? (
+              {parseNotesField(student.notes).cleanNotes ? (
                 <p className="text-xs text-[#0F172A]/80 whitespace-pre-wrap leading-relaxed bg-[#F7F6F1] p-3 rounded-xl border border-[#E7E9EE]">
-                  {student.notes}
+                  {parseNotesField(student.notes).cleanNotes}
                 </p>
               ) : (
                 <p className="text-xs text-[#7C8A9A] italic">No internal administrative notes recorded.</p>

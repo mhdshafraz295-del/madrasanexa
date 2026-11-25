@@ -15,7 +15,7 @@ export const createUstadhSchema = z.object({
     message: 'WhatsApp number must be in canonical international format (e.g. +94783254552 or +12025550123).',
   }).optional().nullable(),
   email: createOptionalNormalizedEmailSchema(),
-  address: z.string().trim().max(500).optional().nullable(),
+  address: z.string().trim().max(5000).optional().nullable(),
   joinDate: z.string().regex(DATE_REGEX, 'Join date must be in YYYY-MM-DD format.'),
   leaveDate: z.string().regex(DATE_REGEX, 'Leave date must be in YYYY-MM-DD format.').optional().nullable(),
   baseMonthlySalary: z.union([z.number().min(0), z.string()]).refine((val) => {
@@ -23,7 +23,7 @@ export const createUstadhSchema = z.object({
     return !isNaN(num) && num >= 0;
   }, { message: 'Base monthly salary must be a valid non-negative number.' }),
   isActive: z.boolean().optional(),
-  notes: z.string().trim().max(1000).optional().nullable(),
+  notes: z.string().trim().max(5000).optional().nullable(),
 }).refine((data) => {
   if (data.leaveDate && data.joinDate) {
     return data.leaveDate >= data.joinDate;
@@ -43,7 +43,7 @@ export const updateUstadhSchema = z.object({
     message: 'WhatsApp number must be in canonical international format (e.g. +94783254552 or +12025550123).',
   }).optional().nullable(),
   email: z.preprocess((val) => (val === undefined ? undefined : val), createOptionalNormalizedEmailSchema()).optional(),
-  address: z.string().trim().max(500).optional().nullable(),
+  address: z.string().trim().max(5000).optional().nullable(),
   joinDate: z.string().regex(DATE_REGEX).optional(),
   leaveDate: z.string().regex(DATE_REGEX).optional().nullable(),
   baseMonthlySalary: z.union([z.number().min(0), z.string()]).refine((val) => {
@@ -51,7 +51,7 @@ export const updateUstadhSchema = z.object({
     return !isNaN(num) && num >= 0;
   }, { message: 'Base monthly salary must be a valid non-negative number.' }).optional(),
   isActive: z.boolean().optional(),
-  notes: z.string().trim().max(1000).optional().nullable(),
+  notes: z.string().trim().max(5000).optional().nullable(),
 }).refine((data) => {
   if (data.leaveDate && data.joinDate) {
     return data.leaveDate >= data.joinDate;

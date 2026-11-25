@@ -7,7 +7,7 @@ export const createAlumniProfileSchema = z.object({
   completedProgrammes: z.array(z.string().trim().min(1)).optional().default([]),
   academicHighlights: z.array(z.string().trim().min(1)).optional().default([]),
   characterAssessmentRating: z.enum(['EXCELLENT', 'VERY_GOOD', 'GOOD', 'SATISFACTORY', 'CONDITIONAL']).optional().nullable(),
-  characterAssessmentText: z.string().trim().max(1000).optional().nullable(),
+  characterAssessmentText: z.string().trim().max(5000).optional().nullable(),
   allowPublicConductShare: z.boolean().optional().default(false),
 });
 
@@ -17,7 +17,7 @@ export const updateAlumniProfileSchema = z.object({
   completedProgrammes: z.array(z.string().trim().min(1)).optional(),
   academicHighlights: z.array(z.string().trim().min(1)).optional(),
   characterAssessmentRating: z.enum(['EXCELLENT', 'VERY_GOOD', 'GOOD', 'SATISFACTORY', 'CONDITIONAL']).optional().nullable(),
-  characterAssessmentText: z.string().trim().max(1000).optional().nullable(),
+  characterAssessmentText: z.string().trim().max(5000).optional().nullable(),
   allowPublicConductShare: z.boolean().optional(),
 });
 
@@ -27,7 +27,7 @@ export const recordConsentSchema = z.object({
   proofType: z.enum(['SIGNED_PHYSICAL_FORM', 'DIGITAL_SIGNATURE', 'GUARDIAN_AFFIDAVIT', 'DIRECT_APPLICATION']),
   consentVersion: z.string().trim().min(1).max(20).default('v1.0-2026'),
   consentFileId: z.string().optional().nullable(),
-  consentNotes: z.string().trim().max(1000).optional().nullable(),
+  consentNotes: z.string().trim().max(5000).optional().nullable(),
 });
 
 export const renewConsentSchema = z.object({
@@ -36,11 +36,11 @@ export const renewConsentSchema = z.object({
   proofType: z.enum(['SIGNED_PHYSICAL_FORM', 'DIGITAL_SIGNATURE', 'GUARDIAN_AFFIDAVIT', 'DIRECT_APPLICATION']),
   consentVersion: z.string().trim().min(1).max(20),
   consentFileId: z.string().min(1, 'Fresh consent evidence document file is required.'),
-  consentNotes: z.string().trim().max(1000).optional().nullable(),
+  consentNotes: z.string().trim().max(5000).optional().nullable(),
 });
 
 export const withdrawConsentSchema = z.object({
-  reason: z.string().trim().min(3, 'Withdrawal reason must be at least 3 characters.').max(1000),
+  reason: z.string().trim().min(3, 'Withdrawal reason must be at least 3 characters.').max(5000),
 });
 
 export const directorySearchSchema = z.object({
@@ -63,12 +63,12 @@ export const directorySearchSchema = z.object({
 });
 
 export const requestVerificationSchema = z.object({
-  purpose: z.string().trim().min(5, 'Purpose must be at least 5 characters.').max(255),
-  specificInquiry: z.string().trim().max(1000).optional().nullable(),
+  purpose: z.string().trim().min(5, 'Purpose must be at least 5 characters.').max(1000),
+  specificInquiry: z.string().trim().max(5000).optional().nullable(),
   includeCharacter: z.boolean().optional().default(false),
 });
 
 export const respondVerificationSchema = z.object({
   status: z.enum(['APPROVED_VERIFIED', 'REJECTED', 'CLOSED']),
-  responseNotes: z.string().trim().max(1000).optional().nullable(),
+  responseNotes: z.string().trim().max(5000).optional().nullable(),
 });

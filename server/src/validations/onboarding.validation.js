@@ -39,7 +39,7 @@ export const publicOnboardingRequestSchema = z.object({
   address: z
     .string()
     .trim()
-    .max(500, 'Address cannot exceed 500 characters')
+    .max(5000, 'Address cannot exceed 5000 characters')
     .optional()
     .nullable(),
   expectedStudentCount: z

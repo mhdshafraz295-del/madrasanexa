@@ -20,6 +20,7 @@ import {
   Loader2,
   Info,
 } from 'lucide-react';
+import { parseNotesField } from '../../utils/photoNotesSanitizer';
 
 export default function StudentEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -120,7 +121,7 @@ export default function StudentEditPage() {
         );
         setWhatsappNotification(studentData.whatsappOptIn ?? studentData.whatsappNotification ?? true);
         setAddress(studentData.address || '');
-        setNotes(studentData.notes || '');
+        setNotes(parseNotesField(studentData.notes).cleanNotes);
       } catch (err: any) {
         console.error('Failed to load student for editing:', err);
         setError(err.response?.data?.message || 'Failed to load student details.');

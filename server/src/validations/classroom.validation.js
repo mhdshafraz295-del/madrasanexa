@@ -5,10 +5,10 @@ export const createClassroomSchema = z.object({
   roomNumber: z.string().trim().min(1, 'Room number or identifier is required.').max(50),
   classId: z.string().trim().optional().nullable(),
   capacity: z.number().int().min(1).max(1000).optional().nullable(),
-  facilities: z.string().trim().max(1000).optional().nullable(),
+  facilities: z.string().trim().max(5000).optional().nullable(),
   building: z.string().trim().max(100).optional().nullable(),
   floor: z.string().trim().max(50).optional().nullable(),
-  notes: z.string().trim().max(1000).optional().nullable(),
+  notes: z.string().trim().max(5000).optional().nullable(),
   isActive: z.boolean().default(true),
 });
 
@@ -17,10 +17,10 @@ export const updateClassroomSchema = z.object({
   roomNumber: z.string().trim().min(1).max(50).optional(),
   classId: z.string().trim().optional().nullable(),
   capacity: z.number().int().min(1).max(1000).optional().nullable(),
-  facilities: z.string().trim().max(1000).optional().nullable(),
+  facilities: z.string().trim().max(5000).optional().nullable(),
   building: z.string().trim().max(100).optional().nullable(),
   floor: z.string().trim().max(50).optional().nullable(),
-  notes: z.string().trim().max(1000).optional().nullable(),
+  notes: z.string().trim().max(5000).optional().nullable(),
   isActive: z.boolean().optional(),
 });
 

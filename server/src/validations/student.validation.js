@@ -72,7 +72,7 @@ export const createStudentSchema = z
     address: z
       .string()
       .trim()
-      .max(500, 'Address must not exceed 500 characters.')
+      .max(5000, 'Address must not exceed 5000 characters.')
       .optional()
       .nullable()
       .transform((val) => (val && val.trim() !== '' ? val.trim() : null)),
@@ -111,7 +111,7 @@ export const createStudentSchema = z
     notes: z
       .string()
       .trim()
-      .max(1000, 'Notes must not exceed 1000 characters.')
+      .max(5000, 'Notes must not exceed 5000 characters.')
       .optional()
       .nullable()
       .transform((val) => (val && val.trim() !== '' ? val.trim() : null)),
@@ -229,7 +229,7 @@ export const updateStudentSchema = z
     address: z
       .string()
       .trim()
-      .max(500, 'Address must not exceed 500 characters.')
+      .max(5000, 'Address must not exceed 5000 characters.')
       .optional()
       .nullable()
       .transform((val) => (val === undefined ? undefined : val && val.trim() !== '' ? val.trim() : null)),
@@ -248,7 +248,7 @@ export const updateStudentSchema = z
     notes: z
       .string()
       .trim()
-      .max(1000, 'Notes must not exceed 1000 characters.')
+      .max(5000, 'Notes must not exceed 5000 characters.')
       .optional()
       .nullable()
       .transform((val) => (val === undefined ? undefined : val && val.trim() !== '' ? val.trim() : null)),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2, User, Phone, Mail, Calendar, DollarSign, MapPin, FileText, AlertCircle } from 'lucide-react';
 import type { UstadhItem, TeachingStaffType } from '../../services/ustadh.service';
+import { parseNotesField } from '../../utils/photoNotesSanitizer';
 
 interface UstadhModalProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export const UstadhModal: React.FC<UstadhModalProps> = ({
       setJoinDate(initialData.joinDate || '');
       setLeaveDate(initialData.leaveDate || '');
       setBaseMonthlySalary(String(initialData.baseMonthlySalary || ''));
-      setNotes(initialData.notes || '');
+      setNotes(parseNotesField(initialData.notes).cleanNotes);
       setIsActive(initialData.isActive);
     } else {
       setFullName('');

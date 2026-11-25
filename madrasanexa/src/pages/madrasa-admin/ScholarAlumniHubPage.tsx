@@ -38,6 +38,7 @@ import {
   type QualificationEntry,
   getScholarStatusInfo,
 } from '../../services/scholar-alumni.service';
+import { parseNotesField } from '../../utils/photoNotesSanitizer';
 
 export const ScholarAlumniHubPage: React.FC = () => {
   const [hubData, setHubData] = useState<AlumniHubResponse | null>(null);
@@ -227,7 +228,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
       facultyOrDepartment: item.facultyOrDepartment || '',
       currentRole: item.currentRole || '',
       cityCountry: item.cityCountry || '',
-      bio: item.bio || '',
+      bio: parseNotesField(item.bio).cleanNotes,
       email: item.email || '',
       phone: item.phone || '',
       linkedinUrl: item.linkedinUrl || '',
@@ -1393,13 +1394,13 @@ export const ScholarAlumniHubPage: React.FC = () => {
                 </div>
               )}
 
-              {activeDetailItem.bio && (
+              {parseNotesField(activeDetailItem.bio).cleanNotes && (
                 <div>
                   <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
                     Academic Bio
                   </span>
                   <p className="p-3 bg-white border border-slate-200 rounded-xl text-slate-700 leading-relaxed whitespace-pre-line">
-                    {activeDetailItem.bio}
+                    {parseNotesField(activeDetailItem.bio).cleanNotes}
                   </p>
                 </div>
               )}

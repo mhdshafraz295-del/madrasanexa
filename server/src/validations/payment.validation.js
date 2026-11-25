@@ -14,7 +14,7 @@ export const createPaymentSchema = z
       .trim()
       .min(1, 'Idempotency key is required for payment creation.')
       .max(100, 'Idempotency key cannot exceed 100 characters.'),
-    notes: z.string().max(1000, 'Notes cannot exceed 1000 characters.').optional().nullable(),
+    notes: z.string().max(5000, 'Notes cannot exceed 5000 characters.').optional().nullable(),
     allocations: z
       .array(
         z.object({

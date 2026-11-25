@@ -317,7 +317,7 @@ export default function TeacherAttendancePage() {
   };
 
   return (
-    <div className="space-y-6 overflow-x-hidden min-w-0 max-w-full">
+    <div className="space-y-6 overflow-x-hidden min-w-0 max-w-full pb-24">
       {/* 1. Page Header */}
       <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
         <div className="min-w-0">
@@ -405,8 +405,8 @@ export default function TeacherAttendancePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-w-0 max-w-full">
         {/* Left Column (7 cols): Native Camera Viewfinder & Simulated Controls */}
         <div className="lg:col-span-7 space-y-4 min-w-0">
-          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-slate-100 mb-3.5 gap-2.5">
+          <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/90 p-4 sm:p-5 shadow-xs min-w-0">
+            <div className="flex flex-wrap items-center justify-between pb-3.5 border-b border-slate-100 mb-3.5 gap-2 min-w-0">
               <div className="flex items-center gap-2 min-w-0">
                 <QrCode className="w-4 h-4 text-[#0D9488] shrink-0" />
                 <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider truncate">
@@ -438,11 +438,17 @@ export default function TeacherAttendancePage() {
             <CameraScannerView
               onScan={(payload) => handleVerifyToken(payload, 'Classroom QR')}
               disabled={isLoading}
-              contextBadge="Scan Classroom QR Plaque"
+              contextBadge={
+                activeSlot && !isCurrentSlotEnded
+                  ? `Period ${activeSlot.period}`
+                  : 'Classroom QR'
+              }
               statsBadge={
                 activeSlot && !isCurrentSlotEnded
-                  ? `Period ${activeSlot.period}: ${activeSlot.subject}`
-                  : 'Time Window Locked'
+                  ? activeSlot.subject
+                  : assignedRoom
+                  ? assignedRoom.code
+                  : undefined
               }
               lastScanResult={liveScanToast}
             />
@@ -465,7 +471,7 @@ export default function TeacherAttendancePage() {
 
             {/* Evaluator State Simulator for Reviewers */}
             <div className="mt-4 p-3.5 bg-slate-50 rounded-2xl border border-slate-200/90 space-y-2">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between pr-2">
                 <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                   <HelpCircle className="w-3.5 h-3.5 text-[#0D9488]" />
                   <span>Prototype Evaluator State Simulator</span>

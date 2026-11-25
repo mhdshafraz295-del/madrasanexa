@@ -1,3 +1,8 @@
-# Nixpacks configuration for Railway Node 20 LTS
+# Nixpacks configuration for Railway Node 20 LTS with Chromium for PDF generation
+[phases.setup]
+nixPkgs = ["nodejs_20", "chromium", "fontconfig", "freetype"]
+
 [variables]
 NIXPACKS_NODE_VERSION = "20"
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "true"
+PUPPETEER_EXECUTABLE_PATH = "/usr/bin/chromium"

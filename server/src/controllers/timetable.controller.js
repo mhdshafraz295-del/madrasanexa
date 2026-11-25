@@ -104,7 +104,10 @@ export async function deleteBreak(req, res, next) {
 
 export async function exportClassPdf(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = req.tenant?.madrasaId || req.tenant?.id || req.auth?.madrasaId;
+    if (!madrasaId) {
+      return res.status(400).json({ error: 'Tenant context missing.' });
+    }
     const validated = getClassTimetableQuerySchema.parse(req.query);
     const pdfBuffer = await timetableService.exportClassTimetablePdf(madrasaId, validated);
 
@@ -125,13 +128,17 @@ export async function exportClassPdf(req, res, next) {
     res.setHeader('Content-Length', pdfBuffer.length);
     return res.send(pdfBuffer);
   } catch (err) {
+    console.error('[TimetableController] exportClassPdf failure:', err);
     next(err);
   }
 }
 
 export async function exportStaffPdf(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = req.tenant?.madrasaId || req.tenant?.id || req.auth?.madrasaId;
+    if (!madrasaId) {
+      return res.status(400).json({ error: 'Tenant context missing.' });
+    }
     const validated = getStaffTimetableQuerySchema.parse(req.query);
     const pdfBuffer = await timetableService.exportStaffTimetablePdf(madrasaId, validated);
 
@@ -152,13 +159,17 @@ export async function exportStaffPdf(req, res, next) {
     res.setHeader('Content-Length', pdfBuffer.length);
     return res.send(pdfBuffer);
   } catch (err) {
+    console.error('[TimetableController] exportStaffPdf failure:', err);
     next(err);
   }
 }
 
 export async function exportFullPdf(req, res, next) {
   try {
-    const madrasaId = req.tenant.madrasaId;
+    const madrasaId = req.tenant?.madrasaId || req.tenant?.id || req.auth?.madrasaId;
+    if (!madrasaId) {
+      return res.status(400).json({ error: 'Tenant context missing.' });
+    }
     const validated = getFullTimetableQuerySchema.parse(req.query);
     const pdfBuffer = await timetableService.exportFullTimetablePdf(madrasaId, validated);
 
@@ -169,6 +180,7 @@ export async function exportFullPdf(req, res, next) {
     res.setHeader('Content-Length', pdfBuffer.length);
     return res.send(pdfBuffer);
   } catch (err) {
+    console.error('[TimetableController] exportFullPdf failure:', err);
     next(err);
   }
 }

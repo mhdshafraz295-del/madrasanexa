@@ -1108,19 +1108,19 @@ export async function exportFullTimetablePdf(madrasaId, query = {}) {
             <tr style="background: #F3F4F6;">
               <td style="font-weight: 700; color: #111827; text-align: center;">${escapeHtml(it.dayOfWeek)}</td>
               <td style="font-weight: 600; color: #111827; text-align: center;">${formatMinutesToDisplayTime(it.startMinutes)} – ${formatMinutesToDisplayTime(it.endMinutes)}</td>
-              <td style="font-weight: 600; color: #111827;">${escapeHtml(it.class.name)}</td>
-              <td colspan="2" style="font-weight: 700; color: #1F2937; text-transform: uppercase; text-align: center;">[BREAK] ${escapeHtml(it.name)}</td>
+              <td style="font-weight: 600; color: #111827;">${escapeHtml(it.class?.name || '')}</td>
+              <td colspan="2" style="font-weight: 700; color: #1F2937; text-transform: uppercase; text-align: center;">[BREAK] ${escapeHtml(it.name || 'INTERVAL')}</td>
             </tr>
           `;
         }
-        const staffTypeLabel = it.staff.staffType === 'SCHOOL_TEACHER' ? 'Teacher' : 'Ustadh';
+        const staffTypeLabel = it.staff?.staffType === 'SCHOOL_TEACHER' ? 'Teacher' : 'Ustadh';
         return `
           <tr>
             <td style="font-weight: 700; color: #111827; text-align: center;">${escapeHtml(it.dayOfWeek)}</td>
             <td style="font-weight: 600; color: #111827; text-align: center;">${formatMinutesToDisplayTime(it.startMinutes)} – ${formatMinutesToDisplayTime(it.endMinutes)}</td>
-            <td style="font-weight: 600; color: #111827;">${escapeHtml(it.class.name)}</td>
-            <td style="font-weight: 700; color: #111827;">${escapeHtml(it.subject.name)}</td>
-            <td>${escapeHtml(it.staff.fullName)} <span style="font-size: 8.5px; color: #4B5563;">(${staffTypeLabel})</span></td>
+            <td style="font-weight: 600; color: #111827;">${escapeHtml(it.class?.name || '')}</td>
+            <td style="font-weight: 700; color: #111827;">${escapeHtml(it.subject?.name || '')}</td>
+            <td>${escapeHtml(it.staff?.fullName || '')} <span style="font-size: 8.5px; color: #4B5563;">(${staffTypeLabel})</span></td>
           </tr>
         `;
       }).join('');

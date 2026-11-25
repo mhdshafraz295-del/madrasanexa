@@ -74,6 +74,7 @@
     "node-cron": "^4.6.0",
     "nodemailer": "^10.3.1",
     "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.21.0",
     "prisma": "^6.19.3",
     "puppeteer": "^25.16.0",
     "sharp": "^0.35.5",

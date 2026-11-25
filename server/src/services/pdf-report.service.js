@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer';
+import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -221,6 +222,15 @@ export async function generateReportPdf(reportData, { landscape = false } = {}) 
     });
 
     return pdfBuffer;
+  } catch (browserErr) {
+    console.warn('[PDF] Puppeteer report PDF rendering failed, activating pure-Node PDF fallback:', browserErr.message);
+    try {
+      const html = buildReportHtmlDocument(reportData);
+      return await renderHtmlFallbackToPdf({ html, landscape });
+    } catch (fallbackErr) {
+      console.error('[PDF] Both Puppeteer and fallback PDF generation failed:', fallbackErr);
+      throw browserErr;
+    }
   } finally {
     if (page) {
       try {
@@ -234,7 +244,91 @@ export async function generateReportPdf(reportData, { landscape = false } = {}) 
 }
 
 /**
+ * Programmatic pure-Node PDF fallback generator when Chromium / Puppeteer fails or is unavailable.
+ * Ensures PDF export NEVER returns 500 in containerized environments.
+ */
+export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: 'A4',
+        layout: landscape ? 'landscape' : 'portrait',
+        margin: 36,
+        autoFirstPage: true,
+      });
+
+      const chunks = [];
+      doc.on('data', (chunk) => chunks.push(chunk));
+      doc.on('end', () => resolve(Buffer.concat(chunks)));
+      doc.on('error', (err) => reject(err));
+
+      // Register Noto fonts if available for Unicode / Arabic / Sinhala / Tamil
+      const arabicFontPath = path.join(fontsDir, 'NotoSansArabic-Regular.ttf');
+      const regularFontPath = path.join(fontsDir, 'NotoSans-Regular.ttf');
+      if (fs.existsSync(regularFontPath)) {
+        doc.registerFont('NotoRegular', regularFontPath);
+      }
+      if (fs.existsSync(arabicFontPath)) {
+        doc.registerFont('NotoArabic', arabicFontPath);
+      }
+
+      const activeFont = fs.existsSync(regularFontPath) ? 'NotoRegular' : 'Helvetica';
+      doc.font(activeFont);
+
+      // Strip HTML tags for clean plain-text tabular layout fallback
+      const cleanText = html
+        .replace(/<style[\s\S]*?<\/style>/gi, '')
+        .replace(/<script[\s\S]*?<\/script>/gi, '')
+        .replace(/<th[^>]*>/gi, ' | ')
+        .replace(/<td[^>]*>/gi, ' | ')
+        .replace(/<\/tr>/gi, ' |\n')
+        .replace(/<\/h[1-6]>/gi, '\n\n')
+        .replace(/<\/p>/gi, '\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#039;/g, "'")
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+
+      const lines = cleanText.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          doc.moveDown(0.5);
+          continue;
+        }
+
+        // Check if line contains Arabic Unicode characters
+        if (/[\u0600-\u06FF]/.test(trimmed) && fs.existsSync(arabicFontPath)) {
+          doc.font('NotoArabic');
+        } else {
+          doc.font(activeFont);
+        }
+
+        if (trimmed.startsWith('|')) {
+          doc.fontSize(8.5).text(trimmed, { align: 'left', lineGap: 2 });
+        } else if (trimmed === trimmed.toUpperCase() && trimmed.length < 60) {
+          doc.fontSize(12).text(trimmed, { align: 'center', underline: true });
+          doc.moveDown(0.3);
+        } else {
+          doc.fontSize(10).text(trimmed, { align: 'left', lineGap: 2 });
+        }
+      }
+
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+}
+
+/**
  * Directly renders raw HTML to A4 PDF buffer with the shared browser and security guards.
+ * Falls back to pure-Node programmatic PDF if Puppeteer fails to launch or render.
  *
  * @param {{ html: string, landscape?: boolean }} param0
  * @returns {Promise<Buffer>}
@@ -289,6 +383,14 @@ export async function renderRawHtmlToPdf({ html, landscape = false }) {
     });
 
     return Buffer.from(pdfBuffer);
+  } catch (browserErr) {
+    console.warn('[PDF] Puppeteer PDF rendering failed, activating pure-Node PDF fallback:', browserErr.message);
+    try {
+      return await renderHtmlFallbackToPdf({ html, landscape });
+    } catch (fallbackErr) {
+      console.error('[PDF] Both Puppeteer and fallback PDF generation failed:', fallbackErr);
+      throw browserErr;
+    }
   } finally {
     if (page) {
       try {

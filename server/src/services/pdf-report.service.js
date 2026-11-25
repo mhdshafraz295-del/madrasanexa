@@ -245,15 +245,17 @@ export async function generateReportPdf(reportData, { landscape = false } = {}) 
 
 /**
  * Programmatic pure-Node PDF fallback generator when Chromium / Puppeteer fails or is unavailable.
- * Ensures PDF export NEVER returns 500 in containerized environments.
+ * Renders a structured, institutional 1-page A4 Landscape Grid Table with borders, headers,
+ * zebra fills, and multi-script Unicode/Arabic text support.
  */
 export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
   return new Promise((resolve, reject) => {
     try {
+      const isLandscape = landscape || html.includes('A4 landscape') || html.includes('landscape');
       const doc = new PDFDocument({
         size: 'A4',
-        layout: landscape ? 'landscape' : 'portrait',
-        margin: 36,
+        layout: isLandscape ? 'landscape' : 'portrait',
+        margin: 24,
         autoFirstPage: true,
       });
 
@@ -262,62 +264,183 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', (err) => reject(err));
 
-      // Register Noto fonts if available for Unicode / Arabic / Sinhala / Tamil
+      // Font paths
       const arabicFontPath = path.join(fontsDir, 'NotoSansArabic-Regular.ttf');
       const regularFontPath = path.join(fontsDir, 'NotoSans-Regular.ttf');
-      if (fs.existsSync(regularFontPath)) {
-        doc.registerFont('NotoRegular', regularFontPath);
+      const hasRegular = fs.existsSync(regularFontPath);
+      const hasArabic = fs.existsSync(arabicFontPath);
+
+      if (hasRegular) doc.registerFont('NotoRegular', regularFontPath);
+      if (hasArabic) doc.registerFont('NotoArabic', arabicFontPath);
+
+      const defaultFont = hasRegular ? 'NotoRegular' : 'Helvetica';
+      const arabicFont = hasArabic ? 'NotoArabic' : defaultFont;
+
+      // Helper to choose font based on text script
+      const selectFont = (text) => (/[\u0600-\u06FF]/.test(text) ? arabicFont : defaultFont);
+
+      // Clean HTML entity helper
+      const decodeHtml = (str) =>
+        String(str || '')
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'")
+          .replace(/&bull;/g, '•')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+      // Extract Header Metadata
+      const madrasaNameMatch = html.match(/<div class="madrasa-name">([^<]+)<\/div>/i);
+      const madrasaName = madrasaNameMatch ? decodeHtml(madrasaNameMatch[1]) : 'MADRASANEXA ACADEMY';
+
+      const timetableTitleMatch = html.match(/<div class="timetable-title">([^<]+)<\/div>/i);
+      const timetableTitle = timetableTitleMatch ? decodeHtml(timetableTitleMatch[1]) : 'WEEKLY TIMETABLE';
+
+      const metaBarMatch = html.match(/<div class="meta-bar">([\s\S]*?)<\/div>/i);
+      const metaBarText = metaBarMatch ? decodeHtml(metaBarMatch[1]) : '';
+
+      // Page dimensions
+      const pageWidth = doc.page.width;
+      const pageHeight = doc.page.height;
+      const startX = 24;
+      const contentWidth = pageWidth - 48;
+
+      // 1. Render Header Banner
+      let currentY = 20;
+
+      // Institutional Header Box
+      doc.rect(startX, currentY, contentWidth, 54).fillAndStroke('#F8FAFC', '#334155');
+
+      doc.font(selectFont(madrasaName)).fontSize(15).fillColor('#0F172A')
+        .text(madrasaName, startX, currentY + 6, { width: contentWidth, align: 'center' });
+
+      doc.font(defaultFont).fontSize(10.5).fillColor('#334155')
+        .text(timetableTitle, startX, currentY + 24, { width: contentWidth, align: 'center' });
+
+      if (metaBarText) {
+        doc.font(selectFont(metaBarText)).fontSize(8.5).fillColor('#64748B')
+          .text(metaBarText, startX, currentY + 39, { width: contentWidth, align: 'center' });
       }
-      if (fs.existsSync(arabicFontPath)) {
-        doc.registerFont('NotoArabic', arabicFontPath);
+
+      currentY += 60;
+
+      // 2. Parse HTML Table
+      const theadMatch = html.match(/<thead[^>]*>([\s\S]*?)<\/thead>/i);
+      const theadHtml = theadMatch ? theadMatch[1] : '';
+      const thMatches = [...theadHtml.matchAll(/<th[^>]*>([\s\S]*?)<\/th>/gi)].map((m) => decodeHtml(m[1]));
+
+      const tbodyMatch = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
+      const tbodyHtml = tbodyMatch ? tbodyMatch[1] : html;
+      const trMatches = [...tbodyHtml.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)];
+
+      const headers = thMatches.length > 0 ? thMatches : ['TIME', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+      const columnCount = headers.length;
+
+      // Width calculation: 1st column (TIME) fixed width ~110pt, rest evenly distributed
+      const timeColWidth = Math.min(120, Math.max(90, Math.floor(contentWidth * 0.16)));
+      const otherColWidth = Math.floor((contentWidth - timeColWidth) / (columnCount - 1));
+
+      // Calculate available height to strictly guarantee 1 single landscape page
+      const availableHeight = pageHeight - currentY - 26;
+      const headerRowHeight = 22;
+      const rowCount = Math.max(1, trMatches.length);
+      const rowHeight = Math.max(22, Math.min(42, Math.floor((availableHeight - headerRowHeight) / rowCount)));
+
+      // 3. Render Table Header
+      let colX = startX;
+      for (let i = 0; i < columnCount; i++) {
+        const w = i === 0 ? timeColWidth : otherColWidth;
+        doc.rect(colX, currentY, w, headerRowHeight).fillAndStroke('#0F172A', '#0F172A');
+        doc.font(defaultFont).fontSize(8.5).fillColor('#FFFFFF')
+          .text(headers[i], colX + 2, currentY + 6, { width: w - 4, align: 'center' });
+        colX += w;
       }
+      currentY += headerRowHeight;
 
-      const activeFont = fs.existsSync(regularFontPath) ? 'NotoRegular' : 'Helvetica';
-      doc.font(activeFont);
+      // 4. Render Table Rows
+      for (let rIdx = 0; rIdx < trMatches.length; rIdx++) {
+        const rowContent = trMatches[rIdx][1];
+        const tdMatches = [...rowContent.matchAll(/<td([^>]*)>([\s\S]*?)<\/td>/gi)];
 
-      // Strip HTML tags for clean plain-text tabular layout fallback
-      const cleanText = html
-        .replace(/<style[\s\S]*?<\/style>/gi, '')
-        .replace(/<script[\s\S]*?<\/script>/gi, '')
-        .replace(/<th[^>]*>/gi, ' | ')
-        .replace(/<td[^>]*>/gi, ' | ')
-        .replace(/<\/tr>/gi, ' |\n')
-        .replace(/<\/h[1-6]>/gi, '\n\n')
-        .replace(/<\/p>/gi, '\n')
-        .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<[^>]+>/g, '')
-        .replace(/&amp;/g, '&')
-        .replace(/&lt;/g, '<')
-        .replace(/&gt;/g, '>')
-        .replace(/&quot;/g, '"')
-        .replace(/&#039;/g, "'")
-        .replace(/\n{3,}/g, '\n\n')
-        .trim();
+        // Check if row is a full-span break
+        const isBreak = rowContent.includes('break-cell') || rowContent.toLowerCase().includes('[break]') || rowContent.toLowerCase().includes('interval');
 
-      const lines = cleanText.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) {
-          doc.moveDown(0.5);
-          continue;
-        }
+        colX = startX;
 
-        // Check if line contains Arabic Unicode characters
-        if (/[\u0600-\u06FF]/.test(trimmed) && fs.existsSync(arabicFontPath)) {
-          doc.font('NotoArabic');
+        if (isBreak && tdMatches.length <= 2) {
+          // Time cell
+          const timeText = tdMatches[0] ? decodeHtml(tdMatches[0][2]) : '';
+          const breakText = tdMatches[1] ? decodeHtml(tdMatches[1][2]) : 'INTERVAL / BREAK';
+
+          doc.rect(colX, currentY, timeColWidth, rowHeight).fillAndStroke('#F1F5F9', '#CBD5E1');
+          doc.font(defaultFont).fontSize(8).fillColor('#0F172A')
+            .text(timeText, colX + 2, currentY + (rowHeight / 2) - 4, { width: timeColWidth - 4, align: 'center' });
+
+          const breakWidth = contentWidth - timeColWidth;
+          doc.rect(colX + timeColWidth, currentY, breakWidth, rowHeight).fillAndStroke('#E2E8F0', '#CBD5E1');
+          doc.font(selectFont(breakText)).fontSize(9).fillColor('#334155')
+            .text(breakText, colX + timeColWidth + 4, currentY + (rowHeight / 2) - 5, { width: breakWidth - 8, align: 'center' });
         } else {
-          doc.font(activeFont);
+          for (let cIdx = 0; cIdx < columnCount; cIdx++) {
+            const w = cIdx === 0 ? timeColWidth : otherColWidth;
+            const td = tdMatches[cIdx];
+            const rawCellHtml = td ? td[2] : '';
+            const cellAttrs = td ? td[1] : '';
+
+            const isCellBreak = cellAttrs.includes('break-cell') || rawCellHtml.includes('break-title') || rawCellHtml.toLowerCase().includes('[break]');
+            const cellBg = isCellBreak
+              ? '#F1F5F9'
+              : cIdx === 0
+              ? '#F8FAFC'
+              : rIdx % 2 === 0
+              ? '#FFFFFF'
+              : '#FAFAFA';
+
+            doc.rect(colX, currentY, w, rowHeight).fillAndStroke(cellBg, '#CBD5E1');
+
+            if (cIdx === 0) {
+              // Time Slot cell
+              const timeText = decodeHtml(rawCellHtml);
+              doc.font(defaultFont).fontSize(8).fillColor('#0F172A')
+                .text(timeText, colX + 2, currentY + (rowHeight / 2) - 4, { width: w - 4, align: 'center' });
+            } else if (rawCellHtml.trim()) {
+              // Parse subject and teacher from cell
+              const subjectMatch = rawCellHtml.match(/<div class="subject-title">([\s\S]*?)<\/div>/i);
+              const staffMatch = rawCellHtml.match(/<div class="staff-name">([\s\S]*?)<\/div>/i);
+
+              if (subjectMatch) {
+                const subjText = decodeHtml(subjectMatch[1]);
+                const staffText = staffMatch ? decodeHtml(staffMatch[1]) : '';
+
+                doc.font(selectFont(subjText)).fontSize(8).fillColor('#0F172A')
+                  .text(subjText, colX + 2, currentY + 3, { width: w - 4, align: 'center', ellipsis: true });
+
+                if (staffText) {
+                  doc.font(selectFont(staffText)).fontSize(7).fillColor('#64748B')
+                    .text(staffText, colX + 2, currentY + rowHeight - 12, { width: w - 4, align: 'center', ellipsis: true });
+                }
+              } else {
+                const cellText = decodeHtml(rawCellHtml);
+                doc.font(selectFont(cellText)).fontSize(7.5).fillColor(isCellBreak ? '#475569' : '#0F172A')
+                  .text(cellText, colX + 2, currentY + (rowHeight / 2) - 4, { width: w - 4, align: 'center' });
+              }
+            }
+
+            colX += w;
+          }
         }
 
-        if (trimmed.startsWith('|')) {
-          doc.fontSize(8.5).text(trimmed, { align: 'left', lineGap: 2 });
-        } else if (trimmed === trimmed.toUpperCase() && trimmed.length < 60) {
-          doc.fontSize(12).text(trimmed, { align: 'center', underline: true });
-          doc.moveDown(0.3);
-        } else {
-          doc.fontSize(10).text(trimmed, { align: 'left', lineGap: 2 });
-        }
+        currentY += rowHeight;
       }
+
+      // 5. Institutional Footer
+      const footerY = pageHeight - 18;
+      doc.font(defaultFont).fontSize(7.5).fillColor('#94A3B8')
+        .text('Generated by MadrasaNexa Timetable Management — Official Document', startX, footerY, { align: 'left' });
+      doc.text(`Printed: ${new Date().toISOString().slice(0, 10)}`, startX, footerY, { width: contentWidth, align: 'right' });
 
       doc.end();
     } catch (err) {

@@ -294,10 +294,31 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(new Error('Resend API timed out after 15000ms')), 15000);
 
-      let resendSender = resolvedFrom || 'MadrasaNexa <onboarding@resend.dev>';
-      // Ensure sender is formatted cleanly with name if present
-      if (resolvedFromName && !resendSender.includes('<')) {
-        resendSender = `${resolvedFromName} <${resendSender}>`;
+      // Sanitize Resend 'from' address:
+      // Resend requires valid format: 'Name <email@domain.com>' or 'email@domain.com'
+      // If domain is unverified freemail (gmail.com, yahoo.com, hotmail.com) or invalid, fall back to 'MadrasaNexa <onboarding@resend.dev>'
+      let resendSender = (process.env.RESEND_FROM || resolvedFrom || '').trim().replace(/^["']+|["']+$/g, '');
+      const emailRegex = /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/;
+      const namedEmailRegex = /^([^<>]+)<([^\s<>@]+@[^\s<>@]+\.[^\s<>@]+)>$/;
+
+      let validResendSender = 'MadrasaNexa <onboarding@resend.dev>';
+      if (namedEmailRegex.test(resendSender)) {
+        const match = resendSender.match(namedEmailRegex);
+        const namePart = match[1].trim().replace(/^["']+|["']+$/g, '');
+        const emailPart = match[2].trim().toLowerCase();
+        if (emailPart.endsWith('@gmail.com') || emailPart.endsWith('@yahoo.com') || emailPart.endsWith('@hotmail.com') || emailPart.endsWith('@outlook.com')) {
+          validResendSender = `${namePart || 'MadrasaNexa'} <onboarding@resend.dev>`;
+        } else {
+          validResendSender = `${namePart} <${emailPart}>`;
+        }
+      } else if (emailRegex.test(resendSender)) {
+        const emailPart = resendSender.toLowerCase();
+        const displayName = resolvedFromName || 'MadrasaNexa';
+        if (emailPart.endsWith('@gmail.com') || emailPart.endsWith('@yahoo.com') || emailPart.endsWith('@hotmail.com') || emailPart.endsWith('@outlook.com')) {
+          validResendSender = `${displayName} <onboarding@resend.dev>`;
+        } else {
+          validResendSender = `${displayName} <${emailPart}>`;
+        }
       }
 
       const resendAttachments = normalizedAttachments.map(a => ({
@@ -315,7 +336,7 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: resendSender,
+            from: validResendSender,
             to: [to],
             subject,
             html,

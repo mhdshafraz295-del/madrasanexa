@@ -136,6 +136,10 @@ export const errorHandler = (err, req, res, _next) => {
     message: clientMessage,
   };
 
+  if (err?.code) {
+    responseBody.code = err.code;
+  }
+
   if (Array.isArray(err?.errors)) {
     responseBody.errors = err.errors;
   }

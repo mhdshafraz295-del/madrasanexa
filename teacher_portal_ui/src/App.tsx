@@ -47,6 +47,7 @@ export default function App() {
         {/* Phase 2: Attendance Operations */}
         <Route path="attendance" element={<Navigate to="/attendance/my" replace />} />
         <Route path="attendance/my" element={<TeacherAttendancePage />} />
+        <Route path="attendance/check-in" element={<TeacherAttendancePage />} />
         <Route path="attendance/students" element={<StudentAttendancePage />} />
         <Route path="attendance/history" element={<AttendanceHistoryPage />} />
 

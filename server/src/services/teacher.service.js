@@ -147,13 +147,13 @@ export function resolveActiveTodaySchedule(schedules, checkedInScheduleIds, curr
       startMinutes: sMin,
       endMinutes: eMin,
       isMarked: isCheckedIn(s.id),
+      // Strict window: startMinutes - 10 <= currentMinutes <= endMinutes
+      isActiveWindow: currentMinutes >= (sMin - 10) && currentMinutes <= eMin,
     };
   });
 
-  // 1. First match any currently active slot (startMinutes - 30 <= currentMinutes <= endMinutes + 15)
-  const activeCandidates = parsed.filter(
-    (s) => currentMinutes >= (s.startMinutes - 30) && currentMinutes <= (s.endMinutes + 15)
-  );
+  // 1. Match ONLY currently active window slots (startMinutes - 10 <= currentMinutes <= endMinutes)
+  const activeCandidates = parsed.filter((s) => s.isActiveWindow);
 
   if (activeCandidates.length > 0) {
     // Prefer unmarked active candidate if available
@@ -164,27 +164,8 @@ export function resolveActiveTodaySchedule(schedules, checkedInScheduleIds, curr
     return pool[0].raw;
   }
 
-  // 2. Next upcoming unmarked slot today (startMinutes > currentMinutes)
-  const upcomingUnmarked = parsed
-    .filter((s) => s.startMinutes > currentMinutes && !s.isMarked)
-    .sort((a, b) => a.startMinutes - b.startMinutes);
-
-  if (upcomingUnmarked.length > 0) {
-    return upcomingUnmarked[0].raw;
-  }
-
-  // Next upcoming slot (even if marked)
-  const upcomingAny = parsed
-    .filter((s) => s.startMinutes > currentMinutes)
-    .sort((a, b) => a.startMinutes - b.startMinutes);
-
-  if (upcomingAny.length > 0) {
-    return upcomingAny[0].raw;
-  }
-
-  // 3. Fall back to the most recent slot
-  const pastSchedules = [...parsed].sort((a, b) => b.endMinutes - a.endMinutes);
-  return pastSchedules[0]?.raw || schedules[0];
+  // 2. If outside active window (zero allowance after endTime), return null strictly
+  return null;
 }
 
 /**
@@ -1161,11 +1142,14 @@ export async function getTodayTeacherAttendance({ madrasaId, ustadhId }) {
     const eMin = parseTimeToMinutes(s.endMinutes ?? s.endTime);
     const timeSlot = `${formatMinutesToTime(sMin)} – ${formatMinutesToTime(eMin)}`;
 
+    const isEnded = colomboNow.currentMinutes > eMin;
+    const isWithinWindow = colomboNow.currentMinutes >= (sMin - 10) && colomboNow.currentMinutes <= eMin;
+
     let status = 'Pending';
     if (existing) {
       status = existing.status === 'PRESENT' ? 'Verified' : 'Late';
-    } else if (colomboNow.currentMinutes > eMin + 15) {
-      status = 'Missed';
+    } else if (isEnded) {
+      status = 'Ended';
     }
 
     const roomLabel = s.classroom
@@ -1179,8 +1163,7 @@ export async function getTodayTeacherAttendance({ madrasaId, ustadhId }) {
       s.classroom?.roomToken ||
       `CLS-${(s.class?.code || s.class?.name || '01').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}`;
 
-    const isCurrentActive = activeSchedule ? activeSchedule.id === s.id : (idx === 0);
-    const isWithinWindow = colomboNow.currentMinutes >= (sMin - 30) && colomboNow.currentMinutes <= (eMin + 15);
+    const isCurrentActive = activeSchedule ? activeSchedule.id === s.id : false;
     const checkInTime = existing?.createdAt
       ? new Date(existing.createdAt).toLocaleTimeString('en-US', {
           timeZone: 'Asia/Colombo',
@@ -1208,9 +1191,11 @@ export async function getTodayTeacherAttendance({ madrasaId, ustadhId }) {
       method: existing ? 'Classroom QR' : null,
       verifiedAt: existing ? existing.createdAt : null,
       checkInTime,
-      graceWindowMinutes: 15,
+      graceWindowMinutes: 10,
       isActiveSlot: isCurrentActive,
       isCurrentPeriod: isWithinWindow,
+      isEnded,
+      canCheckIn: isWithinWindow && !existing,
     };
   });
 }
@@ -1315,40 +1300,56 @@ export async function recordTeacherClassroomCheckIn({ madrasaId, ustadhId, userI
         });
       } catch {}
     }
+
+    if (schedule) {
+      const sStartMin = parseTimeToMinutes(schedule.startMinutes ?? schedule.startTime);
+      const sEndMin = parseTimeToMinutes(schedule.endMinutes ?? schedule.endTime);
+
+      if (colomboNow.currentMinutes > sEndMin) {
+        const err = new BadRequestError(
+          `Period has ended at ${formatMinutesToTime(sEndMin)}. Check-in is closed for this period.`
+        );
+        err.code = 'PERIOD_ENDED';
+        throw err;
+      }
+
+      if (colomboNow.currentMinutes < (sStartMin - 10)) {
+        const err = new BadRequestError(
+          `Period has not started yet. Check-in opens at ${formatMinutesToTime(sStartMin - 10)} (10 minutes before start time).`
+        );
+        err.code = 'PERIOD_NOT_STARTED';
+        throw err;
+      }
+    }
   }
 
   if (!schedule) {
     schedule = activeSchedule;
   }
 
+  // Strict: If no period is currently active, reject with NO_ACTIVE_PERIOD
   if (!schedule) {
-    if (scannedClassroom) {
-      schedule = await prisma.ustadhSchedule.findFirst({
-        where: {
-          madrasaId,
-          ustadhId,
-          isActive: true,
-          OR: [
-            { classroomId: scannedClassroom.id },
-            { class: { name: scannedClassroom.name.replace(/^Classroom - /, '') } },
-          ],
-        },
-        include: { class: true, classroom: true, subject: true },
-        orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
-      });
+    const nextUpcoming = todaySchedules
+      .map((s) => ({
+        raw: s,
+        startMinutes: parseTimeToMinutes(s.startMinutes ?? s.startTime),
+        endMinutes: parseTimeToMinutes(s.endMinutes ?? s.endTime),
+      }))
+      .filter((s) => s.startMinutes > colomboNow.currentMinutes)
+      .sort((a, b) => a.startMinutes - b.startMinutes)[0];
+
+    let msg = 'No active subject or period scheduled right now.';
+    if (nextUpcoming) {
+      const subjectName = nextUpcoming.raw.subject?.name || 'Subject';
+      const className = nextUpcoming.raw.class?.name || 'Class';
+      msg += ` Next scheduled period (${subjectName} – ${className}) starts at ${formatMinutesToTime(nextUpcoming.startMinutes)}.`;
+    } else {
+      msg += ' All scheduled periods for today have ended.';
     }
 
-    if (!schedule) {
-      schedule = await prisma.ustadhSchedule.findFirst({
-        where: { madrasaId, ustadhId, isActive: true },
-        include: { class: true, classroom: true, subject: true },
-        orderBy: [{ dayOfWeek: 'asc' }, { startMinutes: 'asc' }],
-      });
-    }
-  }
-
-  if (!schedule) {
-    throw new NotFoundError('Schedule slot not found or not assigned to you.');
+    const err = new BadRequestError(msg);
+    err.code = 'NO_ACTIVE_PERIOD';
+    throw err;
   }
 
   // 6. Strict Classroom / Class QR Verification
@@ -1434,12 +1435,34 @@ export async function recordTeacherClassroomCheckIn({ madrasaId, ustadhId, userI
 
   // 7. Authoritative Sri Lanka Timezone Evaluation (Asia/Colombo)
   const isSameDay = schedule.dayOfWeek === colomboNow.weekday;
+  if (!isSameDay) {
+    const err = new BadRequestError(`This period is scheduled for ${schedule.dayOfWeek}, not today (${colomboNow.weekday}).`);
+    err.code = 'WRONG_DAY';
+    throw err;
+  }
+
   const sStartMin = parseTimeToMinutes(schedule.startMinutes ?? schedule.startTime);
   const sEndMin = parseTimeToMinutes(schedule.endMinutes ?? schedule.endTime);
-  const windowStart = sStartMin - 30; // 30-min window for check-in
-  const windowEnd = sEndMin + 15;     // 15-min grace window
-  const isInsideWindow = isSameDay && colomboNow.currentMinutes >= windowStart && colomboNow.currentMinutes <= windowEnd;
-  const isLate = !isInsideWindow || (isSameDay && colomboNow.currentMinutes > sStartMin);
+
+  // Strict check: zero allowance after endTime
+  if (colomboNow.currentMinutes > sEndMin) {
+    const err = new BadRequestError(
+      `Period has ended at ${formatMinutesToTime(sEndMin)}. Check-in is closed for this period.`
+    );
+    err.code = 'PERIOD_ENDED';
+    throw err;
+  }
+
+  // Early buffer check: check-in opens 10 minutes before startTime
+  if (colomboNow.currentMinutes < (sStartMin - 10)) {
+    const err = new BadRequestError(
+      `Period has not started yet. Check-in opens at ${formatMinutesToTime(sStartMin - 10)} (10 minutes before start time).`
+    );
+    err.code = 'PERIOD_NOT_STARTED';
+    throw err;
+  }
+
+  const isLate = colomboNow.currentMinutes > sStartMin;
 
   // 8. Duplicate check-in protection strictly per scheduleId for today's Colombo date
   const existingCheckIn = await prisma.ustadhAttendanceRecord.findFirst({

@@ -252,11 +252,25 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
   return new Promise((resolve, reject) => {
     try {
       const isLandscape = landscape || html.includes('A4 landscape') || html.includes('landscape');
+      const pageWidth = isLandscape ? 841.89 : 595.28;
+      const pageHeight = isLandscape ? 595.28 : 841.89;
+      const margin = 22;
+      const startX = margin;
+      const contentWidth = pageWidth - (margin * 2); // 797.89
+
+      // Set document margins to 0 so PDFKit's text cursor NEVER auto-paginates on bottom margin
       const doc = new PDFDocument({
         size: 'A4',
         layout: isLandscape ? 'landscape' : 'portrait',
-        margin: 24,
-        autoFirstPage: true,
+        margin: 0,
+        autoFirstPage: false,
+      });
+
+      // Add exactly 1 page with 0 margin
+      doc.addPage({
+        size: 'A4',
+        layout: isLandscape ? 'landscape' : 'portrait',
+        margins: { top: 0, bottom: 0, left: 0, right: 0 },
       });
 
       const chunks = [];
@@ -265,19 +279,31 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
       doc.on('error', (err) => reject(err));
 
       // Font paths
-      const arabicFontPath = path.join(fontsDir, 'NotoSansArabic-Regular.ttf');
       const regularFontPath = path.join(fontsDir, 'NotoSans-Regular.ttf');
+      const arabicFontPath = path.join(fontsDir, 'NotoSansArabic-Regular.ttf');
+      const sinhalaFontPath = path.join(fontsDir, 'NotoSansSinhala-Regular.ttf');
+      const tamilFontPath = path.join(fontsDir, 'NotoSansTamil-Regular.ttf');
+
       const hasRegular = fs.existsSync(regularFontPath);
       const hasArabic = fs.existsSync(arabicFontPath);
+      const hasSinhala = fs.existsSync(sinhalaFontPath);
+      const hasTamil = fs.existsSync(tamilFontPath);
 
       if (hasRegular) doc.registerFont('NotoRegular', regularFontPath);
       if (hasArabic) doc.registerFont('NotoArabic', arabicFontPath);
+      if (hasSinhala) doc.registerFont('NotoSinhala', sinhalaFontPath);
+      if (hasTamil) doc.registerFont('NotoTamil', tamilFontPath);
 
       const defaultFont = hasRegular ? 'NotoRegular' : 'Helvetica';
-      const arabicFont = hasArabic ? 'NotoArabic' : defaultFont;
 
       // Helper to choose font based on text script
-      const selectFont = (text) => (/[\u0600-\u06FF]/.test(text) ? arabicFont : defaultFont);
+      const selectFont = (text) => {
+        const s = String(text || '');
+        if (/[\u0600-\u06FF]/.test(s)) return hasArabic ? 'NotoArabic' : defaultFont;
+        if (/[\u0D80-\u0DFF]/.test(s)) return hasSinhala ? 'NotoSinhala' : defaultFont;
+        if (/[\u0B80-\u0BFF]/.test(s)) return hasTamil ? 'NotoTamil' : defaultFont;
+        return defaultFont;
+      };
 
       // Clean HTML entity helper
       const decodeHtml = (str) =>
@@ -297,35 +323,39 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
       const madrasaName = madrasaNameMatch ? decodeHtml(madrasaNameMatch[1]) : 'MADRASANEXA ACADEMY';
 
       const timetableTitleMatch = html.match(/<div class="timetable-title">([^<]+)<\/div>/i);
-      const timetableTitle = timetableTitleMatch ? decodeHtml(timetableTitleMatch[1]) : 'WEEKLY TIMETABLE';
+      const timetableTitle = timetableTitleMatch ? decodeHtml(timetableTitleMatch[1]) : 'WEEKLY CLASS TIMETABLE';
 
       const metaBarMatch = html.match(/<div class="meta-bar">([\s\S]*?)<\/div>/i);
       const metaBarText = metaBarMatch ? decodeHtml(metaBarMatch[1]) : '';
 
-      // Page dimensions
-      const pageWidth = doc.page.width;
-      const pageHeight = doc.page.height;
-      const startX = 24;
-      const contentWidth = pageWidth - 48;
+      // 1. Render Institutional Header Banner (Fixed budget: 58pt)
+      let currentY = 16;
+      const headerBannerHeight = 58;
+      const topAccentBarHeight = 3;
 
-      // 1. Render Header Banner
-      let currentY = 20;
+      // Clean accent top bar
+      doc.rect(startX, currentY, contentWidth, topAccentBarHeight).fill('#1E3A8A');
 
-      // Institutional Header Box
-      doc.rect(startX, currentY, contentWidth, 54).fillAndStroke('#F8FAFC', '#334155');
+      // Refined header card body
+      doc.lineWidth(0.6);
+      doc.rect(startX, currentY + topAccentBarHeight, contentWidth, headerBannerHeight - topAccentBarHeight)
+         .fillAndStroke('#F8FAFC', '#E2E8F0');
 
-      doc.font(selectFont(madrasaName)).fontSize(15).fillColor('#0F172A')
-        .text(madrasaName, startX, currentY + 6, { width: contentWidth, align: 'center' });
+      // Madrasa Name (14.5pt bold #0F172A)
+      doc.font(selectFont(madrasaName)).fontSize(14.5).fillColor('#0F172A')
+         .text(madrasaName, startX + 10, currentY + 7, { width: contentWidth - 20, align: 'center', lineBreak: false });
 
-      doc.font(defaultFont).fontSize(10.5).fillColor('#334155')
-        .text(timetableTitle, startX, currentY + 24, { width: contentWidth, align: 'center' });
+      // Subtitle WEEKLY CLASS TIMETABLE (9.5pt bold #1E3A8A, letter-spaced)
+      doc.font(defaultFont).fontSize(9.5).fillColor('#1E3A8A')
+         .text(timetableTitle.toUpperCase(), startX + 10, currentY + 24, { width: contentWidth - 20, align: 'center', characterSpacing: 1.0, lineBreak: false });
 
+      // Metadata pill line (8.5pt #475569)
       if (metaBarText) {
-        doc.font(selectFont(metaBarText)).fontSize(8.5).fillColor('#64748B')
-          .text(metaBarText, startX, currentY + 39, { width: contentWidth, align: 'center' });
+        doc.font(selectFont(metaBarText)).fontSize(8.5).fillColor('#475569')
+           .text(metaBarText, startX + 10, currentY + 39, { width: contentWidth - 20, align: 'center', lineBreak: false });
       }
 
-      currentY += 60;
+      currentY += headerBannerHeight + 6;
 
       // 2. Parse HTML Table
       const theadMatch = html.match(/<thead[^>]*>([\s\S]*?)<\/thead>/i);
@@ -339,60 +369,91 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
       const headers = thMatches.length > 0 ? thMatches : ['TIME', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
       const columnCount = headers.length;
 
-      // Width calculation: 1st column (TIME) fixed width ~110pt, rest evenly distributed
-      const timeColWidth = Math.min(120, Math.max(90, Math.floor(contentWidth * 0.16)));
-      const otherColWidth = Math.floor((contentWidth - timeColWidth) / (columnCount - 1));
+      // Dynamic column width calculation
+      let colWidths = [];
+      if (columnCount > 4) {
+        const timeColWidth = Math.min(115, Math.max(90, Math.floor(contentWidth * 0.15)));
+        const otherColWidth = Math.floor((contentWidth - timeColWidth) / (columnCount - 1));
+        colWidths = [timeColWidth, ...Array(columnCount - 1).fill(otherColWidth)];
+        // Adjust last column to absorb rounding
+        const sumW = colWidths.reduce((a, b) => a + b, 0);
+        colWidths[colWidths.length - 1] += (contentWidth - sumW);
+      } else {
+        const c0 = Math.floor(contentWidth * 0.20);
+        const c1 = Math.floor(contentWidth * 0.25);
+        const c2 = Math.floor(contentWidth * 0.25);
+        const c3 = contentWidth - (c0 + c1 + c2);
+        colWidths = [c0, c1, c2, c3];
+      }
 
-      // Calculate available height to strictly guarantee 1 single landscape page
-      const availableHeight = pageHeight - currentY - 26;
-      const headerRowHeight = 22;
+      // Vertical layout budget calculation
+      const footerHeight = 18;
+      const footerDividerY = pageHeight - margin - footerHeight + 4; // ~560pt
+      const tableHeaderHeight = 24;
+      const availableBodyHeight = (footerDividerY - 6) - (currentY + tableHeaderHeight);
+
       const rowCount = Math.max(1, trMatches.length);
-      const rowHeight = Math.max(22, Math.min(42, Math.floor((availableHeight - headerRowHeight) / rowCount)));
+      const rowHeight = Math.min(44, Math.max(22, Math.floor(availableBodyHeight / rowCount)));
 
-      // 3. Render Table Header
+      // 3. Render Table Header (24pt, #0F172A background, #FFFFFF text)
       let colX = startX;
+      doc.lineWidth(0.6);
       for (let i = 0; i < columnCount; i++) {
-        const w = i === 0 ? timeColWidth : otherColWidth;
-        doc.rect(colX, currentY, w, headerRowHeight).fillAndStroke('#0F172A', '#0F172A');
+        const w = colWidths[i];
+        doc.rect(colX, currentY, w, tableHeaderHeight).fillAndStroke('#0F172A', '#0F172A');
+        const headerTop = currentY + Math.floor((tableHeaderHeight - 9) / 2);
         doc.font(defaultFont).fontSize(8.5).fillColor('#FFFFFF')
-          .text(headers[i], colX + 2, currentY + 6, { width: w - 4, align: 'center' });
+           .text(headers[i], colX + 2, headerTop, { width: w - 4, align: 'center', lineBreak: false });
         colX += w;
       }
-      currentY += headerRowHeight;
+      currentY += tableHeaderHeight;
 
       // 4. Render Table Rows
       for (let rIdx = 0; rIdx < trMatches.length; rIdx++) {
         const rowContent = trMatches[rIdx][1];
         const tdMatches = [...rowContent.matchAll(/<td([^>]*)>([\s\S]*?)<\/td>/gi)];
 
-        // Check if row is a full-span break
-        const isBreak = rowContent.includes('break-cell') || rowContent.toLowerCase().includes('[break]') || rowContent.toLowerCase().includes('interval');
+        const isBreakRow =
+          rowContent.includes('break-cell') ||
+          rowContent.includes('break-title') ||
+          /(\[break\]|break|interval|prayer|luhar|dhuhr|asr|maghrib|isha|juma)/i.test(rowContent);
 
         colX = startX;
 
-        if (isBreak && tdMatches.length <= 2) {
-          // Time cell
+        // Check if row is a full-width break (Time cell + 1 merged break cell)
+        if (isBreakRow && tdMatches.length <= 2) {
+          const timeW = colWidths[0];
+          const breakW = contentWidth - timeW;
+
           const timeText = tdMatches[0] ? decodeHtml(tdMatches[0][2]) : '';
-          const breakText = tdMatches[1] ? decodeHtml(tdMatches[1][2]) : 'INTERVAL / BREAK';
+          const breakText = tdMatches[1] ? decodeHtml(tdMatches[1][2]) : 'INTERVAL / PRAYER';
 
-          doc.rect(colX, currentY, timeColWidth, rowHeight).fillAndStroke('#F1F5F9', '#CBD5E1');
-          doc.font(defaultFont).fontSize(8).fillColor('#0F172A')
-            .text(timeText, colX + 2, currentY + (rowHeight / 2) - 4, { width: timeColWidth - 4, align: 'center' });
+          // Time slot cell
+          doc.rect(colX, currentY, timeW, rowHeight).fillAndStroke('#F8FAFC', '#CBD5E1');
+          const timeTop = currentY + Math.floor((rowHeight - 9) / 2);
+          doc.font(defaultFont).fontSize(8.5).fillColor('#334155')
+             .text(timeText, colX + 2, timeTop, { width: timeW - 4, align: 'center', lineBreak: false });
 
-          const breakWidth = contentWidth - timeColWidth;
-          doc.rect(colX + timeColWidth, currentY, breakWidth, rowHeight).fillAndStroke('#E2E8F0', '#CBD5E1');
-          doc.font(selectFont(breakText)).fontSize(9).fillColor('#334155')
-            .text(breakText, colX + timeColWidth + 4, currentY + (rowHeight / 2) - 5, { width: breakWidth - 8, align: 'center' });
+          // Full-row subtle warm tint break banner
+          doc.rect(colX + timeW, currentY, breakW, rowHeight).fillAndStroke('#FEF3C7', '#CBD5E1');
+          const breakTop = currentY + Math.floor((rowHeight - 10) / 2);
+          doc.font(selectFont(breakText)).fontSize(9.5).fillColor('#92400E')
+             .text(breakText.toUpperCase(), colX + timeW + 4, breakTop, { width: breakW - 8, align: 'center', characterSpacing: 0.5, lineBreak: false });
         } else {
           for (let cIdx = 0; cIdx < columnCount; cIdx++) {
-            const w = cIdx === 0 ? timeColWidth : otherColWidth;
+            const w = colWidths[cIdx];
             const td = tdMatches[cIdx];
             const rawCellHtml = td ? td[2] : '';
             const cellAttrs = td ? td[1] : '';
 
-            const isCellBreak = cellAttrs.includes('break-cell') || rawCellHtml.includes('break-title') || rawCellHtml.toLowerCase().includes('[break]');
+            const isCellBreak =
+              isBreakRow ||
+              cellAttrs.includes('break-cell') ||
+              rawCellHtml.includes('break-title') ||
+              /(\[break\]|break|interval|prayer|luhar|dhuhr|asr|maghrib|isha|juma)/i.test(rawCellHtml);
+
             const cellBg = isCellBreak
-              ? '#F1F5F9'
+              ? '#FEF3C7'
               : cIdx === 0
               ? '#F8FAFC'
               : rIdx % 2 === 0
@@ -402,12 +463,19 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
             doc.rect(colX, currentY, w, rowHeight).fillAndStroke(cellBg, '#CBD5E1');
 
             if (cIdx === 0) {
-              // Time Slot cell
+              // TIME Column
               const timeText = decodeHtml(rawCellHtml);
-              doc.font(defaultFont).fontSize(8).fillColor('#0F172A')
-                .text(timeText, colX + 2, currentY + (rowHeight / 2) - 4, { width: w - 4, align: 'center' });
+              const timeTop = currentY + Math.floor((rowHeight - 9) / 2);
+              doc.font(defaultFont).fontSize(8.5).fillColor('#334155')
+                 .text(timeText, colX + 2, timeTop, { width: w - 4, align: 'center', lineBreak: false });
+            } else if (isCellBreak) {
+              // Interval / Prayer cell
+              const breakText = decodeHtml(rawCellHtml);
+              const bTop = currentY + Math.floor((rowHeight - 9) / 2);
+              doc.font(selectFont(breakText)).fontSize(8.5).fillColor('#92400E')
+                 .text(breakText.toUpperCase(), colX + 2, bTop, { width: w - 4, align: 'center', lineBreak: false });
             } else if (rawCellHtml.trim()) {
-              // Parse subject and teacher from cell
+              // Regular lecture cell: Subject + Teacher
               const subjectMatch = rawCellHtml.match(/<div class="subject-title">([\s\S]*?)<\/div>/i);
               const staffMatch = rawCellHtml.match(/<div class="staff-name">([\s\S]*?)<\/div>/i);
 
@@ -415,17 +483,28 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
                 const subjText = decodeHtml(subjectMatch[1]);
                 const staffText = staffMatch ? decodeHtml(staffMatch[1]) : '';
 
-                doc.font(selectFont(subjText)).fontSize(8).fillColor('#0F172A')
-                  .text(subjText, colX + 2, currentY + 3, { width: w - 4, align: 'center', ellipsis: true });
+                // Responsive font sizing and line spacing
+                const subjFontSize = rowHeight >= 36 ? 10.5 : (rowHeight >= 28 ? 9.5 : 8.5);
+                const staffFontSize = rowHeight >= 36 ? 8.5 : (rowHeight >= 28 ? 7.5 : 7.0);
+                const lineGap = rowHeight >= 36 ? 2 : 1.5;
+
+                const textBlockHeight = staffText ? (subjFontSize + lineGap + staffFontSize) : subjFontSize;
+                const blockY = currentY + Math.max(1, Math.floor((rowHeight - textBlockHeight) / 2));
+
+                doc.font(selectFont(subjText)).fontSize(subjFontSize).fillColor('#0F172A')
+                   .text(subjText, colX + 2, blockY, { width: w - 4, align: 'center', lineBreak: false, ellipsis: true });
 
                 if (staffText) {
-                  doc.font(selectFont(staffText)).fontSize(7).fillColor('#64748B')
-                    .text(staffText, colX + 2, currentY + rowHeight - 12, { width: w - 4, align: 'center', ellipsis: true });
+                  const staffY = blockY + subjFontSize + lineGap;
+                  doc.font(selectFont(staffText)).fontSize(staffFontSize).fillColor('#475569')
+                     .text(staffText, colX + 2, staffY, { width: w - 4, align: 'center', lineBreak: false, ellipsis: true });
                 }
               } else {
                 const cellText = decodeHtml(rawCellHtml);
-                doc.font(selectFont(cellText)).fontSize(7.5).fillColor(isCellBreak ? '#475569' : '#0F172A')
-                  .text(cellText, colX + 2, currentY + (rowHeight / 2) - 4, { width: w - 4, align: 'center' });
+                const textFontSize = rowHeight >= 36 ? 9.5 : 8.5;
+                const textTop = currentY + Math.floor((rowHeight - textFontSize) / 2);
+                doc.font(selectFont(cellText)).fontSize(textFontSize).fillColor('#0F172A')
+                   .text(cellText, colX + 2, textTop, { width: w - 4, align: 'center', lineBreak: false, ellipsis: true });
               }
             }
 
@@ -436,11 +515,15 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
         currentY += rowHeight;
       }
 
-      // 5. Institutional Footer
-      const footerY = pageHeight - 18;
+      // 5. Clean Bottom Footer (Divider + Metadata)
+      const footerLineY = pageHeight - margin - 12;
+      doc.lineWidth(0.5);
+      doc.moveTo(startX, footerLineY).lineTo(startX + contentWidth, footerLineY).stroke('#E2E8F0');
+
+      const footerTextY = footerLineY + 4;
       doc.font(defaultFont).fontSize(7.5).fillColor('#94A3B8')
-        .text('Generated by MadrasaNexa Timetable Management — Official Document', startX, footerY, { align: 'left' });
-      doc.text(`Printed: ${new Date().toISOString().slice(0, 10)}`, startX, footerY, { width: contentWidth, align: 'right' });
+         .text('Generated by MadrasaNexa Timetable Management • Page 1 of 1', startX, footerTextY, { align: 'left', lineBreak: false });
+      doc.text(`Printed: ${new Date().toISOString().slice(0, 10)}`, startX, footerTextY, { width: contentWidth, align: 'right', lineBreak: false });
 
       doc.end();
     } catch (err) {
@@ -485,19 +568,30 @@ export async function renderRawHtmlToPdf({ html, landscape = false }) {
       timeout: 30000,
     });
 
+    const isLandscape = landscape || html.includes('A4 landscape') || html.includes('landscape');
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      landscape,
+      landscape: isLandscape,
       printBackground: true,
-      margin: {
-        top: '12mm',
-        bottom: '16mm',
-        left: '12mm',
-        right: '12mm',
-      },
-      displayHeaderFooter: true,
+      preferCSSPageSize: true,
+      margin: isLandscape
+        ? {
+            top: '6mm',
+            bottom: '6mm',
+            left: '8mm',
+            right: '8mm',
+          }
+        : {
+            top: '12mm',
+            bottom: '16mm',
+            left: '12mm',
+            right: '12mm',
+          },
+      displayHeaderFooter: !isLandscape,
       headerTemplate: '<div></div>',
-      footerTemplate: `
+      footerTemplate: isLandscape
+        ? '<div></div>'
+        : `
         <div style="font-size: 8px; color: #7C8A9A; width: 100%; display: flex; justify-content: space-between; padding: 0 12mm; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
           <span>Generated by MadrasaNexa</span>
           <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>

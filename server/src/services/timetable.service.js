@@ -748,9 +748,12 @@ export async function exportClassTimetablePdf(madrasaId, query = {}) {
         ${embeddedFontsCss}
         @page {
           size: A4 landscape;
-          margin: 10mm 12mm 8mm 12mm;
+          margin: 8mm 10mm 6mm 10mm;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+          height: 100%;
+        }
         body {
           font-family: 'Noto Sans Local', 'Noto Sans Arabic Local', 'Noto Sans Tamil Local', 'Noto Sans Sinhala Local', sans-serif;
           color: #111827;
@@ -760,36 +763,36 @@ export async function exportClassTimetablePdf(madrasaId, query = {}) {
         }
         .header-container {
           text-align: center;
-          margin-bottom: 12px;
-          padding-bottom: 8px;
+          margin-bottom: 6px;
+          padding-bottom: 4px;
           border-bottom: 1.5px solid #374151;
         }
         .header-logo {
-          height: 60px;
-          max-width: 160px;
+          height: 50px;
+          max-width: 140px;
           object-fit: contain;
-          margin: 0 auto 6px auto;
+          margin: 0 auto 4px auto;
           display: block;
         }
         .madrasa-name {
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 800;
           color: #111827;
           letter-spacing: -0.2px;
           text-transform: uppercase;
           line-height: 1.2;
-          margin-bottom: 3px;
+          margin-bottom: 2px;
         }
         .timetable-title {
-          font-size: 13px;
+          font-size: 12px;
           font-weight: 700;
-          color: #374151;
+          color: #1E3A8A;
           letter-spacing: 0.5px;
-          margin-bottom: 4px;
+          margin-bottom: 3px;
           text-transform: uppercase;
         }
         .meta-bar {
-          font-size: 11px;
+          font-size: 10px;
           color: #4B5563;
           display: flex;
           align-items: center;
@@ -811,58 +814,62 @@ export async function exportClassTimetablePdf(madrasaId, query = {}) {
           border: 1.5px solid #374151;
           background: #FFFFFF;
           table-layout: fixed;
+          page-break-inside: avoid;
+        }
+        tr {
+          page-break-inside: avoid;
         }
         th, td {
           border: 1px solid #374151;
-          padding: 8px 6px;
+          padding: 4px 4px;
           vertical-align: middle;
           box-sizing: border-box;
           word-wrap: break-word;
           overflow-wrap: break-word;
         }
         th {
-          background-color: #F3F4F6;
-          color: #111827;
+          background-color: #0F172A;
+          color: #FFFFFF;
           font-weight: 700;
-          font-size: 11px;
+          font-size: 10px;
           text-align: center;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
         .time-cell {
-          background-color: #F9FAFB;
+          background-color: #F8FAFC;
           font-weight: 700;
-          font-size: 10px;
+          font-size: 9.5px;
           text-align: center;
-          color: #111827;
+          color: #334155;
           white-space: nowrap;
-          width: 135px;
+          width: 130px;
         }
         .teaching-cell {
           background-color: #FFFFFF;
           text-align: center;
         }
         .subject-title {
-          font-size: 11px;
-          font-weight: 800;
+          font-size: 10.5px;
+          font-weight: 700;
           color: #111827;
-          line-height: 1.25;
-        }
-        .staff-name {
-          font-size: 9.5px;
-          font-weight: 400;
-          color: #374151;
-          margin-top: 3px;
           line-height: 1.2;
         }
+        .staff-name {
+          font-size: 8.5px;
+          font-weight: 400;
+          color: #4B5563;
+          margin-top: 2px;
+          line-height: 1.15;
+        }
         .break-cell {
-          background-color: #F3F4F6;
+          background-color: #FEF3C7;
           text-align: center;
         }
         .break-title {
-          font-size: 10px;
+          font-size: 9.5px;
           font-weight: 700;
-          color: #1F2937;
+          color: #92400E;
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -870,12 +877,12 @@ export async function exportClassTimetablePdf(madrasaId, query = {}) {
           background-color: #FFFFFF;
         }
         .footer {
-          margin-top: 10px;
+          margin-top: 6px;
           display: flex;
           justify-content: space-between;
-          font-size: 9px;
+          font-size: 8.5px;
           color: #6B7280;
-          padding-top: 6px;
+          padding-top: 4px;
           border-top: 1px solid #E5E7EB;
         }
       </style>

@@ -100,7 +100,7 @@ export default function StudentAttendancePage() {
     studentName: string;
     rollNo: string;
     direction: MovementDirection;
-    status: 'success' | 'duplicate';
+    status: 'success' | 'duplicate' | 'error';
     parentEmailSent: boolean;
     parentEmail?: string | null;
     message: string;
@@ -266,7 +266,7 @@ export default function StudentAttendancePage() {
           studentName: trimmed,
           rollNo: '—',
           direction: movementDirection,
-          status: 'duplicate',
+          status: 'error',
           parentEmailSent: false,
           message: err?.message || `Scan failed for "${trimmed}".`,
         });
@@ -642,6 +642,19 @@ export default function StudentAttendancePage() {
             disabled={isSubmitting}
             contextBadge={movementDirection === 'ENTRY' ? 'ENTRY (Check-In)' : 'EXIT (Check-Out)'}
             statsBadge={`Present: ${stats.presentCount}`}
+            lastScanResult={
+              lastScannedToast
+                ? {
+                    status: lastScannedToast.status,
+                    direction: lastScannedToast.direction,
+                    studentName: lastScannedToast.studentName,
+                    admissionNo: lastScannedToast.rollNo,
+                    rollNo: lastScannedToast.rollNo,
+                    message: lastScannedToast.message,
+                    timestamp: Date.now(),
+                  }
+                : null
+            }
           />
         )}
 

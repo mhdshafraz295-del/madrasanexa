@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Camera,
   CameraOff,
@@ -15,13 +16,23 @@ import {
   X,
   Check,
   Loader2,
-  ScanLine,
 } from 'lucide-react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { playScannerFeedback, ScanDebouncer } from './scanner-utils';
 
+export interface ScanResultToast {
+  status: 'success' | 'duplicate' | 'error' | 'warning' | 'info';
+  direction?: 'ENTRY' | 'EXIT' | string;
+  studentName?: string;
+  admissionNo?: string;
+  rollNo?: string;
+  message?: string;
+  timestamp?: number;
+}
+
 export interface CameraScannerViewProps {
   onScan: (payload: string, source: 'camera') => void;
+  lastScanResult?: ScanResultToast | null;
   disabled?: boolean;
   contextBadge?: string;
   statsBadge?: string;
@@ -44,6 +55,7 @@ declare global {
 
 export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
   onScan,
+  lastScanResult,
   disabled = false,
   contextBadge,
   statsBadge,
@@ -64,13 +76,17 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
   const [isDecodingImage, setIsDecodingImage] = useState(false);
   const [scanPulse, setScanPulse] = useState(false);
 
+  // Live Toast Pill Inside Viewfinder
+  const [activeToast, setActiveToast] = useState<ScanResultToast | null>(null);
+  const toastTimerRef = useRef<any>(null);
+
   const disabledRef = useRef(disabled);
   disabledRef.current = disabled;
 
   const onScanRef = useRef(onScan);
   onScanRef.current = onScan;
 
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const isDetectingRef = useRef(false);
@@ -83,6 +99,79 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
 
   // Determine if BarcodeDetector is natively available
   const hasNativeDetector = typeof window !== 'undefined' && 'BarcodeDetector' in window;
+
+  // Sync external lastScanResult prop into activeToast with 2500ms auto-dismiss
+  useEffect(() => {
+    if (lastScanResult) {
+      setActiveToast(lastScanResult);
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => {
+        setActiveToast(null);
+      }, 2500);
+    }
+  }, [lastScanResult]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  // Lock body scrolling when fullscreen is active
+  useEffect(() => {
+    if (isFullscreen) {
+      const originalBodyOverflow = document.body.style.overflow;
+      const originalDocOverflow = document.documentElement.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+
+      return () => {
+        document.body.style.overflow = originalBodyOverflow;
+        document.documentElement.style.overflow = originalDocOverflow;
+        document.body.style.touchAction = originalTouchAction;
+      };
+    }
+  }, [isFullscreen]);
+
+  // Handle ESC key to exit fullscreen or close modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        if (showManualInput) {
+          setShowManualInput(false);
+        } else if (onClose) {
+          onClose();
+        } else {
+          setIsFullscreen(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen, showManualInput, onClose]);
+
+  // Sync with document fullscreenchange events
+  useEffect(() => {
+    const handleFsChange = () => {
+      if (!document.fullscreenElement && isFullscreen && !isModal) {
+        setIsFullscreen(false);
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, [isFullscreen, isModal]);
+
+  // Callback ref for video element: guarantees stream re-attachment across portal transitions
+  const setVideoElement = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && streamRef.current) {
+      node.srcObject = streamRef.current;
+      node.play().catch(() => {});
+    }
+  }, []);
 
   // Stop camera tracks cleanly
   const stopCamera = useCallback(() => {
@@ -132,7 +221,6 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
       const videoInputs = allDevices.filter((d) => d.kind === 'videoinput');
       setDevices(videoInputs);
       if (videoInputs.length > 0 && !selectedDeviceId) {
-        // Prefer back / environment camera
         const backCamera = videoInputs.find(
           (d) => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('environment')
         );
@@ -143,7 +231,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     }
   };
 
-  // Check and configure torch
+  // Inspect torch support
   const inspectTorchSupport = (stream: MediaStream) => {
     try {
       const track = stream.getVideoTracks()[0];
@@ -193,6 +281,18 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
       // Audio & Haptic
       playScannerFeedback('success', false);
 
+      // Optimistic fast pill until parent response updates it
+      setActiveToast({
+        status: 'info',
+        studentName: trimmed,
+        message: 'Processing scan...',
+        timestamp: Date.now(),
+      });
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+      toastTimerRef.current = setTimeout(() => {
+        setActiveToast(null);
+      }, 2500);
+
       // Emit scan event
       try {
         onScanRef.current(trimmed, 'camera');
@@ -203,7 +303,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     []
   );
 
-  // Start BarcodeDetector frame loop (Chromium / Android / Edge)
+  // Start BarcodeDetector frame loop
   const startNativeDetectionLoop = () => {
     if (!window.BarcodeDetector) return;
 
@@ -218,8 +318,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     }
 
     let lastFrameTime = 0;
-    // Scan every 35ms (~28-30 FPS) for zero-lag detection
-    const FRAME_INTERVAL_MS = 35;
+    const FRAME_INTERVAL_MS = 35; // ~28-30 FPS for instant detection
 
     const scanFrame = async (timestamp: number) => {
       if (!streamRef.current || !videoRef.current || videoRef.current.readyState < 2) {
@@ -245,7 +344,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
             }
           }
         } catch (_) {
-          // Ignore transient frame detect errors during motion/focus
+          // Ignore transient frame detect errors during rapid motion
         } finally {
           isDetectingRef.current = false;
         }
@@ -257,7 +356,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     animFrameRef.current = requestAnimationFrame(scanFrame);
   };
 
-  // Fallback: Start Html5Qrcode scanner (Safari / iOS / Non-Chromium)
+  // Fallback: Start Html5Qrcode scanner (Safari / Firefox / iOS)
   const startHtml5QrcodeFallback = async () => {
     try {
       const scanner = new Html5Qrcode(scannerContainerId.current);
@@ -297,7 +396,6 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     setErrorMessage(null);
     setIsStarting(true);
 
-    // If BarcodeDetector is available, use custom lightweight video element + RAF loop
     if (hasNativeDetector) {
       try {
         if (!navigator.mediaDevices?.getUserMedia) {
@@ -360,7 +458,6 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
         setIsStarting(false);
       }
     } else {
-      // Non-Chromium fallback (Safari / Firefox)
       startHtml5QrcodeFallback();
     }
   };
@@ -427,32 +524,50 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     setShowManualInput(false);
   };
 
-  // Toggle full-screen mode
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+  // Toggle true locked fullscreen mode
+  const toggleFullscreen = async () => {
+    if (!isFullscreen) {
+      setIsFullscreen(true);
+      try {
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+          await document.documentElement.requestFullscreen().catch(() => {});
+        }
+      } catch (_) {}
+    } else {
+      setIsFullscreen(false);
+      try {
+        if (document.fullscreenElement && document.exitFullscreen) {
+          await document.exitFullscreen().catch(() => {});
+        }
+      } catch (_) {}
+      if (isModal && onClose) {
+        onClose();
+      }
+    }
   };
 
-  return (
+  // Viewfinder stage JSX
+  const viewfinderStage = (
     <div
-      className={`relative transition-all overflow-hidden ${
+      className={
         isFullscreen
-          ? 'fixed inset-0 z-50 bg-black flex flex-col w-screen h-screen'
-          : 'bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm p-3.5 sm:p-5'
-      }`}
+          ? 'fixed inset-0 z-[9999] h-[100dvh] w-screen bg-black overflow-hidden touch-none select-none flex flex-col'
+          : 'relative bg-white rounded-2xl sm:rounded-3xl border border-stone-200/90 shadow-sm p-3.5 sm:p-5 transition-all overflow-hidden'
+      }
     >
       {/* Laser Animation Style */}
       <style>{`
         @keyframes scanVerticalLaser {
           0% {
             top: 8%;
-            opacity: 0.5;
+            opacity: 0.45;
           }
           50% {
             opacity: 1;
           }
           100% {
             top: 92%;
-            opacity: 0.5;
+            opacity: 0.45;
           }
         }
         .native-scanner-laser {
@@ -476,7 +591,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
         onChange={handleImageUpload}
       />
 
-      {/* Embedded Controls Header (when not in full-screen modal) */}
+      {/* Embedded Controls Header (when NOT in full-screen mode) */}
       {!isFullscreen && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -558,45 +673,6 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
         </div>
       )}
 
-      {/* Fullscreen Close / Exit Header */}
-      {isFullscreen && (
-        <div className="absolute top-0 inset-x-0 z-30 p-3 sm:p-4 flex items-center justify-between bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-white text-xs sm:text-sm font-bold tracking-tight">
-              Live Native Viewfinder
-            </span>
-            {contextBadge && (
-              <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                {contextBadge}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            {onClose ? (
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-2 rounded-full bg-stone-900/80 text-white hover:bg-stone-800 transition cursor-pointer border border-white/20"
-                title="Close Scanner"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={toggleFullscreen}
-                className="p-2 rounded-full bg-stone-900/80 text-white hover:bg-stone-800 transition cursor-pointer border border-white/20"
-                title="Exit Fullscreen"
-              >
-                <Minimize2 className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Error Message Banner */}
       {errorMessage && (
         <div className="mb-3.5 p-3 bg-rose-50 border border-rose-200/80 rounded-xl text-xs text-rose-800 flex items-start gap-2.5">
@@ -605,12 +681,14 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
         </div>
       )}
 
-      {/* Viewfinder Main Stage: Edge-to-Edge with Dark Vignette */}
+      {/* ============================================================== */}
+      {/* Viewfinder Main Stage: 3 Non-Overlapping Vertical Zones       */}
+      {/* ============================================================== */}
       <div
         className={`relative w-full bg-stone-950 overflow-hidden flex items-center justify-center ${
           isFullscreen
             ? 'flex-1 h-full'
-            : 'aspect-4/3 sm:aspect-16/9 min-h-[290px] max-h-[380px] sm:max-h-[420px] rounded-2xl border border-stone-800 shadow-inner'
+            : 'aspect-4/3 sm:aspect-16/9 min-h-[300px] max-h-[390px] sm:max-h-[430px] rounded-2xl border border-stone-800 shadow-inner'
         }`}
       >
         {/* Container for fallback Html5Qrcode rendering */}
@@ -622,7 +700,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
         {/* Primary Native Video Stream */}
         {hasNativeDetector && (
           <video
-            ref={videoRef}
+            ref={setVideoElement}
             playsInline
             muted
             autoPlay
@@ -632,94 +710,252 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
           />
         )}
 
-        {/* Top Centered Translucent Status Pill */}
-        <div className="absolute top-3 sm:top-4 inset-x-0 flex flex-wrap items-center justify-center gap-2 z-20 px-3 pointer-events-none">
-          <span className="bg-stone-950/80 backdrop-blur-md text-white border border-white/15 px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-1.5">
-            <ScanLine className="w-3.5 h-3.5 text-emerald-400" />
-            Scan QR / Barcode
-          </span>
-          {contextBadge && (
-            <span className="bg-emerald-950/85 backdrop-blur-md text-emerald-200 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg">
-              {contextBadge}
-            </span>
-          )}
-          {statsBadge && (
-            <span className="bg-stone-900/80 backdrop-blur-md text-stone-300 border border-white/10 px-2.5 py-1 rounded-full text-[11px] font-medium shadow-lg">
-              {statsBadge}
-            </span>
-          )}
-        </div>
+        {/* 3-ZONE OVERLAY CONTAINER: Top Zone, Center Reticle Zone, Bottom Zone */}
+        <div className="absolute inset-0 flex flex-col justify-between p-3 sm:p-4 z-20 pointer-events-none overflow-hidden">
+          {/* ========================================================== */}
+          {/* ZONE 1: TOP ZONE (Single Horizontal Clean Bar)             */}
+          {/* ========================================================== */}
+          <div className="flex items-center justify-between gap-2 w-full shrink-0 z-20">
+            {/* Left Status & Context Badges */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
+              <span className="bg-stone-950/85 backdrop-blur-md text-white border border-white/15 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold shadow-lg flex items-center gap-1.5 shrink-0 pointer-events-auto">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isActive ? 'bg-emerald-400 animate-pulse' : 'bg-stone-400'
+                  }`}
+                />
+                <span>Scan QR / Barcode</span>
+              </span>
 
-        {/* Active Reticle Frame & Dark Vignette */}
-        {isActive ? (
-          <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-4">
-            {/* Center Focus Reticle with 4 Crisp White Rounded L-Corner Brackets */}
-            <div
-              className={`w-56 h-56 sm:w-64 sm:h-64 max-w-[70vw] max-h-[70vw] relative rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,0.58)] transition-all duration-200 flex items-center justify-center ${
-                scanPulse
-                  ? 'scale-105 shadow-[0_0_0_9999px_rgba(0,0,0,0.4),0_0_35px_rgba(16,185,129,0.9)]'
-                  : ''
-              }`}
-            >
-              {/* 4 White Corner Brackets */}
-              <div
-                className={`absolute -top-1 -left-1 w-8 h-8 border-t-[4px] border-l-[4px] rounded-tl-2xl transition-all ${
-                  scanPulse
-                    ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
-                    : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                }`}
-              />
-              <div
-                className={`absolute -top-1 -right-1 w-8 h-8 border-t-[4px] border-r-[4px] rounded-tr-2xl transition-all ${
-                  scanPulse
-                    ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
-                    : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                }`}
-              />
-              <div
-                className={`absolute -bottom-1 -left-1 w-8 h-8 border-b-[4px] border-l-[4px] rounded-bl-2xl transition-all ${
-                  scanPulse
-                    ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
-                    : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                }`}
-              />
-              <div
-                className={`absolute -bottom-1 -right-1 w-8 h-8 border-b-[4px] border-r-[4px] rounded-br-2xl transition-all ${
-                  scanPulse
-                    ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
-                    : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
-                }`}
-              />
+              {contextBadge && (
+                <span className="bg-emerald-950/85 backdrop-blur-md text-emerald-200 border border-emerald-500/30 px-2.5 py-1 rounded-full text-[11px] font-bold shadow-lg shrink-0 pointer-events-auto">
+                  {contextBadge}
+                </span>
+              )}
 
-              {/* Sweeping Laser Line */}
-              <div className="native-scanner-laser" />
+              {statsBadge && (
+                <span className="bg-stone-900/80 backdrop-blur-md text-stone-300 border border-white/10 px-2.5 py-1 rounded-full text-[11px] font-medium shadow-lg shrink-0 pointer-events-auto">
+                  {statsBadge}
+                </span>
+              )}
             </div>
 
-            <p className="mt-4 text-[11px] sm:text-xs text-white/90 bg-stone-900/85 border border-white/10 px-3.5 py-1 rounded-full backdrop-blur-sm font-medium shadow-lg text-center max-w-[85%]">
-              Align Student QR or 1D Admission Barcode within frame
-            </p>
+            {/* Right Controls: Exit / Minimize Fullscreen Button */}
+            <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
+              {isFullscreen && (
+                <button
+                  type="button"
+                  onClick={onClose || toggleFullscreen}
+                  className="p-1.5 sm:p-2 rounded-full bg-stone-900/80 hover:bg-stone-800 text-white border border-white/20 transition cursor-pointer shadow-lg active:scale-95"
+                  title={onClose ? 'Close Scanner' : 'Exit Fullscreen'}
+                >
+                  {onClose ? <X className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                </button>
+              )}
+            </div>
           </div>
-        ) : (
-          /* Idle Viewfinder Placeholder */
-          <div className="text-center p-6 space-y-3 text-stone-500">
-            <Video className="w-10 h-10 mx-auto text-stone-600 stroke-[1.5]" />
-            <p className="text-xs font-semibold text-stone-400">
-              Camera feed is currently inactive.
-            </p>
-            <p className="text-[11px] text-stone-500 max-w-sm mx-auto">
-              Tap &quot;Start Camera&quot; to begin instant QR and Barcode scanning.
-            </p>
-            <button
-              type="button"
-              disabled={disabled || isStarting}
-              onClick={startCamera}
-              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0F5A47] hover:bg-[#0c4738] text-white text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer"
-            >
-              <Camera className="w-4 h-4" />
-              <span>{isStarting ? 'Starting...' : 'Activate Camera'}</span>
-            </button>
+
+          {/* ========================================================== */}
+          {/* LIVE FLOATING SCAN RESULT PILL (Side/Top-Right Toast)      */}
+          {/* ========================================================== */}
+          {activeToast && (
+            <div className="absolute top-12 sm:top-14 right-3 sm:right-4 z-30 max-w-[88vw] sm:max-w-md pointer-events-auto transition-all animate-in fade-in slide-in-from-top-2 duration-200">
+              <div
+                className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-2xl shadow-xl backdrop-blur-md flex items-center gap-2 sm:gap-2.5 border text-xs font-semibold ${
+                  activeToast.status === 'success'
+                    ? activeToast.direction === 'EXIT'
+                      ? 'bg-blue-600/95 text-white border-blue-400/40 shadow-blue-900/30'
+                      : 'bg-emerald-500/95 text-white border-emerald-300/40 shadow-emerald-900/30'
+                    : activeToast.status === 'duplicate'
+                    ? 'bg-amber-500/95 text-white border-amber-300/40 shadow-amber-900/30'
+                    : activeToast.status === 'info'
+                    ? 'bg-stone-800/95 text-white border-white/20 shadow-black/40'
+                    : 'bg-rose-600/95 text-white border-rose-400/40 shadow-rose-900/30'
+                }`}
+              >
+                <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                  {activeToast.status === 'success' ? (
+                    <Check className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                  ) : activeToast.status === 'duplicate' ? (
+                    <AlertCircle className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                  ) : activeToast.status === 'info' ? (
+                    <Loader2 className="w-3.5 h-3.5 text-emerald-300 animate-spin" />
+                  ) : (
+                    <X className="w-3.5 h-3.5 text-white stroke-[2.5]" />
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 truncate">
+                  <span className="uppercase tracking-wider font-bold text-[11px] opacity-90 shrink-0">
+                    {activeToast.status === 'duplicate'
+                      ? 'ALREADY RECORDED'
+                      : activeToast.status === 'error'
+                      ? 'REJECTED'
+                      : activeToast.status === 'info'
+                      ? 'SCANNED'
+                      : activeToast.direction || 'VERIFIED'}
+                  </span>
+                  <span className="opacity-60">•</span>
+                  <span className="truncate font-bold">
+                    {activeToast.studentName}
+                  </span>
+                  {(activeToast.admissionNo || activeToast.rollNo) && (
+                    <span className="font-mono text-[10px] opacity-80 shrink-0">
+                      ({activeToast.admissionNo || activeToast.rollNo})
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================== */}
+          {/* ZONE 2: CENTER ZONE (Square Reticle Clear of All Bars)     */}
+          {/* ========================================================== */}
+          {isActive ? (
+            <div className="flex items-center justify-center my-auto shrink-0 w-full py-1 sm:py-2">
+              <div
+                className={`w-56 h-56 sm:w-64 sm:h-64 max-w-[68vw] max-h-[68vw] relative rounded-3xl shadow-[0_0_0_9999px_rgba(0,0,0,0.58)] transition-all duration-200 flex items-center justify-center pointer-events-none ${
+                  scanPulse
+                    ? 'scale-105 shadow-[0_0_0_9999px_rgba(0,0,0,0.4),0_0_35px_rgba(16,185,129,0.9)]'
+                    : ''
+                }`}
+              >
+                {/* 4 Crisp White Rounded L-Corner Brackets */}
+                <div
+                  className={`absolute -top-1 -left-1 w-8 h-8 border-t-[4px] border-l-[4px] rounded-tl-2xl transition-all ${
+                    scanPulse
+                      ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
+                      : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                  }`}
+                />
+                <div
+                  className={`absolute -top-1 -right-1 w-8 h-8 border-t-[4px] border-r-[4px] rounded-tr-2xl transition-all ${
+                    scanPulse
+                      ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
+                      : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                  }`}
+                />
+                <div
+                  className={`absolute -bottom-1 -left-1 w-8 h-8 border-b-[4px] border-l-[4px] rounded-bl-2xl transition-all ${
+                    scanPulse
+                      ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
+                      : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                  }`}
+                />
+                <div
+                  className={`absolute -bottom-1 -right-1 w-8 h-8 border-b-[4px] border-r-[4px] rounded-br-2xl transition-all ${
+                    scanPulse
+                      ? 'border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,1)]'
+                      : 'border-white shadow-[0_0_8px_rgba(255,255,255,0.7)]'
+                  }`}
+                />
+
+                {/* Sweeping Laser Line */}
+                <div className="native-scanner-laser" />
+              </div>
+            </div>
+          ) : (
+            /* Idle Viewfinder Placeholder */
+            <div className="text-center p-4 my-auto shrink-0 space-y-2.5 text-stone-500 pointer-events-auto">
+              <Video className="w-10 h-10 mx-auto text-stone-600 stroke-[1.5]" />
+              <p className="text-xs font-semibold text-stone-400">
+                Camera feed is currently inactive.
+              </p>
+              <p className="text-[11px] text-stone-500 max-w-sm mx-auto">
+                Tap &quot;Activate Camera&quot; to begin instant QR and Barcode scanning.
+              </p>
+              <button
+                type="button"
+                disabled={disabled || isStarting}
+                onClick={startCamera}
+                className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0F5A47] hover:bg-[#0c4738] text-white text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer"
+              >
+                <Camera className="w-4 h-4" />
+                <span>{isStarting ? 'Starting...' : 'Activate Camera'}</span>
+              </button>
+            </div>
+          )}
+
+          {/* ========================================================== */}
+          {/* ZONE 3: BOTTOM ZONE (Helper Caption + Dark Glass Toolbar)  */}
+          {/* ========================================================== */}
+          <div className="flex flex-col items-center gap-2 shrink-0 w-full pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            {isActive && (
+              <p className="text-[11px] sm:text-xs text-white/90 bg-stone-950/80 border border-white/10 px-3.5 py-1 rounded-full backdrop-blur-md font-medium shadow-lg text-center pointer-events-none">
+                Align QR or 1D Barcode within frame
+              </p>
+            )}
+
+            {/* Floating Dark Glass Pill Toolbar */}
+            {isActive && (
+              <div className="bg-stone-950/85 backdrop-blur-md border border-white/15 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 shadow-2xl flex items-center gap-2.5 sm:gap-4 pointer-events-auto">
+                {/* Torch Toggle */}
+                {isTorchSupported && (
+                  <button
+                    type="button"
+                    onClick={toggleTorch}
+                    className={`p-2 rounded-full transition cursor-pointer ${
+                      isTorchOn
+                        ? 'bg-amber-400 text-stone-950 shadow-md ring-2 ring-amber-300'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                    title={isTorchOn ? 'Turn Flashlight Off' : 'Turn Flashlight On'}
+                  >
+                    {isTorchOn ? <Zap className="w-4 h-4 fill-current" /> : <ZapOff className="w-4 h-4" />}
+                  </button>
+                )}
+
+                {/* Gallery Image Upload */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
+                  title="Scan QR / Barcode from Photo in Gallery"
+                >
+                  <ImageIcon className="w-4 h-4" />
+                </button>
+
+                {/* Quick Manual Code Input */}
+                <button
+                  type="button"
+                  onClick={() => setShowManualInput(true)}
+                  className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
+                  title="Enter Admission No Manually"
+                >
+                  <Keyboard className="w-4 h-4" />
+                </button>
+
+                {/* Fullscreen Viewfinder Toggle */}
+                {fullScreenEnabled && (
+                  <button
+                    type="button"
+                    onClick={toggleFullscreen}
+                    className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
+                    title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Viewfinder'}
+                  >
+                    {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                  </button>
+                )}
+
+                {/* Camera Flip (if multiple devices) */}
+                {devices.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextDevice = devices.find((d) => d.deviceId !== selectedDeviceId) || devices[0];
+                      if (nextDevice) handleDeviceChange(nextDevice.deviceId);
+                    }}
+                    className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
+                    title="Flip / Switch Camera"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Decoding Image Loader Overlay */}
         {isDecodingImage && (
@@ -731,7 +967,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
 
         {/* Quick Manual Entry Sheet Overlay */}
         {showManualInput && (
-          <div className="absolute inset-0 bg-stone-950/90 backdrop-blur-md flex flex-col items-center justify-center p-4 z-40">
+          <div className="absolute inset-0 bg-stone-950/90 backdrop-blur-md flex flex-col items-center justify-center p-4 z-40 pointer-events-auto">
             <div className="bg-stone-900 border border-stone-800 rounded-2xl p-5 w-full max-w-sm space-y-3 text-white shadow-2xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1.5">
@@ -777,76 +1013,6 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
             </div>
           </div>
         )}
-
-        {/* Bottom Floating Dark Glass Pill Toolbar (Torch, Gallery, Manual, Flip) */}
-        {isActive && (
-          <div className="absolute bottom-3 sm:bottom-4 inset-x-0 flex justify-center z-20 pointer-events-none px-3">
-            <div className="bg-stone-950/85 backdrop-blur-md border border-white/15 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 shadow-2xl flex items-center gap-3 sm:gap-4 pointer-events-auto">
-              {/* Torch Toggle */}
-              {isTorchSupported && (
-                <button
-                  type="button"
-                  onClick={toggleTorch}
-                  className={`p-2 rounded-full transition cursor-pointer ${
-                    isTorchOn
-                      ? 'bg-amber-400 text-stone-950 shadow-md ring-2 ring-amber-300'
-                      : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
-                  title={isTorchOn ? 'Turn Flashlight Off' : 'Turn Flashlight On'}
-                >
-                  {isTorchOn ? <Zap className="w-4 h-4 fill-current" /> : <ZapOff className="w-4 h-4" />}
-                </button>
-              )}
-
-              {/* Gallery Image Upload */}
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
-                title="Scan QR / Barcode from Photo in Gallery"
-              >
-                <ImageIcon className="w-4 h-4" />
-              </button>
-
-              {/* Quick Manual Code Input */}
-              <button
-                type="button"
-                onClick={() => setShowManualInput(true)}
-                className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
-                title="Enter Admission No Manually"
-              >
-                <Keyboard className="w-4 h-4" />
-              </button>
-
-              {/* Camera Flip (if multiple devices) */}
-              {devices.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const nextDevice = devices.find((d) => d.deviceId !== selectedDeviceId) || devices[0];
-                    if (nextDevice) handleDeviceChange(nextDevice.deviceId);
-                  }}
-                  className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
-                  title="Flip / Switch Camera"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Fullscreen Viewfinder Toggle */}
-              {fullScreenEnabled && (
-                <button
-                  type="button"
-                  onClick={toggleFullscreen}
-                  className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
-                  title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Viewfinder'}
-                >
-                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Security & Privacy Notice */}
@@ -858,4 +1024,11 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
       )}
     </div>
   );
+
+  // When True Locked Fullscreen is active, render via Portal into document.body
+  if (isFullscreen && typeof document !== 'undefined') {
+    return createPortal(viewfinderStage, document.body);
+  }
+
+  return viewfinderStage;
 };

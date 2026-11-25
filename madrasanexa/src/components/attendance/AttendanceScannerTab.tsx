@@ -33,7 +33,7 @@ import {
   type BarcodeAdmissionVerificationResult,
 } from '../../services/attendance.service';
 import { UsbScannerInput } from './UsbScannerInput';
-import { CameraScannerView } from './CameraScannerView';
+import { CameraScannerView, type ScanResultToast } from './CameraScannerView';
 import {
   classifyScanInput,
   ScanDebouncer,
@@ -99,6 +99,7 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
 
   // Scan Event Log (ephemeral in-memory history for active session)
   const [scanLogs, setScanLogs] = useState<ScanEventLogItem[]>([]);
+  const [liveScanToast, setLiveScanToast] = useState<ScanResultToast | null>(null);
 
   // Overwrite modal / form state for duplicates
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false);
@@ -159,6 +160,15 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
           if (verifyRes.alreadyMarked) {
             playScannerFeedback('warning', !audioFeedback);
 
+            setLiveScanToast({
+              status: 'duplicate',
+              direction: 'PRESENT',
+              studentName: verifyRes.student.fullName,
+              admissionNo: verifyRes.student.admissionNo,
+              message: `Already marked ${verifyRes.existingStatus}`,
+              timestamp: Date.now(),
+            });
+
             setCurrentVerification({
               classification,
               verificationResult: verifyRes,
@@ -200,6 +210,15 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
             });
 
             playScannerFeedback('success', !audioFeedback);
+
+            setLiveScanToast({
+              status: 'success',
+              direction: 'PRESENT',
+              studentName: verifyRes.student.fullName,
+              admissionNo: verifyRes.student.admissionNo,
+              message: 'Marked PRESENT via Cryptographic QR',
+              timestamp: Date.now(),
+            });
 
             setCurrentVerification({
               classification,
@@ -247,6 +266,15 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
           if (barcodeRes.alreadyMarked) {
             playScannerFeedback('warning', !audioFeedback);
 
+            setLiveScanToast({
+              status: 'duplicate',
+              direction: 'PRESENT',
+              studentName: barcodeRes.student.fullName,
+              admissionNo: barcodeRes.student.admissionNo,
+              message: `Already marked ${barcodeRes.existingStatus}`,
+              timestamp: Date.now(),
+            });
+
             setCurrentVerification({
               classification,
               barcodeResult: barcodeRes,
@@ -289,6 +317,15 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
 
             playScannerFeedback('success', !audioFeedback);
 
+            setLiveScanToast({
+              status: 'success',
+              direction: 'PRESENT',
+              studentName: barcodeRes.student.fullName,
+              admissionNo: barcodeRes.student.admissionNo,
+              message: 'Marked PRESENT via 1D Barcode',
+              timestamp: Date.now(),
+            });
+
             setCurrentVerification({
               classification,
               barcodeResult: barcodeRes,
@@ -326,6 +363,13 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
 
         const errorMsg =
           err.response?.data?.message || err.message || 'Verification failed. Student token or barcode is invalid.';
+
+        setLiveScanToast({
+          status: 'error',
+          studentName: 'Scan Rejected',
+          message: errorMsg,
+          timestamp: Date.now(),
+        });
 
         setCurrentVerification({
           classification,
@@ -678,6 +722,7 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
               disabled={isProcessing}
               contextBadge="Classroom Attendance"
               statsBadge={`Logged: ${scanLogs.length}`}
+              lastScanResult={liveScanToast}
             />
           )}
 

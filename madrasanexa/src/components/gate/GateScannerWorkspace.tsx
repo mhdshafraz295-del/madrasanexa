@@ -25,7 +25,7 @@ import {
   type GateScanResult,
   type GateEmailStatus,
 } from '../../services/gate.service';
-import { CameraScannerView } from '../attendance/CameraScannerView';
+import { CameraScannerView, type ScanResultToast } from '../attendance/CameraScannerView';
 import { UsbScannerInput } from '../attendance/UsbScannerInput';
 import { playScannerFeedback } from '../attendance/scanner-utils';
 
@@ -85,6 +85,7 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
     isDebounce?: boolean;
     retryPayload?: { token: string; idempotencyKey: string };
   } | null>(null);
+  const [liveScanToast, setLiveScanToast] = useState<ScanResultToast | null>(null);
 
   // Operator session recent scans strip (last 10 items)
   const [sessionScans, setSessionScans] = useState<
@@ -128,6 +129,15 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
         if (response.success && response.data) {
           const result = response.data;
           setLastResult(result);
+
+          setLiveScanToast({
+            status: result.idempotentReplay ? 'duplicate' : 'success',
+            direction: result.event.eventType,
+            studentName: result.student.fullName,
+            admissionNo: result.student.admissionNo,
+            message: `${result.event.eventType} recorded successfully`,
+            timestamp: Date.now(),
+          });
 
           // Audio feedback
           playScannerFeedback('success', isMuted);
@@ -207,6 +217,14 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
           isCategoryUnset,
           isDebounce,
           retryPayload: { token, idempotencyKey },
+        });
+
+        setLiveScanToast({
+          status: isDebounce || status === 429 ? 'duplicate' : 'error',
+          direction: eventType,
+          studentName: title,
+          message: serverMessage,
+          timestamp: Date.now(),
         });
 
         // Do not update lastResult with success on error
@@ -393,6 +411,7 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
                   disabled={isProcessing}
                   contextBadge={eventType === 'ENTRY' ? 'ENTRY (Check In)' : 'EXIT (Check Out)'}
                   statsBadge={`Logged: ${sessionScans.length}`}
+                  lastScanResult={liveScanToast}
                 />
               </div>
             )}

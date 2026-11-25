@@ -79,6 +79,7 @@ export function isEmailConfigured() {
     (process.env.NODE_ENV !== undefined ? process.env.NODE_ENV === 'test' : env.NODE_ENV === 'test') ||
     (process.env.EMAIL_PROVIDER !== undefined ? process.env.EMAIL_PROVIDER === 'test' : env.EMAIL_PROVIDER === 'test');
   if (isTest) return true;
+  if (Boolean(process.env.EMAIL_HTTP_WEBHOOK_URL && process.env.EMAIL_HTTP_WEBHOOK_URL.trim())) return true;
   return Boolean(env.SMTP_HOST && env.EMAIL_FROM);
 }
 
@@ -101,7 +102,7 @@ export function isTestRecipient(email) {
 /**
  * Core internal dispatcher with timeout protection, test adapter, and safe error sanitization.
  */
-export async function dispatchEmail({ madrasaId, to, subject, html, text, attachments, customTransporter, from, replyTo }) {
+export async function dispatchEmail({ madrasaId, to, subject, html, text, attachments, customTransporter, from, replyTo, fromName }) {
   // 1. Check custom test adapter
   if (customTestAdapter) {
     try {
@@ -168,6 +169,72 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
     resolvedFrom = env.EMAIL_FROM;
   }
 
+  const resolvedFromName =
+    fromName ||
+    (resolvedFrom && resolvedFrom.includes('<') ? resolvedFrom.split('<')[0].trim().replace(/^["']|["']$/g, '') : '') ||
+    process.env.EMAIL_FROM_NAME ||
+    'MadrasaNexa';
+
+  // 4. Primary Transport: HTTPS Webhook Transport (when configured)
+  const webhookUrl = (process.env.EMAIL_HTTP_WEBHOOK_URL || env.EMAIL_HTTP_WEBHOOK_URL)?.trim();
+  if (webhookUrl) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(new Error('Webhook timed out after 15000ms')), 15000);
+
+      let res;
+      let data;
+      try {
+        res = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          redirect: 'follow',
+          body: JSON.stringify({
+            secret: process.env.EMAIL_HTTP_WEBHOOK_SECRET || env.EMAIL_HTTP_WEBHOOK_SECRET || '',
+            to,
+            subject,
+            html,
+            text,
+            fromName: resolvedFromName,
+          }),
+          signal: controller.signal,
+        });
+
+        const responseText = await res.text();
+        try {
+          data = JSON.parse(responseText);
+        } catch (_) {
+          data = { ok: false, error: responseText || 'Invalid JSON response from webhook' };
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      if (res && res.ok && data && (data.ok === true || data.success === true)) {
+        return {
+          success: true,
+          status: 'SENT',
+          provider: 'https-webhook',
+          messageId: data.messageId || data.id || `webhook-${Date.now()}`,
+        };
+      }
+
+      const failureReason =
+        data?.error ||
+        data?.message ||
+        `HTTP ${res?.status || 'unknown'}: ${res?.statusText || 'Webhook delivery unsuccessful'}`;
+      throw new Error(failureReason);
+    } catch (err) {
+      console.warn(
+        '[Email] Webhook failed or limit reached, falling back to existing SMTP/Resend transport:',
+        err.message
+      );
+    }
+  }
+
+  // 5. Fallback Transport: Existing SMTP / Resend
   if (!resolvedTransporter) {
     if (!env.SMTP_HOST || !env.EMAIL_FROM) {
       return {

@@ -99,6 +99,8 @@ export const envSchema = z.object({
 
   // Email Notification Settings
   EMAIL_PROVIDER: z.enum(['smtp', 'test']).default('smtp'),
+  EMAIL_HTTP_WEBHOOK_URL: z.string().optional(),
+  EMAIL_HTTP_WEBHOOK_SECRET: z.string().optional(),
   SMTP_HOST: z.string().optional(),
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().optional(),

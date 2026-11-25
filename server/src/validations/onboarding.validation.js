@@ -24,24 +24,24 @@ export const publicOnboardingRequestSchema = z.object({
     .trim()
     .min(7, 'Phone number must be at least 7 characters')
     .max(25, 'Phone number cannot exceed 25 characters'),
-  whatsappNumber: z
+  whatsappNumber: z.preprocess((v) => (v === '' ? null : v), z
     .string()
     .trim()
     .max(25, 'WhatsApp number cannot exceed 25 characters')
     .optional()
-    .nullable(),
-  district: z
+    .nullable()),
+  district: z.preprocess((v) => (v === '' ? null : v), z
     .string()
     .trim()
     .max(60, 'District name cannot exceed 60 characters')
     .optional()
-    .nullable(),
-  address: z
+    .nullable()),
+  address: z.preprocess((v) => (v === '' ? null : v), z
     .string()
     .trim()
     .max(5000, 'Address cannot exceed 5000 characters')
     .optional()
-    .nullable(),
+    .nullable()),
   expectedStudentCount: z
     .coerce
     .number()

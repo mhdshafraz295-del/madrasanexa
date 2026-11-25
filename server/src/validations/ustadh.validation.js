@@ -10,14 +10,14 @@ export const createUstadhSchema = z.object({
   ustadhCode: z.string().trim().min(1).max(50).optional(),
   staffType: z.enum(['USTADH', 'SCHOOL_TEACHER']).default('USTADH'),
   fullName: z.string().trim().min(1, 'Full name is required.').max(100),
-  phoneNumber: z.string().trim().max(30).optional().nullable(),
-  whatsappNumber: z.string().trim().regex(E164_PHONE_REGEX, {
+  phoneNumber: z.preprocess((v) => (v === '' ? null : v), z.string().trim().max(30).optional().nullable()),
+  whatsappNumber: z.preprocess((v) => (v === '' ? null : v), z.string().trim().regex(E164_PHONE_REGEX, {
     message: 'WhatsApp number must be in canonical international format (e.g. +94783254552 or +12025550123).',
-  }).optional().nullable(),
+  }).optional().nullable()),
   email: createOptionalNormalizedEmailSchema(),
-  address: z.string().trim().max(5000).optional().nullable(),
+  address: z.preprocess((v) => (v === '' ? null : v), z.string().trim().max(5000).optional().nullable()),
   joinDate: z.string().regex(DATE_REGEX, 'Join date must be in YYYY-MM-DD format.'),
-  leaveDate: z.string().regex(DATE_REGEX, 'Leave date must be in YYYY-MM-DD format.').optional().nullable(),
+  leaveDate: z.preprocess((v) => (v === '' ? null : v), z.string().regex(DATE_REGEX, 'Leave date must be in YYYY-MM-DD format.').optional().nullable()),
   baseMonthlySalary: z.union([z.number().min(0), z.string()]).refine((val) => {
     const num = typeof val === 'number' ? val : parseFloat(val);
     return !isNaN(num) && num >= 0;
@@ -38,14 +38,14 @@ export const updateUstadhSchema = z.object({
   ustadhCode: z.string().trim().min(1).max(50).optional(),
   staffType: z.enum(['USTADH', 'SCHOOL_TEACHER']).optional(),
   fullName: z.string().trim().min(1).max(100).optional(),
-  phoneNumber: z.string().trim().max(30).optional().nullable(),
-  whatsappNumber: z.string().trim().regex(E164_PHONE_REGEX, {
+  phoneNumber: z.preprocess((v) => (v === '' ? null : v), z.string().trim().max(30).optional().nullable()),
+  whatsappNumber: z.preprocess((v) => (v === '' ? null : v), z.string().trim().regex(E164_PHONE_REGEX, {
     message: 'WhatsApp number must be in canonical international format (e.g. +94783254552 or +12025550123).',
-  }).optional().nullable(),
+  }).optional().nullable()),
   email: z.preprocess((val) => (val === undefined ? undefined : val), createOptionalNormalizedEmailSchema()).optional(),
-  address: z.string().trim().max(5000).optional().nullable(),
-  joinDate: z.string().regex(DATE_REGEX).optional(),
-  leaveDate: z.string().regex(DATE_REGEX).optional().nullable(),
+  address: z.preprocess((v) => (v === '' ? null : v), z.string().trim().max(5000).optional().nullable()),
+  joinDate: z.preprocess((v) => (v === '' ? undefined : v), z.string().regex(DATE_REGEX).optional()),
+  leaveDate: z.preprocess((v) => (v === '' ? null : v), z.string().regex(DATE_REGEX).optional().nullable()),
   baseMonthlySalary: z.union([z.number().min(0), z.string()]).refine((val) => {
     const num = typeof val === 'number' ? val : parseFloat(val);
     return !isNaN(num) && num >= 0;

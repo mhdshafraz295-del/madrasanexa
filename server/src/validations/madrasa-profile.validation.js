@@ -93,7 +93,7 @@ export const staffPresentationItemSchema = z.object({
   experienceYears: z.union([z.number().min(0).max(80), z.string().max(50)]).optional().nullable(),
   bio: z.string().max(5000).optional().nullable(),
   photoFileId: z.string().max(191).optional().nullable(),
-  photoUrl: z.string().url().max(5000).optional().nullable(),
+  photoUrl: z.preprocess((v) => (v === '' ? null : v), z.string().url().max(5000).optional().nullable()),
 });
 
 export const staffSectionSchema = z.object({
@@ -113,7 +113,7 @@ export const updateMadrasaProfileSchema = z.object({
   syllabusInfo: z.string().max(5000).optional().nullable(),
   rulesAndRegulations: z.string().max(5000).optional().nullable(),
   contactPhone: z.string().max(50).optional().nullable(),
-  contactEmail: z.string().email().max(255).optional().nullable().or(z.literal('')),
+  contactEmail: z.preprocess((v) => (v === '' ? null : v), z.string().email().max(255).optional().nullable()),
   address: z.string().max(5000).optional().nullable(),
   curriculumJson: curriculumPayloadSchema.optional().nullable(),
   staffJson: staffSectionSchema.optional().nullable(),

@@ -189,11 +189,15 @@ export const deleteObjectFromR2 = async (key) => {
  * Returns public URL if public access is configured, or null
  */
 export const getR2PublicUrl = (key) => {
-  if (!env.R2_PUBLIC_URL) {
+  if (!env.R2_PUBLIC_URL || !key) {
     return null;
   }
-  const baseUrl = env.R2_PUBLIC_URL.replace(/\/+$/, '');
-  const cleanKey = key.replace(/^\/+/, '');
+  let baseUrl = String(env.R2_PUBLIC_URL).trim();
+  if (!/^https?:\/\//i.test(baseUrl)) {
+    baseUrl = `https://${baseUrl}`;
+  }
+  baseUrl = baseUrl.replace(/\/+$/, '');
+  const cleanKey = String(key).replace(/^\/+/, '');
   return `${baseUrl}/${cleanKey}`;
 };
 

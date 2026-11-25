@@ -90,6 +90,8 @@ export function isEmailConfigured() {
     (process.env.NODE_ENV !== undefined ? process.env.NODE_ENV === 'test' : env.NODE_ENV === 'test') ||
     (process.env.EMAIL_PROVIDER !== undefined ? process.env.EMAIL_PROVIDER === 'test' : env.EMAIL_PROVIDER === 'test');
   if (isTest) return true;
+  if (Boolean(process.env.RESEND_API_KEY || env.RESEND_API_KEY)) return true;
+  if (Boolean(process.env.BREVO_API_KEY || env.BREVO_API_KEY)) return true;
   if (Boolean(process.env.EMAIL_HTTP_WEBHOOK_URL && process.env.EMAIL_HTTP_WEBHOOK_URL.trim())) return true;
   return Boolean(env.SMTP_HOST && env.EMAIL_FROM);
 }
@@ -186,42 +188,45 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
     process.env.EMAIL_FROM_NAME ||
     'MadrasaNexa';
 
-  // 4. Primary Transport: HTTPS Webhook Transport (when configured)
-  const webhookUrl = (process.env.EMAIL_HTTP_WEBHOOK_URL || env.EMAIL_HTTP_WEBHOOK_URL)?.trim();
-  if (webhookUrl) {
-    try {
-      // Serialize attachments cleanly for JSON transport over HTTPS webhook
-      let webhookAttachments = [];
-      if (Array.isArray(attachments) && attachments.length > 0) {
-        for (const att of attachments) {
-          if (!att) continue;
-          let contentBase64 = '';
-          if (Buffer.isBuffer(att.content)) {
-            contentBase64 = att.content.toString('base64');
-          } else if (typeof att.content === 'string') {
-            contentBase64 = att.encoding === 'base64'
-              ? att.content
-              : Buffer.from(att.content).toString('base64');
-          } else if (att.path && typeof att.path === 'string') {
-            try {
-              if (fs.existsSync(att.path)) {
-                contentBase64 = fs.readFileSync(att.path).toString('base64');
-              }
-            } catch (readErr) {
-              console.warn('[Email] Could not read attachment path for webhook:', att.path, readErr.message);
-            }
-          }
+  // Track errors from primary transports to surface the true root cause if all fail
+  let primaryTransportErrors = [];
 
-          webhookAttachments.push({
-            filename: att.filename || 'document.pdf',
-            contentType: att.contentType || 'application/pdf',
-            contentBase64,
-          });
+  // Normalize attachments cleanly for JSON/API transports
+  let normalizedAttachments = [];
+  if (Array.isArray(attachments) && attachments.length > 0) {
+    for (const att of attachments) {
+      if (!att) continue;
+      let contentBase64 = '';
+      if (Buffer.isBuffer(att.content)) {
+        contentBase64 = att.content.toString('base64');
+      } else if (typeof att.content === 'string') {
+        contentBase64 = att.encoding === 'base64'
+          ? att.content
+          : Buffer.from(att.content).toString('base64');
+      } else if (att.path && typeof att.path === 'string') {
+        try {
+          if (fs.existsSync(att.path)) {
+            contentBase64 = fs.readFileSync(att.path).toString('base64');
+          }
+        } catch (readErr) {
+          console.warn('[Email] Could not read attachment path for API transport:', att.path, readErr.message);
         }
       }
 
+      normalizedAttachments.push({
+        filename: att.filename || 'document.pdf',
+        contentType: att.contentType || 'application/pdf',
+        contentBase64,
+      });
+    }
+  }
+
+  // 4. Primary Transport A: HTTPS Webhook Transport (when configured)
+  const webhookUrl = (process.env.EMAIL_HTTP_WEBHOOK_URL || env.EMAIL_HTTP_WEBHOOK_URL)?.trim();
+  if (webhookUrl) {
+    try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(new Error('Webhook timed out after 15000ms')), 15000);
+      const timeoutId = setTimeout(() => controller.abort(new Error('Webhook timed out after 30000ms')), 30000);
 
       let res;
       let data;
@@ -239,7 +244,7 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
             html,
             text,
             fromName: resolvedFromName,
-            ...(webhookAttachments.length > 0 ? { attachments: webhookAttachments } : {}),
+            ...(normalizedAttachments.length > 0 ? { attachments: normalizedAttachments } : {}),
           }),
           signal: controller.signal,
         });
@@ -254,6 +259,8 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
         clearTimeout(timeoutId);
       }
 
+      console.log(`[EmailService] Webhook response: status=${res?.status}`, data?.ok ? 'OK' : data?.error || data?.message || data);
+
       if (res && res.ok && data && (data.ok === true || data.success === true)) {
         return {
           success: true,
@@ -267,22 +274,171 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
         data?.error ||
         data?.message ||
         `HTTP ${res?.status || 'unknown'}: ${res?.statusText || 'Webhook delivery unsuccessful'}`;
+      primaryTransportErrors.push(`Webhook: ${failureReason}`);
       throw new Error(failureReason);
     } catch (err) {
       console.warn(
-        '[Email] Webhook failed or limit reached, falling back to existing SMTP/Resend transport:',
+        '[Email] Webhook failed, falling back to HTTPS Resend/Brevo or SMTP:',
         err.message
       );
+      if (!primaryTransportErrors.some(e => e.includes(err.message))) {
+        primaryTransportErrors.push(`Webhook: ${err.message}`);
+      }
     }
   }
 
-  // 5. Fallback Transport: Existing SMTP / Resend
+  // 4. Primary Transport B: Resend HTTPS API (Port 443 - zero SMTP port blocking)
+  const resendApiKey = (process.env.RESEND_API_KEY || env.RESEND_API_KEY)?.trim();
+  if (resendApiKey) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(new Error('Resend API timed out after 15000ms')), 15000);
+
+      let resendSender = resolvedFrom || 'MadrasaNexa <onboarding@resend.dev>';
+      // Ensure sender is formatted cleanly with name if present
+      if (resolvedFromName && !resendSender.includes('<')) {
+        resendSender = `${resolvedFromName} <${resendSender}>`;
+      }
+
+      const resendAttachments = normalizedAttachments.map(a => ({
+        filename: a.filename,
+        content: a.contentBase64,
+      }));
+
+      let res;
+      let data;
+      try {
+        res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${resendApiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: resendSender,
+            to: [to],
+            subject,
+            html,
+            text,
+            ...(resolvedReplyTo ? { reply_to: resolvedReplyTo } : {}),
+            ...(resendAttachments.length > 0 ? { attachments: resendAttachments } : {}),
+          }),
+          signal: controller.signal,
+        });
+
+        const responseText = await res.text();
+        try {
+          data = JSON.parse(responseText);
+        } catch (_) {
+          data = { message: responseText };
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      console.log(`[EmailService] Resend response: status=${res?.status}`, data?.id || data?.message || data);
+
+      if (res && res.ok && data?.id) {
+        return {
+          success: true,
+          status: 'SENT',
+          provider: 'resend-https',
+          messageId: data.id,
+        };
+      }
+
+      const failureReason = data?.message || `HTTP ${res?.status}: Resend delivery failed`;
+      primaryTransportErrors.push(`Resend: ${failureReason}`);
+      throw new Error(failureReason);
+    } catch (err) {
+      console.warn('[Email] Resend HTTPS failed, continuing fallback:', err.message);
+      if (!primaryTransportErrors.some(e => e.includes(err.message))) {
+        primaryTransportErrors.push(`Resend: ${err.message}`);
+      }
+    }
+  }
+
+  // 4. Primary Transport C: Brevo HTTPS API (Port 443 - zero SMTP port blocking)
+  const brevoApiKey = (process.env.BREVO_API_KEY || env.BREVO_API_KEY)?.trim();
+  if (brevoApiKey) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(new Error('Brevo API timed out after 15000ms')), 15000);
+
+      const cleanFromEmail = (resolvedFrom && resolvedFrom.includes('<')
+        ? resolvedFrom.match(/<([^>]+)>/)?.[1]
+        : resolvedFrom) || 'notifications@madrasanexa.com';
+
+      const brevoAttachment = normalizedAttachments.map(a => ({
+        name: a.filename,
+        content: a.contentBase64,
+      }));
+
+      let res;
+      let data;
+      try {
+        res = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': brevoApiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: {
+              name: resolvedFromName,
+              email: cleanFromEmail,
+            },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+            textContent: text,
+            ...(resolvedReplyTo ? { replyTo: { email: resolvedReplyTo } } : {}),
+            ...(brevoAttachment.length > 0 ? { attachment: brevoAttachment } : {}),
+          }),
+          signal: controller.signal,
+        });
+
+        const responseText = await res.text();
+        try {
+          data = JSON.parse(responseText);
+        } catch (_) {
+          data = { message: responseText };
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      console.log(`[EmailService] Brevo response: status=${res?.status}`, data?.messageId || data?.message || data);
+
+      if (res && res.ok && data?.messageId) {
+        return {
+          success: true,
+          status: 'SENT',
+          provider: 'brevo-https',
+          messageId: data.messageId,
+        };
+      }
+
+      const failureReason = data?.message || `HTTP ${res?.status}: Brevo delivery failed`;
+      primaryTransportErrors.push(`Brevo: ${failureReason}`);
+      throw new Error(failureReason);
+    } catch (err) {
+      console.warn('[Email] Brevo HTTPS failed, continuing fallback:', err.message);
+      if (!primaryTransportErrors.some(e => e.includes(err.message))) {
+        primaryTransportErrors.push(`Brevo: ${err.message}`);
+      }
+    }
+  }
+
+  // 5. Fallback Transport: Existing SMTP (Fast fail 6000ms on blocked cloud ports)
   if (!resolvedTransporter) {
     if (!env.SMTP_HOST || !env.EMAIL_FROM) {
+      const primaryErr = primaryTransportErrors.join(' | ');
       return {
         success: false,
-        status: 'NOT_CONFIGURED',
-        error: 'Email provider not configured (missing SMTP_HOST or EMAIL_FROM in environment).',
+        status: 'FAILED',
+        error: primaryErr || 'No email transport configured (missing HTTPS Webhook/API key and SMTP_HOST).',
       };
     }
     resolvedTransporter = nodemailer.createTransport({
@@ -293,9 +449,9 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
         user: env.SMTP_USER,
         pass: env.SMTP_PASS,
       } : undefined,
-      connectionTimeout: 7000,
-      greetingTimeout: 7000,
-      socketTimeout: 9000,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 6000,
     });
   }
 
@@ -311,7 +467,7 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
 
   try {
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Email provider connection timed out.')), 10000)
+      setTimeout(() => reject(new Error('Email provider connection timed out.')), 6000)
     );
 
     const info = await Promise.race([
@@ -335,10 +491,17 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
     const sanitizedError = err?.message?.includes('timed out')
       ? 'Email provider connection timed out.'
       : String(err.message || 'Unknown SMTP error').replace(/[\r\n\t]+/g, ' ').slice(0, 200);
+
+    // If primary HTTPS transports had specific errors (e.g. Google Apps Script quota, Resend domain verification),
+    // surface that real cause instead of only reporting the blocked SMTP timeout
+    const finalErrorMessage = primaryTransportErrors.length > 0
+      ? `${primaryTransportErrors.join('; ')} -> Fallback SMTP failed: ${sanitizedError}`
+      : sanitizedError;
+
     return {
       success: false,
       status: 'FAILED',
-      error: sanitizedError,
+      error: finalErrorMessage,
     };
   }
 }

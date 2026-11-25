@@ -10,6 +10,7 @@ import {
 } from './ustadh-schedule.service.js';
 import { renderRawHtmlToPdf, embeddedFontsCss } from './pdf-report.service.js';
 import { resolveLogoDataUri } from './branding.service.js';
+import { processNotificationJobs } from '../jobs/notification-worker.job.js';
 
 export const WEEKDAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'];
 
@@ -1590,7 +1591,7 @@ export async function finalizeTimetable(madrasaId, payload, userId) {
 
   // 7. Atomic Prisma Transaction (with P2002 concurrent race recovery)
   try {
-    return await prisma.$transaction(async (tx) => {
+    const publication = await prisma.$transaction(async (tx) => {
       // In-tx idempotency check
       const inTxExisting = await tx.timetablePublication.findUnique({
         where: { madrasaId_idempotencyKey: { madrasaId, idempotencyKey } },
@@ -1735,6 +1736,21 @@ export async function finalizeTimetable(madrasaId, payload, userId) {
 
       return publication;
     });
+
+    // Trigger immediate background worker dispatch if emails were queued
+    if (sendEmail) {
+      setImmediate(async () => {
+        try {
+          console.log(`[TimetableEmailWorker] Triggering immediate dispatch for publication ${publication.id}...`);
+          const result = await processNotificationJobs({ limit: 50, madrasaId });
+          console.log(`[TimetableEmailWorker] Immediate dispatch result for publication ${publication.id}:`, result);
+        } catch (dispatchErr) {
+          console.error(`[TimetableEmailWorker] Error during immediate dispatch for publication ${publication.id}:`, dispatchErr.message);
+        }
+      });
+    }
+
+    return publication;
   } catch (err) {
     // Handle concurrent P2002 race recovery gracefully
     if (err?.code === 'P2002' || err?.message?.includes('P2002') || err?.message?.includes('idempotencyKey')) {

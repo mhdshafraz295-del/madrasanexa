@@ -1,3 +1,4 @@
+import fs from 'fs';
 import nodemailer from 'nodemailer';
 import { env, getPrimaryFrontendUrl, getTeacherPortalUrl } from '../config/env.js';
 import { resolveEmailSenderForMadrasa } from './email-sender-resolver.service.js';
@@ -189,6 +190,36 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
   const webhookUrl = (process.env.EMAIL_HTTP_WEBHOOK_URL || env.EMAIL_HTTP_WEBHOOK_URL)?.trim();
   if (webhookUrl) {
     try {
+      // Serialize attachments cleanly for JSON transport over HTTPS webhook
+      let webhookAttachments = [];
+      if (Array.isArray(attachments) && attachments.length > 0) {
+        for (const att of attachments) {
+          if (!att) continue;
+          let contentBase64 = '';
+          if (Buffer.isBuffer(att.content)) {
+            contentBase64 = att.content.toString('base64');
+          } else if (typeof att.content === 'string') {
+            contentBase64 = att.encoding === 'base64'
+              ? att.content
+              : Buffer.from(att.content).toString('base64');
+          } else if (att.path && typeof att.path === 'string') {
+            try {
+              if (fs.existsSync(att.path)) {
+                contentBase64 = fs.readFileSync(att.path).toString('base64');
+              }
+            } catch (readErr) {
+              console.warn('[Email] Could not read attachment path for webhook:', att.path, readErr.message);
+            }
+          }
+
+          webhookAttachments.push({
+            filename: att.filename || 'document.pdf',
+            contentType: att.contentType || 'application/pdf',
+            contentBase64,
+          });
+        }
+      }
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(new Error('Webhook timed out after 15000ms')), 15000);
 
@@ -208,6 +239,7 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
             html,
             text,
             fromName: resolvedFromName,
+            ...(webhookAttachments.length > 0 ? { attachments: webhookAttachments } : {}),
           }),
           signal: controller.signal,
         });

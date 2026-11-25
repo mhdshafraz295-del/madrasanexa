@@ -374,33 +374,33 @@ export default function StudentAttendancePage() {
       : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden min-w-0 max-w-full">
       {/* 1. Header with Operational Context & Live Sync Notice */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 shrink-0">
               ● Live Daily Attendance
             </span>
-            <span className="text-xs text-slate-500 font-mono">
+            <span className="text-xs text-slate-500 font-mono truncate">
               Auto-Synced to Admin Portal
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight break-words">
             Unified Morning Student Scanner & Roster
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1 leading-relaxed">
             Continuous instant barcode & QR scanning across all students with automatic Parent Email Alerts on Entry and Exit
           </p>
         </div>
 
         {/* Live Admin Sync Badge & Refresh */}
-        <div className="flex items-center gap-2.5 shrink-0 self-start md:self-auto">
-          <div className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#0D9488]" />
-            <div>
-              <div className="font-bold text-slate-900 text-[11px]">Instant Admin Sync</div>
-              <div className="text-[10px] text-slate-500">Parent email alerts auto-dispatched</div>
+        <div className="flex items-center gap-2.5 shrink-0 w-full md:w-auto justify-between md:justify-end">
+          <div className="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center gap-2 min-w-0 flex-1 md:flex-initial">
+            <ShieldCheck className="w-4 h-4 text-[#0D9488] shrink-0" />
+            <div className="min-w-0">
+              <div className="font-bold text-slate-900 text-[11px] truncate">Instant Admin Sync</div>
+              <div className="text-[10px] text-slate-500 truncate">Parent email alerts auto-dispatched</div>
             </div>
           </div>
 
@@ -408,7 +408,7 @@ export default function StudentAttendancePage() {
             type="button"
             onClick={loadRoster}
             disabled={isLoading}
-            className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition cursor-pointer"
+            className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition cursor-pointer shrink-0"
             title="Refresh Roster & Counters"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-[#0D9488]' : ''}`} />
@@ -417,50 +417,50 @@ export default function StudentAttendancePage() {
       </div>
 
       {/* 2. Top Control Bar: Direction Toggle, Residency Filter & Class Filter */}
-      <div className="bg-white rounded-2xl border border-slate-200/90 p-4 sm:p-5 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl border border-slate-200/90 p-3.5 sm:p-5 shadow-xs space-y-4 min-w-0">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 min-w-0">
           {/* Movement Direction Toggle */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full lg:w-auto min-w-0">
+            <span className="text-xs font-bold text-slate-700 uppercase tracking-wider shrink-0">
               Movement Direction:
             </span>
-            <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+            <div className="grid grid-cols-2 sm:inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setMovementDirection('ENTRY')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                className={`px-2.5 sm:px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer min-w-0 truncate ${
                   movementDirection === 'ENTRY'
                     ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-700'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <LogIn className="w-4 h-4" />
-                <span>ENTRY (Check-In)</span>
+                <LogIn className="w-4 h-4 shrink-0" />
+                <span className="truncate">ENTRY (Check-In)</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setMovementDirection('EXIT')}
-                className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                className={`px-2.5 sm:px-4 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 sm:gap-2 transition-all cursor-pointer min-w-0 truncate ${
                   movementDirection === 'EXIT'
                     ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-700'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <LogOut className="w-4 h-4" />
-                <span>EXIT (Check-Out)</span>
+                <LogOut className="w-4 h-4 shrink-0" />
+                <span className="truncate">EXIT (Check-Out)</span>
               </button>
             </div>
           </div>
 
           {/* Residency Filter Pills & Optional Class Dropdown */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto min-w-0">
             {/* Residency Category Pills */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider mr-1 hidden sm:inline">
+            <div className="flex items-center gap-1.5 w-full sm:w-auto min-w-0">
+              <span className="text-xs font-bold text-slate-700 uppercase tracking-wider mr-1 hidden sm:inline shrink-0">
                 Residency:
               </span>
-              <div className="inline-flex rounded-xl bg-slate-100 p-1">
+              <div className="inline-flex rounded-xl bg-slate-100 p-1 overflow-x-auto max-w-full scrollbar-none">
                 {(
                   [
                     { key: 'ALL', label: 'All Students', icon: Users },
@@ -475,7 +475,7 @@ export default function StudentAttendancePage() {
                       key={tab.key}
                       type="button"
                       onClick={() => setCategoryFilter(tab.key)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
+                      className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shrink-0 whitespace-nowrap ${
                         isActive
                           ? 'bg-white text-slate-900 shadow-2xs font-bold'
                           : 'text-slate-600 hover:text-slate-900'
@@ -490,11 +490,11 @@ export default function StudentAttendancePage() {
             </div>
 
             {/* Optional Class Filter Dropdown */}
-            <div className="flex items-center gap-2 min-w-[180px]">
+            <div className="w-full sm:w-auto sm:min-w-[180px] min-w-0">
               <select
                 value={selectedClassId}
                 onChange={(e) => setSelectedClassId(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-[#0D9488] bg-white cursor-pointer"
+                className="w-full px-3 py-1.5 rounded-xl border border-slate-200 text-xs text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-[#0D9488] bg-white cursor-pointer truncate"
               >
                 <option value="">All Madrasa Classes</option>
                 {assignedClasses.map((cls) => (
@@ -640,6 +640,8 @@ export default function StudentAttendancePage() {
           <CameraScannerView
             onScan={(payload) => handleScanPayload(payload, 'camera')}
             disabled={isSubmitting}
+            contextBadge={movementDirection === 'ENTRY' ? 'ENTRY (Check-In)' : 'EXIT (Check-Out)'}
+            statsBadge={`Present: ${stats.presentCount}`}
           />
         )}
 

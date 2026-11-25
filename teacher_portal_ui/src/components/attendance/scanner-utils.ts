@@ -83,12 +83,13 @@ export function isScannerKeystrokeBurst(
 
 /**
  * In-memory scan event debouncer to prevent rapid duplicate processing.
+ * Default window is 1.2s (1200ms) per student code to allow rapid consecutive scanning of distinct students.
  */
 export class ScanDebouncer {
   private lastScans = new Map<string, number>();
   private readonly windowMs: number;
 
-  constructor(windowMs = 3000) {
+  constructor(windowMs = 1200) {
     this.windowMs = windowMs;
   }
 
@@ -125,13 +126,26 @@ export class ScanDebouncer {
 }
 
 /**
- * Synthesizes subtle audio feedback using the Web Audio API.
+ * Synthesizes subtle audio feedback using the Web Audio API and triggers haptic vibration.
  * Never requests external audio files or network requests.
  */
 export function playScannerFeedback(
   type: 'success' | 'warning' | 'error' | 'duplicate',
   muted = false
 ): void {
+  // Trigger instant haptic vibration on mobile devices
+  if (typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+    try {
+      if (type === 'success') {
+        navigator.vibrate(80);
+      } else if (type === 'warning' || type === 'duplicate') {
+        navigator.vibrate([50, 40, 50]);
+      } else {
+        navigator.vibrate([100, 50, 100]);
+      }
+    } catch (_) {}
+  }
+
   if (muted || typeof window === 'undefined') return;
 
   try {

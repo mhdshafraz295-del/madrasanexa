@@ -488,9 +488,9 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden min-w-0 max-w-full">
       {/* Smart Gate Scanner & Attendance Scanner Sub-Navigation Bar */}
-      <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-1.5 shadow-2xs flex items-center gap-1.5 overflow-x-auto scrollbar-none -mx-1 sm:mx-0 px-2 sm:px-1.5">
+      <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-1.5 shadow-2xs flex items-center gap-1.5 overflow-x-auto scrollbar-none -mx-1 sm:mx-0 px-2 sm:px-1.5 min-w-0">
         <button
           type="button"
           onClick={() => setScannerSubTab('gate-scanner')}
@@ -673,7 +673,12 @@ export const AttendanceScannerTab: React.FC<AttendanceScannerTabProps> = ({
           {inputMode === 'usb' ? (
             <UsbScannerInput onScan={handleScanPayload} disabled={isProcessing} autoFocus />
           ) : (
-            <CameraScannerView onScan={(payload) => handleScanPayload(payload, 'camera')} disabled={isProcessing} />
+            <CameraScannerView
+              onScan={(payload) => handleScanPayload(payload, 'camera')}
+              disabled={isProcessing}
+              contextBadge="Classroom Attendance"
+              statsBadge={`Logged: ${scanLogs.length}`}
+            />
           )}
 
           {/* Active Verification Status Card */}

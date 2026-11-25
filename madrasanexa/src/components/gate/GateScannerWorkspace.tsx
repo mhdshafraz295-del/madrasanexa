@@ -220,34 +220,34 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden min-w-0 max-w-full">
       {/* ============================================================== */}
       {/* 1. SCANNER HEADER & LIVE METRICS BAR */}
       {/* ============================================================== */}
-      <div className="bg-white rounded-2xl border border-stone-200/80 p-5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div>
-            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+      <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-sm min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 min-w-0">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200 shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
                 LIVE GATE WORKSPACE
               </span>
-              <span className="text-xs text-stone-500 font-medium">{currentDate}</span>
+              <span className="text-xs text-stone-500 font-medium truncate">{currentDate}</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-1">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight mt-1 truncate">
               Smart Gate Scanner
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-stone-500 mt-0.5 leading-relaxed">
               Automated student movement logging, instant attendance reconciliation & parent email alerts.
             </p>
           </div>
 
           {/* Right Status Panel */}
-          <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 w-full sm:w-auto">
+          <div className="flex items-center justify-between sm:justify-end gap-2.5 sm:gap-3 w-full sm:w-auto shrink-0">
             {/* Live Clock Display */}
-            <div className="bg-stone-50 border border-stone-200 rounded-xl px-3 sm:px-3.5 py-1.5 sm:py-2 text-right flex-1 sm:flex-initial">
-              <div className="text-[10px] sm:text-xs text-stone-400 font-medium">STATION TIME</div>
-              <div className="text-base sm:text-lg font-mono font-bold text-slate-800 tracking-wider">
+            <div className="bg-stone-50 border border-stone-200 rounded-xl px-3 sm:px-3.5 py-1.5 sm:py-2 text-right flex-1 sm:flex-initial min-w-0">
+              <div className="text-[10px] sm:text-xs text-stone-400 font-medium truncate">STATION TIME</div>
+              <div className="text-base sm:text-lg font-mono font-bold text-slate-800 tracking-wider truncate">
                 {currentTime || '--:--:--'}
               </div>
             </div>
@@ -256,13 +256,13 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
             <button
               onClick={() => setIsMuted(!isMuted)}
               title={isMuted ? 'Unmute Audio Beeps' : 'Mute Audio Beeps'}
-              className={`p-2 sm:p-2.5 rounded-xl border transition-colors shrink-0 ${
+              className={`p-2 sm:p-2.5 rounded-xl border transition-colors shrink-0 cursor-pointer ${
                 isMuted
                   ? 'bg-stone-100 border-stone-200 text-stone-400 hover:text-stone-600'
                   : 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100'
               }`}
             >
-              {isMuted ? <VolumeX className="w-4 sm:w-5 h-4 sm:w-5" /> : <Volume2 className="w-4 sm:w-5 h-4 sm:h-5" />}
+              {isMuted ? <VolumeX className="w-4 sm:w-5 h-4 sm:h-5" /> : <Volume2 className="w-4 sm:w-5 h-4 sm:h-5" />}
             </button>
           </div>
         </div>
@@ -271,35 +271,35 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
       {/* ============================================================== */}
       {/* 2. DIRECTION CONTROLS & SCANNER WORKSPACE */}
       {/* ============================================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-w-0">
         {/* Left Column: Controls & Input Engine (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="lg:col-span-7 space-y-6 min-w-0">
           {/* DIRECTION SELECTOR (ENTRY vs EXIT) */}
-          <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-sm">
+          <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-sm min-w-0">
             <label className="text-xs font-bold uppercase tracking-wider text-stone-500 block mb-3">
               1. Select Movement Direction
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 min-w-0">
               {/* ENTRY BUTTON */}
               <button
                 type="button"
                 onClick={() => setEventType('ENTRY')}
-                className={`relative flex items-center justify-center gap-3 p-4 rounded-xl border-2 font-semibold transition-all ${
+                className={`relative flex items-center justify-start sm:justify-center gap-3 p-3.5 sm:p-4 rounded-xl border-2 font-semibold transition-all cursor-pointer min-w-0 ${
                   eventType === 'ENTRY'
                     ? 'border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-sm'
                     : 'border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70'
                 }`}
               >
                 <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                     eventType === 'ENTRY' ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-600'
                   }`}
                 >
                   <LogIn className="w-5 h-5" />
                 </div>
-                <div className="text-left">
-                  <div className="text-base font-bold">ENTRY (Check In)</div>
-                  <div className="text-xs opacity-75">Auto-Attendance Eligible</div>
+                <div className="text-left min-w-0 flex-1">
+                  <div className="text-sm sm:text-base font-bold truncate">ENTRY (Check In)</div>
+                  <div className="text-[11px] sm:text-xs opacity-75 truncate">Auto-Attendance Eligible</div>
                 </div>
                 {eventType === 'ENTRY' && (
                   <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
@@ -310,22 +310,22 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
               <button
                 type="button"
                 onClick={() => setEventType('EXIT')}
-                className={`relative flex items-center justify-center gap-3 p-4 rounded-xl border-2 font-semibold transition-all ${
+                className={`relative flex items-center justify-start sm:justify-center gap-3 p-3.5 sm:p-4 rounded-xl border-2 font-semibold transition-all cursor-pointer min-w-0 ${
                   eventType === 'EXIT'
                     ? 'border-blue-600 bg-blue-50/70 text-blue-900 shadow-sm'
                     : 'border-stone-200 bg-stone-50/50 text-stone-600 hover:bg-stone-100/70'
                 }`}
               >
                 <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
                     eventType === 'EXIT' ? 'bg-blue-600 text-white' : 'bg-stone-200 text-stone-600'
                   }`}
                 >
                   <LogOut className="w-5 h-5" />
                 </div>
-                <div className="text-left">
-                  <div className="text-base font-bold">EXIT (Check Out)</div>
-                  <div className="text-xs opacity-75">Movement Fact Only</div>
+                <div className="text-left min-w-0 flex-1">
+                  <div className="text-sm sm:text-base font-bold truncate">EXIT (Check Out)</div>
+                  <div className="text-[11px] sm:text-xs opacity-75 truncate">Movement Fact Only</div>
                 </div>
                 {eventType === 'EXIT' && (
                   <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-blue-600 animate-ping"></span>
@@ -335,17 +335,17 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
           </div>
 
           {/* INPUT ENGINE (USB vs CAMERA) */}
-          <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4">
+          <div className="bg-white rounded-2xl border border-stone-200/80 p-4 sm:p-5 shadow-sm min-w-0">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-4 min-w-0">
               <label className="text-xs font-bold uppercase tracking-wider text-stone-500">
                 2. Card Scanner Input Method
               </label>
               {/* Input Mode Selector */}
-              <div className="inline-flex rounded-lg border border-stone-200 bg-stone-100/80 p-0.5 self-start sm:self-auto">
+              <div className="inline-flex rounded-lg border border-stone-200 bg-stone-100/80 p-0.5 self-start sm:self-auto shrink-0">
                 <button
                   type="button"
                   onClick={() => setInputMode('usb')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
                     inputMode === 'usb'
                       ? 'bg-white text-slate-800 shadow-xs'
                       : 'text-stone-600 hover:text-slate-900'
@@ -357,7 +357,7 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setInputMode('camera')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all cursor-pointer ${
                     inputMode === 'camera'
                       ? 'bg-white text-slate-800 shadow-xs'
                       : 'text-stone-600 hover:text-slate-900'
@@ -378,7 +378,7 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
                   autoFocus={true}
                 />
                 <div className="flex items-start gap-2 bg-stone-50 rounded-xl p-3 border border-stone-200/80 text-xs text-stone-500">
-                  <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.2" />
+                  <Info className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <span>
                     <strong>Handheld Barcode/QR Scanner:</strong> Ensure the input field above has focus.
                     Barcode readers send automated keystrokes terminated with Enter.
@@ -391,6 +391,8 @@ export const GateScannerWorkspace: React.FC<GateScannerWorkspaceProps> = ({
                 <CameraScannerView
                   onScan={(payload) => handleProcessScan(payload)}
                   disabled={isProcessing}
+                  contextBadge={eventType === 'ENTRY' ? 'ENTRY (Check In)' : 'EXIT (Check Out)'}
+                  statsBadge={`Logged: ${sessionScans.length}`}
                 />
               </div>
             )}

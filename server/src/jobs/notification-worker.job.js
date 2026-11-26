@@ -965,11 +965,28 @@ async function dispatchClaimedJob(job, referenceDate = new Date()) {
         return { success: false, status: 'FAILED', reason: 'SMS_PROVIDER_NOT_CONFIGURED' };
       }
 
-      await sendSms({
+      const smsResult = await sendSms({
         to: job.recipientAddress,
         message: job.message,
         madrasaId: job.madrasaId,
       });
+
+      if (smsResult?.skipped) {
+        await prisma.notificationJob.update({
+          where: { id: job.id },
+          data: {
+            status: 'FAILED',
+            lastError: smsResult.reason || 'SMS dispatch skipped',
+            failedAt: now,
+            nextAttemptAt: null,
+          },
+        });
+        return { success: false, status: 'FAILED', reason: smsResult.reason };
+      }
+
+      if (smsResult && smsResult.success === false) {
+        throw new Error(smsResult.error || 'SMS delivery failed');
+      }
     } else if (job.channel === 'EMAIL') {
       if (!isEmailConfigured()) {
         await prisma.notificationJob.update({

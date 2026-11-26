@@ -13,6 +13,7 @@ import {
 import { reconcileGateAttendance } from './gate-attendance.service.js';
 import { logTenantActivity } from './tenant.service.js';
 import { isValidTimezone } from '../utils/dateTime.js';
+import { sendSms } from './sms.service.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -118,6 +119,9 @@ export async function processGateScan({
         include: {
           class: {
             select: { id: true, name: true, code: true },
+          },
+          madrasa: {
+            select: { id: true, name: true },
           },
         },
       },
@@ -255,6 +259,28 @@ export async function processGateScan({
       attendance: attendanceResult,
     };
   });
+
+  // Asynchronously dispatch parent/guardian SMS alert (strictly non-blocking with error guards)
+  const guardianMobile = student?.guardianPhone || student?.whatsappNumber || null;
+  if (guardianMobile) {
+    const tz = isValidTimezone(settings?.timezone) ? settings.timezone : 'Asia/Colombo';
+    const timeStr = dayjs(now).tz(tz).format('hh:mm A');
+    const institutionName = student?.madrasa?.name || settings?.institutionName || 'Madrasa';
+    const actionWord = eventType === 'ENTRY' ? 'entered' : 'exited';
+    const smsMessage = `[${institutionName}] Attendance Alert: ${student.fullName} (${student.admissionNo}) has ${actionWord} the campus at ${timeStr}.`;
+
+    Promise.resolve().then(async () => {
+      try {
+        await sendSms({
+          to: guardianMobile,
+          message: smsMessage,
+          madrasaId,
+        });
+      } catch (smsErr) {
+        console.error('[GateEventService] Asynchronous gate scan SMS dispatch error:', smsErr?.message || smsErr);
+      }
+    });
+  }
 
   return {
     idempotentReplay: false,

@@ -111,30 +111,30 @@ export const MadrasaPublicHero: React.FC<MadrasaPublicHeroProps> = ({
           {hasActiveAdmissions ? (
             <Link
               to={`/madrasa/${slug}/admissions?apply=true`}
-              className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-[#504F34] bg-white hover:bg-[#F5F5F1] transition-all shadow-md hover:shadow-lg hover:scale-102 active:scale-98"
+              className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-[#504F34] bg-white hover:bg-[#F5F5F1] dark:bg-[#84CC16] dark:text-[#0B0D11] dark:hover:bg-[#a3e635] dark:border-0 transition-all shadow-md hover:shadow-lg hover:scale-102 active:scale-98"
             >
-              <GraduationCap className="w-4 h-4 text-[#504F34]" />
+              <GraduationCap className="w-4 h-4 text-[#504F34] dark:text-[#0B0D11]" />
               <span>Apply for Admissions</span>
-              <ChevronRight className="w-4 h-4 text-[#504F34]" />
+              <ChevronRight className="w-4 h-4 text-[#504F34] dark:text-[#0B0D11]" />
             </Link>
           ) : (
             <a
               href="#about"
               onClick={(e) => handleScrollToSection(e, '#about')}
-              className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-[#504F34] bg-white hover:bg-[#F5F5F1] transition-all shadow-md hover:shadow-lg"
+              className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-[#504F34] bg-white hover:bg-[#F5F5F1] dark:bg-[#84CC16] dark:text-[#0B0D11] dark:hover:bg-[#a3e635] dark:border-0 transition-all shadow-md hover:shadow-lg"
             >
               <span>Explore Our Institution</span>
-              <ArrowDown className="w-4 h-4 text-[#504F34]" />
+              <ArrowDown className="w-4 h-4 text-[#504F34] dark:text-[#0B0D11]" />
             </a>
           )}
 
           <a
             href="#curriculum"
             onClick={(e) => handleScrollToSection(e, '#curriculum')}
-            className="inline-flex items-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-white border border-white/30 hover:bg-white/10 transition-colors"
+            className="inline-flex items-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-white dark:text-[#F9FAFB] border border-white/30 dark:border-white/20 dark:bg-white/5 hover:bg-white/10 dark:hover:bg-white/10 transition-colors"
           >
             <span>Academic Curriculum</span>
-            <ChevronRight className="w-4 h-4 text-white/70" />
+            <ChevronRight className="w-4 h-4 text-white/70 dark:text-[#F9FAFB]" />
           </a>
         </div>
 

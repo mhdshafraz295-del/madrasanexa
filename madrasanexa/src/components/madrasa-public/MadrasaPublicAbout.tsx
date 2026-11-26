@@ -26,60 +26,60 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
     <section id="about" className="scroll-mt-28 py-6">
       {/* Centered Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider mb-2 px-3 py-1 rounded-full bg-[#F5F5F1] border border-[#E5E5DF]" style={{ color: primaryColor }}>
+        <div className="inline-flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider mb-2 px-3 py-1 rounded-full bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936]" style={{ color: primaryColor }}>
           <Building2 className="w-3.5 h-3.5" style={{ color: primaryColor }} />
           <span>ABOUT OUR MADRASA</span>
         </div>
-        <h2 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-[#252525] mb-3">
+        <h2 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-[#252525] dark:text-[#F9FAFB] mb-3">
           About Our Institution
         </h2>
         <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: primaryColor }} />
       </div>
 
       {/* Cohesive Image & Description Component with ACJU Hover Behavior */}
-      <div className="max-w-5xl mx-auto bg-white rounded-2xl border border-[#E5E5DF] shadow-md overflow-hidden transition-all duration-300 group">
+      <div className="max-w-5xl mx-auto bg-white dark:bg-[#141820] rounded-2xl border border-[#E5E5DF] dark:border-[#242936] shadow-md overflow-hidden transition-all duration-300 group">
         <div className="flex flex-col lg:flex-row items-stretch">
 
           {/* Medium-Sized Landscape Image (~350-450px on desktop, untouched on hover) */}
-          <div className="w-full lg:w-[420px] xl:w-[450px] shrink-0 bg-slate-100 overflow-hidden relative min-h-[260px] sm:min-h-[320px]">
+          <div className="w-full lg:w-[420px] xl:w-[450px] shrink-0 bg-slate-100 dark:bg-slate-900 overflow-hidden relative min-h-[260px] sm:min-h-[320px]">
             <img
               src={imgSrc}
               alt={`About ${madrasaName}`}
               className="w-full h-full object-cover"
               loading="lazy"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 right-4 text-white text-xs font-medium backdrop-blur-sm bg-black/40 px-3 py-1.5 rounded-lg border border-white/10 w-fit">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+            <div className="absolute bottom-4 left-4 right-4 text-white text-xs font-medium backdrop-blur-sm bg-black/60 px-3 py-1.5 rounded-lg border border-white/20 w-fit">
               {madrasaName}
             </div>
           </div>
 
           {/* Description Card (Transitions to Primary Olive from Bottom-Left on Hover) */}
-          <div className="acju-hover-br flex-1 p-6 sm:p-8 lg:p-10 flex flex-col justify-between transition-colors duration-300 relative bg-islamic-diamond-subtle">
+          <div className="acju-hover-br flex-1 p-6 sm:p-8 lg:p-10 flex flex-col justify-between transition-colors duration-300 relative bg-islamic-diamond-subtle dark:bg-[#141820]">
             <div>
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#85845C] group-hover:text-white uppercase tracking-wider mb-3 transition-colors duration-300">
-                <div className="w-7 h-7 rounded-lg bg-[#F5F5F1] group-hover:bg-white/20 flex items-center justify-center transition-colors duration-300">
-                  <Building2 className="w-3.5 h-3.5 text-[#85845C] group-hover:text-white" />
+              <div className="flex items-center space-x-2 text-xs font-bold text-[#85845C] dark:text-[#84CC16] group-hover:text-white uppercase tracking-wider mb-3 transition-colors duration-300">
+                <div className="w-7 h-7 rounded-lg bg-[#F5F5F1] dark:bg-[#1C222D] group-hover:bg-white/20 flex items-center justify-center transition-colors duration-300">
+                  <Building2 className="w-3.5 h-3.5 text-[#85845C] dark:text-[#84CC16] group-hover:text-white" />
                 </div>
                 <span>Heritage & Foundations</span>
               </div>
 
-              <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#252525] group-hover:text-white mb-4 tracking-tight transition-colors duration-300">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#252525] dark:text-[#F9FAFB] group-hover:text-white mb-4 tracking-tight transition-colors duration-300">
                 Welcome to {madrasaName}
               </h3>
 
-              <div className="text-sm sm:text-base leading-relaxed text-[#252525]/90 group-hover:text-white transition-colors duration-300 whitespace-pre-line mb-4 font-normal">
+              <div className="text-sm sm:text-base leading-relaxed text-[#252525]/90 dark:text-[#F3F4F6] group-hover:text-white transition-colors duration-300 whitespace-pre-line mb-4 font-normal">
                 {introduction ||
                   `${madrasaName} is dedicated to establishing sound religious foundations and inspiring our students toward righteousness, academic diligence, and exemplary character.`}
               </div>
 
               {generatedSummary && (
-                <div className="mt-4 p-4 rounded-xl bg-[#F5F5F1] bg-islamic-diamond-subtle group-hover:bg-white/10 transition-colors duration-300 relative">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#85845C] group-hover:text-white mb-1.5 transition-colors duration-300">
-                    <Sparkles className="w-3.5 h-3.5 text-[#85845C] group-hover:text-white" />
+                <div className="mt-4 p-4 rounded-xl bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936] bg-islamic-diamond-subtle group-hover:bg-white/10 transition-colors duration-300 relative">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#85845C] dark:text-[#84CC16] group-hover:text-white mb-1.5 transition-colors duration-300">
+                    <Sparkles className="w-3.5 h-3.5 text-[#85845C] dark:text-[#84CC16] group-hover:text-white" />
                     <span>Academic & Moral Framework</span>
                   </div>
-                  <p className="text-xs sm:text-sm text-[#666666] group-hover:text-white/85 leading-relaxed transition-colors duration-300">
+                  <p className="text-xs sm:text-sm text-[#666666] dark:text-[#D1D5DB] group-hover:text-white/85 leading-relaxed transition-colors duration-300">
                     {generatedSummary}
                   </p>
                 </div>
@@ -87,7 +87,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
             </div>
 
             {/* Read More Link */}
-            <div className="mt-6 pt-4 border-t border-[#E5E5DF] group-hover:border-white/20 flex flex-wrap items-center justify-between gap-2 transition-colors duration-300">
+            <div className="mt-6 pt-4 border-t border-[#E5E5DF] dark:border-[#242936] group-hover:border-white/20 flex flex-wrap items-center justify-between gap-2 transition-colors duration-300">
               <a
                 href="#curriculum"
                 className="text-xs sm:text-sm font-bold group-hover:text-white inline-flex items-center gap-1.5 transition-colors duration-300"

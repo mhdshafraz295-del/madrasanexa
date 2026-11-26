@@ -294,37 +294,37 @@ export default function MadrasaAdminLayout() {
           </div>
 
           {/* User Session Details & Controls */}
-          <div className="mt-auto pt-5 border-t border-[#E7E9EE]">
+          <div className="mt-auto pt-5 border-t border-[#E7E9EE] dark:border-[#242936]">
             <div className="relative">
               <button
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F7F6F1] transition border border-transparent hover:border-[#E7E9EE] cursor-pointer"
+                className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#F7F6F1] dark:hover:bg-[#1C222D] transition border border-transparent dark:border-[#242936] cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 overflow-hidden text-left">
-                  <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#0F172A] dark:bg-[#242936] text-white dark:text-[#84CC16] border dark:border-white/10 flex items-center justify-center font-bold text-xs shrink-0">
                     {user?.name?.[0]?.toUpperCase() || 'A'}
                   </div>
                   <div className="overflow-hidden">
-                    <div className="text-xs font-semibold text-[#0F172A] truncate">{user?.name}</div>
-                    <div className="text-[10px] text-[#7C8A9A] truncate font-mono">{user?.email}</div>
+                    <div className="text-xs font-semibold text-[#0F172A] dark:text-[#F9FAFB] truncate">{user?.name}</div>
+                    <div className="text-[10px] text-[#7C8A9A] dark:text-[#9CA3AF] truncate font-mono">{user?.email}</div>
                   </div>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-[#7C8A9A] shrink-0 ml-1" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#7C8A9A] dark:text-[#9CA3AF] shrink-0 ml-1" />
               </button>
 
               {userDropdownOpen && (
-                <div className="absolute bottom-full left-0 w-full mb-2 bg-white rounded-xl border border-[#E7E9EE] shadow-lg p-1.5 space-y-1 z-50">
+                <div className="absolute bottom-full left-0 w-full mb-2 bg-white dark:bg-[#1C222D] rounded-xl border border-[#E7E9EE] dark:border-[#242936] shadow-lg p-1.5 space-y-1 z-50">
                   <Link
                     to="/change-password"
                     onClick={() => setUserDropdownOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#0F172A] hover:bg-[#F7F6F1] rounded-lg transition"
+                    className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-[#0F172A] dark:text-[#F9FAFB] hover:bg-[#F7F6F1] dark:hover:bg-[#242936] rounded-lg transition"
                   >
-                    <KeyRound className="w-3.5 h-3.5 text-[#7C8A9A]" />
+                    <KeyRound className="w-3.5 h-3.5 text-[#7C8A9A] dark:text-[#9CA3AF]" />
                     <span>Change Password</span>
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition text-left cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition text-left cursor-pointer"
                   >
                     <LogOut className="w-3.5 h-3.5 text-red-500" />
                     <span>Sign Out</span>

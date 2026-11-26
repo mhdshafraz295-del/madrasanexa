@@ -355,14 +355,14 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleOpenApplication(activeAdmissionPeriods[0])}
-                className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base text-white transition-all shadow-lg hover:shadow-xl hover:scale-102 active:scale-98 border border-white/20 cursor-pointer"
+                className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base text-white transition-all shadow-lg hover:shadow-xl hover:scale-102 active:scale-98 border border-white/20 cursor-pointer dark:!bg-[#84CC16] dark:!text-[#0B0D11] dark:border-0"
                 style={{
                   backgroundColor: primaryColor,
                 }}
               >
-                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-[#0B0D11]" />
                 <span>Apply for Open Intake</span>
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className="w-4 h-4 dark:text-[#0B0D11]" />
               </button>
             </div>
           )}
@@ -375,18 +375,18 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         <section className="w-full max-w-xl mx-auto">
           <div className="text-center mb-8">
             <span
-              className="text-xs font-bold uppercase tracking-wider bg-[#F5F5F1] px-3.5 py-1 rounded-full border border-[#E5E5DF]"
+              className="text-xs font-bold uppercase tracking-wider bg-[#F5F5F1] dark:bg-[#1C222D] px-3.5 py-1 rounded-full border border-[#E5E5DF] dark:border-[#242936] dark:!text-[#84CC16]"
               style={{ color: primaryColor }}
             >
               Open Admissions
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-serif font-bold tracking-tight mt-2.5 mb-2 text-[#252525]"
+              className="text-2xl sm:text-3xl font-serif font-bold tracking-tight mt-2.5 mb-2 text-[#252525] dark:!text-[#F9FAFB]"
               style={{ color: theme.headingColor || '#252525' }}
             >
               Active Intake Cycles
             </h2>
-            <p className="text-xs sm:text-sm text-[#666666] leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#666666] dark:text-[#9CA3AF] leading-relaxed">
               Currently open admission periods accepting online candidate applications.
             </p>
             <div
@@ -400,7 +400,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               {activeAdmissionPeriods.map((period) => (
                 <div
                   key={period.id}
-                  className="w-full max-w-[440px] bg-white rounded-2xl border border-[#E5E5DF] p-7 shadow-xs hover:border-[#85845C]/50 hover:shadow-md transition-all flex flex-col justify-between"
+                  className="w-full max-w-[440px] bg-white dark:!bg-[#141820] rounded-2xl border border-[#E5E5DF] dark:!border-[#242936] p-7 shadow-xs hover:border-[#85845C]/50 hover:shadow-md transition-all flex flex-col justify-between dark:!text-[#F9FAFB]"
                   style={{
                     backgroundColor: theme.cardBg || '#ffffff',
                     borderColor: theme.cardBorderColor || '#E5E5DF',
@@ -409,72 +409,72 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                 >
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
-                      <span className="text-xs font-mono font-bold px-2.5 py-1 bg-[#F5F5F1] text-[#252525] rounded-md border border-[#E5E5DF]">
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 bg-[#F5F5F1] dark:bg-[#1C222D] text-[#252525] dark:text-[#F9FAFB] rounded-md border border-[#E5E5DF] dark:border-[#242936]">
                         {period.code}
                       </span>
-                      <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F5F5F1] text-[#85845C] border border-[#85845C]/30">
+                      <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F5F5F1] dark:bg-[#1C222D] text-[#85845C] dark:text-[#84CC16] border border-[#85845C]/30 dark:border-[#84CC16]/30">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         <span>Accepting Applications</span>
                       </span>
                     </div>
 
                     <h3
-                      className="text-lg sm:text-xl font-serif font-bold mb-1.5 text-[#252525]"
+                      className="text-lg sm:text-xl font-serif font-bold mb-1.5 text-[#252525] dark:!text-[#F9FAFB]"
                       style={{ color: theme.headingColor || '#252525' }}
                     >
                       {period.name}
                     </h3>
-                    <p className="text-xs font-semibold text-[#85845C] mb-4">
+                    <p className="text-xs font-semibold text-[#85845C] dark:text-[#84CC16] mb-4">
                       Academic Year: {period.academicYear}
                     </p>
 
-                    <div className="space-y-2 text-xs text-[#252525] mb-5 bg-[#F5F5F1] p-4 rounded-xl border border-[#E5E5DF]">
+                    <div className="space-y-2 text-xs text-[#252525] dark:text-[#D1D5DB] mb-5 bg-[#F5F5F1] dark:bg-[#1C222D] p-4 rounded-xl border border-[#E5E5DF] dark:border-[#242936]">
                       <div className="flex flex-wrap items-center justify-between gap-1">
-                        <span className="text-[#666666]">Application Window:</span>
-                        <span className="font-bold text-[#252525]">
+                        <span className="text-[#666666] dark:text-[#9CA3AF]">Application Window:</span>
+                        <span className="font-bold text-[#252525] dark:text-[#F9FAFB]">
                           {new Date(period.startDate).toLocaleDateString()} – {new Date(period.endDate).toLocaleDateString()}
                         </span>
                       </div>
                       {period.capacity && (
-                        <div className="flex items-center justify-between pt-1.5 border-t border-[#E5E5DF]">
-                          <span className="text-[#666666]">Intake Capacity:</span>
-                          <span className="font-bold text-[#85845C]">{period.capacity} Students</span>
+                        <div className="flex items-center justify-between pt-1.5 border-t border-[#E5E5DF] dark:border-[#242936]">
+                          <span className="text-[#666666] dark:text-[#9CA3AF]">Intake Capacity:</span>
+                          <span className="font-bold text-[#85845C] dark:text-[#84CC16]">{period.capacity} Students</span>
                         </div>
                       )}
                     </div>
 
                     {period.instructions && (
-                      <p className="text-xs text-[#666666] leading-relaxed mb-5">
+                      <p className="text-xs text-[#666666] dark:text-[#9CA3AF] leading-relaxed mb-5">
                         {period.instructions}
                       </p>
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-[#E5E5DF]">
+                  <div className="pt-4 border-t border-[#E5E5DF] dark:border-[#242936]">
                     <button
                       type="button"
                       onClick={() => handleOpenApplication(period)}
-                      className="w-full inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-xl text-sm font-bold transition-all shadow-xs hover:shadow-md active:scale-98 cursor-pointer"
+                      className="w-full inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-xl text-sm font-bold transition-all shadow-xs hover:shadow-md active:scale-98 cursor-pointer dark:!bg-[#84CC16] dark:!text-[#0B0D11]"
                       style={{
                         backgroundColor: theme.primaryBtnBg || '#85845C',
                         color: theme.primaryBtnText || '#ffffff',
                       }}
                     >
-                      <FileText className="w-4 h-4 text-white" />
+                      <FileText className="w-4 h-4 text-white dark:text-[#0B0D11]" />
                       <span>Apply Now</span>
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-4 h-4 dark:text-[#0B0D11]" />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="w-full max-w-md mx-auto bg-white rounded-2xl border border-[#E5E5DF] p-8 text-center shadow-xs">
-              <div className="w-12 h-12 rounded-full bg-[#F5F5F1] flex items-center justify-center mx-auto mb-3 text-[#85845C]">
+            <div className="w-full max-w-md mx-auto bg-white dark:bg-[#141820] rounded-2xl border border-[#E5E5DF] dark:border-[#242936] p-8 text-center shadow-xs">
+              <div className="w-12 h-12 rounded-full bg-[#F5F5F1] dark:bg-[#1C222D] flex items-center justify-center mx-auto mb-3 text-[#85845C] dark:text-[#84CC16]">
                 <Clock className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-serif font-bold text-[#252525] mb-1">No Open Admissions Currently</h3>
-              <p className="text-xs sm:text-sm text-[#666666] max-w-md mx-auto mb-4">
+              <h3 className="text-base font-serif font-bold text-[#252525] dark:text-[#F9FAFB] mb-1">No Open Admissions Currently</h3>
+              <p className="text-xs sm:text-sm text-[#666666] dark:text-[#9CA3AF] max-w-md mx-auto mb-4">
                 The madrasa is not accepting online intake applications at this moment. Please check back later or contact the administration directly.
               </p>
             </div>
@@ -482,38 +482,38 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         </section>
 
         {/* General Application Requirements */}
-        <section className="bg-white rounded-2xl border border-[#E5E5DF] p-7 sm:p-9 shadow-xs">
-          <div className="flex items-center space-x-2.5 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3">
-            <BookOpen className="w-4 h-4 text-[#85845C]" />
+        <section className="bg-white dark:bg-[#141820] rounded-2xl border border-[#E5E5DF] dark:border-[#242936] p-7 sm:p-9 shadow-xs">
+          <div className="flex items-center space-x-2.5 text-xs font-bold uppercase tracking-wider text-[#85845C] dark:text-[#84CC16] mb-3">
+            <BookOpen className="w-4 h-4 text-[#85845C] dark:text-[#84CC16]" />
             <span>Admissions Guidance</span>
           </div>
           <h2
-            className="text-xl sm:text-2xl font-serif font-bold mb-5 tracking-tight text-[#252525]"
+            className="text-xl sm:text-2xl font-serif font-bold mb-5 tracking-tight text-[#252525] dark:!text-[#F9FAFB]"
             style={{ color: theme.headingColor || '#252525' }}
           >
             General Enrollment Guidelines
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs sm:text-sm text-[#252525] leading-relaxed">
-            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] border border-[#E5E5DF]">
-              <div className="w-6 h-6 rounded-lg bg-white border border-[#E5E5DF] flex items-center justify-center text-[#85845C] shrink-0 mt-0.5 shadow-2xs">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs sm:text-sm text-[#252525] dark:text-[#D1D5DB] leading-relaxed">
+            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936]">
+              <div className="w-6 h-6 rounded-lg bg-white dark:bg-[#141820] border border-[#E5E5DF] dark:border-[#242936] flex items-center justify-center text-[#85845C] dark:text-[#84CC16] shrink-0 mt-0.5 shadow-2xs">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <span>Parent / legal guardian must accompany the applicant during in-person verification.</span>
             </div>
-            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] border border-[#E5E5DF]">
-              <div className="w-6 h-6 rounded-lg bg-white border border-[#E5E5DF] flex items-center justify-center text-[#85845C] shrink-0 mt-0.5 shadow-2xs">
+            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936]">
+              <div className="w-6 h-6 rounded-lg bg-white dark:bg-[#141820] border border-[#E5E5DF] dark:border-[#242936] flex items-center justify-center text-[#85845C] dark:text-[#84CC16] shrink-0 mt-0.5 shadow-2xs">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <span>Valid identification documentation (birth certificate, previous school records if applicable).</span>
             </div>
-            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] border border-[#E5E5DF]">
-              <div className="w-6 h-6 rounded-lg bg-white border border-[#E5E5DF] flex items-center justify-center text-[#85845C] shrink-0 mt-0.5 shadow-2xs">
+            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936]">
+              <div className="w-6 h-6 rounded-lg bg-white dark:bg-[#141820] border border-[#E5E5DF] dark:border-[#242936] flex items-center justify-center text-[#85845C] dark:text-[#84CC16] shrink-0 mt-0.5 shadow-2xs">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <span>Basic interview and oral assessment for class assignment and baseline readiness.</span>
             </div>
-            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] border border-[#E5E5DF]">
-              <div className="w-6 h-6 rounded-lg bg-white border border-[#E5E5DF] flex items-center justify-center text-[#85845C] shrink-0 mt-0.5 shadow-2xs">
+            <div className="flex items-start space-x-3 p-3.5 rounded-xl bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936]">
+              <div className="w-6 h-6 rounded-lg bg-white dark:bg-[#141820] border border-[#E5E5DF] dark:border-[#242936] flex items-center justify-center text-[#85845C] dark:text-[#84CC16] shrink-0 mt-0.5 shadow-2xs">
                 <CheckCircle2 className="w-4 h-4" />
               </div>
               <span>Commitment to institutional code of conduct and attendance discipline.</span>
@@ -522,27 +522,27 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         </section>
 
         {/* Admissions Desk Contact */}
-        <section className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E5E5DF] flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xs">
+        <section className="bg-white dark:bg-[#141820] rounded-2xl p-6 sm:p-7 border border-[#E5E5DF] dark:border-[#242936] flex flex-col sm:flex-row items-center justify-between gap-5 shadow-xs">
           <div>
-            <h3 className="text-base font-serif font-bold text-[#252525]">Have Questions About Enrollment?</h3>
-            <p className="text-xs text-[#666666] mt-0.5">Reach out to our admissions inquiry team directly.</p>
+            <h3 className="text-base font-serif font-bold text-[#252525] dark:text-[#F9FAFB]">Have Questions About Enrollment?</h3>
+            <p className="text-xs text-[#666666] dark:text-[#9CA3AF] mt-0.5">Reach out to our admissions inquiry team directly.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             {madrasa.contactPhone && (
               <a
                 href={`tel:${madrasa.contactPhone}`}
-                className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#F5F5F1] border border-[#E5E5DF] text-[#85845C] hover:bg-white shadow-xs transition-colors"
+                className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936] text-[#85845C] dark:text-[#84CC16] hover:bg-white dark:hover:bg-[#242936] shadow-xs transition-colors"
               >
-                <Phone className="w-3.5 h-3.5 text-[#85845C]" />
+                <Phone className="w-3.5 h-3.5 text-[#85845C] dark:text-[#84CC16]" />
                 <span>{madrasa.contactPhone}</span>
               </a>
             )}
             {madrasa.contactEmail && (
               <a
                 href={`mailto:${madrasa.contactEmail}`}
-                className="inline-flex items-center space-x-2 max-w-full px-4 py-2.5 rounded-xl text-xs font-bold bg-[#F5F5F1] border border-[#E5E5DF] text-[#85845C] hover:bg-white shadow-xs transition-colors"
+                className="inline-flex items-center space-x-2 max-w-full px-4 py-2.5 rounded-xl text-xs font-bold bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936] text-[#85845C] dark:text-[#84CC16] hover:bg-white dark:hover:bg-[#242936] shadow-xs transition-colors"
               >
-                <Mail className="w-3.5 h-3.5 shrink-0 text-[#85845C]" />
+                <Mail className="w-3.5 h-3.5 shrink-0 text-[#85845C] dark:text-[#84CC16]" />
                 <span className="break-all">{madrasa.contactEmail}</span>
               </a>
             )}
@@ -558,49 +558,49 @@ export const MadrasaAdmissionsPage: React.FC = () => {
           }`}
         >
           <div
-            className={`bg-white rounded-2xl ${
+            className={`bg-white dark:bg-[#141820] rounded-2xl ${
               submissionResult ? 'max-w-2xl print-receipt-modal' : 'max-w-2xl'
-            } w-full my-8 p-6 sm:p-8 shadow-2xl border border-slate-200 flex flex-col max-h-[90vh]`}
+            } w-full my-8 p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-[#242936] flex flex-col max-h-[90vh]`}
           >
             {/* Modal Header */}
             {!submissionResult ? (
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+              <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#242936] shrink-0">
                 <div>
                   <span
-                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border"
+                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border dark:!bg-[#1C222D] dark:!border-[#242936] dark:!text-[#84CC16]"
                     style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
                   >
                     {selectedPeriod.code} • {selectedPeriod.academicYear}
                   </span>
-                  <h3 className="text-lg font-bold text-slate-900 mt-1">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-[#F9FAFB] mt-1">
                     Online Admission Application
                   </h3>
-                  <p className="text-xs text-slate-500">{selectedPeriod.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-[#9CA3AF]">{selectedPeriod.name}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedPeriod(null)}
-                  className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-[#1C222D] flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             ) : (
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0 screen-only-controls print:hidden">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-[#242936] shrink-0 screen-only-controls print:hidden">
                 <div className="flex items-center space-x-2">
                   <span
-                    className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border"
+                    className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border dark:!bg-[#1C222D] dark:!border-[#242936] dark:!text-[#84CC16]"
                     style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                     <span>Application Registered</span>
                   </span>
-                  <span className="text-xs text-slate-500 font-medium hidden sm:inline">Official Confirmation Receipt Ready</span>
+                  <span className="text-xs text-slate-500 dark:text-[#9CA3AF] font-medium hidden sm:inline">Official Confirmation Receipt Ready</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setSelectedPeriod(null)}
-                  className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-[#1C222D] flex items-center justify-center transition-colors cursor-pointer"
                   title="Close receipt"
                 >
                   <X className="w-5 h-5" />
@@ -613,14 +613,14 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               {submissionResult ? (
                 /* Professional Admission Confirmation Receipt */
                 <div className="space-y-4">
-                  <div className="print-receipt-document bg-white border border-slate-200 rounded-2xl p-5 sm:p-7 space-y-4 text-left text-slate-800 shadow-xs">
+                  <div className="print-receipt-document bg-white dark:bg-[#141820] border border-slate-200 dark:border-[#242936] rounded-2xl p-5 sm:p-7 space-y-4 text-left text-slate-800 dark:text-[#D1D5DB] shadow-xs">
                     {/* Header: Institutional Logo, Name, and Title */}
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 pb-4 border-b border-slate-200">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-4 pb-4 border-b border-slate-200 dark:border-[#242936]">
                       <div className="flex items-center gap-3.5 min-w-0">
                         <img
                           src={madrasa.logoUrl || '/assets/logo/website.logo.png'}
                           alt={madrasa.name}
-                          className="h-14 w-auto max-w-[85px] object-contain rounded-lg border border-slate-200/80 bg-white p-0.5 shrink-0"
+                          className="h-14 w-auto max-w-[85px] object-contain rounded-lg border border-slate-200/80 dark:border-[#242936] bg-white dark:bg-[#1C222D] p-0.5 shrink-0"
                           onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             if (!target.src.includes('website.logo.png')) {
@@ -629,30 +629,30 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           }}
                         />
                         <div>
-                          <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight leading-snug">
+                          <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-[#F9FAFB] tracking-tight leading-snug">
                             {submissionResult.madrasaName || madrasa.name}
                           </h2>
                           <div
-                            className="text-xs font-bold tracking-wider uppercase mt-0.5"
+                            className="text-xs font-bold tracking-wider uppercase mt-0.5 dark:!text-[#84CC16]"
                             style={{ color: primaryColor }}
                           >
                             ONLINE ADMISSION CONFIRMATION
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5">
-                            Academic Year: <span className="font-semibold text-slate-700">{submissionResult.academicYear}</span> • Intake: <span className="font-semibold text-slate-700">{submissionResult.intakeName}</span>
+                          <p className="text-[11px] text-slate-500 dark:text-[#9CA3AF] mt-0.5">
+                            Academic Year: <span className="font-semibold text-slate-700 dark:text-[#D1D5DB]">{submissionResult.academicYear}</span> • Intake: <span className="font-semibold text-slate-700 dark:text-[#D1D5DB]">{submissionResult.intakeName}</span>
                           </p>
                         </div>
                       </div>
 
                       <div className="sm:text-right shrink-0">
                         <span
-                          className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wide"
+                          className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wide dark:!bg-[#1C222D] dark:!border-[#242936] dark:!text-[#84CC16]"
                           style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
                         >
                           <CheckCircle2 className="w-3 h-3" style={{ color: primaryColor }} />
                           <span>Registered</span>
                         </span>
-                        <div className="text-[10px] font-mono text-slate-400 mt-1">Official Receipt</div>
+                        <div className="text-[10px] font-mono text-slate-400 dark:text-[#9CA3AF] mt-1">Official Receipt</div>
                       </div>
                     </div>
 
@@ -660,17 +660,17 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     <div className="h-1 rounded-full" style={{ backgroundColor: primaryColor }} />
 
                     {/* Application Reference Number Card */}
-                    <div className="bg-[#F5F5F1] border border-[#E5E5DF] rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936] rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
                       <div className="space-y-0.5 text-center sm:text-left">
-                        <span className="text-[10px] font-bold uppercase tracking-wider block text-[#666666]">
+                        <span className="text-[10px] font-bold uppercase tracking-wider block text-[#666666] dark:text-[#9CA3AF]">
                           Application Reference Number
                         </span>
                         <div className="flex items-center justify-center sm:justify-start space-x-3">
-                          <span className="text-2xl sm:text-3xl font-mono font-black text-[#252525] tracking-wider">
+                          <span className="text-2xl sm:text-3xl font-mono font-black text-[#252525] dark:text-[#F9FAFB] tracking-wider">
                             {submissionResult.applicationNo}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-600">
+                        <p className="text-[11px] text-slate-600 dark:text-[#9CA3AF]">
                           Please retain this reference number for all status inquiries and institutional correspondence.
                         </p>
                       </div>
@@ -680,7 +680,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={handleCopyReference}
-                          className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-colors shadow-xs cursor-pointer hover:opacity-90"
+                          className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white transition-colors shadow-xs cursor-pointer hover:opacity-90 dark:!bg-[#84CC16] dark:!text-[#0B0D11]"
                           style={{ backgroundColor: primaryColor }}
                           title="Copy reference number"
                         >
@@ -693,53 +693,53 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     {/* Application Dossier (2-Column Grid) */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                       {/* Box 1: Applicant Details */}
-                      <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3.5 space-y-2">
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/60 pb-1 flex items-center justify-between">
+                      <div className="bg-slate-50/80 dark:bg-[#1C222D] border border-slate-200/80 dark:border-[#242936] rounded-xl p-3.5 space-y-2">
+                        <div className="text-[10px] font-bold text-slate-500 dark:text-[#9CA3AF] uppercase tracking-wider border-b border-slate-200/60 dark:border-[#242936] pb-1 flex items-center justify-between">
                           <span>Applicant Details</span>
-                          <User className="w-3 h-3 text-slate-400" />
+                          <User className="w-3 h-3 text-slate-400 dark:text-[#9CA3AF]" />
                         </div>
                         <div className="space-y-1.5 text-xs">
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Applicant Name:</span>
-                            <span className="font-bold text-slate-900 text-right min-w-0 break-words">{submissionResult.applicantName}</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Applicant Name:</span>
+                            <span className="font-bold text-slate-900 dark:text-[#F9FAFB] text-right min-w-0 break-words">{submissionResult.applicantName}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Requested Class:</span>
-                            <span className="font-semibold text-slate-800 text-right min-w-0 break-words">{submissionResult.appliedClassName || 'General Admission / Baseline'}</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Requested Class:</span>
+                            <span className="font-semibold text-slate-800 dark:text-[#D1D5DB] text-right min-w-0 break-words">{submissionResult.appliedClassName || 'General Admission / Baseline'}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Intake Cycle:</span>
-                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{submissionResult.intakeName}</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Intake Cycle:</span>
+                            <span className="font-medium text-slate-800 dark:text-[#D1D5DB] text-right min-w-0 break-words">{submissionResult.intakeName}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Academic Year:</span>
-                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{submissionResult.academicYear}</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Academic Year:</span>
+                            <span className="font-medium text-slate-800 dark:text-[#D1D5DB] text-right min-w-0 break-words">{submissionResult.academicYear}</span>
                           </div>
                         </div>
                       </div>
 
                       {/* Box 2: Guardian & Submission Details */}
-                      <div className="bg-slate-50/80 border border-slate-200/80 rounded-xl p-3.5 space-y-2">
-                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider border-b border-slate-200/60 pb-1 flex items-center justify-between">
+                      <div className="bg-slate-50/80 dark:bg-[#1C222D] border border-slate-200/80 dark:border-[#242936] rounded-xl p-3.5 space-y-2">
+                        <div className="text-[10px] font-bold text-slate-500 dark:text-[#9CA3AF] uppercase tracking-wider border-b border-slate-200/60 dark:border-[#242936] pb-1 flex items-center justify-between">
                           <span>Guardian & Submission</span>
-                          <ShieldCheck className="w-3 h-3 text-slate-400" />
+                          <ShieldCheck className="w-3 h-3 text-slate-400 dark:text-[#9CA3AF]" />
                         </div>
                         <div className="space-y-1.5 text-xs">
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Parent / Guardian:</span>
-                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{guardianName || '—'}</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Parent / Guardian:</span>
+                            <span className="font-medium text-slate-800 dark:text-[#D1D5DB] text-right min-w-0 break-words">{guardianName || '—'}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Contact Phone:</span>
-                            <span className="font-medium text-slate-800 text-right min-w-0 break-words">{guardianPhone || '—'}</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Contact Phone:</span>
+                            <span className="font-medium text-slate-800 dark:text-[#D1D5DB] text-right min-w-0 break-words">{guardianPhone || '—'}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Registered Email:</span>
-                            <span className="font-medium text-slate-800 text-right truncate max-w-[160px]">{guardianEmail || '—'}</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Registered Email:</span>
+                            <span className="font-medium text-slate-800 dark:text-[#D1D5DB] text-right truncate max-w-[160px]">{guardianEmail || '—'}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 shrink-0">Submitted On:</span>
-                            <span className="font-medium text-slate-800 text-right">
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Submitted On:</span>
+                            <span className="font-medium text-slate-800 dark:text-[#D1D5DB] text-right">
                               {new Date(submissionResult.submittedAt).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'short',
@@ -752,35 +752,35 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     </div>
 
                     {/* Strict Email Notice Box */}
-                    <div className="bg-[#F5F5F1] border border-[#E5E5DF] rounded-xl p-3 flex items-start space-x-2.5 text-xs text-slate-700">
+                    <div className="bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936] rounded-xl p-3 flex items-start space-x-2.5 text-xs text-slate-700 dark:text-[#D1D5DB]">
                       <Mail className="w-4 h-4 shrink-0 mt-0.5" style={{ color: primaryColor }} />
                       <div className="space-y-0.5 leading-relaxed min-w-0">
-                        <p className="font-semibold text-slate-900">
+                        <p className="font-semibold text-slate-900 dark:text-[#F9FAFB]">
                           Admission decisions and status updates are communicated strictly via email.
                         </p>
-                        <p className="text-[11px] text-slate-600">
+                        <p className="text-[11px] text-slate-600 dark:text-[#9CA3AF]">
                           An official acknowledgment has been dispatched to <strong className="break-all">{guardianEmail}</strong>. Please check your inbox and spam folder for interview schedules and admission decisions. Present this confirmation receipt during document verification.
                         </p>
                       </div>
                     </div>
 
                     {/* Official Institutional Footer */}
-                    <div className="pt-2.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-[11px] text-slate-500">
+                    <div className="pt-2.5 border-t border-slate-200 dark:border-[#242936] flex flex-col sm:flex-row items-center justify-between gap-1.5 text-[11px] text-slate-500 dark:text-[#9CA3AF]">
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-center sm:justify-start">
                         {madrasa.contactPhone && (
                           <span className="inline-flex items-center space-x-1">
-                            <Phone className="w-3 h-3 text-slate-400" />
+                            <Phone className="w-3 h-3 text-slate-400 dark:text-[#9CA3AF]" />
                             <span>{madrasa.contactPhone}</span>
                           </span>
                         )}
                         {madrasa.contactEmail && (
                           <span className="inline-flex items-center space-x-1">
-                            <Mail className="w-3 h-3 text-slate-400" />
+                            <Mail className="w-3 h-3 text-slate-400 dark:text-[#9CA3AF]" />
                             <span>{madrasa.contactEmail}</span>
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] font-mono text-slate-400 text-center sm:text-right">
+                      <div className="text-[10px] font-mono text-slate-400 dark:text-[#9CA3AF] text-center sm:text-right">
                         Official Electronic Confirmation • Page 1 of 1
                       </div>
                     </div>
@@ -791,7 +791,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => window.print()}
-                      className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white transition-colors shadow-sm cursor-pointer hover:opacity-90"
+                      className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold text-white transition-colors shadow-sm cursor-pointer hover:opacity-90 dark:!bg-[#84CC16] dark:!text-[#0B0D11]"
                       style={{ backgroundColor: primaryColor }}
                     >
                       <Printer className="w-3.5 h-3.5" />
@@ -800,7 +800,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setSelectedPeriod(null)}
-                      className="inline-flex items-center space-x-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-sm cursor-pointer"
+                      className="inline-flex items-center space-x-1.5 px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 dark:bg-[#1C222D] dark:text-[#F9FAFB] dark:hover:bg-[#242936] transition-colors shadow-sm cursor-pointer"
                     >
                       <span>Close</span>
                     </button>
@@ -810,21 +810,21 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                 /* Application Form */
                 <form id="public-admissions-form" onSubmit={handleSubmitApplication} className="space-y-6">
                   {formError && (
-                    <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center space-x-2">
-                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs flex items-center space-x-2">
+                      <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" />
                       <span>{formError}</span>
                     </div>
                   )}
 
                   {/* Section 1: Applicant Information */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
+                    <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-[#F9FAFB] flex items-center space-x-1.5">
                       <User className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Applicant Information</span>
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="sm:col-span-2">
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Full Name *
                         </label>
                         <input
@@ -833,12 +833,12 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={applicantName}
                           onChange={(e) => setApplicantName(e.target.value)}
                           placeholder="e.g. Mohammed Ahmed Farhan"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Date of Birth *
                         </label>
                         <input
@@ -846,18 +846,18 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           required
                           value={dateOfBirth}
                           onChange={(e) => setDateOfBirth(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Gender *
                         </label>
                         <select
                           value={gender}
                           onChange={(e) => setGender(e.target.value as 'MALE' | 'FEMALE')}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] bg-white"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB]"
                         >
                           <option value="MALE">Male</option>
                           <option value="FEMALE">Female</option>
@@ -867,14 +867,14 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   </div>
 
                   {/* Section 2: Parent / Legal Guardian Details */}
-                  <div className="space-y-3 pt-4 border-t border-slate-100">
-                    <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
+                  <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-[#242936]">
+                    <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-[#F9FAFB] flex items-center space-x-1.5">
                       <ShieldCheck className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Parent / Legal Guardian Details</span>
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Guardian Name *
                         </label>
                         <input
@@ -883,18 +883,18 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={guardianName}
                           onChange={(e) => setGuardianName(e.target.value)}
                           placeholder="e.g. Ahmed Farhan"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Relationship *
                         </label>
                         <select
                           value={guardianRelationship}
                           onChange={(e) => setGuardianRelationship(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] bg-white"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB]"
                         >
                           <option value="Father">Father</option>
                           <option value="Mother">Mother</option>
@@ -904,7 +904,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Contact Phone Number *
                         </label>
                         <input
@@ -913,12 +913,12 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={guardianPhone}
                           onChange={(e) => setGuardianPhone(e.target.value)}
                           placeholder="e.g. +94 77 123 4567"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Parent/Guardian Email Address *
                         </label>
                         <input
@@ -927,15 +927,15 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={guardianEmail}
                           onChange={(e) => setGuardianEmail(e.target.value)}
                           placeholder="e.g. parent@example.com"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16]"
                         />
-                        <p className="text-[10px] text-slate-400 mt-1">
+                        <p className="text-[10px] text-slate-400 dark:text-[#9CA3AF] mt-1">
                           Important: Application confirmations & status updates are sent strictly by email.
                         </p>
                       </div>
 
                       <div className="sm:col-span-2">
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Home Address *
                         </label>
                         <textarea
@@ -944,27 +944,27 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
                           placeholder="Street address, city, postal code"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16]"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Section 3: Academic Preference */}
-                  <div className="space-y-3 pt-4 border-t border-slate-100">
-                    <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
+                  <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-[#242936]">
+                    <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-[#F9FAFB] flex items-center space-x-1.5">
                       <BookOpen className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Academic Preference</span>
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Requested Class Level
                         </label>
                         <select
                           value={appliedClassId}
                           onChange={(e) => setAppliedClassId(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] bg-white"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB]"
                         >
                           <option value="">-- Let Institution Determine --</option>
                           {availableClasses.map((cls) => (
@@ -976,7 +976,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                        <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
                           Previous School / Madrasa (If Any)
                         </label>
                         <input
@@ -984,25 +984,25 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           value={previousSchool}
                           onChange={(e) => setPreviousSchool(e.target.value)}
                           placeholder="e.g. Al-Hikmah Primary School"
-                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34]"
+                          className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16]"
                         />
                       </div>
                     </div>
                   </div>
 
                   {/* Section 4: Supporting Documents Upload */}
-                  <div className="space-y-3 pt-4 border-t border-slate-100">
+                  <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-[#242936]">
                     <div className="flex flex-wrap items-center justify-between gap-1">
-                      <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
+                      <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-[#F9FAFB] flex items-center space-x-1.5">
                         <Upload className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                         <span>Supporting Documents</span>
                       </h4>
-                      <span className="text-[11px] text-slate-400">PDF, JPG, PNG (Max 5MB)</span>
+                      <span className="text-[11px] text-slate-400 dark:text-[#9CA3AF]">PDF, JPG, PNG (Max 5MB)</span>
                     </div>
 
-                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-3">
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#1C222D] border border-slate-200/80 dark:border-[#242936] space-y-3">
                       <div className="flex items-center space-x-3">
-                        <label className="cursor-pointer inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-100 text-xs font-semibold text-slate-700 shadow-xs">
+                        <label className="cursor-pointer inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white dark:bg-[#141820] border border-slate-200 dark:border-[#242936] hover:bg-slate-100 dark:hover:bg-[#242936] text-xs font-semibold text-slate-700 dark:text-[#F9FAFB] shadow-xs">
                           {uploadingDoc ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: primaryColor }} />
                           ) : (
@@ -1019,26 +1019,26 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                             }}
                           />
                         </label>
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-slate-500 dark:text-[#9CA3AF]">
                           e.g. Birth Certificate, previous school certificate or report.
                         </span>
                       </div>
 
                       {uploadedDocs.length > 0 && (
-                        <div className="space-y-1.5 pt-2 border-t border-slate-200">
+                        <div className="space-y-1.5 pt-2 border-t border-slate-200 dark:border-[#242936]">
                           {uploadedDocs.map((doc, idx) => (
                             <div
                               key={doc.fileId || idx}
-                              className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700"
+                              className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-white dark:bg-[#141820] border border-slate-200 dark:border-[#242936] text-xs text-slate-700 dark:text-[#F9FAFB]"
                             >
                               <div className="flex items-center space-x-2 min-w-0 flex-1">
-                                <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-[#9CA3AF] shrink-0" />
                                 <span className="truncate font-medium">{doc.name}</span>
                               </div>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveDoc(idx)}
-                                className="text-slate-400 hover:text-rose-600 p-1 shrink-0"
+                                className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 p-1 shrink-0"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -1050,22 +1050,22 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   </div>
 
                   {/* Section 5: Declaration & Privacy Consent */}
-                  <div className="space-y-3 pt-4 border-t border-slate-100">
-                    <h4 className="text-xs font-bold uppercase text-slate-800 flex items-center space-x-1.5">
+                  <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-[#242936]">
+                    <h4 className="text-xs font-bold uppercase text-slate-800 dark:text-[#F9FAFB] flex items-center space-x-1.5">
                       <ShieldCheck className="w-3.5 h-3.5" style={{ color: primaryColor }} />
                       <span>Declaration & Privacy Consent</span>
                     </h4>
-                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                    <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#1C222D] border border-slate-200/80 dark:border-[#242936]">
                       <label className="flex items-start space-x-3 cursor-pointer">
                         <input
                           type="checkbox"
                           required
                           checked={consentAgreed}
                           onChange={(e) => setConsentAgreed(e.target.checked)}
-                          className="mt-0.5 rounded border-slate-300 w-4 h-4 shrink-0"
+                          className="mt-0.5 rounded border-slate-300 dark:border-[#242936] w-4 h-4 shrink-0"
                           style={{ accentColor: primaryColor }}
                         />
-                        <span className="text-xs text-slate-700 leading-relaxed">
+                        <span className="text-xs text-slate-700 dark:text-[#D1D5DB] leading-relaxed">
                           I hereby declare that all information and supporting documents provided in this application are authentic, true, and complete. I authorize <strong>{madrasa.name}</strong> to process these details for admission consideration and agree to receive application notifications and decisions via email.
                         </span>
                       </label>
@@ -1077,11 +1077,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
 
             {/* Modal Footer */}
             {!submissionResult && (
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 shrink-0">
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-[#242936] shrink-0">
                 <button
                   type="button"
                   onClick={() => setSelectedPeriod(null)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D] dark:hover:text-[#F9FAFB] transition-colors"
                 >
                   Cancel
                 </button>
@@ -1089,7 +1089,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   type="submit"
                   form="public-admissions-form"
                   disabled={submitting || uploadingDoc}
-                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-colors shadow-sm disabled:opacity-50"
+                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 dark:!bg-[#84CC16] dark:!text-[#0B0D11]"
                   style={{
                     backgroundColor: primaryColor,
                     color: theme.primaryBtnText || '#ffffff',

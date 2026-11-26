@@ -830,15 +830,15 @@ export default function ReportsPage() {
           </div>
 
           {/* 6. REPORT FILTERS PANEL */}
-          <div className="bg-[#F7F6F1]/70 border border-[#E7E9EE] rounded-2xl p-4 sm:p-5 space-y-4 print:hidden">
+          <div className="bg-[#F7F6F1]/70 dark:bg-[#141820] border border-[#E7E9EE] dark:border-[#242936] rounded-2xl p-4 sm:p-5 space-y-4 print:hidden">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0F172A]">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0F172A] dark:text-[#F9FAFB]">
                 <Filter className="w-3.5 h-3.5 text-[#37C6A3]" />
                 <span>Report Filters</span>
               </div>
               <button
                 onClick={resetFilters}
-                className="text-xs text-[#7C8A9A] hover:text-[#0F172A] font-semibold flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white border border-transparent hover:border-[#E7E9EE] transition-all cursor-pointer"
+                className="text-xs text-[#7C8A9A] dark:text-[#9CA3AF] hover:text-[#0F172A] dark:hover:text-[#F9FAFB] font-semibold flex items-center gap-1.5 px-2.5 py-1 rounded-lg hover:bg-white dark:hover:bg-[#1C222D] border border-transparent hover:border-[#E7E9EE] dark:hover:border-[#242936] transition-all cursor-pointer"
               >
                 <RefreshCw className="w-3 h-3" />
                 <span>Reset</span>

@@ -1184,41 +1184,41 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
       {/* ============================================================= */}
       {showWizardModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+          <div className="bg-white dark:bg-[#141820] rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-[#242936] overflow-hidden">
             {/* Modal Header */}
-            <div className="p-6 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+            <div className="p-6 border-b border-slate-200 dark:border-[#242936] flex items-center justify-between bg-slate-50/50 dark:bg-[#1C222D]">
               <div>
-                <h3 className="text-lg font-bold text-slate-900 flex items-center space-x-2">
-                  <CalendarClock className="w-5 h-5 text-emerald-700" />
+                <h3 className="text-lg font-bold text-slate-900 dark:text-[#F9FAFB] flex items-center space-x-2">
+                  <CalendarClock className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                   <span>Admissions Interview Scheduling Wizard</span>
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-[#9CA3AF] mt-0.5">
                   Step {wizardStep} of 3: {wizardStep === 1 ? 'Select Eligible Candidates' : wizardStep === 2 ? 'Session & Timing Details' : 'Time Slot Verification'}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowWizardModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Stepper Progress */}
-            <div className="px-6 py-2 bg-slate-100 flex items-center space-x-4 text-xs font-semibold overflow-x-auto whitespace-nowrap shrink-0">
-              <div className={`flex items-center space-x-1.5 ${wizardStep >= 1 ? 'text-emerald-700' : 'text-slate-400'}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${wizardStep >= 1 ? 'bg-emerald-700 text-white' : 'bg-slate-300'}`}>1</span>
+            <div className="px-6 py-2 bg-slate-100 dark:bg-[#161B22] border-b border-slate-200 dark:border-[#242936] flex items-center space-x-4 text-xs font-semibold overflow-x-auto whitespace-nowrap shrink-0">
+              <div className={`flex items-center space-x-1.5 ${wizardStep >= 1 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-gray-400'}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${wizardStep >= 1 ? 'bg-emerald-700 dark:bg-emerald-600 text-white' : 'bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>1</span>
                 <span>Candidates</span>
               </div>
-              <span className="text-slate-300">&bull;&bull;&bull;</span>
-              <div className={`flex items-center space-x-1.5 ${wizardStep >= 2 ? 'text-emerald-700' : 'text-slate-400'}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${wizardStep >= 2 ? 'bg-emerald-700 text-white' : 'bg-slate-300'}`}>2</span>
+              <span className="text-slate-300 dark:text-gray-600">&bull;&bull;&bull;</span>
+              <div className={`flex items-center space-x-1.5 ${wizardStep >= 2 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-gray-400'}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${wizardStep >= 2 ? 'bg-emerald-700 dark:bg-emerald-600 text-white' : 'bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>2</span>
                 <span>Session Setup</span>
               </div>
-              <span className="text-slate-300">&bull;&bull;&bull;</span>
-              <div className={`flex items-center space-x-1.5 ${wizardStep >= 3 ? 'text-emerald-700' : 'text-slate-400'}`}>
-                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${wizardStep >= 3 ? 'bg-emerald-700 text-white' : 'bg-slate-300'}`}>3</span>
+              <span className="text-slate-300 dark:text-gray-600">&bull;&bull;&bull;</span>
+              <div className={`flex items-center space-x-1.5 ${wizardStep >= 3 ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-400 dark:text-gray-400'}`}>
+                <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[11px] ${wizardStep >= 3 ? 'bg-emerald-700 dark:bg-emerald-600 text-white' : 'bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}`}>3</span>
                 <span>Review & Schedule</span>
               </div>
             </div>
@@ -1230,11 +1230,11 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Intake Cycle</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Intake Cycle</label>
                       <select
                         value={wizardPeriodId}
                         onChange={(e) => setWizardPeriodId(e.target.value)}
-                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         {periods.map((p) => (
                           <option key={p.id} value={p.id}>
@@ -1245,14 +1245,14 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Interview Round</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Interview Round</label>
                       <select
                         value={wizardRound}
                         onChange={(e) => {
                           setWizardRound(e.target.value as InterviewRound);
                           setSelectedAppIds([]);
                         }}
-                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
+                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
                       >
                         <option value="FIRST">First Round (New Applicants)</option>
                         <option value="SECOND">Second Round (Needs 2nd Interview)</option>
@@ -1260,20 +1260,20 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">Search Candidate</label>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Search Candidate</label>
                       <input
                         type="text"
                         placeholder="Search name or app #..."
                         value={applicantSearch}
                         onChange={(e) => setApplicantSearch(e.target.value)}
-                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
 
                   {wizardRound === 'SECOND' && (
-                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-xl text-xs text-purple-900 flex items-start space-x-2">
-                      <Sparkles className="w-4 h-4 text-purple-700 shrink-0 mt-0.5" />
+                    <div className="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/50 rounded-xl text-xs text-purple-900 dark:text-purple-300 flex items-start space-x-2">
+                      <Sparkles className="w-4 h-4 text-purple-700 dark:text-purple-400 shrink-0 mt-0.5" />
                       <div>
                         <strong>Second Round Mode Active:</strong> Only applicants whose first-round evaluation was marked as <em>"Needs Second Interview"</em> are shown and eligible for scheduling.
                       </div>
@@ -1281,9 +1281,9 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                   )}
 
                   {/* Eligible Candidates Table */}
-                  <div className="border border-slate-200 rounded-2xl overflow-hidden mt-4">
-                    <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between text-xs">
-                      <label className="flex items-center space-x-2 font-bold text-slate-700 cursor-pointer">
+                  <div className="border border-slate-200 dark:border-[#242936] rounded-2xl overflow-hidden mt-4">
+                    <div className="bg-slate-50 dark:bg-[#1C222D] px-4 py-2.5 border-b border-slate-200 dark:border-[#242936] flex items-center justify-between text-xs">
+                      <label className="flex items-center space-x-2 font-bold text-slate-700 dark:text-[#F9FAFB] cursor-pointer">
                         <input
                           type="checkbox"
                           checked={eligibleApplicants.length > 0 && selectedAppIds.length === eligibleApplicants.length}
@@ -1298,20 +1298,20 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                         />
                         <span>Select All ({eligibleApplicants.length} Eligible)</span>
                       </label>
-                      <span className="font-bold text-emerald-700">{selectedAppIds.length} candidate(s) selected</span>
+                      <span className="font-bold text-emerald-700 dark:text-[#84CC16]">{selectedAppIds.length} candidate(s) selected</span>
                     </div>
 
                     {loadingEligible ? (
-                      <div className="py-12 text-center text-xs text-slate-500">
+                      <div className="py-12 text-center text-xs text-slate-500 dark:text-[#9CA3AF]">
                         <Loader2 className="w-6 h-6 animate-spin mx-auto text-emerald-600 mb-2" />
                         Fetching eligible applicants...
                       </div>
                     ) : eligibleApplicants.length === 0 ? (
-                      <div className="py-10 text-center text-xs text-slate-400">
+                      <div className="py-10 text-center text-xs text-slate-400 dark:text-[#9CA3AF]">
                         No eligible candidates found for this round and intake cycle.
                       </div>
                     ) : (
-                      <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                      <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-[#242936]">
                         {eligibleApplicants.map((app) => {
                           const isSelected = selectedAppIds.includes(app.id);
                           return (
@@ -1324,8 +1324,8 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                                   setSelectedAppIds([...selectedAppIds, app.id]);
                                 }
                               }}
-                              className={`p-3 flex items-center justify-between hover:bg-slate-50 cursor-pointer transition-colors ${
-                                isSelected ? 'bg-emerald-50/60' : ''
+                              className={`p-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-[#1C222D]/60 cursor-pointer transition-colors ${
+                                isSelected ? 'bg-emerald-50/60 dark:bg-[#1C222D] dark:border-l-4 dark:border-emerald-500/60' : ''
                               }`}
                             >
                               <div className="flex items-center space-x-3">
@@ -1336,13 +1336,13 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                                   className="rounded text-emerald-600 focus:ring-emerald-500"
                                 />
                                 <div>
-                                  <div className="font-bold text-slate-900 text-xs">{app.applicantName}</div>
-                                  <div className="text-[11px] text-slate-500">
-                                    App No: <span className="font-mono">{app.applicationNo}</span> &bull; Guardian: {app.guardianName} ({app.guardianPhone})
+                                  <div className="font-bold text-slate-900 dark:text-[#F9FAFB] text-xs">{app.applicantName}</div>
+                                  <div className="text-[11px] text-slate-500 dark:text-[#9CA3AF]">
+                                    App No: <span className="font-mono text-slate-700 dark:text-[#D1D5DB]">{app.applicationNo}</span> &bull; Guardian: <span className="text-slate-700 dark:text-[#D1D5DB]">{app.guardianName} ({app.guardianPhone})</span>
                                   </div>
                                 </div>
                               </div>
-                              <div className="text-right text-[11px] text-slate-400">
+                              <div className="text-right text-[11px] text-slate-400 dark:text-[#D1D5DB]">
                                 {app.appliedClass?.name || 'Standard'} &bull; {app.gender}
                               </div>
                             </div>
@@ -1358,31 +1358,31 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
               {wizardStep === 2 && (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Session Title (Optional)</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Session Title (Optional)</label>
                     <input
                       type="text"
                       placeholder="e.g. 2026 Academic Admissions - First Round Interviews"
                       value={sessionTitle}
                       onChange={(e) => setSessionTitle(e.target.value)}
-                      className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">
                         Interview Date <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="date"
                         value={interviewDate}
                         onChange={(e) => setInterviewDate(e.target.value)}
-                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
+                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
+                      <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">
                         Venue / Room <span className="text-rose-500">*</span>
                       </label>
                       <input
@@ -1390,28 +1390,28 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                         value={venue}
                         onChange={(e) => setVenue(e.target.value)}
                         placeholder="e.g. Administrative Building - Room 102"
-                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                   </div>
 
                   {/* Scheduling Method Card Selector */}
                   <div className="mt-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-2">Scheduling Method</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-2">Scheduling Method</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div
                         onClick={() => setScheduleMethod('SAME_TIME')}
                         className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                           scheduleMethod === 'SAME_TIME'
-                            ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-600/20'
-                            : 'border-slate-200 hover:border-slate-300'
+                            ? 'border-emerald-600 bg-emerald-50/60 dark:bg-[#1C222D] dark:border-emerald-500 ring-2 ring-emerald-600/20'
+                            : 'border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] hover:border-slate-300 dark:hover:border-slate-700'
                         }`}
                       >
-                        <div className="flex items-center space-x-2 font-bold text-xs text-slate-900">
-                          <Clock className="w-4 h-4 text-emerald-700" />
+                        <div className="flex items-center space-x-2 font-bold text-xs text-slate-900 dark:text-[#F9FAFB]">
+                          <Clock className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                           <span>Method A: Same Date & Time</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-1">
+                        <p className="text-[11px] text-slate-500 dark:text-[#9CA3AF] mt-1">
                           All {selectedAppIds.length} candidate(s) report at the exact same start and end time window.
                         </p>
                       </div>
@@ -1420,15 +1420,15 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                         onClick={() => setScheduleMethod('INDIVIDUAL_SLOTS')}
                         className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                           scheduleMethod === 'INDIVIDUAL_SLOTS'
-                            ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-600/20'
-                            : 'border-slate-200 hover:border-slate-300'
+                            ? 'border-emerald-600 bg-emerald-50/60 dark:bg-[#1C222D] dark:border-emerald-500 ring-2 ring-emerald-600/20'
+                            : 'border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] hover:border-slate-300 dark:hover:border-slate-700'
                         }`}
                       >
-                        <div className="flex items-center space-x-2 font-bold text-xs text-slate-900">
-                          <Calendar className="w-4 h-4 text-emerald-700" />
+                        <div className="flex items-center space-x-2 font-bold text-xs text-slate-900 dark:text-[#F9FAFB]">
+                          <Calendar className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                           <span>Method B: Individual Time Slots</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-1">
+                        <p className="text-[11px] text-slate-500 dark:text-[#9CA3AF] mt-1">
                           Consecutive non-overlapping time slots allocated automatically or individually per candidate.
                         </p>
                       </div>
@@ -1437,43 +1437,43 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
                   {/* Method-Specific Inputs */}
                   {scheduleMethod === 'SAME_TIME' ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 dark:bg-[#1C222D] rounded-2xl border border-slate-200 dark:border-[#242936]">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Start Time (24h)</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Start Time (24h)</label>
                         <input
                           type="time"
                           value={defaultStartTime}
                           onChange={(e) => setDefaultStartTime(e.target.value)}
-                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white"
+                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">End Time (24h)</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">End Time (24h)</label>
                         <input
                           type="time"
                           value={defaultEndTime}
                           onChange={(e) => setDefaultEndTime(e.target.value)}
-                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white"
+                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-50 dark:bg-[#1C222D] rounded-2xl border border-slate-200 dark:border-[#242936]">
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">First Candidate Start Time</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">First Candidate Start Time</label>
                         <input
                           type="time"
                           value={defaultStartTime}
                           onChange={(e) => setDefaultStartTime(e.target.value)}
-                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white"
+                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 mb-1">Slot Duration (Minutes)</label>
+                        <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Slot Duration (Minutes)</label>
                         <select
                           value={slotDurationMinutes}
                           onChange={(e) => setSlotDurationMinutes(Number(e.target.value))}
-                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 bg-white"
+                          className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         >
                           <option value={10}>10 Minutes per candidate</option>
                           <option value={15}>15 Minutes per candidate</option>
@@ -1488,20 +1488,20 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
                   {/* Required Documents Checklist Builder */}
                   <div className="pt-2">
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">
                       Required Documents Checklist (Printed on Official PDF Invitation)
                     </label>
                     <div className="space-y-1.5 mb-2">
                       {requiredDocs.map((doc, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 text-xs text-slate-800 border border-slate-200">
+                        <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-[#1C222D] text-xs text-slate-800 dark:text-[#D1D5DB] border border-slate-200 dark:border-[#242936]">
                           <span className="flex items-center space-x-2">
-                            <Check className="w-3.5 h-3.5 text-emerald-600" />
+                            <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                             <span>{doc}</span>
                           </span>
                           <button
                             type="button"
                             onClick={() => setRequiredDocs(requiredDocs.filter((_, i) => i !== idx))}
-                            className="text-slate-400 hover:text-rose-600"
+                            className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -1522,7 +1522,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                             setNewDocItem('');
                           }
                         }}
-                        className="flex-1 text-xs py-1.5 px-3 rounded-xl border border-slate-200"
+                        className="flex-1 text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280]"
                       />
                       <button
                         type="button"
@@ -1532,7 +1532,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                             setNewDocItem('');
                           }
                         }}
-                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold"
+                        className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#242936] dark:hover:bg-[#2e3444] text-slate-700 dark:text-[#F9FAFB] rounded-xl text-xs font-bold"
                       >
                         Add
                       </button>
@@ -1540,13 +1540,13 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">Candidate Instructions / Remarks</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Candidate Instructions / Remarks</label>
                     <textarea
                       rows={2}
                       value={sessionInstructions}
                       onChange={(e) => setSessionInstructions(e.target.value)}
                       placeholder="Special instructions for the candidates and parents..."
-                      className="w-full text-xs p-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full text-xs p-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
                 </div>
@@ -1555,9 +1555,9 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
               {/* STEP 3: Review & Custom Slot Allocation */}
               {wizardStep === 3 && (
                 <div className="space-y-4">
-                  <div className="p-4 bg-emerald-50/60 border border-emerald-200 rounded-2xl text-xs text-emerald-900 space-y-1">
+                  <div className="p-4 bg-emerald-50/60 dark:bg-[#1C222D] border border-emerald-200 dark:border-[#242936] rounded-2xl text-xs text-emerald-900 dark:text-[#F9FAFB] space-y-1">
                     <div className="font-bold flex items-center space-x-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-700" />
+                      <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-[#84CC16]" />
                       <span>Review Before Scheduling</span>
                     </div>
                     <div>Date: <strong>{formatDateColombo(interviewDate)}</strong> &bull; Venue: <strong>{venue}</strong></div>
@@ -1566,15 +1566,15 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
                   {scheduleMethod === 'INDIVIDUAL_SLOTS' && (
                     <div>
-                      <h4 className="text-xs font-bold text-slate-800 mb-2">Allocated Time Slots per Candidate:</h4>
-                      <div className="border border-slate-200 rounded-2xl overflow-hidden divide-y divide-slate-100 max-h-72 overflow-y-auto">
+                      <h4 className="text-xs font-bold text-slate-800 dark:text-[#F9FAFB] mb-2">Allocated Time Slots per Candidate:</h4>
+                      <div className="border border-slate-200 dark:border-[#242936] rounded-2xl overflow-hidden divide-y divide-slate-100 dark:divide-[#242936] max-h-72 overflow-y-auto">
                         {customSlots.map((slot, idx) => {
                           const app = eligibleApplicants.find((a) => a.id === slot.applicationId);
                           return (
-                            <div key={slot.applicationId} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs hover:bg-slate-50">
+                            <div key={slot.applicationId} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs hover:bg-slate-50 dark:hover:bg-[#1C222D]/60">
                               <div className="min-w-0">
-                                <span className="font-bold text-slate-900 break-words">#{idx + 1} {app?.applicantName}</span>
-                                <span className="text-[11px] text-slate-500 ml-2 font-mono">({app?.applicationNo})</span>
+                                <span className="font-bold text-slate-900 dark:text-[#F9FAFB] break-words">#{idx + 1} {app?.applicantName}</span>
+                                <span className="text-[11px] text-slate-500 dark:text-[#9CA3AF] ml-2 font-mono">({app?.applicationNo})</span>
                               </div>
                               <div className="flex flex-wrap items-center gap-2">
                                 <input
@@ -1586,9 +1586,9 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                                       prev.map((s, i) => (i === idx ? { ...s, startTime: val } : s))
                                     );
                                   }}
-                                  className="py-1 px-2 border border-slate-200 rounded-lg text-xs"
+                                  className="py-1 px-2 border border-slate-200 dark:border-[#242936] rounded-lg text-xs bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                                 />
-                                <span className="text-slate-400">to</span>
+                                <span className="text-slate-400 dark:text-[#9CA3AF]">to</span>
                                 <input
                                   type="time"
                                   value={slot.endTime}
@@ -1598,7 +1598,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                                       prev.map((s, i) => (i === idx ? { ...s, endTime: val } : s))
                                     );
                                   }}
-                                  className="py-1 px-2 border border-slate-200 rounded-lg text-xs"
+                                  className="py-1 px-2 border border-slate-200 dark:border-[#242936] rounded-lg text-xs bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                                 />
                               </div>
                             </div>
@@ -1608,9 +1608,9 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     </div>
                   )}
 
-                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-xs text-slate-600">
+                  <div className="p-4 bg-slate-50 dark:bg-[#1C222D] rounded-2xl border border-slate-200 dark:border-[#242936] text-xs text-slate-600 dark:text-[#9CA3AF]">
                     <p>
-                      <strong>Automatic Post-Commit Processing:</strong> Upon confirmation, MadrasaNexa will generate an official A4 PDF Invitation Letter with official institutional branding and dispatch personalized email notifications with the PDF attached to each candidate's registered guardian email.
+                      <strong className="text-slate-800 dark:text-[#F9FAFB]">Automatic Post-Commit Processing:</strong> Upon confirmation, MadrasaNexa will generate an official A4 PDF Invitation Letter with official institutional branding and dispatch personalized email notifications with the PDF attached to each candidate's registered guardian email.
                     </p>
                   </div>
                 </div>
@@ -1618,12 +1618,12 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-200 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/50 shrink-0">
+            <div className="p-4 border-t border-slate-200 dark:border-[#242936] flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-2 bg-slate-50/50 dark:bg-[#1C222D] shrink-0">
               {wizardStep > 1 ? (
                 <button
                   type="button"
                   onClick={() => setWizardStep((s) => (s - 1) as any)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700"
+                  className="px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] hover:bg-slate-50 dark:hover:bg-[#242936] text-slate-700 dark:text-[#F9FAFB]"
                 >
                   Back
                 </button>
@@ -1635,7 +1635,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                 <button
                   type="button"
                   onClick={() => setShowWizardModal(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-700"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 dark:text-[#9CA3AF] hover:text-slate-700 dark:hover:text-[#F9FAFB]"
                 >
                   Cancel
                 </button>
@@ -1645,7 +1645,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     type="button"
                     disabled={selectedAppIds.length === 0}
                     onClick={() => setWizardStep(2)}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white disabled:opacity-40 shadow-sm"
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white disabled:opacity-40 shadow-sm"
                   >
                     Continue to Session Setup ({selectedAppIds.length})
                   </button>
@@ -1654,7 +1654,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     type="button"
                     disabled={!interviewDate || !venue}
                     onClick={handleProceedToStep3}
-                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white disabled:opacity-40 shadow-sm"
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white disabled:opacity-40 shadow-sm"
                   >
                     Continue to Slot Review
                   </button>
@@ -1663,7 +1663,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     type="button"
                     disabled={submittingSchedule}
                     onClick={handleScheduleSubmit}
-                    className="px-6 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white disabled:opacity-40 shadow-sm flex items-center space-x-2"
+                    className="px-6 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white disabled:opacity-40 shadow-sm flex items-center space-x-2"
                   >
                     {submittingSchedule ? (
                       <>
@@ -1689,21 +1689,21 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
       {/* ============================================================= */}
       {showEvaluateModal && selectedAppointment && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden flex flex-col">
-            <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
+          <div className="bg-white dark:bg-[#141820] rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 dark:border-[#242936] overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-slate-200 dark:border-[#242936] bg-slate-50/50 dark:bg-[#1C222D] flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                  <UserCheck className="w-5 h-5 text-emerald-700" />
+                <h3 className="text-base font-bold text-slate-900 dark:text-[#F9FAFB] flex items-center space-x-2">
+                  <UserCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
                   <span>Interview Evaluation & Scoring</span>
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Candidate: <strong>{selectedAppointment.application.applicantName}</strong> &bull; Ref: {selectedAppointment.invitationReference}
+                <p className="text-xs text-slate-500 dark:text-[#9CA3AF] mt-0.5">
+                  Candidate: <strong className="text-slate-900 dark:text-[#F9FAFB]">{selectedAppointment.application.applicantName}</strong> &bull; Ref: <span className="text-slate-700 dark:text-[#D1D5DB]">{selectedAppointment.invitationReference}</span>
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowEvaluateModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1711,8 +1711,8 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
             <div className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
               {/* Mandatory Policy Notice */}
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 flex items-start space-x-2">
-                <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl text-[11px] text-amber-900 dark:text-amber-300 flex items-start space-x-2">
+                <AlertCircle className="w-4 h-4 text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
                 <div>
                   <strong>Independent Workflow Rule:</strong> Recording interview evaluation scores does <em>not</em> automatically change the applicant's official admission status or convert them into an enrolled student. Official student enrollment remains in the Applications Review workflow.
                 </div>
@@ -1720,15 +1720,15 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
               {/* Attendance Selection */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">Candidate Attendance</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-2">Candidate Attendance</label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <button
                     type="button"
                     onClick={() => setEvalAttendance('PRESENT')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
                       evalAttendance === 'PRESENT'
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-600/20'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-emerald-600 bg-emerald-50 dark:bg-[#1C222D] text-emerald-800 dark:text-[#84CC16] ring-2 ring-emerald-600/20'
+                        : 'border-slate-200 dark:border-[#242936] text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-50 dark:hover:bg-[#1C222D]'
                     }`}
                   >
                     Present
@@ -1742,8 +1742,8 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     }}
                     className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
                       evalAttendance === 'ABSENT'
-                        ? 'border-rose-600 bg-rose-50 text-rose-800 ring-2 ring-rose-600/20'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-rose-600 bg-rose-50 dark:bg-rose-950/30 text-rose-800 dark:text-rose-400 ring-2 ring-rose-600/20'
+                        : 'border-slate-200 dark:border-[#242936] text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-50 dark:hover:bg-[#1C222D]'
                     }`}
                   >
                     Absent / No-Show
@@ -1754,8 +1754,8 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     onClick={() => setEvalAttendance('UNRECORDED')}
                     className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
                       evalAttendance === 'UNRECORDED'
-                        ? 'border-slate-600 bg-slate-100 text-slate-800'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-slate-600 bg-slate-100 dark:bg-[#242936] text-slate-800 dark:text-[#F9FAFB]'
+                        : 'border-slate-200 dark:border-[#242936] text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-50 dark:hover:bg-[#1C222D]'
                     }`}
                   >
                     Unrecorded
@@ -1765,58 +1765,58 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
               {/* Scoring Grid */}
               {evalAttendance === 'PRESENT' && (
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                <div className="p-4 bg-slate-50 dark:bg-[#1C222D] rounded-2xl border border-slate-200 dark:border-[#242936] space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Evaluation Scores (0 - 100)</span>
-                    <span className="text-xs font-black text-emerald-700">Total: {calculatedTotalScore}%</span>
+                    <span className="text-xs font-bold text-slate-800 dark:text-[#F9FAFB] uppercase tracking-wider">Evaluation Scores (0 - 100)</span>
+                    <span className="text-xs font-black text-emerald-700 dark:text-[#84CC16]">Total: {calculatedTotalScore}%</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Quran Recitation & Tajweed</label>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-[#9CA3AF] mb-1">Quran Recitation & Tajweed</label>
                       <input
                         type="number"
                         min="0"
                         max="100"
                         value={evalQuranScore}
                         onChange={(e) => setEvalQuranScore(e.target.value)}
-                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 bg-white"
+                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Basic Islamic Knowledge</label>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-[#9CA3AF] mb-1">Basic Islamic Knowledge</label>
                       <input
                         type="number"
                         min="0"
                         max="100"
                         value={evalIslamicScore}
                         onChange={(e) => setEvalIslamicScore(e.target.value)}
-                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 bg-white"
+                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Academic Literacy & General</label>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-[#9CA3AF] mb-1">Academic Literacy & General</label>
                       <input
                         type="number"
                         min="0"
                         max="100"
                         value={evalAcademicScore}
                         onChange={(e) => setEvalAcademicScore(e.target.value)}
-                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 bg-white"
+                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-600 mb-1">Conduct & Discipline</label>
+                      <label className="block text-[11px] font-bold text-slate-600 dark:text-[#9CA3AF] mb-1">Conduct & Discipline</label>
                       <input
                         type="number"
                         min="0"
                         max="100"
                         value={evalConductScore}
                         onChange={(e) => setEvalConductScore(e.target.value)}
-                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 bg-white"
+                        className="w-full text-xs py-1.5 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                       />
                     </div>
                   </div>
@@ -1825,17 +1825,17 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
               {/* Evaluation Outcome / Result */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-2">Interview Committee Result</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-2">Interview Committee Result</label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div
                     onClick={() => setEvalResult('PASSED')}
                     className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${
                       evalResult === 'PASSED'
-                        ? 'border-emerald-600 bg-emerald-50 text-emerald-800 ring-2 ring-emerald-600/20 font-bold'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-emerald-600 bg-emerald-50 dark:bg-[#1C222D] text-emerald-800 dark:text-[#84CC16] ring-2 ring-emerald-600/20 font-bold'
+                        : 'border-slate-200 dark:border-[#242936] text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-50 dark:hover:bg-[#1C222D]'
                     }`}
                   >
-                    <Award className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
+                    <Award className="w-4 h-4 mx-auto mb-1 text-emerald-600 dark:text-[#84CC16]" />
                     <span className="text-xs">Passed</span>
                   </div>
 
@@ -1843,11 +1843,11 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     onClick={() => setEvalResult('NEEDS_SECOND_INTERVIEW')}
                     className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${
                       evalResult === 'NEEDS_SECOND_INTERVIEW'
-                        ? 'border-purple-600 bg-purple-50 text-purple-800 ring-2 ring-purple-600/20 font-bold'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-purple-600 bg-purple-50 dark:bg-[#1C222D] text-purple-800 dark:text-purple-400 ring-2 ring-purple-600/20 font-bold'
+                        : 'border-slate-200 dark:border-[#242936] text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-50 dark:hover:bg-[#1C222D]'
                     }`}
                   >
-                    <RotateCcw className="w-4 h-4 mx-auto mb-1 text-purple-600" />
+                    <RotateCcw className="w-4 h-4 mx-auto mb-1 text-purple-600 dark:text-purple-400" />
                     <span className="text-xs">Needs 2nd Round</span>
                   </div>
 
@@ -1855,11 +1855,11 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     onClick={() => setEvalResult('REJECTED')}
                     className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${
                       evalResult === 'REJECTED'
-                        ? 'border-rose-600 bg-rose-50 text-rose-800 ring-2 ring-rose-600/20 font-bold'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-rose-600 bg-rose-50 dark:bg-[#1C222D] text-rose-800 dark:text-rose-400 ring-2 ring-rose-600/20 font-bold'
+                        : 'border-slate-200 dark:border-[#242936] text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-50 dark:hover:bg-[#1C222D]'
                     }`}
                   >
-                    <XCircle className="w-4 h-4 mx-auto mb-1 text-rose-600" />
+                    <XCircle className="w-4 h-4 mx-auto mb-1 text-rose-600 dark:text-rose-400" />
                     <span className="text-xs">Not Recommended</span>
                   </div>
 
@@ -1867,11 +1867,11 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                     onClick={() => setEvalResult('PENDING')}
                     className={`p-3 rounded-xl border cursor-pointer text-center transition-all ${
                       evalResult === 'PENDING'
-                        ? 'border-slate-600 bg-slate-100 text-slate-800 font-bold'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-slate-600 bg-slate-100 dark:bg-[#242936] text-slate-800 dark:text-[#F9FAFB] font-bold'
+                        : 'border-slate-200 dark:border-[#242936] text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-50 dark:hover:bg-[#1C222D]'
                     }`}
                   >
-                    <Clock className="w-4 h-4 mx-auto mb-1 text-slate-500" />
+                    <Clock className="w-4 h-4 mx-auto mb-1 text-slate-500 dark:text-[#9CA3AF]" />
                     <span className="text-xs">Pending Decision</span>
                   </div>
                 </div>
@@ -1879,33 +1879,33 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
 
               {/* Notes */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Interviewer Notes</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Interviewer Notes</label>
                 <textarea
                   rows={2}
                   value={evalInterviewerNotes}
                   onChange={(e) => setEvalInterviewerNotes(e.target.value)}
                   placeholder="Specific observations regarding recitation, behavior, academic background..."
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Recommendation Notes</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Recommendation Notes</label>
                 <textarea
                   rows={2}
                   value={evalRecommendationNotes}
                   onChange={(e) => setEvalRecommendationNotes(e.target.value)}
                   placeholder="Recommendations for admission committee..."
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280]"
                 />
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-200 flex items-center justify-end space-x-2 bg-slate-50/50">
+            <div className="p-4 border-t border-slate-200 dark:border-[#242936] flex items-center justify-end space-x-2 bg-slate-50/50 dark:bg-[#1C222D]">
               <button
                 type="button"
                 onClick={() => setShowEvaluateModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-800"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-[#9CA3AF] hover:text-slate-800 dark:hover:text-[#F9FAFB]"
               >
                 Cancel
               </button>
@@ -1913,7 +1913,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                 type="button"
                 disabled={submittingEvaluation}
                 onClick={handleSubmitEvaluation}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-sm flex items-center space-x-1.5"
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-700 hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white shadow-sm flex items-center space-x-1.5"
               >
                 {submittingEvaluation ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 <span>Save Evaluation</span>
@@ -1928,85 +1928,85 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
       {/* ============================================================= */}
       {showRescheduleModal && selectedAppointment && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
-            <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                <RotateCcw className="w-5 h-5 text-purple-700" />
+          <div className="bg-white dark:bg-[#141820] rounded-3xl max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 dark:border-[#242936]">
+            <div className="p-5 border-b border-slate-200 dark:border-[#242936] bg-slate-50/50 dark:bg-[#1C222D] flex items-center justify-between">
+              <h3 className="text-base font-bold text-slate-900 dark:text-[#F9FAFB] flex items-center space-x-2">
+                <RotateCcw className="w-5 h-5 text-purple-700 dark:text-purple-400" />
                 <span>Reschedule Interview</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setShowRescheduleModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="text-xs text-slate-600">
-                Rescheduling for: <strong>{selectedAppointment.application.applicantName}</strong> (
-                {selectedAppointment.invitationReference})
+              <div className="text-xs text-slate-600 dark:text-[#9CA3AF]">
+                Rescheduling for: <strong className="text-slate-900 dark:text-[#F9FAFB]">{selectedAppointment.application.applicantName}</strong> (
+                <span className="text-slate-700 dark:text-[#D1D5DB]">{selectedAppointment.invitationReference}</span>)
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">New Interview Date</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">New Interview Date</label>
                 <input
                   type="date"
                   value={rescheduleDate}
                   onChange={(e) => setRescheduleDate(e.target.value)}
-                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200"
+                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Start Time</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Start Time</label>
                   <input
                     type="time"
                     value={rescheduleStart}
                     onChange={(e) => setRescheduleStart(e.target.value)}
-                    className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200"
+                    className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">End Time</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">End Time</label>
                   <input
                     type="time"
                     value={rescheduleEnd}
                     onChange={(e) => setRescheduleEnd(e.target.value)}
-                    className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200"
+                    className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Venue</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Venue</label>
                 <input
                   type="text"
                   value={rescheduleVenue}
                   onChange={(e) => setRescheduleVenue(e.target.value)}
-                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200"
+                  className="w-full text-xs py-2 px-3 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Rescheduling</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-[#9CA3AF] mb-1">Reason for Rescheduling</label>
                 <textarea
                   rows={2}
                   value={rescheduleReason}
                   onChange={(e) => setRescheduleReason(e.target.value)}
                   placeholder="Requested by parent / administrative schedule change..."
-                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200"
+                  className="w-full text-xs p-2.5 rounded-xl border border-slate-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB] dark:placeholder-[#6B7280]"
                 />
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-200 flex items-center justify-end space-x-2 bg-slate-50/50">
+            <div className="p-4 border-t border-slate-200 dark:border-[#242936] flex items-center justify-end space-x-2 bg-slate-50/50 dark:bg-[#1C222D]">
               <button
                 type="button"
                 onClick={() => setShowRescheduleModal(false)}
-                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-800"
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-[#9CA3AF] hover:text-slate-800 dark:hover:text-[#F9FAFB]"
               >
                 Cancel
               </button>
@@ -2014,7 +2014,7 @@ export const InterviewManagementSection: React.FC<InterviewManagementSectionProp
                 type="button"
                 disabled={submittingReschedule || !rescheduleDate}
                 onClick={handleSubmitReschedule}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-purple-700 hover:bg-purple-800 text-white shadow-sm flex items-center space-x-1.5"
+                className="px-5 py-2.5 rounded-xl text-xs font-bold bg-purple-700 hover:bg-purple-800 dark:bg-purple-600 dark:hover:bg-purple-500 text-white shadow-sm flex items-center space-x-1.5"
               >
                 {submittingReschedule ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                 <span>Confirm Reschedule</span>

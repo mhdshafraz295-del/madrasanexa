@@ -64,11 +64,11 @@ export const MadrasaPublicAdmissionsCTA: React.FC<MadrasaPublicAdmissionsCTAProp
         <div className="shrink-0 w-full sm:w-auto text-center">
           <Link
             to={`/madrasa/${slug}/admissions`}
-            className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-bold text-xs sm:text-base bg-white text-[#252525] hover:bg-[#F5F5F1] transition-all shadow-md hover:shadow-lg hover:scale-102 active:scale-98 cursor-pointer w-full sm:w-auto"
+            className="inline-flex items-center justify-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-bold text-xs sm:text-base bg-white dark:bg-[#84CC16] text-[#252525] dark:text-[#0B0D11] hover:bg-[#F5F5F1] dark:hover:bg-[#a3e635] transition-all shadow-md hover:shadow-lg hover:scale-102 active:scale-98 cursor-pointer w-full sm:w-auto dark:border-0"
           >
-            <GraduationCap className="w-5 h-5 shrink-0" style={{ color: primaryColor }} />
+            <GraduationCap className="w-5 h-5 shrink-0 dark:!text-[#0B0D11]" style={{ color: primaryColor }} />
             <span>{hasActiveAdmissions ? 'View Intake & Apply' : 'Admissions Portal'}</span>
-            <ChevronRight className="w-4 h-4 shrink-0" style={{ color: primaryColor }} />
+            <ChevronRight className="w-4 h-4 shrink-0 dark:!text-[#0B0D11]" style={{ color: primaryColor }} />
           </Link>
         </div>
       </div>

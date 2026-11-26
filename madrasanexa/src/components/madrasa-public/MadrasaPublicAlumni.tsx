@@ -199,12 +199,12 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             <span>Regal Scholars Dossier</span>
           </div>
           <h2
-            className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#232215]"
-            style={{ color: theme.headingColor || '#232215' }}
+            className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#232215] dark:text-[#F9FAFB]"
+            style={{ color: theme.headingColor || undefined }}
           >
             Scholarly Alumni & Graduates
           </h2>
-          <p className="mt-2 text-xs sm:text-sm text-slate-600 leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-[#9CA3AF] leading-relaxed">
             Celebrating {madrasaName} graduates pursuing sacred knowledge, higher academic degrees, and community leadership worldwide.
           </p>
         </div>
@@ -213,23 +213,23 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
       {/* ========================================================================= */}
       {/* 1. SINGLE CENTERED SEARCH & FILTER BAR                                    */}
       {/* ========================================================================= */}
-      <div className="max-w-5xl mx-auto bg-[#F8F7F2] border border-[#E2E0D0] rounded-3xl p-4 sm:p-5 mb-10 space-y-4 shadow-xs">
+      <div className="max-w-5xl mx-auto bg-[#F8F7F2] dark:bg-[#141820] border border-[#E2E0D0] dark:border-[#242936] rounded-3xl p-4 sm:p-5 mb-10 space-y-4 shadow-xs">
         {/* Full-Width Search Input */}
         <div className="relative w-full">
-          <Search className="w-4 h-4 text-[#8C8A58] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#8C8A58] dark:text-[#84CC16] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search scholar name, degree, university, role, or location..."
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E2E0D0] rounded-2xl text-xs sm:text-sm text-[#232215] placeholder-stone-400 focus:outline-hidden focus:ring-2 focus:ring-[#6B6A45]/30 shadow-2xs"
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1C222D] border border-[#E2E0D0] dark:border-[#242936] rounded-2xl text-xs sm:text-sm text-[#232215] dark:text-[#F9FAFB] placeholder-stone-400 dark:placeholder-gray-500 focus:outline-hidden focus:ring-2 focus:ring-[#6B6A45]/30 dark:focus:ring-[#84CC16]/30 shadow-2xs"
           />
         </div>
 
         {/* Status Crest Pills */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-          <span className="font-semibold text-slate-600 text-xs mr-1 flex items-center gap-1 shrink-0">
-            <Filter className="w-3 h-3 text-[#8C8A58]" />
+          <span className="font-semibold text-slate-600 dark:text-[#F9FAFB] text-xs mr-1 flex items-center gap-1 shrink-0">
+            <Filter className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16]" />
             Status:
           </span>
           {[
@@ -247,8 +247,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
               onClick={() => setSelectedStatus(st.id)}
               className={`h-8 px-3 text-xs rounded-full transition-all cursor-pointer flex items-center justify-center shrink-0 ${
                 selectedStatus === st.id
-                  ? 'bg-[#6B6A45] text-white shadow-2xs font-bold border border-[#504F34]'
-                  : 'bg-white text-slate-700 hover:bg-[#F4F3EC] border border-[#E2E0D0] font-medium'
+                  ? 'bg-[#6B6A45] dark:bg-[#84CC16] text-white dark:text-[#0B0D11] shadow-2xs font-bold border border-[#504F34] dark:border-0'
+                  : 'bg-white dark:bg-[#1C222D] text-slate-700 dark:text-[#D1D5DB] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] border border-[#E2E0D0] dark:border-[#242936] font-medium'
               }`}
             >
               {st.label}
@@ -257,15 +257,15 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
         </div>
 
         {/* Batch Year, Class/Division & Result Counter */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 items-end pt-3 border-t border-[#E2E0D0]/80">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 items-end pt-3 border-t border-[#E2E0D0]/80 dark:border-[#242936]">
           <div className="lg:col-span-4 space-y-1">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#9CA3AF]">
               BATCH YEAR
             </label>
             <select
               value={selectedBatch}
               onChange={(e) => setSelectedBatch(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E2E0D0] bg-white text-xs sm:text-sm text-slate-800 focus:outline-hidden"
+              className="w-full h-10 px-3 rounded-xl border border-[#E2E0D0] dark:border-[#242936] bg-white dark:bg-[#1C222D] text-xs sm:text-sm text-slate-800 dark:text-[#F9FAFB] focus:outline-hidden"
             >
               <option value="ALL">All Batches</option>
               {batchYears.map((by) => (
@@ -277,13 +277,13 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
           </div>
 
           <div className="lg:col-span-5 space-y-1">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#9CA3AF]">
               CLASS / DIVISION
             </label>
             <select
               value={selectedClass}
               onChange={(e) => setSelectedClass(e.target.value)}
-              className="w-full h-10 px-3 rounded-xl border border-[#E2E0D0] bg-white text-xs sm:text-sm text-slate-800 focus:outline-hidden"
+              className="w-full h-10 px-3 rounded-xl border border-[#E2E0D0] dark:border-[#242936] bg-white dark:bg-[#1C222D] text-xs sm:text-sm text-slate-800 dark:text-[#F9FAFB] focus:outline-hidden"
             >
               <option value="ALL">All Classes & Divisions</option>
               {classOrDivisions.map((cd) => (
@@ -294,9 +294,9 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
             </select>
           </div>
 
-          <div className="lg:col-span-3 text-xs font-medium text-slate-500 lg:text-right pb-2">
-            Showing <strong className="text-slate-800">{filteredAlumni.length}</strong> of{' '}
-            <strong className="text-slate-800">{alumni.length}</strong> scholars
+          <div className="lg:col-span-3 text-xs font-medium text-slate-500 dark:text-[#9CA3AF] lg:text-right pb-2">
+            Showing <strong className="text-slate-800 dark:text-[#F9FAFB]">{filteredAlumni.length}</strong> of{' '}
+            <strong className="text-slate-800 dark:text-[#F9FAFB]">{alumni.length}</strong> scholars
           </div>
         </div>
       </div>
@@ -440,14 +440,14 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                 {!isDossierExpanded && (
                   <div className="space-y-3 pt-1 animate-in fade-in duration-300">
                     {activeScholar.bio && (
-                      <p className="text-xs sm:text-sm leading-relaxed text-slate-700 italic bg-[#FAF8F2]/90 p-3 rounded-2xl border border-[#E2E0D0]/80 line-clamp-3">
+                      <p className="text-xs sm:text-sm leading-relaxed text-slate-700 dark:text-[#D1D5DB] italic bg-[#FAF8F2]/90 dark:bg-[#1C222D] p-3 rounded-2xl border border-[#E2E0D0]/80 dark:border-[#242936] line-clamp-3">
                         "{activeScholar.bio}"
                       </p>
                     )}
 
                     <div>
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] mb-2 flex items-center gap-1.5">
-                        <BookOpen className="w-3.5 h-3.5 text-[#8C8A58]" />
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] dark:text-[#84CC16] mb-2 flex items-center gap-1.5">
+                        <BookOpen className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16]" />
                         <span>Academic Progression Track</span>
                       </div>
                       {(() => {
@@ -462,22 +462,22 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                             {quals.slice(0, 2).map((q, idx) => (
                               <div
                                 key={idx}
-                                className="bg-white/95 rounded-2xl p-2.5 border border-[#E2E0D0] shadow-2xs hover:border-[#C5A059] transition-all"
+                                className="bg-white/95 dark:bg-[#1C222D] rounded-2xl p-2.5 border border-[#E2E0D0] dark:border-[#242936] shadow-2xs hover:border-[#C5A059] dark:hover:border-[#84CC16]/50 transition-all"
                               >
                                 <div className="flex items-center justify-between gap-1 mb-1">
-                                  <span className="w-4 h-4 rounded-full bg-[#F4F3EC] text-[#6B6A45] text-[9px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0]">
+                                  <span className="w-4 h-4 rounded-full bg-[#F4F3EC] dark:bg-[#242936] text-[#6B6A45] dark:text-[#84CC16] text-[9px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0] dark:border-[#242936]">
                                     {idx + 1}
                                   </span>
                                   {q.year && (
-                                    <span className="text-[10px] font-mono font-bold text-[#8C8A58]">
+                                    <span className="text-[10px] font-mono font-bold text-[#8C8A58] dark:text-[#84CC16]">
                                       {q.year}
                                     </span>
                                   )}
                                 </div>
-                                <h4 className="font-bold text-xs text-[#232215] truncate">
+                                <h4 className="font-bold text-xs text-[#232215] dark:text-[#F9FAFB] truncate">
                                   {q.degree || 'Degree / Award'}
                                 </h4>
-                                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                                <p className="text-[11px] text-slate-500 dark:text-[#9CA3AF] truncate mt-0.5">
                                   {q.university || 'University / Academy'}
                                 </p>
                               </div>
@@ -787,30 +787,30 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                                 )}
 
                                 <div>
-                                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#6B6A45] mb-1.5 flex items-center gap-1">
-                                    <BookOpen className="w-3 h-3 text-[#8C8A58]" />
+                                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#6B6A45] dark:text-[#84CC16] mb-1.5 flex items-center gap-1">
+                                    <BookOpen className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16]" />
                                     <span>Academic Progression Track</span>
                                   </div>
                                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     {quals.slice(0, 2).map((q, idx) => (
                                       <div
                                         key={idx}
-                                        className="bg-white/95 rounded-xl p-2 border border-[#E2E0D0] shadow-2xs"
+                                        className="bg-white/95 dark:bg-[#1C222D] rounded-xl p-2 border border-[#E2E0D0] dark:border-[#242936] shadow-2xs"
                                       >
                                         <div className="flex items-center justify-between gap-1 mb-0.5">
-                                          <span className="w-4 h-4 rounded-full bg-[#F4F3EC] text-[#6B6A45] text-[9px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0]">
+                                          <span className="w-4 h-4 rounded-full bg-[#F4F3EC] dark:bg-[#242936] text-[#6B6A45] dark:text-[#84CC16] text-[9px] font-bold flex items-center justify-center shrink-0 border border-[#E2E0D0] dark:border-[#242936]">
                                             {idx + 1}
                                           </span>
                                           {q.year && (
-                                            <span className="text-[9px] font-mono font-bold text-[#8C8A58]">
+                                            <span className="text-[9px] font-mono font-bold text-[#8C8A58] dark:text-[#84CC16]">
                                               {q.year}
                                             </span>
                                           )}
                                         </div>
-                                        <h4 className="font-bold text-xs text-[#232215] truncate">
+                                        <h4 className="font-bold text-xs text-[#232215] dark:text-[#F9FAFB] truncate">
                                           {q.degree || 'Degree / Award'}
                                         </h4>
-                                        <p className="text-[10px] text-slate-500 truncate mt-0.5">
+                                        <p className="text-[10px] text-slate-500 dark:text-[#9CA3AF] truncate mt-0.5">
                                           {q.university || 'University'}
                                         </p>
                                       </div>

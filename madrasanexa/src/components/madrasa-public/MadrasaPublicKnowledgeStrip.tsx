@@ -103,7 +103,7 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
   return (
     <section
       aria-label="Daily Islamic Wisdom and Hijri Date"
-      className={`w-full border-y border-[#E2E0D0] bg-[#F8F7F2] py-2.5 sm:py-3 px-4 sm:px-6 lg:px-8 transition-colors select-none ${className}`}
+      className={`w-full border-y border-[#E2E0D0] dark:border-[#242936] bg-[#F8F7F2] dark:bg-[#141820] py-2.5 sm:py-3 px-4 sm:px-6 lg:px-8 transition-colors select-none ${className}`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -111,21 +111,21 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
 
         {/* 1. Live Hijri Date Pill & Mobile Controls Header */}
         <div className="w-full md:w-auto flex items-center justify-between md:justify-start gap-3 shrink-0">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#D6D4C2] text-[#2C2B1C] text-xs font-semibold shadow-2xs">
-            <Calendar className="w-3.5 h-3.5 text-[#504F34] shrink-0" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-[#1C222D] border border-[#D6D4C2] dark:border-[#242936] text-[#2C2B1C] dark:text-[#F9FAFB] text-xs font-semibold shadow-2xs">
+            <Calendar className="w-3.5 h-3.5 text-[#504F34] dark:text-[#84CC16] shrink-0" />
             <span className="tracking-tight">{hijriDate}</span>
           </div>
 
           {/* Mobile-only compact chevron controls */}
           <div className="flex md:hidden items-center gap-1">
-            <span className="text-[11px] font-mono text-[#504F34] font-semibold pr-1">
+            <span className="text-[11px] font-mono text-[#504F34] dark:text-[#9CA3AF] font-semibold pr-1">
               {currentIndex + 1}/8
             </span>
             <button
               type="button"
               onClick={handlePrev}
               aria-label="Previous quote"
-              className="w-7 h-7 rounded-lg bg-white border border-[#D6D4C2] flex items-center justify-center text-[#2C2B1C] hover:bg-[#F4F3EC] transition shadow-2xs active:scale-95 cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-white dark:bg-[#1C222D] border border-[#D6D4C2] dark:border-[#242936] flex items-center justify-center text-[#2C2B1C] dark:text-[#F9FAFB] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] transition shadow-2xs active:scale-95 cursor-pointer"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
             </button>
@@ -133,7 +133,7 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
               type="button"
               onClick={handleNext}
               aria-label="Next quote"
-              className="w-7 h-7 rounded-lg bg-white border border-[#D6D4C2] flex items-center justify-center text-[#2C2B1C] hover:bg-[#F4F3EC] transition shadow-2xs active:scale-95 cursor-pointer"
+              className="w-7 h-7 rounded-lg bg-white dark:bg-[#1C222D] border border-[#D6D4C2] dark:border-[#242936] flex items-center justify-center text-[#2C2B1C] dark:text-[#F9FAFB] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] transition shadow-2xs active:scale-95 cursor-pointer"
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
@@ -151,7 +151,7 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
             <div
               lang="ar"
               dir="rtl"
-              className="text-lg sm:text-xl md:text-[21px] font-semibold text-[#232215] leading-relaxed tracking-normal mb-1 break-words font-serif"
+              className="text-lg sm:text-xl md:text-[21px] font-semibold text-[#232215] dark:text-[#F9FAFB] leading-relaxed tracking-normal mb-1 break-words font-serif"
               style={{
                 fontFamily: "'Amiri', 'Traditional Arabic', 'Scheherazade', serif",
               }}
@@ -160,10 +160,10 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
             </div>
 
             {/* English Translation & Source Citation */}
-            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-[15px] font-medium text-[#3D3C27]">
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-[15px] font-medium text-[#3D3C27] dark:text-[#D1D5DB]">
               <span>{activeQuote.english}</span>
-              <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#504F34] shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#6B6A45]/80 shrink-0" />
+              <span className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#504F34] dark:text-[#84CC16] shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#6B6A45]/80 dark:bg-[#84CC16]/80 shrink-0" />
                 <BookOpen className="w-3.5 h-3.5 shrink-0" />
                 <span>{activeQuote.source}</span>
               </span>
@@ -173,14 +173,14 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
 
         {/* 3. Desktop Manual Chevron Controls (< >) */}
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
-          <span className="text-xs font-mono text-[#504F34] font-semibold pr-1">
+          <span className="text-xs font-mono text-[#504F34] dark:text-[#9CA3AF] font-semibold pr-1">
             {currentIndex + 1}/8
           </span>
           <button
             type="button"
             onClick={handlePrev}
             aria-label="Previous sacred quote"
-            className="w-7 h-7 rounded-lg bg-white border border-[#D6D4C2] flex items-center justify-center text-[#2C2B1C] hover:bg-[#F4F3EC] transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+            className="w-7 h-7 rounded-lg bg-white dark:bg-[#1C222D] border border-[#D6D4C2] dark:border-[#242936] flex items-center justify-center text-[#2C2B1C] dark:text-[#F9FAFB] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -188,7 +188,7 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
             type="button"
             onClick={handleNext}
             aria-label="Next sacred quote"
-            className="w-7 h-7 rounded-lg bg-white border border-[#D6D4C2] flex items-center justify-center text-[#2C2B1C] hover:bg-[#F4F3EC] transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+            className="w-7 h-7 rounded-lg bg-white dark:bg-[#1C222D] border border-[#D6D4C2] dark:border-[#242936] flex items-center justify-center text-[#2C2B1C] dark:text-[#F9FAFB] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] transition shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
           >
             <ChevronRight className="w-4 h-4" />
           </button>

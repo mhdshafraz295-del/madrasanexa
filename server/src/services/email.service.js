@@ -221,7 +221,80 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
     }
   }
 
-  // 4. Primary Transport A: HTTPS Webhook Transport (when configured)
+  // 4. Primary Transport A: Brevo HTTPS API (Port 443 - zero SMTP port blocking, highest priority when BREVO_API_KEY is configured)
+  const brevoApiKey = (process.env.BREVO_API_KEY || env.BREVO_API_KEY)?.trim();
+  if (brevoApiKey) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(new Error('Brevo API timed out after 15000ms')), 15000);
+
+      // Default to validated Brevo sender: 'MadrasaNexa Pvt Ltd <madrasanexa@gmail.com>'
+      const brevoSenderEmail = (process.env.BREVO_FROM_EMAIL || 'madrasanexa@gmail.com').trim();
+      const brevoSenderName = (process.env.BREVO_FROM_NAME || 'MadrasaNexa Pvt Ltd').trim();
+
+      const brevoAttachment = normalizedAttachments.map(a => ({
+        name: a.filename,
+        content: a.contentBase64,
+      }));
+
+      let res;
+      let data;
+      try {
+        res = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': brevoApiKey,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: {
+              name: brevoSenderName,
+              email: brevoSenderEmail,
+            },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+            textContent: text,
+            ...(resolvedReplyTo ? { replyTo: { email: resolvedReplyTo } } : {}),
+            ...(brevoAttachment.length > 0 ? { attachment: brevoAttachment } : {}),
+          }),
+          signal: controller.signal,
+        });
+
+        const responseText = await res.text();
+        try {
+          data = JSON.parse(responseText);
+        } catch (_) {
+          data = { message: responseText };
+        }
+      } finally {
+        clearTimeout(timeoutId);
+      }
+
+      console.log(`[EmailService] Brevo response: status=${res?.status}`, data?.messageId || data?.message || data);
+
+      if (res && res.ok && data?.messageId) {
+        return {
+          success: true,
+          status: 'SENT',
+          provider: 'brevo-https',
+          messageId: data.messageId,
+        };
+      }
+
+      const failureReason = data?.message || `HTTP ${res?.status}: Brevo delivery failed`;
+      primaryTransportErrors.push(`Brevo: ${failureReason}`);
+      throw new Error(failureReason);
+    } catch (err) {
+      console.warn('[Email] Brevo HTTPS failed, continuing fallback:', err.message);
+      if (!primaryTransportErrors.some(e => e.includes(err.message))) {
+        primaryTransportErrors.push(`Brevo: ${err.message}`);
+      }
+    }
+  }
+
+  // 4. Primary Transport B: HTTPS Webhook Transport (when configured)
   const webhookUrl = (process.env.EMAIL_HTTP_WEBHOOK_URL || env.EMAIL_HTTP_WEBHOOK_URL)?.trim();
   if (webhookUrl) {
     try {
@@ -375,79 +448,6 @@ export async function dispatchEmail({ madrasaId, to, subject, html, text, attach
       console.warn('[Email] Resend HTTPS failed, continuing fallback:', err.message);
       if (!primaryTransportErrors.some(e => e.includes(err.message))) {
         primaryTransportErrors.push(`Resend: ${err.message}`);
-      }
-    }
-  }
-
-  // 4. Primary Transport C: Brevo HTTPS API (Port 443 - zero SMTP port blocking)
-  const brevoApiKey = (process.env.BREVO_API_KEY || env.BREVO_API_KEY)?.trim();
-  if (brevoApiKey) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(new Error('Brevo API timed out after 15000ms')), 15000);
-
-      const cleanFromEmail = (resolvedFrom && resolvedFrom.includes('<')
-        ? resolvedFrom.match(/<([^>]+)>/)?.[1]
-        : resolvedFrom) || 'notifications@madrasanexa.com';
-
-      const brevoAttachment = normalizedAttachments.map(a => ({
-        name: a.filename,
-        content: a.contentBase64,
-      }));
-
-      let res;
-      let data;
-      try {
-        res = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'api-key': brevoApiKey,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            sender: {
-              name: resolvedFromName,
-              email: cleanFromEmail,
-            },
-            to: [{ email: to }],
-            subject,
-            htmlContent: html,
-            textContent: text,
-            ...(resolvedReplyTo ? { replyTo: { email: resolvedReplyTo } } : {}),
-            ...(brevoAttachment.length > 0 ? { attachment: brevoAttachment } : {}),
-          }),
-          signal: controller.signal,
-        });
-
-        const responseText = await res.text();
-        try {
-          data = JSON.parse(responseText);
-        } catch (_) {
-          data = { message: responseText };
-        }
-      } finally {
-        clearTimeout(timeoutId);
-      }
-
-      console.log(`[EmailService] Brevo response: status=${res?.status}`, data?.messageId || data?.message || data);
-
-      if (res && res.ok && data?.messageId) {
-        return {
-          success: true,
-          status: 'SENT',
-          provider: 'brevo-https',
-          messageId: data.messageId,
-        };
-      }
-
-      const failureReason = data?.message || `HTTP ${res?.status}: Brevo delivery failed`;
-      primaryTransportErrors.push(`Brevo: ${failureReason}`);
-      throw new Error(failureReason);
-    } catch (err) {
-      console.warn('[Email] Brevo HTTPS failed, continuing fallback:', err.message);
-      if (!primaryTransportErrors.some(e => e.includes(err.message))) {
-        primaryTransportErrors.push(`Brevo: ${err.message}`);
       }
     }
   }

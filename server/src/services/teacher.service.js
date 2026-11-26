@@ -11,6 +11,7 @@ import { resolveObjectAccessUrl, uploadBufferToR2, buildMadrasaKey } from './r2.
 import { isR2Configured } from '../config/r2.js';
 import { hashToken, isValidTokenFormat } from '../utils/scan-token-crypto.js';
 import { dispatchEmail } from './email.service.js';
+import { sendSms, normalizePhoneNumber } from './sms.service.js';
 import { renderGateEmailHtml } from '../jobs/gate-email-worker.job.js';
 import * as staffNoticeService from './staff-notice.service.js';
 import sharp from 'sharp';
@@ -2463,27 +2464,84 @@ export async function scanDailyStudentAttendance({
     } catch (_) {}
   }
 
-  // 3. Send Parent Email Alert
+  // 3. Send Parent Email & Text.lk SMS Alerts
   let parentEmailSent = false;
   const parentEmail = student.guardianEmail ? student.guardianEmail.trim() : null;
   let emailError = null;
 
+  let parentSmsSent = false;
+  let smsError = null;
+
+  const madrasa = await prisma.madrasa.findUnique({
+    where: { id: madrasaId },
+    select: { name: true },
+  });
+  const madrasaName = madrasa?.name || 'MadrasaNexa';
+  const isEntry = eventDirection === 'ENTRY';
+  const statusLabel = isEntry ? 'Entry (Present)' : 'Exit';
+
+  const timeStr = new Date().toLocaleTimeString('en-US', {
+    timeZone: 'Asia/Colombo',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
+
+  const shortTimeStr = new Date().toLocaleTimeString('en-US', {
+    timeZone: 'Asia/Colombo',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  // A. Dispatch Text.lk SMS Alert (Non-blocking, isolated try/catch)
+  const rawParentPhone = student.guardianPhone || student.whatsappNumber || null;
+  const normalizedPhone = normalizePhoneNumber(rawParentPhone);
+
+  console.log('[DailyScanSms] Daily scan alert triggered:', {
+    studentId: student.id,
+    admissionNo: student.admissionNo,
+    studentName: student.fullName,
+    direction: eventDirection,
+    status: isEntry ? 'Present' : 'Exit',
+    rawPhone: rawParentPhone,
+    normalizedPhone,
+    time: shortTimeStr,
+    madrasaName,
+  });
+
+  if (rawParentPhone) {
+    try {
+      const smsMessage = `[${madrasaName}] Attendance Alert: ${student.fullName} (${student.admissionNo}) marked ${statusLabel} at ${shortTimeStr}. Status: ${isEntry ? 'Present' : 'Exit'}.`;
+
+      console.log('[DailyScanSms] Dispatching SMS via Text.lk to:', normalizedPhone || rawParentPhone);
+      const smsResult = await sendSms({
+        to: rawParentPhone,
+        message: smsMessage,
+        madrasaId,
+      });
+      console.log('[DailyScanSms] Text.lk response:', smsResult);
+
+      if (smsResult?.success) {
+        parentSmsSent = true;
+      } else if (smsResult?.skipped) {
+        console.warn('[DailyScanSms] SMS dispatch skipped:', smsResult.reason);
+      } else {
+        smsError = smsResult?.error || 'SMS delivery failed';
+        console.error('[DailyScanSms] SMS delivery failed:', smsError);
+      }
+    } catch (smsErr) {
+      smsError = smsErr?.message || 'Unexpected SMS exception';
+      console.error('[DailyScanSms] Error sending SMS:', smsError);
+    }
+  } else {
+    console.log('[DailyScanSms] No guardian phone registered for student:', student.admissionNo);
+  }
+
+  // B. Dispatch Parent Email Alert
   if (parentEmail) {
     try {
-      const madrasa = await prisma.madrasa.findUnique({
-        where: { id: madrasaId },
-        select: { name: true },
-      });
-      const madrasaName = madrasa?.name || 'MadrasaNexa';
-      const timeStr = new Date().toLocaleTimeString('en-US', {
-        timeZone: 'Asia/Colombo',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true,
-      });
-
-      const isEntry = eventDirection === 'ENTRY';
       const subject = `[${madrasaName}] Student Attendance Alert: ${student.fullName} has Checked ${isEntry ? 'IN' : 'OUT'}`;
 
       const html = renderGateEmailHtml({
@@ -2526,9 +2584,9 @@ export async function scanDailyStudentAttendance({
           eventType: eventDirection,
           category,
           scannedAt: new Date(),
-          emailStatus: parentEmailSent ? 'SENT' : (parentEmail ? 'QUEUED' : 'SKIPPED_NO_RECIPIENT'),
-          emailSkipReason: !parentEmail ? 'NO_GUARDIAN_EMAIL_REGISTERED' : null,
-          sentAt: parentEmailSent ? new Date() : null,
+          emailStatus: parentEmailSent || parentSmsSent ? 'SENT' : (parentEmail || rawParentPhone ? 'QUEUED' : 'SKIPPED_NO_RECIPIENT'),
+          emailSkipReason: !parentEmail && !rawParentPhone ? 'NO_GUARDIAN_CONTACT_REGISTERED' : null,
+          sentAt: parentEmailSent || parentSmsSent ? new Date() : null,
         },
       });
     } catch (_) {}
@@ -2563,7 +2621,9 @@ export async function scanDailyStudentAttendance({
     parentEmailSent,
     parentEmail,
     emailError,
-    message: `${eventDirection === 'ENTRY' ? 'Checked in' : 'Checked out'} ${student.fullName} (${student.admissionNo}).${parentEmailSent ? ' Parent email alert sent.' : (parentEmail ? ' (Email queued)' : '')}`,
+    parentSmsSent,
+    smsError,
+    message: `${eventDirection === 'ENTRY' ? 'Checked in' : 'Checked out'} ${student.fullName} (${student.admissionNo}).${parentEmailSent ? ' Parent email alert sent.' : (parentEmail ? ' (Email queued)' : '')}${parentSmsSent ? ' Parent SMS alert sent.' : ''}`,
   };
 }
 

@@ -276,7 +276,7 @@ export default function FeePOSPage() {
 
           setGenerationMessage({
             type: 'success',
-            text: `Invoice ${item.invoiceNo || ''} for ${res.monthName} ${res.billingYear} generated successfully. Invoice Balance: LKR ${Number(bal).toFixed(2)}. Enter amount received to record payment.`,
+            text: `Invoice ${item.invoiceNo || ''} for ${res.monthName} ${res.billingYear} generated successfully. Invoice Balance: LKR ${(Number(bal) || 0).toFixed(2)}. Enter amount received to record payment.`,
           });
         }
       } else if (item.status === 'ALREADY_INVOICED') {
@@ -317,7 +317,7 @@ export default function FeePOSPage() {
               setAmountReceived('');
               setGenerationMessage({
                 type: 'info',
-                text: `Existing invoice ${existingInv.invoiceNo} for ${res.monthName} ${res.billingYear} loaded into POS (Balance: LKR ${Number(existingInv.balanceAmount).toFixed(2)}). Enter amount received to record payment.`,
+                text: `Existing invoice ${existingInv.invoiceNo} for ${res.monthName} ${res.billingYear} loaded into POS (Balance: LKR ${(Number(existingInv.balanceAmount) || 0).toFixed(2)}). Enter amount received to record payment.`,
               });
             } else {
               setGenerationMessage({
@@ -829,8 +829,8 @@ export default function FeePOSPage() {
                 <span className="font-semibold text-[#0F172A]">{successPayment.student.fullName} ({successPayment.student.admissionNo})</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#5B6B7F]">Amount Paid:</span>
-                <span className="font-bold text-emerald-700">LKR {Number(successPayment.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                <span className="text-[#5B6B7F] dark:text-[#9CA3AF]">Amount Paid:</span>
+                <span className="font-bold text-emerald-700 dark:text-emerald-400">LKR {(Number(successPayment.amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-[#5B6B7F]">Payment Method:</span>
@@ -893,21 +893,21 @@ export default function FeePOSPage() {
 
             {/* Live dropdown results */}
             {searchResults.length > 0 && (
-              <div className="mt-2 divide-y divide-[#E7E9EE] border border-[#E7E9EE] rounded-xl bg-white shadow-lg overflow-hidden max-h-96 overflow-y-auto z-20">
+              <div className="mt-2 divide-y divide-[#E7E9EE] dark:divide-[#242936] border border-[#E7E9EE] dark:border-[#242936] rounded-xl bg-white dark:bg-[#141820] shadow-lg overflow-hidden max-h-96 overflow-y-auto z-20">
                 {searchResults.map((student) => (
                   <button
                     key={student.id}
                     onClick={() => handleSelectStudent(student)}
-                    className="w-full text-left p-4 hover:bg-emerald-50/50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 group"
+                    className="w-full text-left p-4 hover:bg-emerald-50/50 dark:hover:bg-[#1C222D] transition flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 group cursor-pointer"
                   >
                     <div className="space-y-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-[#0F172A] group-hover:text-[#08483A]">{student.fullName}</span>
-                        <span className="px-2 py-0.5 text-xs font-mono font-bold bg-gray-100 text-[#5B6B7F] rounded">
+                        <span className="font-bold text-[#0F172A] dark:text-[#F9FAFB] group-hover:text-[#08483A] dark:group-hover:text-[#84CC16]">{student.fullName}</span>
+                        <span className="px-2 py-0.5 text-xs font-mono font-bold bg-gray-100 dark:bg-[#1C222D] text-[#5B6B7F] dark:text-[#9CA3AF] rounded border border-transparent dark:border-[#242936]">
                           {student.admissionNo}
                         </span>
                         {student.currentClass && (
-                          <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-100 text-emerald-800 rounded">
+                          <span className="px-2 py-0.5 text-xs font-semibold bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 rounded">
                             {student.currentClass.academicSection?.name
                               ? `${student.currentClass.academicSection.name} • `
                               : ''}
@@ -915,19 +915,19 @@ export default function FeePOSPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-[#5B6B7F]">
-                        Guardian: <span className="font-medium text-[#0F172A]">{student.guardianName}</span>
+                      <p className="text-xs text-[#5B6B7F] dark:text-[#9CA3AF]">
+                        Guardian: <span className="font-medium text-[#0F172A] dark:text-[#D1D5DB]">{student.guardianName}</span>
                         {student.guardianPhone && ` • Phone: ${student.guardianPhone}`}
                       </p>
                     </div>
 
                     <div className="text-right shrink-0">
-                      <div className="text-xs text-[#5B6B7F]">Outstanding</div>
-                      <div className="text-sm font-bold text-red-600">
-                        LKR {Number(student.outstandingBalance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      <div className="text-xs text-[#5B6B7F] dark:text-[#9CA3AF]">Outstanding</div>
+                      <div className="text-sm font-bold text-red-600 dark:text-rose-400">
+                        LKR {(Number(student.outstandingBalance) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                       </div>
-                      <div className="text-[11px] text-[#7C8A9A]">
-                        {student.unpaidInvoicesCount} {student.unpaidInvoicesCount === 1 ? 'month' : 'months'} pending
+                      <div className="text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF]">
+                        {student.unpaidInvoicesCount || 0} {(student.unpaidInvoicesCount === 1 ? 'month' : 'months')} pending
                       </div>
                     </div>
                   </button>
@@ -950,53 +950,53 @@ export default function FeePOSPage() {
           {/* Left / Main Column: Outstanding Invoices Selection */}
           <div className="lg:col-span-2 space-y-6">
             {/* Student Dossier Header Card */}
-            <div className="bg-white border border-[#E7E9EE] rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="bg-white dark:bg-[#141820] border border-[#E7E9EE] dark:border-[#242936] rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#08483A]/10 text-[#08483A] flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-[#08483A]/10 text-[#08483A] dark:text-[#84CC16] flex items-center justify-center shrink-0">
                   <User className="w-6 h-6" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="text-lg font-bold text-[#0F172A]">{selectedStudent.fullName}</h2>
-                    <span className="font-mono text-xs px-2 py-0.5 bg-gray-100 text-gray-700 font-bold rounded">
+                    <h2 className="text-lg font-bold text-[#0F172A] dark:text-[#F9FAFB]">{selectedStudent.fullName}</h2>
+                    <span className="font-mono text-xs px-2 py-0.5 bg-gray-100 dark:bg-[#1C222D] text-gray-700 dark:text-[#9CA3AF] border border-transparent dark:border-[#242936] font-bold rounded">
                       {selectedStudent.admissionNo}
                     </span>
                   </div>
-                  <p className="text-xs text-[#5B6B7F] mt-0.5">
+                  <p className="text-xs text-[#5B6B7F] dark:text-[#9CA3AF] mt-0.5">
                     Class:{' '}
-                    <span className="font-semibold text-[#0F172A]">
+                    <span className="font-semibold text-[#0F172A] dark:text-[#F9FAFB]">
                       {selectedStudent.currentClass?.academicSection?.name
                         ? `${selectedStudent.currentClass.academicSection.name} • `
                         : ''}
                       {selectedStudent.currentClass?.name || 'Unassigned'}
                     </span>{' '}
                     • Guardian:{' '}
-                    <span className="font-semibold text-[#0F172A]">{selectedStudent.guardianName}</span>
+                    <span className="font-semibold text-[#0F172A] dark:text-[#F9FAFB]">{selectedStudent.guardianName}</span>
                   </p>
                 </div>
               </div>
 
-              <div className="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
-                <span className="text-xs text-[#5B6B7F] block">Total Outstanding</span>
-                <span className="text-xl font-bold text-red-600">
-                  LKR {Number(selectedStudent.outstandingBalance).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              <div className="sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100 dark:border-[#242936]">
+                <span className="text-xs text-[#5B6B7F] dark:text-[#9CA3AF] block">Total Outstanding</span>
+                <span className="text-xl font-bold text-red-600 dark:text-rose-400">
+                  LKR {(Number(selectedStudent.outstandingBalance) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                 </span>
               </div>
             </div>
 
             {/* Outstanding Monthly Invoices Table */}
-            <div className="bg-white border border-[#E7E9EE] rounded-2xl p-5 shadow-xs space-y-4">
+            <div className="bg-white dark:bg-[#141820] border border-[#E7E9EE] dark:border-[#242936] rounded-2xl p-5 shadow-xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-[#0F172A]">Outstanding Monthly Invoices</h3>
-                  <p className="text-xs text-[#5B6B7F]">Select months to allocate payment. Invoices sorted oldest first.</p>
+                  <h3 className="text-base font-bold text-[#0F172A] dark:text-[#F9FAFB]">Outstanding Monthly Invoices</h3>
+                  <p className="text-xs text-[#5B6B7F] dark:text-[#9CA3AF]">Select months to allocate payment. Invoices sorted oldest first.</p>
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
                     type="button"
                     onClick={() => setShowGenerateBar(!showGenerateBar)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#5B6B7F] hover:text-[#0F172A] bg-[#F8F9FA] hover:bg-gray-100 border border-[#E7E9EE] rounded-lg transition"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#5B6B7F] dark:text-[#9CA3AF] hover:text-[#0F172A] dark:hover:text-[#F9FAFB] bg-[#F8F9FA] dark:bg-[#1C222D] hover:bg-gray-100 dark:hover:bg-[#242936] border border-[#E7E9EE] dark:border-[#242936] rounded-lg transition cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>{showGenerateBar ? 'Hide Generator' : 'Generate Missing Month'}</span>
@@ -1005,9 +1005,9 @@ export default function FeePOSPage() {
                   {unpaidInvoices.length > 0 && (
                     <button
                       onClick={handleAutoAllocateOldestFirst}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-[#84CC16] bg-emerald-50 dark:bg-[#1C222D] hover:bg-emerald-100 dark:hover:bg-[#242936] border border-emerald-200 dark:border-[#242936] rounded-lg transition cursor-pointer"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-[#84CC16]" />
                       <span>Auto-Allocate Oldest First</span>
                     </button>
                   )}
@@ -1056,37 +1056,37 @@ export default function FeePOSPage() {
                             <tr
                               key={inv.id}
                               onClick={() => handleToggleInvoice(inv)}
-                              className={`transition cursor-pointer ${isSelected ? 'bg-emerald-50/40' : 'hover:bg-gray-50/60'}`}
+                              className={`transition cursor-pointer ${isSelected ? 'bg-emerald-50/40 dark:bg-emerald-950/25' : 'hover:bg-gray-50/60 dark:hover:bg-[#1C222D]/60'}`}
                             >
                               <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
                                 <input
                                   type="checkbox"
                                   checked={isSelected}
                                   onChange={() => handleToggleInvoice(inv)}
-                                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500 cursor-pointer"
+                                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 dark:border-[#242936] focus:ring-emerald-500 cursor-pointer"
                                 />
                               </td>
                               <td className="py-3 px-2">
-                                <div className="font-bold text-[#0F172A]">
+                                <div className="font-bold text-[#0F172A] dark:text-[#F9FAFB]">
                                   {inv.monthName} {inv.billingYear}
                                 </div>
-                                <span className="font-mono text-xs text-[#5B6B7F]">{inv.invoiceNo}</span>
+                                <span className="font-mono text-xs text-[#5B6B7F] dark:text-[#9CA3AF]">{inv.invoiceNo}</span>
                               </td>
                               <td className="py-3 px-2">
-                                <div className="text-xs text-[#5B6B7F]">
+                                <div className="text-xs text-[#5B6B7F] dark:text-[#9CA3AF]">
                                   {new Date(inv.dueDate).toLocaleDateString()}
                                 </div>
                                 {inv.isOverdue && (
-                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700">
+                                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 dark:text-rose-400">
                                     <Clock className="w-3 h-3" /> Overdue
                                   </span>
                                 )}
                               </td>
-                              <td className="py-3 px-2 text-right font-medium text-gray-700">
-                                {Number(inv.totalAmount).toFixed(2)}
+                              <td className="py-3 px-2 text-right font-medium text-gray-700 dark:text-[#D1D5DB]">
+                                {(Number(inv.totalAmount) || 0).toFixed(2)}
                               </td>
-                              <td className="py-3 px-2 text-right font-bold text-red-600">
-                                {Number(inv.balanceAmount).toFixed(2)}
+                              <td className="py-3 px-2 text-right font-bold text-red-600 dark:text-rose-400">
+                                {(Number(inv.balanceAmount) || 0).toFixed(2)}
                               </td>
                               <td className="py-3 px-2 text-right" onClick={(e) => e.stopPropagation()}>
                                 {isSelected ? (

@@ -289,28 +289,28 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-stone-900/80 backdrop-blur-xs overflow-y-auto print:hidden">
         {/* Main Modal Shell */}
         <div
-          className="relative w-full max-w-7xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-auto flex flex-col max-h-[96vh]"
+          className="relative w-full max-w-7xl bg-white dark:bg-[#141820] rounded-3xl shadow-2xl border border-stone-200 dark:border-[#242936] overflow-hidden my-auto flex flex-col max-h-[96vh]"
           role="dialog"
           aria-modal="true"
         >
           {/* ==================================================== */}
           {/* Header Bar */}
           {/* ==================================================== */}
-          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-stone-200 bg-gradient-to-r from-stone-50 to-white shrink-0 min-w-0">
+          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-stone-200 dark:border-[#242936] bg-gradient-to-r from-stone-50 to-white dark:from-[#171B24] dark:to-[#141820] shrink-0 min-w-0">
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
               <div className="w-9 sm:w-11 h-9 sm:h-11 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs shrink-0">
                 <Tags className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-200" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
-                  <h3 className="font-bold text-xs sm:text-base text-[#0F172A] tracking-tight truncate">
+                  <h3 className="font-bold text-xs sm:text-base text-[#0F172A] dark:text-[#F9FAFB] tracking-tight truncate">
                     Student QR &amp; Barcode Label Studio
                   </h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-100 text-[#0F5A47] shrink-0">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-[#0F5A47] dark:text-emerald-300 shrink-0">
                     {activeCards.length} Labels
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-xs text-stone-500 font-medium truncate mt-0.5 hidden sm:block">
+                <p className="text-[10px] sm:text-xs text-stone-500 dark:text-[#9CA3AF] font-medium truncate mt-0.5 hidden sm:block">
                   Design, Preview and Print Individual Student Credential Labels · A4 Standard
                 </p>
               </div>
@@ -319,7 +319,7 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 sm:p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="p-1.5 sm:p-2 text-stone-400 dark:text-[#9CA3AF] hover:text-stone-700 dark:hover:text-[#F9FAFB] hover:bg-stone-100 dark:hover:bg-[#1C222D] rounded-xl transition-colors cursor-pointer shrink-0"
               aria-label="Close dialog"
             >
               <X className="w-5 h-5" />
@@ -376,7 +376,7 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
             {/* Left Control Panel: Credential, Design & Layout */}
             {/* -------------------------------------------------- */}
             <div
-              className={`w-full lg:w-96 border-r border-stone-200 bg-white flex flex-col overflow-y-auto shrink-0 p-4 sm:p-5 space-y-5 ${
+              className={`w-full lg:w-96 border-r border-stone-200 dark:border-[#242936] bg-white dark:bg-[#141820] flex flex-col overflow-y-auto shrink-0 p-4 sm:p-5 space-y-5 ${
                 activeTab === 'preview' ? 'hidden lg:flex' : 'flex'
               }`}
             >
@@ -657,31 +657,31 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
             {/* Right Screen: Interactive Live A4 Sheet Preview */}
             {/* -------------------------------------------------- */}
             <div
-              className={`flex-1 bg-stone-100 flex flex-col items-center justify-start overflow-auto p-4 sm:p-6 min-h-[480px] ${
+              className={`flex-1 bg-stone-100 dark:bg-[#0B0D11] flex flex-col items-center justify-start overflow-auto p-4 sm:p-6 min-h-[480px] ${
                 activeTab !== 'preview' ? 'hidden lg:flex' : 'flex'
               }`}
             >
               {/* Preview Control Toolbar */}
-              <div className="mb-3 w-full max-w-2xl flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-2 rounded-2xl shadow-xs border border-stone-200 text-xs shrink-0">
+              <div className="mb-3 w-full max-w-2xl flex flex-wrap items-center justify-between gap-2 bg-white dark:bg-[#1C222D] px-4 py-2 rounded-2xl shadow-xs border border-stone-200 dark:border-[#242936] text-xs shrink-0">
                 {/* Pagination Controls */}
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage <= 1}
-                    className="p-1 rounded-lg hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                    className="p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-[#242936] text-stone-700 dark:text-[#D1D5DB] disabled:opacity-30 cursor-pointer"
                     aria-label="Previous Page"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-                  <span className="font-semibold text-stone-700 font-mono">
+                  <span className="font-semibold text-stone-700 dark:text-[#F9FAFB] font-mono">
                     Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
                   </span>
                   <button
                     type="button"
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage >= totalPages}
-                    className="p-1 rounded-lg hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                    className="p-1 rounded-lg hover:bg-stone-100 dark:hover:bg-[#242936] text-stone-700 dark:text-[#D1D5DB] disabled:opacity-30 cursor-pointer"
                     aria-label="Next Page"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -689,35 +689,35 @@ export const LabelPrintStudioModal: React.FC<LabelPrintStudioModalProps> = ({
                 </div>
 
                 {/* Summary Metadata */}
-                <div className="hidden sm:flex items-center gap-3 text-[11px] text-stone-500 font-medium">
+                <div className="hidden sm:flex items-center gap-3 text-[11px] text-stone-500 dark:text-[#9CA3AF] font-medium">
                   <span>
-                    <strong>{activeCards.length}</strong> total
+                    <strong className="text-stone-700 dark:text-[#F9FAFB]">{activeCards.length}</strong> total
                   </span>
                   <span>•</span>
                   <span>
-                    <strong>{labelsPerPage}</strong>/page
+                    <strong className="text-stone-700 dark:text-[#F9FAFB]">{labelsPerPage}</strong>/page
                   </span>
                   <span>•</span>
                   <span className="font-mono">{columns}×{rows} grid</span>
                 </div>
 
                 {/* Zoom Controls */}
-                <div className="flex items-center gap-1.5 border-l border-stone-200 pl-2">
+                <div className="flex items-center gap-1.5 border-l border-stone-200 dark:border-[#242936] pl-2">
                   <button
                     type="button"
                     onClick={() => setZoomScale((z) => Math.max(0.4, parseFloat((z - 0.05).toFixed(2))))}
-                    className="p-1 rounded hover:bg-stone-100 text-stone-600 cursor-pointer"
+                    className="p-1 rounded hover:bg-stone-100 dark:hover:bg-[#242936] text-stone-600 dark:text-[#9CA3AF] cursor-pointer"
                     title="Zoom Out"
                   >
                     <ZoomOut className="w-3.5 h-3.5" />
                   </button>
-                  <span className="text-[11px] font-mono text-stone-600 w-10 text-center">
+                  <span className="text-[11px] font-mono text-stone-600 dark:text-[#D1D5DB] w-10 text-center">
                     {Math.round(zoomScale * 100)}%
                   </span>
                   <button
                     type="button"
                     onClick={() => setZoomScale((z) => Math.min(1.0, parseFloat((z + 0.05).toFixed(2))))}
-                    className="p-1 rounded hover:bg-stone-100 text-stone-600 cursor-pointer"
+                    className="p-1 rounded hover:bg-stone-100 dark:hover:bg-[#242936] text-stone-600 dark:text-[#9CA3AF] cursor-pointer"
                     title="Zoom In"
                   >
                     <ZoomIn className="w-3.5 h-3.5" />

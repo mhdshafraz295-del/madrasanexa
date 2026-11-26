@@ -281,14 +281,14 @@ export default function AttendancePage() {
       />
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-stone-200 gap-1.5 sm:gap-4 overflow-x-auto scrollbar-none -mx-3 sm:mx-0 px-3 sm:px-0">
+      <div className="flex border-b border-stone-200 dark:border-[#242936] gap-1.5 sm:gap-4 overflow-x-auto scrollbar-none -mx-3 sm:mx-0 px-3 sm:px-0">
         <button
           type="button"
           onClick={() => setActiveTab('daily')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'daily'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <CalendarCheck className="w-4 h-4" />
@@ -300,8 +300,8 @@ export default function AttendancePage() {
           onClick={() => setActiveTab('history')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'history'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <History className="w-4 h-4" />
@@ -313,8 +313,8 @@ export default function AttendancePage() {
           onClick={() => setActiveTab('monthly')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'monthly'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <TrendingUp className="w-4 h-4" />
@@ -326,8 +326,8 @@ export default function AttendancePage() {
           onClick={() => setActiveTab('student')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'student'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <User className="w-4 h-4" />
@@ -339,8 +339,8 @@ export default function AttendancePage() {
           onClick={() => setActiveTab('id-cards')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'id-cards'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <CreditCard className="w-4 h-4" />
@@ -352,8 +352,8 @@ export default function AttendancePage() {
           onClick={() => setActiveTab('scanner')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
             activeTab === 'scanner'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <ScanLine className="w-4 h-4" />

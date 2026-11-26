@@ -296,14 +296,14 @@ export default function TimetablePage() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-px">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[#242936] overflow-x-auto pb-px">
         <button
           type="button"
           onClick={() => setActiveTab('class')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'class'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <GraduationCap className="w-4 h-4" />
@@ -315,8 +315,8 @@ export default function TimetablePage() {
           onClick={() => setActiveTab('staff')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'staff'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -328,8 +328,8 @@ export default function TimetablePage() {
           onClick={() => setActiveTab('full')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'full'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <Layers className="w-4 h-4" />

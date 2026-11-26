@@ -180,14 +180,14 @@ export default function MarkingHubPage() {
       />
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-stone-200 gap-2 sm:gap-4 overflow-x-auto">
+      <div className="flex border-b border-stone-200 dark:border-[#242936] gap-2 sm:gap-4 overflow-x-auto">
         <button
           type="button"
           onClick={() => setActiveTab('entry')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'entry'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
@@ -200,8 +200,8 @@ export default function MarkingHubPage() {
           disabled={!assessmentData}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed ${
             activeTab === 'results'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <Award className="w-4 h-4" />
@@ -214,8 +214,8 @@ export default function MarkingHubPage() {
           disabled={!assessmentData}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed ${
             activeTab === 'analytics'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <TrendingUp className="w-4 h-4" />
@@ -227,8 +227,8 @@ export default function MarkingHubPage() {
           onClick={() => setActiveTab('gpa')}
           className={`flex items-center gap-2 py-3 px-3 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap ${
             activeTab === 'gpa'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/40 rounded-t-xl'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/40 dark:bg-[#1C222D] rounded-t-xl shadow-2xs'
+              : 'border-transparent text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
           }`}
         >
           <Sliders className="w-4 h-4" />

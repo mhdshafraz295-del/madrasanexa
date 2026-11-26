@@ -260,14 +260,14 @@ export default function UstadhManagementPage() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 overflow-x-auto pb-px">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-[#242936] overflow-x-auto pb-px">
         <button
           type="button"
           onClick={() => setActiveTab('directory')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'directory'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -279,8 +279,8 @@ export default function UstadhManagementPage() {
           onClick={() => setActiveTab('schedule')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'schedule'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <Calendar className="w-4 h-4" />
@@ -292,8 +292,8 @@ export default function UstadhManagementPage() {
           onClick={() => setActiveTab('attendance')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'attendance'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <CalendarCheck className="w-4 h-4" />
@@ -305,8 +305,8 @@ export default function UstadhManagementPage() {
           onClick={() => setActiveTab('salary')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'salary'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <DollarSign className="w-4 h-4" />
@@ -318,8 +318,8 @@ export default function UstadhManagementPage() {
           onClick={() => setActiveTab('history')}
           className={`flex items-center gap-2 px-4 py-2.5 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
             activeTab === 'history'
-              ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg'
-              : 'border-transparent text-slate-600 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-emerald-600 dark:border-[#84CC16] text-emerald-700 dark:text-[#84CC16] bg-emerald-50/50 dark:bg-[#1C222D] rounded-t-lg shadow-2xs'
+              : 'border-transparent text-slate-600 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB] hover:border-slate-300 dark:hover:border-[#242936]'
           }`}
         >
           <History className="w-4 h-4" />

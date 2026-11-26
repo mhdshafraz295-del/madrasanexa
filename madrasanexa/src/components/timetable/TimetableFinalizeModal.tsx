@@ -122,17 +122,17 @@ export default function TimetableFinalizeModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in">
-      <div className="bg-white rounded-2xl border border-[#E7E9EE] max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-5 overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+      <div className="bg-white dark:bg-[#141820] rounded-2xl border border-[#E7E9EE] dark:border-[#242936] max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-5 overflow-hidden flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-[#E7E9EE] pb-4">
+        <div className="flex items-center justify-between border-b border-[#E7E9EE] dark:border-[#242936] pb-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#37C6A3] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-[#37C6A3] dark:text-[#84CC16] flex items-center justify-center">
               <FileCheck className="w-4.5 h-4.5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-[#0F172A]">Finalize Academic Timetable</h3>
-              <p className="text-[11px] text-[#7C8A9A]">
+              <h3 className="text-base font-bold text-[#0F172A] dark:text-[#F9FAFB]">Finalize Academic Timetable</h3>
+              <p className="text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF]">
                 Freeze immutable schedule snapshot and notify teaching staff
               </p>
             </div>
@@ -140,7 +140,7 @@ export default function TimetableFinalizeModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1] transition cursor-pointer"
+            className="p-1 rounded-lg text-[#7C8A9A] dark:text-[#9CA3AF] hover:text-[#0F172A] dark:hover:text-[#F9FAFB] hover:bg-[#F7F6F1] dark:hover:bg-[#1C222D] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -149,16 +149,16 @@ export default function TimetableFinalizeModal({
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto pr-1 flex-1">
           {errorMessage && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Effective Date */}
           <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1 flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-[#7C8A9A]" />
+            <label className="block text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB] mb-1 flex items-center gap-1.5">
+              <Calendar className="w-3.5 h-3.5 text-[#7C8A9A] dark:text-[#9CA3AF]" />
               <span>Effective Date *</span>
             </label>
             <input
@@ -166,28 +166,28 @@ export default function TimetableFinalizeModal({
               required
               value={effectiveDate}
               onChange={(e) => setEffectiveDate(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white"
+              className="w-full px-3 py-2 text-xs bg-[#F7F6F1] dark:bg-[#1C222D] border border-[#E7E9EE] dark:border-[#242936] text-[#0F172A] dark:text-[#F9FAFB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white dark:focus:bg-[#1C222D]"
             />
-            <span className="text-[10px] text-[#7C8A9A] mt-1 block">
+            <span className="text-[10px] text-[#7C8A9A] dark:text-[#9CA3AF] mt-1 block">
               The published schedule becomes effective on this date.
             </span>
           </div>
 
           {/* Send Email Checkbox */}
-          <div className="p-3.5 rounded-xl border border-[#E7E9EE] bg-[#F7F6F1] flex items-start gap-3 cursor-pointer">
+          <div className="p-3.5 rounded-xl border border-[#E7E9EE] dark:border-[#242936] bg-[#F7F6F1] dark:bg-[#1C222D] flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
               id="sendEmailCheckbox"
               checked={sendEmail}
               onChange={(e) => setSendEmail(e.target.checked)}
-              className="rounded text-[#37C6A3] focus:ring-[#37C6A3] w-4 h-4 mt-0.5"
+              className="rounded text-[#37C6A3] focus:ring-[#37C6A3] w-4 h-4 mt-0.5 cursor-pointer"
             />
             <label htmlFor="sendEmailCheckbox" className="cursor-pointer">
-              <div className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-indigo-600" />
+              <div className="text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB] flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>Notify Staff via Email with Attached Schedule PDF</span>
               </div>
-              <p className="text-[11px] text-[#7C8A9A] mt-0.5">
+              <p className="text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF] mt-0.5">
                 If checked, each eligible teacher receives their individual personalized schedule PDF generated strictly from this immutable snapshot.
               </p>
             </label>
@@ -195,14 +195,14 @@ export default function TimetableFinalizeModal({
 
           {/* Recipient Scope */}
           <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1 flex items-center gap-1.5">
-              <Users className="w-3.5 h-3.5 text-[#7C8A9A]" />
+            <label className="block text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB] mb-1 flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-[#7C8A9A] dark:text-[#9CA3AF]" />
               <span>Recipient Scope</span>
             </label>
             <select
               value={recipientScope}
               onChange={(e) => setRecipientScope(e.target.value as TimetableRecipientScope)}
-              className="w-full px-3 py-2 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white cursor-pointer"
+              className="w-full px-3 py-2 text-xs bg-[#F7F6F1] dark:bg-[#1C222D] border border-[#E7E9EE] dark:border-[#242936] text-[#0F172A] dark:text-[#F9FAFB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white dark:focus:bg-[#1C222D] cursor-pointer"
             >
               <option value="ALL_TEACHING_STAFF">All Teaching Staff (Ustadhs & School Teachers)</option>
               <option value="USTADH_ONLY">Ustadhs Only</option>
@@ -214,20 +214,20 @@ export default function TimetableFinalizeModal({
 
           {/* Selected Staff Multi-Select (if SELECTED_STAFF) */}
           {recipientScope === 'SELECTED_STAFF' && (
-            <div className="p-3 bg-[#F7F6F1] rounded-xl border border-[#E7E9EE] space-y-2">
-              <div className="flex items-center justify-between text-xs pb-1 border-b border-[#E7E9EE]">
-                <span className="font-bold text-[#0F172A]">Select Teaching Staff:</span>
+            <div className="p-3 bg-[#F7F6F1] dark:bg-[#1C222D] rounded-xl border border-[#E7E9EE] dark:border-[#242936] space-y-2">
+              <div className="flex items-center justify-between text-xs pb-1 border-b border-[#E7E9EE] dark:border-[#242936]">
+                <span className="font-bold text-[#0F172A] dark:text-[#F9FAFB]">Select Teaching Staff:</span>
                 <button
                   type="button"
                   onClick={handleSelectAllStaff}
-                  className="text-[11px] text-[#37C6A3] font-bold hover:underline cursor-pointer"
+                  className="text-[11px] text-[#37C6A3] dark:text-[#84CC16] font-bold hover:underline cursor-pointer"
                 >
                   {selectedStaffIds.length === staffList.length ? 'Deselect All' : 'Select All'}
                 </button>
               </div>
 
               {isLoadingStaff ? (
-                <div className="py-4 text-center text-xs text-[#7C8A9A]">
+                <div className="py-4 text-center text-xs text-[#7C8A9A] dark:text-[#9CA3AF]">
                   <Loader2 className="w-4 h-4 animate-spin inline mr-1" />
                   <span>Loading staff members...</span>
                 </div>
@@ -236,7 +236,7 @@ export default function TimetableFinalizeModal({
                   {staffList.map((staff) => (
                     <label
                       key={staff.id}
-                      className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white transition cursor-pointer text-xs"
+                      className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white dark:hover:bg-[#141820] transition cursor-pointer text-xs"
                     >
                       <input
                         type="checkbox"
@@ -244,8 +244,8 @@ export default function TimetableFinalizeModal({
                         onChange={() => handleToggleStaff(staff.id)}
                         className="rounded text-[#37C6A3] focus:ring-[#37C6A3] w-3.5 h-3.5"
                       />
-                      <span className="font-medium text-[#0F172A]">{staff.fullName}</span>
-                      <span className="text-[10px] text-[#7C8A9A] font-mono">
+                      <span className="font-medium text-[#0F172A] dark:text-[#F9FAFB]">{staff.fullName}</span>
+                      <span className="text-[10px] text-[#7C8A9A] dark:text-[#9CA3AF] font-mono">
                         ({staff.staffType === 'SCHOOL_TEACHER' ? 'School Teacher' : 'Ustadh'})
                       </span>
                     </label>
@@ -257,39 +257,39 @@ export default function TimetableFinalizeModal({
 
           {/* Publication Notes */}
           <div>
-            <label className="block text-xs font-bold text-[#0F172A] mb-1">
-              Publication Notes <span className="text-[#7C8A9A] font-normal">(Optional)</span>
+            <label className="block text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB] mb-1">
+              Publication Notes <span className="text-[#7C8A9A] dark:text-[#9CA3AF] font-normal">(Optional)</span>
             </label>
             <textarea
               rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g., Revised schedule following Ramadan term adjustments..."
-              className="w-full px-3 py-2 text-xs bg-[#F7F6F1] border border-[#E7E9EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white resize-none"
+              className="w-full px-3 py-2 text-xs bg-[#F7F6F1] dark:bg-[#1C222D] border border-[#E7E9EE] dark:border-[#242936] text-[#0F172A] dark:text-[#F9FAFB] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3] focus:bg-white dark:focus:bg-[#1C222D] resize-none"
             />
           </div>
 
-          <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-200/60 text-amber-900 text-[11px] flex items-start gap-2">
-            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div className="p-3 bg-amber-50/60 dark:bg-[#1C222D] rounded-xl border border-amber-200/60 dark:border-amber-500/30 text-amber-900 dark:text-amber-200 text-[11px] flex items-start gap-2">
+            <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
             <p>
               Finalizing is idempotent and captures a historical snapshot. Live timetable edits made afterwards will not alter already sent PDFs.
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E7E9EE]">
+          <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E7E9EE] dark:border-[#242936]">
             <button
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="px-4 py-2 text-xs font-semibold text-[#7C8A9A] hover:text-[#0F172A] hover:bg-[#F7F6F1] rounded-xl transition cursor-pointer"
+              className="px-4 py-2 text-xs font-semibold text-[#7C8A9A] dark:text-[#9CA3AF] hover:text-[#0F172A] dark:hover:text-[#F9FAFB] hover:bg-[#F7F6F1] dark:hover:bg-[#1C222D] rounded-xl transition cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-[#0F172A] rounded-xl hover:bg-[#1E293B] transition shadow-xs disabled:opacity-50 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white dark:text-[#0B0D11] bg-[#0F172A] dark:bg-[#84CC16] hover:bg-[#1E293B] dark:hover:bg-[#65A30D] rounded-xl transition shadow-xs disabled:opacity-50 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

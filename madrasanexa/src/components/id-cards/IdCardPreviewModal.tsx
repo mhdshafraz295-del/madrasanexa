@@ -250,26 +250,26 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/75 backdrop-blur-xs overflow-y-auto print:hidden">
         {/* Modal Window */}
         <div
-          className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-auto"
+          className="relative w-full max-w-2xl bg-white dark:bg-[#141820] rounded-3xl shadow-2xl border border-stone-200 dark:border-[#242936] overflow-hidden my-auto"
           role="dialog"
           aria-modal="true"
         >
           {/* Header Design with Luxury Deep Emerald / Antique Gold Styling */}
-          <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-stone-100 bg-gradient-to-r from-[#193B32]/5 via-white to-[#C5A059]/10">
+          <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-stone-100 dark:border-[#242936] bg-gradient-to-r from-[#193B32]/5 via-white to-[#C5A059]/10 dark:from-[#171B24] dark:via-[#141820] dark:to-[#1C222D]">
             <div className="flex items-center gap-3.5">
               <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#133129] to-[#193B32] text-white flex items-center justify-center shadow-sm shrink-0 border border-[#C5A059]/40">
                 <IdCard className="w-5 h-5 text-[#C5A059]" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-base sm:text-lg text-[#0F172A] leading-tight tracking-tight">
+                  <h3 className="font-bold text-base sm:text-lg text-[#0F172A] dark:text-[#F9FAFB] leading-tight tracking-tight">
                     Student ID Card Studio
                   </h3>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#193B32] text-[#C5A059] border border-[#C5A059]/40 uppercase tracking-wider">
                     CR80 Standard
                   </span>
                 </div>
-                <p className="text-xs text-stone-500 font-medium mt-0.5">
+                <p className="text-xs text-stone-500 dark:text-[#9CA3AF] font-medium mt-0.5">
                   CR80 Physical Dimension Preview ·{' '}
                   {orientation === 'vertical'
                     ? '53.98 × 85.60 mm (Vertical Lanyard)'
@@ -281,7 +281,7 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer"
+              className="p-2 text-stone-400 dark:text-[#9CA3AF] hover:text-stone-700 dark:hover:text-[#F9FAFB] hover:bg-stone-100 dark:hover:bg-[#1C222D] rounded-xl transition-colors cursor-pointer"
               aria-label="Close dialog"
             >
               <X className="w-5 h-5" />
@@ -293,14 +293,14 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
             {/* Top Toolbar: Orientation Selector & Side/Credential Controls */}
             <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 mb-4">
               {/* Orientation Mode Segmented Toggle */}
-              <div className="inline-flex rounded-xl bg-stone-100 p-1 border border-stone-200/80 shadow-2xs w-full sm:w-auto">
+              <div className="inline-flex rounded-xl bg-stone-100 dark:bg-[#1C222D] p-1 border border-stone-200/80 dark:border-[#242936] shadow-2xs w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => setOrientation('vertical')}
                   className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     orientation === 'vertical'
                       ? 'bg-[#193B32] text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900'
+                      : 'text-stone-600 dark:text-[#9CA3AF] hover:text-stone-900 dark:hover:text-[#F9FAFB]'
                   }`}
                   title="Vertical Portrait (Lanyard style - 53.98 × 85.60 mm)"
                 >
@@ -313,7 +313,7 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
                   className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                     orientation === 'horizontal'
                       ? 'bg-[#193B32] text-white shadow-xs'
-                      : 'text-stone-600 hover:text-stone-900'
+                      : 'text-stone-600 dark:text-[#9CA3AF] hover:text-stone-900 dark:hover:text-[#F9FAFB]'
                   }`}
                   title="Horizontal Landscape (Classic CR80 - 85.60 × 53.98 mm)"
                 >
@@ -325,14 +325,14 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
               {/* Side Tab Switcher & Flip Control */}
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 {/* Front / Back Switcher */}
-                <div className="inline-flex rounded-xl bg-stone-100 p-1 border border-stone-200/80 shadow-2xs">
+                <div className="inline-flex rounded-xl bg-stone-100 dark:bg-[#1C222D] p-1 border border-stone-200/80 dark:border-[#242936] shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setCurrentSide('front')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       currentSide === 'front'
-                        ? 'bg-white text-[#193B32] shadow-xs'
-                        : 'text-stone-600 hover:text-stone-900'
+                        ? 'bg-white dark:bg-[#141820] text-[#193B32] dark:text-[#84CC16] shadow-xs'
+                        : 'text-stone-600 dark:text-[#9CA3AF] hover:text-stone-900 dark:hover:text-[#F9FAFB]'
                     }`}
                   >
                     Front Side
@@ -342,8 +342,8 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
                     onClick={() => setCurrentSide('back')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                       currentSide === 'back'
-                        ? 'bg-white text-[#193B32] shadow-xs'
-                        : 'text-stone-600 hover:text-stone-900'
+                        ? 'bg-white dark:bg-[#141820] text-[#193B32] dark:text-[#84CC16] shadow-xs'
+                        : 'text-stone-600 dark:text-[#9CA3AF] hover:text-stone-900 dark:hover:text-[#F9FAFB]'
                     }`}
                   >
                     Back Side
@@ -354,10 +354,10 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setCurrentSide((prev) => (prev === 'front' ? 'back' : 'front'))}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 bg-white text-stone-700 text-xs font-semibold hover:bg-stone-50 shadow-2xs transition-all cursor-pointer active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 dark:border-[#242936] bg-white dark:bg-[#1C222D] text-stone-700 dark:text-[#D1D5DB] text-xs font-semibold hover:bg-stone-50 dark:hover:bg-[#242936] shadow-2xs transition-all cursor-pointer active:scale-95"
                   title="Flip Card (Space / F)"
                 >
-                  <RotateCw className="w-3.5 h-3.5 text-[#193B32]" />
+                  <RotateCw className="w-3.5 h-3.5 text-[#193B32] dark:text-[#84CC16]" />
                   <span>Flip</span>
                 </button>
               </div>
@@ -365,8 +365,8 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
 
             {/* Zero-R2 / Browser Memory-Only Photo Upload (Print Only) Banner */}
             <div
-              className={`w-full mb-4 bg-gradient-to-r from-[#FAF9F5] to-white border ${
-                isDraggingPhoto ? 'border-[#C5A059] bg-[#C5A059]/10' : 'border-[#E8E5D8]'
+              className={`w-full mb-4 bg-gradient-to-r from-[#FAF9F5] to-white dark:from-[#171B24] dark:to-[#141820] border ${
+                isDraggingPhoto ? 'border-[#C5A059] bg-[#C5A059]/10' : 'border-[#E8E5D8] dark:border-[#242936]'
               } rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 transition-colors`}
               onDragOver={(e) => {
                 e.preventDefault();
@@ -543,18 +543,18 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
             </div>
 
             {/* Student Information Section */}
-            <div className="w-full mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-stone-50/90 border border-stone-200/80 rounded-2xl p-3 text-xs">
+            <div className="w-full mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 bg-stone-50/90 dark:bg-[#1C222D] border border-stone-200/80 dark:border-[#242936] rounded-2xl p-3 text-xs">
               <div>
-                <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">
+                <span className="text-[10px] text-stone-400 dark:text-[#9CA3AF] uppercase tracking-wider block font-bold">
                   Student Name
                 </span>
-                <span className="font-semibold text-[#0F172A] truncate block mt-0.5" title={student.fullName}>
+                <span className="font-semibold text-[#0F172A] dark:text-[#F9FAFB] truncate block mt-0.5" title={student.fullName}>
                   {student.fullName}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">
+                <span className="text-[10px] text-stone-400 dark:text-[#9CA3AF] uppercase tracking-wider block font-bold">
                   Admission Number
                 </span>
                 <span className="font-mono font-bold text-[#9A7B38] block mt-0.5">
@@ -563,10 +563,10 @@ export const IdCardPreviewModal: React.FC<IdCardPreviewModalProps> = ({
               </div>
 
               <div>
-                <span className="text-[10px] text-stone-400 uppercase tracking-wider block font-bold">
+                <span className="text-[10px] text-stone-400 dark:text-[#9CA3AF] uppercase tracking-wider block font-bold">
                   Credential Hint
                 </span>
-                <span className="font-mono text-stone-600 block mt-0.5 truncate">
+                <span className="font-mono text-stone-600 dark:text-[#9CA3AF] block mt-0.5 truncate">
                   {tokenHint || 'Pending Issue'}
                 </span>
               </div>

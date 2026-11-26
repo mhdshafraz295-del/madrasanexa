@@ -248,6 +248,48 @@ html.dark body {
   color: #F9FAFB !important;
 }
 
+/* Print Sheet & Physical Card Face Exemption (Keep dark ink on white/cream paper & PVC cards) */
+.dark [data-card-side],
+.dark [data-card-orientation],
+.dark [data-sheet-page],
+.dark [data-sheet-type],
+.dark [data-label-card],
+.dark .id-card-face,
+.dark .id-card-face *,
+.dark .credential-label-card,
+.dark .print-sheet,
+.dark .print-sheet * {
+  color: initial;
+}
+
+.dark .id-card-student-name,
+.dark [data-card-side="front"] h2,
+.dark [data-card-orientation] h2 {
+  color: #0D251F !important;
+  font-weight: 800 !important;
+}
+
+.dark .credential-label-student-name,
+.dark [data-label-card] h4 {
+  color: #0F172A !important;
+  font-weight: 700 !important;
+}
+
+.dark [data-card-side="front"] .text-stone-400,
+.dark [data-card-orientation] .text-stone-400 {
+  color: #a8a29e !important;
+}
+
+.dark [data-card-side="front"] .text-\[\#9A7B38\],
+.dark [data-card-orientation] .text-\[\#9A7B38\] {
+  color: #9A7B38 !important;
+}
+
+.dark [data-card-side="front"] .text-\[\#193B32\],
+.dark [data-card-orientation] .text-\[\#193B32\] {
+  color: #193B32 !important;
+}
+
 .dark .text-slate-700,
 .dark .text-gray-700,
 .dark .text-zinc-700,

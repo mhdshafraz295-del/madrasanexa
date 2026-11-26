@@ -276,9 +276,9 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
 
                         if (session.type === 'BREAK') {
                           return (
-                            <td key={day} className="py-3.5 px-4 border-r last:border-r-0 border-slate-300 bg-amber-50/70 text-center">
-                              <div className="flex items-center justify-center gap-1.5 text-amber-900 font-bold text-xs uppercase tracking-wide">
-                                <Coffee className="w-3.5 h-3.5 text-amber-700" />
+                            <td key={day} className="py-3.5 px-4 border-r last:border-r-0 border-slate-300 dark:border-[#242936] bg-amber-50/70 dark:bg-amber-500/10 text-center">
+                              <div className="flex items-center justify-center gap-1.5 text-amber-900 dark:text-amber-300 font-bold text-xs uppercase tracking-wide">
+                                <Coffee className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />
                                 <span>{session.name || 'INTERVAL'}</span>
                                 <div className="flex items-center gap-0.5 ml-1">
                                   <button
@@ -299,7 +299,7 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
                                         updatedAt: '',
                                       })
                                     }
-                                    className="p-0.5 text-amber-700 hover:text-amber-950"
+                                    className="p-0.5 text-amber-700 dark:text-amber-400 hover:text-amber-950 dark:hover:text-amber-200"
                                     title="Edit Break"
                                   >
                                     <Pencil className="w-3 h-3" />
@@ -422,11 +422,11 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
                           return (
                             <div
                               key={session.id}
-                              className="p-3 bg-amber-50/80 border border-amber-200 rounded-xl relative group"
+                              className="p-3 bg-amber-50/80 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl relative group"
                             >
                               <div className="flex items-center justify-between gap-2 mb-1.5">
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200/70 text-amber-900 uppercase">
-                                  <Coffee className="w-3 h-3" />
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200/70 dark:bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-transparent dark:border-amber-500/30 uppercase">
+                                  <Coffee className="w-3 h-3 text-amber-700 dark:text-amber-400" />
                                   Break / Interval
                                 </span>
                                 <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100">
@@ -448,7 +448,7 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
                                         updatedAt: '',
                                       })
                                     }
-                                    className="p-1 text-amber-700 hover:text-amber-900 hover:bg-amber-100 rounded"
+                                    className="p-1 text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-500/20 rounded"
                                     title="Edit Break"
                                   >
                                     <Pencil className="w-3.5 h-3.5" />
@@ -456,17 +456,17 @@ export const ClassTimetableView: React.FC<ClassTimetableViewProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => onDeleteBreak(session.id)}
-                                    className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded"
+                                    className="p-1 text-rose-600 hover:text-rose-800 hover:bg-rose-100 dark:hover:bg-rose-950/30 rounded"
                                     title="Delete Break"
                                   >
                                     <Trash2 className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               </div>
-                              <div className="font-bold text-sm text-amber-900 leading-tight">
+                              <div className="font-bold text-sm text-amber-900 dark:text-amber-300 leading-tight">
                                 {session.name}
                               </div>
-                              <div className="flex items-center gap-1.5 text-xs text-amber-800 font-semibold mt-1">
+                              <div className="flex items-center gap-1.5 text-xs text-amber-800 dark:text-amber-400 font-semibold mt-1">
                                 <Clock className="w-3.5 h-3.5" />
                                 <span>
                                   {formatMinutesToDisplayTime(session.startMinutes)} –{' '}

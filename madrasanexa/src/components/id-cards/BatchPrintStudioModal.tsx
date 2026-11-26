@@ -207,26 +207,26 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-stone-900/75 backdrop-blur-xs overflow-y-auto print:hidden">
         {/* Main Modal Shell */}
         <div
-          className="relative w-full max-w-6xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden my-auto flex flex-col max-h-[95vh]"
+          className="relative w-full max-w-6xl bg-white dark:bg-[#141820] rounded-3xl shadow-2xl border border-stone-200 dark:border-[#242936] overflow-hidden my-auto flex flex-col max-h-[95vh]"
           role="dialog"
           aria-modal="true"
         >
           {/* Header Bar */}
-          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-stone-200 bg-gradient-to-r from-stone-50/90 to-white shrink-0 min-w-0">
+          <div className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-stone-200 dark:border-[#242936] bg-gradient-to-r from-stone-50/90 to-white dark:from-[#171B24] dark:to-[#141820] shrink-0 min-w-0">
             <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
               <div className="w-9 sm:w-11 h-9 sm:h-11 rounded-2xl bg-[#0F5A47] text-white flex items-center justify-center shadow-xs shrink-0">
                 <Printer className="w-4 sm:w-5 h-4 sm:h-5 text-emerald-200" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 min-w-0">
-                  <h3 className="font-bold text-xs sm:text-base text-[#0F172A] tracking-tight truncate">
+                  <h3 className="font-bold text-xs sm:text-base text-[#0F172A] dark:text-[#F9FAFB] tracking-tight truncate">
                     A4 Batch ID Card Print Studio
                   </h3>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-100 text-[#0F5A47] shrink-0">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-100 dark:bg-emerald-950/40 text-[#0F5A47] dark:text-emerald-300 shrink-0">
                     {cards.length} Cards
                   </span>
                 </div>
-                <p className="text-[10px] sm:text-xs text-stone-500 font-medium mt-0.5 truncate hidden sm:block">
+                <p className="text-[10px] sm:text-xs text-stone-500 dark:text-[#9CA3AF] font-medium mt-0.5 truncate hidden sm:block">
                   2×4 Grid · 8 Cards/Sheet · Exact CR80 (85.60 × 53.98 mm) · Exterior Crop Marks
                 </p>
               </div>
@@ -235,7 +235,7 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 sm:p-2 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-xl transition-colors cursor-pointer shrink-0"
+              className="p-1.5 sm:p-2 text-stone-400 dark:text-[#9CA3AF] hover:text-stone-700 dark:hover:text-[#F9FAFB] hover:bg-stone-100 dark:hover:bg-[#1C222D] rounded-xl transition-colors cursor-pointer shrink-0"
               aria-label="Close dialog"
             >
               <X className="w-5 h-5" />
@@ -243,16 +243,16 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
           </div>
 
           {/* Subheader Toolbar & Control Bar */}
-          <div className="px-4 sm:px-6 py-3 border-b border-stone-200 bg-white flex flex-wrap items-center justify-between gap-3 sm:gap-4 shrink-0">
+          <div className="px-4 sm:px-6 py-3 border-b border-stone-200 dark:border-[#242936] bg-white dark:bg-[#141820] flex flex-wrap items-center justify-between gap-3 sm:gap-4 shrink-0">
             {/* View Mode Tabs */}
-            <div className="flex flex-wrap items-center gap-1 p-1 bg-stone-100 rounded-xl border border-stone-200/80 shadow-xs w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-1 p-1 bg-stone-100 dark:bg-[#1C222D] rounded-xl border border-stone-200/80 dark:border-[#242936] shadow-xs w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setActiveSheetMode('both')}
                 className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'both'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
+                    ? 'bg-white dark:bg-[#242936] text-emerald-800 dark:text-[#84CC16] shadow-xs'
+                    : 'text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
                 }`}
               >
                 Duplex (Front & Back)
@@ -262,8 +262,8 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
                 onClick={() => setActiveSheetMode('front')}
                 className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'front'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
+                    ? 'bg-white dark:bg-[#242936] text-emerald-800 dark:text-[#84CC16] shadow-xs'
+                    : 'text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
                 }`}
               >
                 Fronts Only
@@ -273,8 +273,8 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
                 onClick={() => setActiveSheetMode('back')}
                 className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'back'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
+                    ? 'bg-white dark:bg-[#242936] text-emerald-800 dark:text-[#84CC16] shadow-xs'
+                    : 'text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
                 }`}
               >
                 Backs Only
@@ -284,8 +284,8 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
                 onClick={() => setActiveSheetMode('calibration')}
                 className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer text-center whitespace-nowrap ${
                   activeSheetMode === 'calibration'
-                    ? 'bg-white text-emerald-800 shadow-xs'
-                    : 'text-stone-500 hover:text-stone-800'
+                    ? 'bg-white dark:bg-[#242936] text-amber-800 dark:text-amber-400 shadow-xs'
+                    : 'text-stone-500 dark:text-[#9CA3AF] hover:text-stone-800 dark:hover:text-[#F9FAFB]'
                 }`}
               >
                 Calibration Sheet
@@ -360,27 +360,27 @@ export const BatchPrintStudioModal: React.FC<BatchPrintStudioModalProps> = ({
           )}
 
           {/* Interactive Screen Preview Viewport */}
-          <div className="flex-1 overflow-auto p-4 sm:p-6 bg-stone-100 flex flex-col items-center justify-start min-h-[480px]">
+          <div className="flex-1 overflow-auto p-4 sm:p-6 bg-stone-100 dark:bg-[#0B0D11] flex flex-col items-center justify-start min-h-[480px]">
             {/* Sheet Page Pagination Controls (When > 1 sheet chunk) */}
             {activeSheetMode !== 'calibration' && totalSheetPages > 1 && (
-              <div className="mb-3 flex items-center gap-3 bg-white px-4 py-1.5 rounded-full shadow-xs border border-stone-200 text-xs">
+              <div className="mb-3 flex items-center gap-3 bg-white dark:bg-[#1C222D] px-4 py-1.5 rounded-full shadow-xs border border-stone-200 dark:border-[#242936] text-xs">
                 <button
                   type="button"
                   onClick={() => setCurrentPreviewPage((p) => Math.max(1, p - 1))}
                   disabled={currentPreviewPage <= 1}
-                  className="p-1 rounded-full hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                  className="p-1 rounded-full hover:bg-stone-100 dark:hover:bg-[#242936] text-stone-700 dark:text-[#D1D5DB] disabled:opacity-30 cursor-pointer"
                   aria-label="Previous sheet page"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="font-semibold text-stone-700">
+                <span className="font-semibold text-stone-700 dark:text-[#F9FAFB]">
                   Previewing Sheet Page <strong>{currentPreviewPage}</strong> of <strong>{totalSheetPages}</strong>
                 </span>
                 <button
                   type="button"
                   onClick={() => setCurrentPreviewPage((p) => Math.min(totalSheetPages, p + 1))}
                   disabled={currentPreviewPage >= totalSheetPages}
-                  className="p-1 rounded-full hover:bg-stone-100 disabled:opacity-30 cursor-pointer"
+                  className="p-1 rounded-full hover:bg-stone-100 dark:hover:bg-[#242936] text-stone-700 dark:text-[#D1D5DB] disabled:opacity-30 cursor-pointer"
                   aria-label="Next sheet page"
                 >
                   <ChevronRight className="w-4 h-4" />

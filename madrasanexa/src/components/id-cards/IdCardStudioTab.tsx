@@ -493,11 +493,11 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
 
       {/* Batch Selection Action Bar */}
       {selectedStudentIds.length > 0 && (
-        <div className="bg-emerald-50/90 border border-emerald-200 rounded-2xl px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-950 shadow-xs">
+        <div className="bg-emerald-50/90 dark:bg-[#1C222D] border border-emerald-200 dark:border-[#242936] rounded-2xl px-5 py-3 flex flex-wrap items-center justify-between gap-3 text-xs text-emerald-950 dark:text-[#F9FAFB] shadow-xs">
           <div className="flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 text-[#0F5A47]" />
-            <span className="font-semibold">
-              <strong>{selectedStudentIds.length}</strong> student{selectedStudentIds.length === 1 ? '' : 's'} selected
+            <CheckCircle2 className="w-4 h-4 text-[#0F5A47] dark:text-[#84CC16]" />
+            <span className="font-semibold text-emerald-950 dark:text-[#F9FAFB]">
+              <strong className="text-emerald-950 dark:text-[#F9FAFB]">{selectedStudentIds.length}</strong> student{selectedStudentIds.length === 1 ? '' : 's'} selected
             </span>
           </div>
 
@@ -505,7 +505,7 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
             <button
               type="button"
               onClick={handleClearSelection}
-              className="px-3 py-1.5 rounded-lg border border-emerald-200 bg-white text-emerald-800 hover:bg-emerald-50 text-xs font-medium cursor-pointer"
+              className="px-3 py-1.5 rounded-lg border border-emerald-200 dark:border-[#242936] bg-white dark:bg-[#141820] text-emerald-800 dark:text-[#D1D5DB] hover:bg-emerald-50 dark:hover:bg-[#1C222D] text-xs font-semibold cursor-pointer transition-colors"
             >
               Clear Selection
             </button>
@@ -514,12 +514,12 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
               type="button"
               onClick={() => handleOpenLabelStudio()}
               disabled={isLoadingLabelPrint}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-emerald-300 bg-white text-[#0F5A47] hover:bg-emerald-50 font-semibold text-xs shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-emerald-300 dark:border-[#242936] bg-white dark:bg-[#141820] text-[#0F5A47] dark:text-[#84CC16] hover:bg-emerald-50 dark:hover:bg-[#1C222D] font-semibold text-xs shadow-xs cursor-pointer active:scale-95 disabled:opacity-50 transition-colors"
             >
               {isLoadingLabelPrint ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
               ) : (
-                <Tags className="w-3.5 h-3.5 text-[#0F5A47]" />
+                <Tags className="w-3.5 h-3.5 text-[#0F5A47] dark:text-[#84CC16]" />
               )}
               <span>Print Labels ({selectedStudentIds.length})</span>
             </button>
@@ -528,7 +528,7 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
               type="button"
               onClick={() => handleOpenBatchPrint()}
               disabled={isLoadingBatchPrint}
-              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0F5A47] hover:bg-[#0c4738] text-white font-semibold text-xs shadow-xs cursor-pointer active:scale-95 disabled:opacity-50"
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-[#0F5A47] dark:bg-[#84CC16] hover:bg-[#0c4738] dark:hover:bg-[#65A30D] text-white dark:text-[#0B0D11] font-semibold text-xs shadow-xs cursor-pointer active:scale-95 disabled:opacity-50 transition-colors"
             >
               {isLoadingBatchPrint ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -542,11 +542,11 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
       )}
 
       {/* Directory Table */}
-      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#141820] rounded-2xl border border-stone-200/80 dark:border-[#242936] shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[850px] text-left border-collapse">
             <thead>
-              <tr className="border-b border-stone-200/80 bg-stone-50/70 text-[11px] font-bold text-stone-500 uppercase tracking-wider">
+              <tr className="border-b border-stone-200/80 dark:border-[#242936] bg-stone-50/70 dark:bg-[#1C222D] text-[11px] font-bold text-stone-500 dark:text-[#9CA3AF] uppercase tracking-wider">
                 <th className="py-3 px-3 w-10 text-center">
                   <input
                     type="checkbox"
@@ -565,23 +565,23 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 text-xs">
+            <tbody className="divide-y divide-stone-100 dark:divide-[#242936] text-xs">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-stone-400">
+                  <td colSpan={8} className="py-12 text-center text-stone-400 dark:text-[#9CA3AF]">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <Loader2 className="w-6 h-6 animate-spin text-[#0F5A47]" />
+                      <Loader2 className="w-6 h-6 animate-spin text-[#0F5A47] dark:text-[#84CC16]" />
                       <span>Loading student card directory...</span>
                     </div>
                   </td>
                 </tr>
               ) : items.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-stone-400">
+                  <td colSpan={8} className="py-12 text-center text-stone-400 dark:text-[#9CA3AF]">
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <CreditCard className="w-8 h-8 text-stone-300 stroke-[1.5]" />
-                      <span className="font-semibold text-stone-600">No student card records found.</span>
-                      <p className="text-[11px] text-stone-400 max-w-sm">
+                      <CreditCard className="w-8 h-8 text-stone-300 dark:text-stone-600 stroke-[1.5]" />
+                      <span className="font-semibold text-stone-600 dark:text-[#D1D5DB]">No student card records found.</span>
+                      <p className="text-[11px] text-stone-400 dark:text-[#9CA3AF] max-w-sm">
                         Adjust search filters or click &quot;Generate Missing Cards&quot; to issue initial card credentials.
                       </p>
                     </div>
@@ -597,7 +597,7 @@ export const IdCardStudioTab: React.FC<IdCardStudioTabProps> = ({
                   return (
                     <tr
                       key={item.studentId}
-                      className={`transition-colors ${isSelected ? 'bg-emerald-50/40 hover:bg-emerald-50/60' : 'hover:bg-stone-50/70'}`}
+                      className={`transition-colors ${isSelected ? 'bg-emerald-50/40 dark:bg-emerald-950/25 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/40' : 'hover:bg-stone-50/70 dark:hover:bg-[#1C222D]/60'}`}
                     >
                       {/* Selection Checkbox */}
                       <td className="py-3 px-3 text-center">

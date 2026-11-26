@@ -103,7 +103,7 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
 
     return (
       <div
-        className={`relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
+        className={`id-card-face relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
         style={{
           width: '53.98mm',
           height: '85.60mm',
@@ -264,7 +264,7 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
               Full Student Name
             </span>
             <h2
-              className="font-extrabold text-[#0D251F] tracking-tight mt-[0.3mm] line-clamp-2"
+              className="id-card-student-name font-extrabold text-[#0D251F] tracking-tight mt-[0.3mm] line-clamp-2"
               style={{
                 fontSize: verticalNameFontSize,
                 lineHeight: verticalNameLineHeight,
@@ -388,7 +388,7 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
 
   return (
     <div
-      className={`relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
+      className={`id-card-face relative overflow-hidden select-none border border-stone-300 shadow-sm print:shadow-none print:border-none ${className}`}
       style={{
         width: '85.60mm',
         height: '53.98mm',
@@ -564,7 +564,7 @@ export const IdCardFront: React.FC<IdCardFrontProps> = ({
                 Student Name
               </span>
               <h2
-                className="font-extrabold text-[#0D251F] line-clamp-2 tracking-tight mt-[0.2mm] break-words"
+                className="id-card-student-name font-extrabold text-[#0D251F] line-clamp-2 tracking-tight mt-[0.2mm] break-words"
                 style={{
                   fontSize: horizontalNameFontSize,
                   lineHeight: horizontalNameLineHeight,

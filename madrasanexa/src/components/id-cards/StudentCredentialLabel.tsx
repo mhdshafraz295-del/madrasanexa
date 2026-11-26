@@ -72,7 +72,8 @@ export const StudentCredentialLabel: React.FC<StudentCredentialLabelProps> = ({
 
   return (
     <div
-      className={`student-credential-label relative bg-white text-stone-900 overflow-hidden box-border select-none flex flex-col justify-between ${getBorderClasses()} ${className}`}
+      className={`student-credential-label credential-label-card relative bg-white text-stone-900 overflow-hidden box-border select-none flex flex-col justify-between ${getBorderClasses()} ${className}`}
+      data-label-card="true"
       style={{
         width: `${widthMm}mm`,
         height: `${heightMm}mm`,
@@ -121,7 +122,7 @@ export const StudentCredentialLabel: React.FC<StudentCredentialLabelProps> = ({
       <div className="w-full text-center shrink-0 pt-[0.5mm]" style={{ width: '100%', textAlign: 'center', flexShrink: 0, paddingTop: '0.5mm' }}>
         {/* Student Full Name with safe wrapping and font scaling */}
         <h4
-          className={`font-bold text-[#0F172A] leading-tight tracking-tight line-clamp-1 ${
+          className={`credential-label-student-name font-bold text-[#0F172A] leading-tight tracking-tight line-clamp-1 ${
             style === 'compact'
               ? 'text-[2.2mm]'
               : style === 'minimal'

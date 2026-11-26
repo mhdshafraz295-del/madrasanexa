@@ -77,7 +77,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
         @keyframes subjectCardReveal {
           from {
             opacity: 0;
-            transform: translateY(14px);
+            transform: translateY(12px);
           }
           to {
             opacity: 1;
@@ -89,13 +89,13 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
           animation: curriculumGoldSweep 4s ease-in-out infinite;
         }
         .animate-subject-reveal {
-          animation: subjectCardReveal 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation: subjectCardReveal 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
       `}</style>
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto px-4">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#6B6A45] mb-2.5 px-3.5 py-1 rounded-full bg-[#F4F3EC] border border-[#E2E0D0] shadow-2xs">
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#6B6A45] mb-2.5 px-4 py-1.5 rounded-full bg-[#EFECE4] shadow-[inset_0_1px_3px_rgba(60,50,30,0.08)] border-0">
           <BookOpen className="w-3.5 h-3.5 text-[#6B6A45]" />
           <span>Curriculum & Academic Standards</span>
         </div>
@@ -113,8 +113,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
       {/* 1. Legacy Syllabus Briefing (Rendered as institutional intro if present) */}
       {syllabusInfo && (
-        <div className="bg-white rounded-3xl border border-[#E2E0D0] p-6 sm:p-8 relative overflow-hidden shadow-xs max-w-5xl mx-auto bg-islamic-diamond-subtle">
-          <div className="h-1 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] absolute top-0 inset-x-0" />
+        <div className="bg-[#FAF8F4] rounded-3xl border-0 p-6 sm:p-8 relative overflow-hidden shadow-[0_6px_24px_-4px_rgba(45,38,24,0.06)] max-w-5xl mx-auto bg-islamic-diamond-subtle">
           <div className="flex items-center space-x-2 text-xs font-bold text-[#6B6A45] uppercase tracking-wider mb-2.5">
             <Sparkles className="w-4 h-4 text-[#8C8A58]" />
             <span>Academic Framework & Overview</span>
@@ -144,10 +143,10 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                     setSelectedLevelId(firstInAll.levels[0]?.id || null);
                   }
                 }}
-                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
+                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer border-0 ${
                   selectedCatId === 'all'
-                    ? 'bg-[#6B6A45] text-white shadow-xs'
-                    : 'bg-white text-slate-700 border border-[#E2E0D0] hover:bg-[#F4F3EC]'
+                    ? 'bg-[#6B6A45] text-white shadow-[0_4px_12px_rgba(107,106,69,0.25)]'
+                    : 'bg-[#EFECE4] text-slate-700 shadow-[inset_0_1px_3px_rgba(60,50,30,0.07)] hover:bg-white hover:shadow-[0_4px_12px_rgba(45,38,24,0.08)]'
                 }`}
               >
                 All Disciplines ({publishedProgrammes.length})
@@ -169,10 +168,10 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                         setSelectedLevelId(firstInCat.levels[0]?.id || null);
                       }
                     }}
-                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
+                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center space-x-1.5 cursor-pointer border-0 ${
                       selectedCatId === cat.id
-                        ? 'bg-[#6B6A45] text-white shadow-xs'
-                        : 'bg-white text-slate-700 border border-[#E2E0D0] hover:bg-[#F4F3EC]'
+                        ? 'bg-[#6B6A45] text-white shadow-[0_4px_12px_rgba(107,106,69,0.25)]'
+                        : 'bg-[#EFECE4] text-slate-700 shadow-[inset_0_1px_3px_rgba(60,50,30,0.07)] hover:bg-white hover:shadow-[0_4px_12px_rgba(45,38,24,0.08)]'
                     }`}
                   >
                     <span>{cat.label}</span>
@@ -185,14 +184,14 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
             </div>
           )}
 
-          {/* Programme Selector Cards - Centered & Balanced Layout with Islamic Diamond Pattern */}
+          {/* Programme Selector Cards - Recessed vs. Pop-Out Elevated */}
           <div
             className={`w-full ${
               filteredProgrammes.length === 1
                 ? 'max-w-xl mx-auto'
                 : filteredProgrammes.length === 2
                 ? 'max-w-3xl mx-auto flex flex-col sm:flex-row gap-4'
-                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+                : 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5'
             }`}
           >
             {filteredProgrammes.map((prog) => {
@@ -206,10 +205,10 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                     setSelectedProgId(prog.id);
                     setSelectedLevelId(prog.levels[0]?.id || null);
                   }}
-                  className={`relative rounded-3xl border cursor-pointer transition-all duration-300 flex flex-col justify-between overflow-hidden ${
+                  className={`relative rounded-3xl border-0 cursor-pointer transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden ${
                     isSelected
-                      ? 'bg-white border-[#6B6A45] shadow-lg ring-2 ring-[#C5A059]/40 scale-101'
-                      : 'bg-[#F8F7F2] border-[#E2E0D0] hover:border-[#C5A059]/60 shadow-2xs hover:shadow-sm'
+                      ? 'bg-white -translate-y-1 shadow-[0_14px_30px_-6px_rgba(45,38,24,0.14),0_4px_10px_-2px_rgba(45,38,24,0.06)] ring-0'
+                      : 'bg-[#EFECE4] opacity-90 shadow-[inset_0_2px_6px_rgba(60,50,30,0.08)] hover:opacity-100 hover:bg-white hover:-translate-y-1 hover:shadow-[0_14px_30px_-6px_rgba(45,38,24,0.14),0_4px_10px_-2px_rgba(45,38,24,0.06)]'
                   }`}
                 >
                   <div className="p-5 sm:p-6 bg-islamic-diamond-subtle flex-1 flex flex-col justify-between">
@@ -217,7 +216,13 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                       {/* Top Row: Code & Animated Antique Gold Duration Badge */}
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         {prog.code ? (
-                          <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#FAF8F2] text-[#6B6A45] border border-[#E2E0D0]">
+                          <span
+                            className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border-0 ${
+                              isSelected
+                                ? 'bg-[#F4F1EA] text-[#6B6A45]'
+                                : 'bg-[#E5E1D7] text-[#5C533D] shadow-[inset_0_1px_2px_rgba(60,50,30,0.06)]'
+                            }`}
+                          >
                             {prog.code}
                           </span>
                         ) : (
@@ -226,8 +231,8 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                           </span>
                         )}
 
-                        {/* Animated Antique Gold Duration Badge */}
-                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-[#B58D3D] via-[#DFC076] to-[#B58D3D] bg-[length:200%_100%] animate-curriculum-gold-shimmer text-[#1F1B0E] border border-[#F0D999]/80 shadow-2xs">
+                        {/* Animated Antique Gold Duration Badge (border-0) */}
+                        <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-[#B58D3D] via-[#DFC076] to-[#B58D3D] bg-[length:200%_100%] animate-curriculum-gold-shimmer text-[#1F1B0E] border-0 shadow-xs">
                           <Clock className="w-3 h-3 text-[#1F1B0E]" />
                           <span>{prog.durationYears || 'Flexible'}</span>
                         </span>
@@ -247,7 +252,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                     </div>
 
                     {/* Academic Stat Pills */}
-                    <div className="mt-4 pt-3 border-t border-[#E2E0D0]/80 flex items-center justify-between text-xs font-semibold text-[#504F34]">
+                    <div className="mt-4 pt-3 flex items-center justify-between text-xs font-semibold text-[#504F34]">
                       <span className="flex items-center gap-1.5">
                         <Layers className="w-3.5 h-3.5 text-[#8C8A58]" />
                         <span>{prog.levels.length} Levels</span>
@@ -258,23 +263,16 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                       </span>
                     </div>
                   </div>
-
-                  {/* Animated Gold Bottom Indicator Bar */}
-                  {isSelected && (
-                    <div className="h-1 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] w-full" />
-                  )}
                 </div>
               );
             })}
           </div>
 
-          {/* Active Programme Explorer Workspace */}
+          {/* Active Programme Explorer Workspace - Borderless Soft Surface */}
           {activeProgramme && activeProgramme.levels.length > 0 && (
-            <div className="bg-white rounded-3xl border border-[#D8D5C0] p-5 sm:p-8 space-y-8 shadow-md relative overflow-hidden">
-              <div className="h-1 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] absolute top-0 inset-x-0" />
-
+            <div className="bg-[#FAF8F4] rounded-3xl border-0 p-5 sm:p-8 space-y-8 shadow-[0_8px_30px_-6px_rgba(45,38,24,0.07)] relative overflow-hidden">
               {/* Programme Details Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#E2E0D0] gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 gap-4">
                 <div>
                   <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#8C8A58]">
                     <span>{categories.find((c) => c.id === activeProgramme.categoryId)?.label || 'Discipline'}</span>
@@ -295,7 +293,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                 </div>
 
                 {activeProgramme.admissionRequirements && (
-                  <div className="bg-[#FAF8F2] border border-[#E2E0D0] rounded-2xl p-3.5 max-w-xs text-xs shadow-2xs">
+                  <div className="bg-[#EFECE4] border-0 rounded-2xl p-3.5 max-w-xs text-xs shadow-[inset_0_1px_3px_rgba(60,50,30,0.06)]">
                     <span className="font-bold text-[#232215] block mb-0.5 flex items-center gap-1">
                       <Compass className="w-3.5 h-3.5 text-[#8C8A58]" />
                       Admission Criteria
@@ -315,7 +313,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
                 {/* Horizontal Stepper Track with Connected Line */}
                 <div className="w-full overflow-x-auto no-scrollbar py-2">
-                  <div className="inline-flex items-center gap-2 sm:gap-3 min-w-max p-1 bg-[#F8F7F2] rounded-2xl border border-[#E2E0D0]">
+                  <div className="inline-flex items-center gap-2 sm:gap-3 min-w-max p-1.5 bg-[#EFECE4] rounded-2xl border-0 shadow-[inset_0_2px_5px_rgba(60,50,30,0.08)]">
                     {activeProgramme.levels.map((lvl, lvlIdx) => {
                       const isLvlSelected = activeLevel?.id === lvl.id;
                       const levelNumber = String(lvlIdx + 1).padStart(2, '0');
@@ -325,17 +323,17 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                           <button
                             type="button"
                             onClick={() => setSelectedLevelId(lvl.id)}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer shadow-2xs ${
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-250 ease-out flex items-center gap-2 cursor-pointer border-0 ${
                               isLvlSelected
-                                ? 'bg-[#6B6A45] text-white ring-2 ring-[#C5A059] shadow-xs'
-                                : 'bg-white text-slate-700 border border-[#E2E0D0] hover:bg-[#F4F3EC]'
+                                ? 'bg-[#6B6A45] text-white -translate-y-0.5 shadow-[0_10px_20px_-4px_rgba(107,106,69,0.35)]'
+                                : 'bg-[#E5E1D7]/80 text-slate-700 shadow-[inset_0_1px_3px_rgba(60,50,30,0.06)] hover:bg-white hover:-translate-y-0.5 hover:shadow-[0_8px_16px_-4px_rgba(45,38,24,0.12)]'
                             }`}
                           >
                             <span
-                              className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold ${
+                              className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold border-0 ${
                                 isLvlSelected
                                   ? 'bg-[#504F34] text-[#EFEFD0]'
-                                  : 'bg-[#F4F3EC] text-[#6B6A45]'
+                                  : 'bg-[#DAD5C8] text-[#504F34]'
                               }`}
                             >
                               {levelNumber}
@@ -343,8 +341,8 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                             <span>{lvl.levelLabel}</span>
                             {lvl.streamName && (
                               <span
-                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                  isLvlSelected ? 'bg-white/20 text-white' : 'bg-[#E2E0D0]/80 text-[#504F34]'
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium border-0 ${
+                                  isLvlSelected ? 'bg-white/20 text-white' : 'bg-[#D8D3C6] text-[#504F34]'
                                 }`}
                               >
                                 {lvl.streamName}
@@ -352,9 +350,9 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                             )}
                           </button>
 
-                          {/* Connecting arrow / track line */}
+                          {/* Connecting track line */}
                           {lvlIdx < activeProgramme.levels.length - 1 && (
-                            <div className="w-4 sm:w-6 h-0.5 bg-[#C5A059]/40 shrink-0" aria-hidden="true" />
+                            <div className="w-4 sm:w-6 h-0.5 bg-[#C5A059]/30 rounded-full shrink-0" aria-hidden="true" />
                           )}
                         </React.Fragment>
                       );
@@ -379,7 +377,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                   </div>
 
                   {activeLevel.subjects.length === 0 ? (
-                    <div className="p-8 text-center bg-[#F8F7F2] rounded-3xl border border-dashed border-[#E2E0D0]">
+                    <div className="p-8 text-center bg-[#EFECE4]/80 rounded-3xl border-0 shadow-[inset_0_2px_5px_rgba(60,50,30,0.06)]">
                       <p className="text-xs text-slate-600">
                         No subject records currently published for this academic level.
                       </p>
@@ -389,7 +387,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                       {activeLevel.subjects.map((sub, subIdx) => (
                         <div
                           key={sub.id}
-                          className="bg-white border border-[#E2E0D0] rounded-3xl p-5 hover:border-[#C5A059]/70 hover:shadow-md transition-all duration-300 flex flex-col justify-between animate-subject-reveal"
+                          className="bg-[#EFECE4]/85 border-0 rounded-3xl p-5 sm:p-6 shadow-[inset_0_2px_5px_rgba(60,50,30,0.07)] hover:bg-white hover:-translate-y-1 hover:shadow-[0_12px_24px_-6px_rgba(45,38,24,0.12)] transition-all duration-250 ease-out flex flex-col justify-between animate-subject-reveal"
                           style={{ animationDelay: `${subIdx * 55}ms` }}
                         >
                           <div>
@@ -397,7 +395,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-2.5 min-w-0 flex-1">
                                 {/* Numbered Milestone Emblem */}
-                                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#6B6A45] to-[#504F34] text-[#F8F7F2] font-mono font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs border border-[#C5A059]/40 mt-0.5">
+                                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#6B6A45] to-[#504F34] text-[#F8F7F2] font-mono font-bold text-xs flex items-center justify-center shrink-0 border-0 shadow-[0_2px_6px_rgba(107,106,69,0.3)] mt-0.5">
                                   {String(subIdx + 1).padStart(2, '0')}
                                 </div>
 
@@ -416,12 +414,12 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                                 </div>
                               </div>
 
-                              {/* Gold-Tinted Compulsory / Elective Badge */}
+                              {/* Borderless Tinted Compulsory / Elective Badge */}
                               <span
-                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 shadow-2xs ${
+                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 border-0 ${
                                   sub.isOptional
-                                    ? 'bg-[#F4F3EC] text-[#6B6A45] border border-[#E2E0D0]'
-                                    : 'bg-[#FAF8F2] text-[#8C8A58] border border-[#C5A059]/50'
+                                    ? 'bg-[#E5E0D2] text-[#6B6A45]'
+                                    : 'bg-[#EBE6D8] text-[#5C533D]'
                                 }`}
                               >
                                 {sub.isOptional ? 'Elective' : 'Compulsory'}
@@ -437,7 +435,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
                             {/* Prescribed Kitabs & Textbooks Multi-Book Drawer */}
                             {sub.books.length > 0 && (
-                              <div className="mt-4 pt-3 border-t border-[#E2E0D0] space-y-2">
+                              <div className="mt-4 pt-3 space-y-2">
                                 <span className="text-[10px] font-bold text-[#6B6A45] uppercase tracking-wider flex items-center space-x-1.5">
                                   <BookMarked className="w-3.5 h-3.5 text-[#8C8A58]" />
                                   <span>Prescribed Kitabs & Textbooks ({sub.books.length})</span>
@@ -447,14 +445,14 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                                   {sub.books.map((bk) => (
                                     <div
                                       key={bk.id}
-                                      className="bg-[#F8F7F2] rounded-2xl p-3 border border-[#E2E0D0] text-xs shadow-2xs"
+                                      className="bg-[#E5E1D7]/75 rounded-2xl p-3 border-0 text-xs shadow-[inset_0_1px_3px_rgba(60,50,30,0.05)]"
                                     >
                                       <div className="flex flex-wrap items-center justify-between gap-2">
                                         <span dir="auto" className="font-bold text-[#232215] min-w-0 break-words">
                                           {bk.title}
                                         </span>
                                         {bk.completionNotes && (
-                                          <span className="text-[10px] font-bold text-[#8C8A58] bg-white px-2 py-0.5 rounded-full border border-[#C5A059]/30">
+                                          <span className="text-[10px] font-bold text-[#8C8A58] bg-white px-2 py-0.5 rounded-full border-0 shadow-2xs">
                                             {bk.completionNotes}
                                           </span>
                                         )}
@@ -498,11 +496,10 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
         </div>
       ) : null}
 
-      {/* 3. Rules & Regulations Card (Preserved with Regal Styling) */}
-      <div id="rules" className="bg-white rounded-3xl border border-[#D8D5C0] p-6 sm:p-9 scroll-mt-28 shadow-xs max-w-5xl mx-auto bg-islamic-diamond-subtle relative overflow-hidden">
-        <div className="h-1 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] absolute top-0 inset-x-0" />
+      {/* 3. Rules & Regulations Card (Borderless Soft Ambient Surface) */}
+      <div id="rules" className="bg-[#FAF8F4] rounded-3xl border-0 p-6 sm:p-9 scroll-mt-28 shadow-[0_8px_30px_-6px_rgba(45,38,24,0.08)] max-w-5xl mx-auto bg-islamic-diamond-subtle relative overflow-hidden">
         <div className="flex items-center space-x-2.5 text-xs font-bold text-[#6B6A45] uppercase tracking-wider mb-3">
-          <div className="w-8 h-8 rounded-xl bg-[#F4F3EC] border border-[#E2E0D0] flex items-center justify-center text-[#6B6A45]">
+          <div className="w-8 h-8 rounded-xl bg-[#EFECE4] border-0 shadow-[inset_0_1px_3px_rgba(60,50,30,0.06)] flex items-center justify-center text-[#6B6A45]">
             <ShieldCheck className="w-4 h-4 text-[#6B6A45]" />
           </div>
           <span>Institutional Conduct & Ethos</span>
@@ -523,7 +520,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
             'Students must observe strict punctuality, dignified Islamic attire, respectful etiquette toward teachers and fellow peers, and active participation in daily congregational prayers and assemblies.'}
         </div>
 
-        <div className="pt-4 border-t border-[#E2E0D0] flex items-center space-x-2 text-xs font-semibold text-slate-600">
+        <div className="pt-4 flex items-center space-x-2 text-xs font-semibold text-slate-600">
           <Award className="w-4 h-4 text-[#8C8A58]" />
           <span>Dedicated to nurturing discipline, reverence, and academic excellence</span>
         </div>

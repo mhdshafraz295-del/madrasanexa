@@ -883,14 +883,14 @@ export const ScholarAlumniHubPage: React.FC = () => {
       {/* Editor Modal (Add / Edit) */}
       {isEditorModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="font-bold text-base text-slate-900">
+          <div className="bg-white dark:bg-[#141820] rounded-2xl max-w-xl w-full border border-slate-200 dark:border-[#242936] shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+            <div className="p-5 border-b border-slate-100 dark:border-[#242936] flex items-center justify-between bg-slate-50/50 dark:bg-[#171B24]">
+              <h3 className="font-bold text-base text-slate-900 dark:text-[#F9FAFB]">
                 {editingItem ? 'Edit Scholar Profile' : 'Add New Verified Scholar'}
               </h3>
               <button
                 onClick={() => setIsEditorModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 cursor-pointer"
+                className="p-1 text-slate-400 dark:text-[#9CA3AF] hover:text-slate-700 dark:hover:text-[#F9FAFB] rounded-lg hover:bg-slate-100 dark:hover:bg-[#1C222D] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -898,19 +898,19 @@ export const ScholarAlumniHubPage: React.FC = () => {
 
             <form onSubmit={handleSaveEditor} className="p-5 sm:p-6 overflow-y-auto space-y-4 text-xs">
               {editorError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700">
+                <div className="p-3 bg-rose-50 dark:bg-rose-500/15 border border-rose-200 dark:border-rose-500/30 rounded-xl text-rose-700 dark:text-rose-300">
                   {editorError}
                 </div>
               )}
 
               {/* Photo Upload & Live Framing Preview */}
-              <div className="p-4 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-3">
+              <div className="p-4 bg-slate-50/90 dark:bg-[#1C222D] rounded-2xl border border-slate-200/90 dark:border-[#242936] space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
-                    <label className="block font-semibold text-slate-800 text-xs">
+                    <label className="block font-semibold text-slate-800 dark:text-[#F9FAFB] text-xs">
                       Scholar Profile Photograph
                     </label>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-400 dark:text-[#9CA3AF]">
                       High clarity avatar (crisp 512px). Portrait photos are automatically anchored to the face.
                     </p>
                   </div>
@@ -918,16 +918,16 @@ export const ScholarAlumniHubPage: React.FC = () => {
                     type="file"
                     accept="image/*"
                     onChange={handleEditorPhotoUpload}
-                    className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-900 file:text-white hover:file:opacity-90 cursor-pointer"
+                    className="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-slate-900 dark:file:bg-[#84CC16] file:text-white dark:file:text-[#0B0D11] hover:file:opacity-90 cursor-pointer"
                   />
                 </div>
 
                 {editorForm.photoUrl ? (
-                  <div className="pt-2 border-t border-slate-200/70 space-y-3">
+                  <div className="pt-2 border-t border-slate-200/70 dark:border-[#242936] space-y-3">
                     <div className="flex flex-wrap items-center gap-4">
                       {/* Live Circular Card Preview */}
                       <div className="flex items-center gap-2.5">
-                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-300 ring-4 ring-emerald-50 shadow-sm shrink-0 bg-slate-100 flex items-center justify-center">
+                        <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-300 dark:border-emerald-500 ring-4 ring-emerald-50 dark:ring-emerald-950 shadow-sm shrink-0 bg-slate-100 dark:bg-[#141820] flex items-center justify-center">
                           <img
                             src={editorForm.photoUrl}
                             alt="Circular Avatar Preview"
@@ -935,16 +935,16 @@ export const ScholarAlumniHubPage: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-block mb-0.5">
+                          <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/30 px-2 py-0.5 rounded-full inline-block mb-0.5">
                             Circular Card Preview
                           </span>
-                          <p className="text-[10px] text-slate-500">Live roster appearance</p>
+                          <p className="text-[10px] text-slate-500 dark:text-[#9CA3AF]">Live roster appearance</p>
                         </div>
                       </div>
 
                       {/* Square File Preview */}
                       <div className="flex items-center gap-2.5">
-                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 shadow-2xs shrink-0 bg-slate-100 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-[#242936] shadow-2xs shrink-0 bg-slate-100 dark:bg-[#141820] flex items-center justify-center">
                           <img
                             src={editorForm.photoUrl}
                             alt="Square Preview"
@@ -952,27 +952,27 @@ export const ScholarAlumniHubPage: React.FC = () => {
                           />
                         </div>
                         <div>
-                          <span className="text-[11px] font-bold text-slate-700 bg-white border border-slate-200 px-2 py-0.5 rounded-full inline-block mb-0.5">
+                          <span className="text-[11px] font-bold text-slate-700 dark:text-[#D1D5DB] bg-white dark:bg-[#141820] border border-slate-200 dark:border-[#242936] px-2 py-0.5 rounded-full inline-block mb-0.5">
                             Square Preview
                           </span>
-                          <p className="text-[10px] text-slate-400">512x512 canvas</p>
+                          <p className="text-[10px] text-slate-400 dark:text-[#9CA3AF]">512x512 canvas</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Quick Framing Selector */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 pt-1">
-                      <span className="text-[11px] font-semibold text-slate-600 shrink-0">
+                      <span className="text-[11px] font-semibold text-slate-600 dark:text-[#D1D5DB] shrink-0">
                         Framing Focus:
                       </span>
-                      <div className="inline-flex rounded-xl p-0.5 bg-slate-200/70 border border-slate-200 text-xs">
+                      <div className="inline-flex rounded-xl p-0.5 bg-slate-200/70 dark:bg-[#141820] border border-slate-200 dark:border-[#242936] text-xs">
                         <button
                           type="button"
                           onClick={() => handleFramingChange('top')}
                           className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
                             photoFraming === 'top'
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'text-slate-700 hover:text-slate-900'
+                              ? 'bg-emerald-600 dark:bg-[#84CC16] text-white dark:text-[#0B0D11] shadow-xs'
+                              : 'text-slate-700 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB]'
                           }`}
                         >
                           Top / Face Focus
@@ -982,8 +982,8 @@ export const ScholarAlumniHubPage: React.FC = () => {
                           onClick={() => handleFramingChange('center')}
                           className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
                             photoFraming === 'center'
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'text-slate-700 hover:text-slate-900'
+                              ? 'bg-emerald-600 dark:bg-[#84CC16] text-white dark:text-[#0B0D11] shadow-xs'
+                              : 'text-slate-700 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB]'
                           }`}
                         >
                           Center
@@ -993,8 +993,8 @@ export const ScholarAlumniHubPage: React.FC = () => {
                           onClick={() => handleFramingChange('contain')}
                           className={`px-3 py-1 rounded-lg text-[11px] font-semibold transition cursor-pointer ${
                             photoFraming === 'contain'
-                              ? 'bg-emerald-600 text-white shadow-xs'
-                              : 'text-slate-700 hover:text-slate-900'
+                              ? 'bg-emerald-600 dark:bg-[#84CC16] text-white dark:text-[#0B0D11] shadow-xs'
+                              : 'text-slate-700 dark:text-[#9CA3AF] hover:text-slate-900 dark:hover:text-[#F9FAFB]'
                           }`}
                         >
                           Fit Full Image
@@ -1003,8 +1003,8 @@ export const ScholarAlumniHubPage: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 pt-1 text-slate-400">
-                    <div className="w-12 h-12 rounded-full bg-slate-200 text-slate-400 flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-3 pt-1 text-slate-400 dark:text-[#9CA3AF]">
+                    <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-[#141820] text-slate-400 dark:text-[#9CA3AF] flex items-center justify-center shrink-0">
                       <GraduationCap className="w-6 h-6" />
                     </div>
                     <span className="text-xs">No photograph selected yet (optional).</span>
@@ -1268,11 +1268,11 @@ export const ScholarAlumniHubPage: React.FC = () => {
               </div>
 
               {/* Modal Actions */}
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <div className="pt-4 border-t border-slate-100 dark:border-[#242936] flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsEditorModalOpen(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-slate-100 dark:bg-[#1C222D] hover:bg-slate-200 dark:hover:bg-[#242936] text-slate-700 dark:text-[#D1D5DB] font-semibold rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -1293,23 +1293,23 @@ export const ScholarAlumniHubPage: React.FC = () => {
       {/* Detail Viewer Modal */}
       {activeDetailItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full border border-slate-200 shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="bg-white dark:bg-[#141820] rounded-2xl max-w-lg w-full border border-slate-200 dark:border-[#242936] shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="p-5 border-b border-slate-100 dark:border-[#242936] flex items-center justify-between bg-slate-50/50 dark:bg-[#171B24]">
               <div className="flex items-center gap-3">
                 {activeDetailItem.photoUrl ? (
                   <img
                     src={activeDetailItem.photoUrl}
                     alt={activeDetailItem.fullName}
-                    className="w-12 h-12 rounded-full object-cover object-top border-2 border-white shadow-xs"
+                    className="w-12 h-12 rounded-full object-cover object-top border-2 border-white dark:border-[#242936] shadow-xs"
                   />
                 ) : (
-                  <div className="w-12 h-12 rounded-full bg-slate-900 text-emerald-400 font-bold flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-slate-900 dark:bg-[#1C222D] text-emerald-400 font-bold flex items-center justify-center border border-transparent dark:border-[#242936]">
                     {activeDetailItem.fullName.slice(0, 2).toUpperCase()}
                   </div>
                 )}
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-bold text-base text-slate-900">{activeDetailItem.fullName}</h3>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-[#F9FAFB]">{activeDetailItem.fullName}</h3>
                     {(() => {
                       const sInfo = getScholarStatusInfo(activeDetailItem.academicStatus, activeDetailItem.customStatusLabel);
                       return (
@@ -1319,14 +1319,14 @@ export const ScholarAlumniHubPage: React.FC = () => {
                       );
                     })()}
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-500 dark:text-[#9CA3AF]">
                     Batch {activeDetailItem.batchYear} &bull; {activeDetailItem.classOrDivision || 'General'}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setActiveDetailItem(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 cursor-pointer"
+                className="p-1.5 text-slate-400 dark:text-[#9CA3AF] hover:text-slate-700 dark:hover:text-[#F9FAFB] rounded-lg hover:bg-slate-100 dark:hover:bg-[#1C222D] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1335,7 +1335,7 @@ export const ScholarAlumniHubPage: React.FC = () => {
             <div className="p-5 overflow-y-auto space-y-4 text-xs">
               {/* Academic Credentials / Qualifications List */}
               <div className="space-y-2">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#9CA3AF] block">
                   Academic Credentials
                 </span>
                 {activeDetailItem.qualificationsList && activeDetailItem.qualificationsList.length > 0 ? (
@@ -1343,20 +1343,20 @@ export const ScholarAlumniHubPage: React.FC = () => {
                     {activeDetailItem.qualificationsList.map((q, idx) => (
                       <div
                         key={idx}
-                        className="p-3 bg-slate-50/90 rounded-xl border border-slate-200/80 flex items-start justify-between gap-3"
+                        className="p-3 bg-slate-50/90 dark:bg-[#1C222D] rounded-xl border border-slate-200/80 dark:border-[#242936] flex items-start justify-between gap-3"
                       >
                         <div className="space-y-0.5">
-                          <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs">
-                            <GraduationCap className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <div className="flex items-center gap-1.5 font-bold text-slate-900 dark:text-[#F9FAFB] text-xs">
+                            <GraduationCap className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                             <span>{q.degree || 'Degree / Qualification'}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 text-slate-600 text-[11px] pl-5">
-                            <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-slate-600 dark:text-[#D1D5DB] text-[11px] pl-5">
+                            <Building2 className="w-3 h-3 text-slate-400 dark:text-[#9CA3AF] shrink-0" />
                             <span>{q.university || 'University / Institution'}</span>
                           </div>
                         </div>
                         {q.year && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-slate-700 shrink-0">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white dark:bg-[#141820] border border-slate-200 dark:border-[#242936] text-slate-700 dark:text-[#D1D5DB] shrink-0">
                             {q.year}
                           </span>
                         )}
@@ -1364,31 +1364,31 @@ export const ScholarAlumniHubPage: React.FC = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                  <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-[#1C222D] rounded-xl border border-slate-100 dark:border-[#242936]">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Degree</span>
-                      <span className="font-semibold text-slate-800">{activeDetailItem.qualification}</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#9CA3AF] block">Degree</span>
+                      <span className="font-semibold text-slate-800 dark:text-[#F9FAFB]">{activeDetailItem.qualification}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">University</span>
-                      <span className="font-semibold text-slate-800">{activeDetailItem.university}</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#9CA3AF] block">University</span>
+                      <span className="font-semibold text-slate-800 dark:text-[#F9FAFB]">{activeDetailItem.university}</span>
                     </div>
                   </div>
                 )}
               </div>
 
               {(activeDetailItem.currentRole || activeDetailItem.cityCountry) && (
-                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 dark:bg-[#1C222D] rounded-xl border border-slate-100 dark:border-[#242936]">
                   {activeDetailItem.currentRole && (
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Role</span>
-                      <span className="font-medium text-slate-800">{activeDetailItem.currentRole}</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#9CA3AF] block">Role</span>
+                      <span className="font-medium text-slate-800 dark:text-[#F9FAFB]">{activeDetailItem.currentRole}</span>
                     </div>
                   )}
                   {activeDetailItem.cityCountry && (
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Location</span>
-                      <span className="font-medium text-slate-800">{activeDetailItem.cityCountry}</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#9CA3AF] block">Location</span>
+                      <span className="font-medium text-slate-800 dark:text-[#F9FAFB]">{activeDetailItem.cityCountry}</span>
                     </div>
                   )}
                 </div>
@@ -1396,28 +1396,28 @@ export const ScholarAlumniHubPage: React.FC = () => {
 
               {parseNotesField(activeDetailItem.bio).cleanNotes && (
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#9CA3AF] block mb-1">
                     Academic Bio
                   </span>
-                  <p className="p-3 bg-white border border-slate-200 rounded-xl text-slate-700 leading-relaxed whitespace-pre-line">
+                  <p className="p-3 bg-white dark:bg-[#1C222D] border border-slate-200 dark:border-[#242936] rounded-xl text-slate-700 dark:text-[#D1D5DB] leading-relaxed whitespace-pre-line">
                     {parseNotesField(activeDetailItem.bio).cleanNotes}
                   </p>
                 </div>
               )}
 
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
+              <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-[#242936]">
+                <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-[#9CA3AF] block mb-1">
                   Contact Channels
                 </span>
                 {activeDetailItem.email && (
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                  <div className="flex items-center gap-2 text-slate-700 dark:text-[#D1D5DB]">
+                    <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-[#9CA3AF]" />
                     <span>{activeDetailItem.email}</span>
                   </div>
                 )}
                 {activeDetailItem.phone && (
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Phone className="w-3.5 h-3.5 text-slate-400" />
+                  <div className="flex items-center gap-2 text-slate-700 dark:text-[#D1D5DB]">
+                    <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-[#9CA3AF]" />
                     <span>{activeDetailItem.phone}</span>
                   </div>
                 )}

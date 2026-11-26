@@ -601,24 +601,24 @@ export default function StudentDetailPage() {
           {/* Ledger Controls & Year Switcher */}
           <div className="bg-white p-5 rounded-2xl border border-[#E7E9EE] shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="flex items-center bg-[#F8F9FA] rounded-xl border border-[#E7E9EE] p-1">
+              <div className="flex items-center bg-[#F8F9FA] dark:bg-[#1C222D] rounded-xl border border-[#E7E9EE] dark:border-[#242936] p-1">
                 <button
                   onClick={() => setLedgerYear((y) => y - 1)}
-                  className="p-1.5 rounded-lg hover:bg-white text-[#5B6B7F] hover:text-[#0F172A] transition"
+                  className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-[#141820] text-[#5B6B7F] dark:text-[#9CA3AF] hover:text-[#0F172A] dark:hover:text-[#F9FAFB] transition cursor-pointer"
                   title="Previous Year"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <span className="px-3 text-sm font-bold text-[#0F172A]">{ledgerYear}</span>
+                <span className="px-3 text-sm font-bold text-[#0F172A] dark:text-[#F9FAFB]">{ledgerYear}</span>
                 <button
                   onClick={() => setLedgerYear((y) => y + 1)}
-                  className="p-1.5 rounded-lg hover:bg-white text-[#5B6B7F] hover:text-[#0F172A] transition"
+                  className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-[#141820] text-[#5B6B7F] dark:text-[#9CA3AF] hover:text-[#0F172A] dark:hover:text-[#F9FAFB] transition cursor-pointer"
                   title="Next Year"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
-              <span className="text-xs text-[#5B6B7F]">12-Month Academic & Tuition Ledger</span>
+              <span className="text-xs text-[#5B6B7F] dark:text-[#9CA3AF]">12-Month Academic & Tuition Ledger</span>
             </div>
 
             <div className="flex items-center gap-2">

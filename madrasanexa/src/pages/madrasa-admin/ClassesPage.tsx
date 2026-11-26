@@ -575,7 +575,7 @@ export default function ClassesPage() {
                           )}
                         </td>
                         <td className="py-3.5 px-4">
-                          <span className="font-mono text-[11px] font-bold bg-[#E7E9EE] text-[#0F172A] px-2 py-0.5 rounded">
+                          <span className="font-mono text-[11px] font-bold bg-[#E7E9EE] dark:bg-[#1C222D] text-[#0F172A] dark:text-[#F3F4F6] border border-transparent dark:border-[#242936] px-2 py-0.5 rounded">
                             {cls.code}
                           </span>
                         </td>
@@ -641,7 +641,7 @@ export default function ClassesPage() {
                       <div>
                         <h3 className="text-xs font-bold text-[#0F172A]">{cls.name}</h3>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <span className="font-mono text-[10px] font-bold bg-[#E7E9EE] text-[#0F172A] px-1.5 py-0.5 rounded">
+                          <span className="font-mono text-[10px] font-bold bg-[#E7E9EE] dark:bg-[#1C222D] text-[#0F172A] dark:text-[#F3F4F6] border border-transparent dark:border-[#242936] px-1.5 py-0.5 rounded">
                             {cls.code}
                           </span>
                           {cls.academicSection ? (
@@ -844,7 +844,7 @@ export default function ClassesPage() {
                         </td>
                         <td className="py-3.5 px-4">
                           {sec.code ? (
-                            <span className="font-mono text-[11px] font-bold bg-[#E7E9EE] text-[#0F172A] px-2 py-0.5 rounded">
+                            <span className="font-mono text-[11px] font-bold bg-[#E7E9EE] dark:bg-[#1C222D] text-[#0F172A] dark:text-[#F3F4F6] border border-transparent dark:border-[#242936] px-2 py-0.5 rounded">
                               {sec.code}
                             </span>
                           ) : (
@@ -918,7 +918,7 @@ export default function ClassesPage() {
                         <h3 className="text-xs font-bold text-[#0F172A]">{sec.name}</h3>
                         <div className="flex items-center gap-2 mt-1">
                           {sec.code && (
-                            <span className="font-mono text-[10px] font-bold bg-[#E7E9EE] text-[#0F172A] px-1.5 py-0.5 rounded">
+                            <span className="font-mono text-[10px] font-bold bg-[#E7E9EE] dark:bg-[#1C222D] text-[#0F172A] dark:text-[#F3F4F6] border border-transparent dark:border-[#242936] px-1.5 py-0.5 rounded">
                               {sec.code}
                             </span>
                           )}

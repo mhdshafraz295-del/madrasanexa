@@ -146,17 +146,17 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col md:h-[calc(100dvh-11.5rem)] md:min-h-[520px] md:overflow-hidden">
       {/* Fixed Top Section: Dashboard Header & Live Clock */}
-      <div className="shrink-0 space-y-4 pb-4 bg-[#F8F7F3] z-20">
+      <div className="shrink-0 space-y-4 pb-4 bg-[#F8F7F3] dark:bg-[#0B0D11] z-20">
         {/* Top Header & Range Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-[#111827] tracking-tight">Institutional Dashboard</h1>
-            <p className="text-xs text-[#718096] mt-1">
+            <h1 className="text-2xl font-bold text-[#111827] dark:text-[#F9FAFB] tracking-tight">Institutional Dashboard</h1>
+            <p className="text-xs text-[#718096] dark:text-[#9CA3AF] mt-1">
               Real-time fee collection performance, student capacity, and subscription status.
             </p>
           </div>
           <div className="flex items-center gap-2 max-w-full overflow-hidden">
-            <div className="flex items-center bg-white border border-[#E2E8F0] rounded-xl p-1 shadow-xs overflow-x-auto scrollbar-none max-w-[calc(100vw-80px)] sm:max-w-none">
+            <div className="flex items-center bg-white dark:bg-[#141820] border border-[#E2E8F0] dark:border-[#242936] rounded-xl p-1 shadow-xs overflow-x-auto scrollbar-none max-w-[calc(100vw-80px)] sm:max-w-none">
               {[
                 { id: 'current_month', label: 'This Month' },
                 { id: '3m', label: '3M' },
@@ -169,8 +169,8 @@ export default function DashboardPage() {
                   onClick={() => setRange(opt.id)}
                   className={`px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer shrink-0 whitespace-nowrap ${
                     range === opt.id
-                      ? 'bg-[#111827] text-white shadow-xs'
-                      : 'text-[#718096] hover:text-[#111827] hover:bg-[#F8F7F3]'
+                      ? 'bg-[#111827] dark:bg-[#84CC16] text-white dark:text-[#0B0D11] font-bold shadow-xs'
+                      : 'text-[#718096] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-[#F9FAFB] hover:bg-[#F8F7F3] dark:hover:bg-[#1C222D]'
                   }`}
                 >
                   {opt.label}
@@ -180,7 +180,7 @@ export default function DashboardPage() {
             <button
               onClick={() => fetchDashboard(range)}
               disabled={isLoading}
-              className="p-2 bg-white border border-[#E2E8F0] hover:bg-[#F8F7F3] text-[#718096] hover:text-[#111827] rounded-xl transition shadow-xs cursor-pointer"
+              className="p-2 bg-white dark:bg-[#141820] border border-[#E2E8F0] dark:border-[#242936] hover:bg-[#F8F7F3] dark:hover:bg-[#1C222D] text-[#718096] dark:text-[#9CA3AF] hover:text-[#111827] dark:hover:text-[#F9FAFB] rounded-xl transition shadow-xs cursor-pointer"
               title="Refresh dashboard data"
             >
               <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
@@ -378,12 +378,12 @@ export default function DashboardPage() {
             {data.academicGroupStats?.sections && data.academicGroupStats.sections.length > 0 ? (
               data.academicGroupStats.sections.slice(0, 3).map((sec) => (
                 <div key={sec.id} className="flex items-center justify-between text-[11px]">
-                  <span className="text-[#111827] font-medium truncate max-w-[120px]">{sec.name}</span>
-                  <span className="text-[#718096] font-semibold">{sec.studentCount} students</span>
+                  <span className="text-[#111827] dark:text-[#F9FAFB] font-medium truncate max-w-[120px]">{sec.name}</span>
+                  <span className="text-[#718096] dark:text-[#9CA3AF] font-semibold">{sec.studentCount} students</span>
                 </div>
               ))
             ) : (
-              <p className="text-[11px] text-[#718096] mt-1">No section groups created yet</p>
+              <p className="text-[11px] text-[#718096] dark:text-[#9CA3AF] mt-1">No section groups created yet</p>
             )}
           </div>
           <Link
@@ -431,10 +431,10 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-72 flex flex-col items-center justify-center text-center p-6 bg-[#F8F7F3]/50 rounded-xl border border-dashed border-[#E2E8F0]">
-              <Receipt className="w-10 h-10 text-[#718096]/40 mb-3" />
-              <h4 className="text-xs font-bold text-[#111827]">No fee collection data available yet</h4>
-              <p className="text-[11px] text-[#718096] max-w-sm mt-1">
+            <div className="h-72 flex flex-col items-center justify-center text-center p-6 bg-[#F8F7F3]/50 dark:bg-[#141820] rounded-xl border border-dashed border-[#E2E8F0] dark:border-[#242936]">
+              <Receipt className="w-10 h-10 text-[#718096]/40 dark:text-[#9CA3AF]/40 mb-3" />
+              <h4 className="text-xs font-bold text-[#111827] dark:text-[#F9FAFB]">No fee collection data available yet</h4>
+              <p className="text-[11px] text-[#718096] dark:text-[#9CA3AF] max-w-sm mt-1">
                 Your monthly fee analytics will automatically populate as student invoices and fee allocations are generated in Phase 9 & 10.
               </p>
             </div>
@@ -485,10 +485,10 @@ export default function DashboardPage() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-72 flex flex-col items-center justify-center text-center p-6 bg-[#F8F7F3]/50 rounded-xl border border-dashed border-[#E2E8F0]">
-              <TrendingUp className="w-10 h-10 text-[#718096]/40 mb-3" />
-              <h4 className="text-xs font-bold text-[#111827]">No payment transactions recorded yet</h4>
-              <p className="text-[11px] text-[#718096] max-w-sm mt-1">
+            <div className="h-72 flex flex-col items-center justify-center text-center p-6 bg-[#F8F7F3]/50 dark:bg-[#141820] rounded-xl border border-dashed border-[#E2E8F0] dark:border-[#242936]">
+              <TrendingUp className="w-10 h-10 text-[#718096]/40 dark:text-[#9CA3AF]/40 mb-3" />
+              <h4 className="text-xs font-bold text-[#111827] dark:text-[#F9FAFB]">No payment transactions recorded yet</h4>
+              <p className="text-[11px] text-[#718096] dark:text-[#9CA3AF] max-w-sm mt-1">
                 Completed cash and bank transfer payment transactions will plot your actual cash inflow here once fee collection begins.
               </p>
             </div>
@@ -529,34 +529,34 @@ export default function DashboardPage() {
                 </ResponsiveContainer>
               </div>
               <div className="space-y-2 flex-1 w-full text-xs">
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F7F3]">
-                  <span className="flex items-center gap-2 font-medium text-[#111827]">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F7F3] dark:bg-[#1C222D] border border-transparent dark:border-[#242936]">
+                  <span className="flex items-center gap-2 font-medium text-[#111827] dark:text-[#F9FAFB]">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
                     Active Students
                   </span>
-                  <span className="font-bold">{charts.studentStatusDistribution.active}</span>
+                  <span className="font-bold text-[#111827] dark:text-[#F9FAFB]">{charts.studentStatusDistribution.active}</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F7F3]">
-                  <span className="flex items-center gap-2 font-medium text-[#111827]">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F7F3] dark:bg-[#1C222D] border border-transparent dark:border-[#242936]">
+                  <span className="flex items-center gap-2 font-medium text-[#111827] dark:text-[#F9FAFB]">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#718096]" />
                     Inactive Students
                   </span>
-                  <span className="font-bold">{charts.studentStatusDistribution.inactive}</span>
+                  <span className="font-bold text-[#111827] dark:text-[#F9FAFB]">{charts.studentStatusDistribution.inactive}</span>
                 </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F7F3]">
-                  <span className="flex items-center gap-2 font-medium text-[#111827]">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#111827]" />
+                <div className="flex items-center justify-between p-2 rounded-lg bg-[#F8F7F3] dark:bg-[#1C222D] border border-transparent dark:border-[#242936]">
+                  <span className="flex items-center gap-2 font-medium text-[#111827] dark:text-[#F9FAFB]">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#111827] dark:bg-slate-400" />
                     Archived Students
                   </span>
-                  <span className="font-bold">{charts.studentStatusDistribution.archived}</span>
+                  <span className="font-bold text-[#111827] dark:text-[#F9FAFB]">{charts.studentStatusDistribution.archived}</span>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="h-44 flex flex-col items-center justify-center text-center p-4 bg-[#F8F7F3]/50 rounded-xl border border-dashed border-[#E2E8F0]">
-              <Users className="w-8 h-8 text-[#718096]/40 mb-2" />
-              <p className="text-xs font-bold text-[#111827]">No student profiles enrolled yet</p>
-              <p className="text-[11px] text-[#718096] mt-0.5">Enrolled student metrics will appear here in Phase 8.</p>
+            <div className="h-44 flex flex-col items-center justify-center text-center p-4 bg-[#F8F7F3]/50 dark:bg-[#141820] rounded-xl border border-dashed border-[#E2E8F0] dark:border-[#242936]">
+              <Users className="w-8 h-8 text-[#718096]/40 dark:text-[#9CA3AF]/40 mb-2" />
+              <p className="text-xs font-bold text-[#111827] dark:text-[#F9FAFB]">No student profiles enrolled yet</p>
+              <p className="text-[11px] text-[#718096] dark:text-[#9CA3AF] mt-0.5">Enrolled student metrics will appear here in Phase 8.</p>
             </div>
           )}
         </div>
@@ -593,21 +593,21 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-1.5 flex-1 w-full text-xs">
                 {invoicePieData.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between p-1.5 rounded-lg bg-[#F8F7F3]">
-                    <span className="flex items-center gap-2 font-medium text-[#111827]">
+                  <div key={item.name} className="flex items-center justify-between p-1.5 rounded-lg bg-[#F8F7F3] dark:bg-[#1C222D] border border-transparent dark:border-[#242936]">
+                    <span className="flex items-center gap-2 font-medium text-[#111827] dark:text-[#F9FAFB]">
                       <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                       {item.name}
                     </span>
-                    <span className="font-bold">{item.value}</span>
+                    <span className="font-bold text-[#111827] dark:text-[#F9FAFB]">{item.value}</span>
                   </div>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="h-44 flex flex-col items-center justify-center text-center p-4 bg-[#F8F7F3]/50 rounded-xl border border-dashed border-[#E2E8F0]">
-              <Receipt className="w-8 h-8 text-[#718096]/40 mb-2" />
-              <p className="text-xs font-bold text-[#111827]">No invoices recorded yet</p>
-              <p className="text-[11px] text-[#718096] mt-0.5">Generate monthly tuition fee invoices for active students.</p>
+            <div className="h-44 flex flex-col items-center justify-center text-center p-4 bg-[#F8F7F3]/50 dark:bg-[#141820] rounded-xl border border-dashed border-[#E2E8F0] dark:border-[#242936]">
+              <Receipt className="w-8 h-8 text-[#718096]/40 dark:text-[#9CA3AF]/40 mb-2" />
+              <p className="text-xs font-bold text-[#111827] dark:text-[#F9FAFB]">No invoices recorded yet</p>
+              <p className="text-[11px] text-[#718096] dark:text-[#9CA3AF] mt-0.5">Generate monthly tuition fee invoices for active students.</p>
               <Link
                 to="/madrasa-admin/invoices/generate"
                 className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#10B981] hover:bg-[#2BB393] text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"

@@ -10,10 +10,10 @@
       (function() {
         try {
           var saved = localStorage.getItem('madrasanexa_theme');
-          if (saved === 'light') {
-            document.documentElement.classList.remove('dark');
-          } else {
+          if (saved === 'dark') {
             document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
           }
         } catch (e) {}
       })();

@@ -261,7 +261,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
     >
       {/* Navigation Header */}
       <header
-        className={`sticky top-0 z-30 transition-all border-b border-[#E5E5DF] bg-white/95 backdrop-blur-md print:hidden ${
+        className={`sticky top-0 z-30 transition-all border-b border-[#E5E5DF] dark:border-[#242936] bg-white/95 dark:!bg-[#141820]/95 backdrop-blur-md print:hidden ${
           submissionResult ? 'hidden print:hidden' : ''
         }`}
         style={{
@@ -274,9 +274,9 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-2">
           <Link
             to={`/madrasa/${slug}`}
-            className="inline-flex items-center space-x-2 text-xs sm:text-sm font-bold text-[#252525] hover:opacity-80 transition-colors p-1.5 sm:p-2 rounded-xl hover:bg-[#F5F5F1] min-w-0 flex-1 sm:flex-initial"
+            className="inline-flex items-center space-x-2 text-xs sm:text-sm font-bold text-[#252525] dark:text-[#F9FAFB] hover:opacity-80 transition-colors px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-transparent dark:bg-[#1C222D] border border-transparent dark:border-[#242936] hover:bg-[#F5F5F1] dark:hover:bg-[#242936] min-w-0 flex-1 sm:flex-initial"
           >
-            <ArrowLeft className="w-4 h-4 shrink-0" style={{ color: primaryColor }} />
+            <ArrowLeft className="w-4 h-4 shrink-0 dark:!text-[#84CC16]" style={{ color: primaryColor }} />
             <span className="truncate">Return to {madrasa.name}</span>
           </Link>
 
@@ -285,11 +285,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               <img
                 src={madrasa.logoUrl}
                 alt={madrasa.name}
-                className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-xl border border-[#E5E5DF] bg-white p-0.5 hidden sm:block shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-xl border border-[#E5E5DF] dark:border-[#242936] bg-white dark:bg-[#1C222D] p-0.5 hidden sm:block shrink-0"
               />
             ) : (
               <div
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-serif font-bold text-xs shadow-xs hidden sm:flex text-white border border-[#E5E5DF] shrink-0"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center font-serif font-bold text-xs shadow-xs hidden sm:flex text-white border border-[#E5E5DF] dark:border-[#242936] shrink-0"
                 style={{
                   backgroundColor: primaryColor,
                 }}
@@ -298,10 +298,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               </div>
             )}
             <div
-              className="flex items-center space-x-1.5 text-xs font-bold px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#F5F5F1] border border-[#E5E5DF]"
+              className="flex items-center space-x-1.5 text-xs font-bold px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936] dark:!text-[#84CC16]"
               style={{ color: primaryColor }}
             >
-              <ShieldCheck className="w-3.5 h-3.5 shrink-0" style={{ color: primaryColor }} />
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0 dark:!text-[#84CC16]" style={{ color: primaryColor }} />
               <span className="hidden xs:inline sm:inline">Official Admissions Desk</span>
               <span className="xs:hidden sm:hidden">Admissions</span>
             </div>

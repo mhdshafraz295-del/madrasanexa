@@ -84,24 +84,24 @@ html.dark body {
 .dark,
 .dark body,
 .dark main,
-.dark .bg-\[\#F7F6F1\],
-.dark .bg-\[\#F5F5F1\],
-.dark .bg-\[\#F8FAFC\],
-.dark .bg-\[\#F7F5F0\],
-.dark .bg-\[\#F5F2EB\],
-.dark .bg-\[\#FAFAF8\],
+.dark .bg-\[\#F7F6F1\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F5F5F1\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F8FAFC\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F7F5F0\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F5F2EB\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#FAFAF8\]:not([class*="dark:bg-"]),
 .dark [data-page-container] {
   background-color: #0B0D11 !important;
 }
 
 /* Card surfaces, panels, sidebars, headers, footers & elevated blocks */
-.dark .bg-white,
-.dark .bg-\[\#FFFFFF\],
-.dark aside,
-.dark header,
-.dark footer,
-.dark .card,
-.dark [data-card] {
+.dark .bg-white:not([class*="dark:bg-"]),
+.dark .bg-\[\#FFFFFF\]:not([class*="dark:bg-"]),
+.dark aside:not([class*="dark:bg-"]),
+.dark header:not([class*="dark:bg-"]),
+.dark footer:not([class*="dark:bg-"]),
+.dark .card:not([class*="dark:bg-"]),
+.dark [data-card]:not([class*="dark:bg-"]) {
   background-color: #141820 !important;
 }
 
@@ -116,42 +116,42 @@ html.dark body {
 }
 
 /* Elevated inner panels, wells, search bars, neutral chips & subcontainers */
-.dark .bg-slate-50,
-.dark .bg-gray-50,
-.dark .bg-zinc-50,
-.dark .bg-neutral-50,
-.dark .bg-stone-50,
-.dark [class*="bg-slate-50\/"],
-.dark [class*="bg-gray-50\/"],
-.dark [class*="bg-zinc-50\/"],
-.dark [class*="bg-stone-50\/"],
-.dark .bg-slate-100,
-.dark .bg-gray-100,
-.dark .bg-zinc-100,
-.dark .bg-neutral-100,
-.dark .bg-stone-100,
-.dark [class*="bg-slate-100\/"],
-.dark [class*="bg-gray-100\/"],
-.dark [class*="bg-stone-100\/"],
-.dark .bg-\[\#F1F5F9\],
-.dark .bg-\[\#F1F3F5\],
-.dark .bg-\[\#F8F9FA\],
-.dark .bg-\[\#F8F7F3\],
-.dark [class*="bg-\[\#F8F7F3\]"] {
+.dark .bg-slate-50:not([class*="dark:bg-"]),
+.dark .bg-gray-50:not([class*="dark:bg-"]),
+.dark .bg-zinc-50:not([class*="dark:bg-"]),
+.dark .bg-neutral-50:not([class*="dark:bg-"]),
+.dark .bg-stone-50:not([class*="dark:bg-"]),
+.dark [class*="bg-slate-50\/"]:not([class*="dark:bg-"]),
+.dark [class*="bg-gray-50\/"]:not([class*="dark:bg-"]),
+.dark [class*="bg-zinc-50\/"]:not([class*="dark:bg-"]),
+.dark [class*="bg-stone-50\/"]:not([class*="dark:bg-"]),
+.dark .bg-slate-100:not([class*="dark:bg-"]),
+.dark .bg-gray-100:not([class*="dark:bg-"]),
+.dark .bg-zinc-100:not([class*="dark:bg-"]),
+.dark .bg-neutral-100:not([class*="dark:bg-"]),
+.dark .bg-stone-100:not([class*="dark:bg-"]),
+.dark [class*="bg-slate-100\/"]:not([class*="dark:bg-"]),
+.dark [class*="bg-gray-100\/"]:not([class*="dark:bg-"]),
+.dark [class*="bg-stone-100\/"]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F1F5F9\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F1F3F5\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F8F9FA\]:not([class*="dark:bg-"]),
+.dark .bg-\[\#F8F7F3\]:not([class*="dark:bg-"]),
+.dark [class*="bg-\[\#F8F7F3\]"]:not([class*="dark:bg-"]) {
   background-color: #1C222D !important;
 }
 
-.dark .bg-slate-200,
-.dark .bg-gray-200,
-.dark .bg-zinc-200,
-.dark .bg-stone-200,
-.dark [class*="bg-slate-200\/"],
-.dark [class*="bg-stone-200\/"] {
+.dark .bg-slate-200:not([class*="dark:bg-"]),
+.dark .bg-gray-200:not([class*="dark:bg-"]),
+.dark .bg-zinc-200:not([class*="dark:bg-"]),
+.dark .bg-stone-200:not([class*="dark:bg-"]),
+.dark [class*="bg-slate-200\/"]:not([class*="dark:bg-"]),
+.dark [class*="bg-stone-200\/"]:not([class*="dark:bg-"]) {
   background-color: #242936 !important;
 }
 
 /* Neutral Class & Section Code Badges (e.g. SAFFUL AVVAL-001) */
-.dark .bg-\[\#E7E9EE\] {
+.dark .bg-\[\#E7E9EE\]:not([class*="dark:bg-"]) {
   background-color: #1C222D !important;
   color: #F3F4F6 !important;
   border: 1px solid #242936 !important;

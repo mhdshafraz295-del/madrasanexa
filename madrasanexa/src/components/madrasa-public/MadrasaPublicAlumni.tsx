@@ -326,10 +326,10 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
         /* SINGLE SCHOLAR: 4-SIDE SMOOTH EXPANDING ROYAL DOSSIER STAGE               */
         /* ========================================================================= */
         <div
-          className={`w-full mx-auto rounded-3xl bg-white overflow-hidden relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`w-full mx-auto rounded-3xl bg-white dark:bg-[#141820] overflow-hidden relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             isDossierExpanded
-              ? 'max-w-5xl border border-[#C5A059] ring-2 ring-[#C5A059]/35 shadow-[0_24px_60px_rgba(107,106,69,0.22)]'
-              : 'max-w-3xl border border-[#D8D5C0] shadow-xl'
+              ? 'max-w-5xl border border-[#C5A059] dark:border-[#242936] ring-2 ring-[#C5A059]/35 shadow-[0_24px_60px_rgba(107,106,69,0.22)]'
+              : 'max-w-3xl border border-[#D8D5C0] dark:border-[#242936] shadow-xl'
           }`}
         >
           {/* Top Olive-Gold Gradient Accent Bar */}
@@ -338,7 +338,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-12 items-stretch">
             {/* Left Portrait */}
             <div
-              className={`p-6 sm:p-7 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-[#E2E0D0] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`p-6 sm:p-7 bg-gradient-to-b from-[#F8F7F2] to-white dark:from-[#1C222D] dark:to-[#141820] flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-[#E2E0D0] dark:border-[#242936] transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isDossierExpanded ? 'md:col-span-4' : 'md:col-span-5'
               }`}
             >
@@ -347,7 +347,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   isDossierExpanded ? 'max-w-[250px]' : 'max-w-[210px]'
                 }`}
               >
-                <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] relative">
+                <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D] relative">
                   {activeScholar.photoUrl ? (
                     <img
                       src={activeScholar.photoUrl}
@@ -355,7 +355,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                       className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
                     />
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] dark:from-[#1C222D] dark:to-[#242936] text-[#6B6A45] dark:text-[#84CC16]">
                       <span className="text-4xl font-serif font-bold">{getInitials(activeScholar.fullName)}</span>
                       <User className="w-8 h-8 mt-2 opacity-40" />
                     </div>
@@ -383,7 +383,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
 
             {/* Right Details & 4-Side Expanding Dossier Stage */}
             <div
-              className={`p-6 sm:p-7 flex flex-col justify-between bg-islamic-diamond-subtle relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              className={`p-6 sm:p-7 flex flex-col justify-between bg-islamic-diamond-subtle dark:bg-[#141820] relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                 isDossierExpanded ? 'md:col-span-8' : 'md:col-span-7'
               }`}
             >
@@ -391,8 +391,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                 {/* Header Pills */}
                 <div className="flex items-center justify-between gap-2 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF8F2] text-[#8C8A58] border border-[#C5A059]/40 shadow-2xs flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-[#C5A059]" />
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-[#FAF8F2] dark:bg-[#1C222D] text-[#8C8A58] dark:text-[#84CC16] border border-[#C5A059]/40 dark:border-[#242936] shadow-2xs flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-[#C5A059] dark:text-[#84CC16]" />
                       <span>{isDossierExpanded ? 'Royal Scholar Dossier Stage' : 'Distinguished Scholar Spotlight'}</span>
                     </span>
                     {(() => {
@@ -405,29 +405,29 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                     })()}
                   </div>
                   {activeScholar.classOrDivision && (
-                    <span className="text-xs text-slate-500 font-semibold font-mono">
+                    <span className="text-xs text-slate-500 dark:text-[#9CA3AF] font-semibold font-mono">
                       {activeScholar.classOrDivision}
                     </span>
                   )}
                 </div>
 
                 {/* Full Name */}
-                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#232215] tracking-tight">
+                <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#232215] dark:text-[#F9FAFB] tracking-tight">
                   {activeScholar.fullName}
                 </h3>
 
                 {/* Role & Location */}
                 {(activeScholar.currentRole || activeScholar.cityCountry) && (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-slate-700">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs sm:text-sm text-slate-700 dark:text-[#D1D5DB]">
                     {activeScholar.currentRole && (
-                      <div className="flex items-center gap-1.5 font-semibold text-[#504F34]">
-                        <Award className="w-4 h-4 text-[#8C8A58] shrink-0" />
+                      <div className="flex items-center gap-1.5 font-semibold text-[#504F34] dark:text-[#84CC16]">
+                        <Award className="w-4 h-4 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
                         <span>{activeScholar.currentRole}</span>
                       </div>
                     )}
                     {activeScholar.cityCountry && (
-                      <div className="flex items-center gap-1.5 text-slate-600">
-                        <MapPin className="w-3.5 h-3.5 text-[#8C8A58] shrink-0" />
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-[#9CA3AF]">
+                        <MapPin className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
                         <span>{activeScholar.cityCountry}</span>
                       </div>
                     )}
@@ -496,8 +496,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pt-2 animate-in fade-in duration-400">
                     {/* Left Column: Complete Academic Journey Timeline */}
                     <div className="md:col-span-7 space-y-2.5">
-                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1.5">
-                        <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58]" />
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] dark:text-[#84CC16] flex items-center gap-1.5">
+                        <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16]" />
                         <span>Complete Academic Journey</span>
                       </div>
                       {(() => {
@@ -508,25 +508,25 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                             ? [{ degree: activeScholar.qualification, university: activeScholar.university, year: activeScholar.batchYear }]
                             : [];
                         return (
-                          <div className="border-l-2 border-[#C5A059]/70 pl-3.5 space-y-2.5 relative ml-1.5">
+                          <div className="border-l-2 border-[#C5A059]/70 dark:border-[#84CC16]/50 pl-3.5 space-y-2.5 relative ml-1.5">
                             {quals.map((q, idx) => (
                               <div key={idx} className="relative">
                                 <span
-                                  className="absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C5A059] ring-2 ring-white shadow-2xs"
+                                  className="absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C5A059] dark:bg-[#84CC16] ring-2 ring-white dark:ring-[#141820] shadow-2xs"
                                   aria-hidden="true"
                                 />
-                                <div className="bg-white/95 p-2.5 rounded-xl border border-[#E2E0D0] shadow-2xs flex items-start justify-between gap-2">
+                                <div className="bg-white/95 dark:bg-[#1C222D] p-2.5 rounded-xl border border-[#E2E0D0] dark:border-[#242936] shadow-2xs flex items-start justify-between gap-2">
                                   <div className="min-w-0">
-                                    <h4 className="font-bold text-xs text-[#232215] truncate">
+                                    <h4 className="font-bold text-xs text-[#232215] dark:text-[#F9FAFB] truncate">
                                       {q.degree || 'Degree / Award'}
                                     </h4>
-                                    <p className="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5 truncate">
-                                      <Building2 className="w-3 h-3 text-[#8C8A58] shrink-0" />
+                                    <p className="text-[11px] text-slate-600 dark:text-[#D1D5DB] flex items-center gap-1 mt-0.5 truncate">
+                                      <Building2 className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
                                       <span className="truncate">{q.university || 'University'}</span>
                                     </p>
                                   </div>
                                   {q.year && (
-                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] border border-[#C5A059]/40 text-[#8C8A58] shrink-0">
+                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] dark:bg-[#242936] border border-[#C5A059]/40 dark:border-[#242936] text-[#8C8A58] dark:text-[#84CC16] shrink-0">
                                       {q.year}
                                     </span>
                                   )}
@@ -542,21 +542,21 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                     <div className="md:col-span-5 space-y-2.5">
                       {activeScholar.bio && (
                         <div className="space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#9CA3AF]">
                             Scholarly Statement
                           </span>
-                          <p className="text-xs leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-3 rounded-xl border border-[#E2E0D0]/80">
+                          <p className="text-xs leading-relaxed text-slate-700 dark:text-[#D1D5DB] italic bg-[#FAF8F2] dark:bg-[#1C222D] p-3 rounded-xl border border-[#E2E0D0]/80 dark:border-[#242936]">
                             "{activeScholar.bio}"
                           </p>
                         </div>
                       )}
 
                       {activeScholar.availableForMentorship && (
-                        <div className="p-2.5 bg-emerald-50/90 border border-emerald-200/90 rounded-xl flex items-start gap-2 text-xs text-emerald-900">
-                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                        <div className="p-2.5 bg-emerald-50/90 dark:bg-emerald-950/30 border border-emerald-200/90 dark:border-emerald-900/50 rounded-xl flex items-start gap-2 text-xs text-emerald-900 dark:text-emerald-300">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                           <div>
                             <span className="font-bold block text-[11px]">Academic Mentorship</span>
-                            <span className="text-emerald-800 text-[10px] leading-tight block">
+                            <span className="text-emerald-800 dark:text-emerald-300 text-[10px] leading-tight block">
                               Open to guide students in higher studies & scholarship.
                             </span>
                           </div>
@@ -566,26 +566,26 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                       {/* Connect Buttons */}
                       {activeScholar.showContactPublicly &&
                         (activeScholar.email || activeScholar.phone || activeScholar.linkedinUrl) && (
-                          <div className="pt-2 border-t border-[#E2E0D0]/80 space-y-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                          <div className="pt-2 border-t border-[#E2E0D0]/80 dark:border-[#242936] space-y-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#9CA3AF] block">
                               Connect with Scholar
                             </span>
                             <div className="flex flex-wrap items-center gap-1.5">
                               {activeScholar.email && (
                                 <a
                                   href={`mailto:${activeScholar.email}`}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] dark:bg-[#1C222D] hover:bg-[#E2E0D0] dark:hover:bg-[#242936] text-[#232215] dark:text-[#F9FAFB] border border-transparent dark:border-[#242936] rounded-lg text-[11px] font-semibold transition-colors"
                                 >
-                                  <Mail className="w-3 h-3 text-[#6B6A45]" />
+                                  <Mail className="w-3 h-3 text-[#6B6A45] dark:text-[#84CC16]" />
                                   <span>Email</span>
                                 </a>
                               )}
                               {activeScholar.phone && (
                                 <a
                                   href={`tel:${activeScholar.phone}`}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] dark:bg-[#1C222D] hover:bg-[#E2E0D0] dark:hover:bg-[#242936] text-[#232215] dark:text-[#F9FAFB] border border-transparent dark:border-[#242936] rounded-lg text-[11px] font-semibold transition-colors"
                                 >
-                                  <Phone className="w-3 h-3 text-[#6B6A45]" />
+                                  <Phone className="w-3 h-3 text-[#6B6A45] dark:text-[#84CC16]" />
                                   <span>Call / WhatsApp</span>
                                 </a>
                               )}
@@ -594,7 +594,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                                   href={activeScholar.linkedinUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-lg text-[11px] font-bold transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F2] dark:bg-[#1C222D] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] text-[#6B6A45] dark:text-[#84CC16] border border-[#C5A059]/40 dark:border-[#242936] rounded-lg text-[11px] font-bold transition-colors"
                                 >
                                   <ExternalLink className="w-3 h-3" />
                                   <span>LinkedIn</span>
@@ -825,29 +825,29 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                               <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5 pt-1 animate-in fade-in duration-400">
                                 {/* Left Column: Complete Academic Journey Timeline */}
                                 <div className="md:col-span-7 space-y-2">
-                                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1">
-                                    <GraduationCap className="w-3 h-3 text-[#8C8A58]" />
+                                  <div className="text-[9px] font-bold uppercase tracking-wider text-[#6B6A45] dark:text-[#84CC16] flex items-center gap-1">
+                                    <GraduationCap className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16]" />
                                     <span>Complete Academic Journey</span>
                                   </div>
-                                  <div className="border-l-2 border-[#C5A059]/70 pl-3 space-y-2 relative ml-1 max-h-[175px] overflow-y-auto pr-1">
+                                  <div className="border-l-2 border-[#C5A059]/70 dark:border-[#84CC16]/50 pl-3 space-y-2 relative ml-1 max-h-[175px] overflow-y-auto pr-1">
                                     {quals.map((q, idx) => (
                                       <div key={idx} className="relative">
                                         <span
-                                          className="absolute -left-[17px] top-1.5 w-2 h-2 rounded-full bg-[#C5A059] ring-2 ring-white shadow-2xs"
+                                          className="absolute -left-[17px] top-1.5 w-2 h-2 rounded-full bg-[#C5A059] dark:bg-[#84CC16] ring-2 ring-white dark:ring-[#141820] shadow-2xs"
                                           aria-hidden="true"
                                         />
-                                        <div className="bg-white/95 p-2 rounded-xl border border-[#E2E0D0] shadow-2xs flex items-start justify-between gap-2">
+                                        <div className="bg-white/95 dark:bg-[#1C222D] p-2 rounded-xl border border-[#E2E0D0] dark:border-[#242936] shadow-2xs flex items-start justify-between gap-2">
                                           <div className="min-w-0">
-                                            <h4 className="font-bold text-xs text-[#232215] truncate">
+                                            <h4 className="font-bold text-xs text-[#232215] dark:text-[#F9FAFB] truncate">
                                               {q.degree || 'Degree / Award'}
                                             </h4>
-                                            <p className="text-[10px] text-slate-600 flex items-center gap-1 mt-0.5 truncate">
-                                              <Building2 className="w-3 h-3 text-[#8C8A58] shrink-0" />
+                                            <p className="text-[10px] text-slate-600 dark:text-[#D1D5DB] flex items-center gap-1 mt-0.5 truncate">
+                                              <Building2 className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
                                               <span className="truncate">{q.university || 'University'}</span>
                                             </p>
                                           </div>
                                           {q.year && (
-                                            <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] border border-[#C5A059]/40 text-[#8C8A58] shrink-0">
+                                            <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] dark:bg-[#242936] border border-[#C5A059]/40 dark:border-[#242936] text-[#8C8A58] dark:text-[#84CC16] shrink-0">
                                               {q.year}
                                             </span>
                                           )}
@@ -861,21 +861,21 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                                 <div className="md:col-span-5 space-y-2">
                                   {scholar.bio && (
                                     <div className="space-y-0.5">
-                                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
+                                      <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#9CA3AF] block">
                                         Scholarly Statement
                                       </span>
-                                      <p className="text-[11px] leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-2.5 rounded-xl border border-[#E2E0D0]/80 line-clamp-3">
+                                      <p className="text-[11px] leading-relaxed text-slate-700 dark:text-[#D1D5DB] italic bg-[#FAF8F2] dark:bg-[#1C222D] p-2.5 rounded-xl border border-[#E2E0D0]/80 dark:border-[#242936] line-clamp-3">
                                         "{scholar.bio}"
                                       </p>
                                     </div>
                                   )}
 
                                   {scholar.availableForMentorship && (
-                                    <div className="p-2 bg-emerald-50/90 border border-emerald-200/90 rounded-xl flex items-start gap-1.5 text-xs text-emerald-900">
-                                      <Sparkles className="w-3 h-3 text-emerald-600 shrink-0 mt-0.5" />
+                                    <div className="p-2 bg-emerald-50/90 dark:bg-emerald-950/30 border border-emerald-200/90 dark:border-emerald-900/50 rounded-xl flex items-start gap-1.5 text-xs text-emerald-900 dark:text-emerald-300">
+                                      <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                                       <div>
                                         <span className="font-bold block text-[10px]">Academic Mentorship</span>
-                                        <span className="text-emerald-800 text-[9px] leading-tight block">
+                                        <span className="text-emerald-800 dark:text-emerald-300 text-[9px] leading-tight block">
                                           Open to guide junior students in higher studies.
                                         </span>
                                       </div>
@@ -885,26 +885,26 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                                   {/* Direct Connect Buttons */}
                                   {scholar.showContactPublicly &&
                                     (scholar.email || scholar.phone || scholar.linkedinUrl) && (
-                                      <div className="pt-1 border-t border-[#E2E0D0]/80 space-y-1">
-                                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 block">
+                                      <div className="pt-1 border-t border-[#E2E0D0]/80 dark:border-[#242936] space-y-1">
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#9CA3AF] block">
                                           Connect with Scholar
                                         </span>
                                         <div className="flex flex-wrap items-center gap-1">
                                           {scholar.email && (
                                             <a
                                               href={`mailto:${scholar.email}`}
-                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-md text-[10px] font-semibold transition-colors"
+                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F4F3EC] dark:bg-[#1C222D] hover:bg-[#E2E0D0] dark:hover:bg-[#242936] text-[#232215] dark:text-[#F9FAFB] border border-transparent dark:border-[#242936] rounded-md text-[10px] font-semibold transition-colors"
                                             >
-                                              <Mail className="w-2.5 h-2.5 text-[#6B6A45]" />
+                                              <Mail className="w-2.5 h-2.5 text-[#6B6A45] dark:text-[#84CC16]" />
                                               <span>Email</span>
                                             </a>
                                           )}
                                           {scholar.phone && (
                                             <a
                                               href={`tel:${scholar.phone}`}
-                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-md text-[10px] font-semibold transition-colors"
+                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#F4F3EC] dark:bg-[#1C222D] hover:bg-[#E2E0D0] dark:hover:bg-[#242936] text-[#232215] dark:text-[#F9FAFB] border border-transparent dark:border-[#242936] rounded-md text-[10px] font-semibold transition-colors"
                                             >
-                                              <Phone className="w-2.5 h-2.5 text-[#6B6A45]" />
+                                              <Phone className="w-2.5 h-2.5 text-[#6B6A45] dark:text-[#84CC16]" />
                                               <span>Call</span>
                                             </a>
                                           )}
@@ -913,7 +913,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                                               href={scholar.linkedinUrl}
                                               target="_blank"
                                               rel="noopener noreferrer"
-                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-md text-[10px] font-bold transition-colors"
+                                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FAF8F2] dark:bg-[#1C222D] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] text-[#6B6A45] dark:text-[#84CC16] border border-[#C5A059]/40 dark:border-[#242936] rounded-md text-[10px] font-bold transition-colors"
                                             >
                                               <ExternalLink className="w-2.5 h-2.5" />
                                               <span>LinkedIn</span>
@@ -1038,20 +1038,20 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
           <div className="lg:hidden w-full max-w-lg mx-auto">
             {activeScholar && (
               <div
-                className={`rounded-3xl bg-white overflow-hidden relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                className={`rounded-3xl bg-white dark:bg-[#141820] overflow-hidden relative transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                   isDossierExpanded
-                    ? 'border border-[#C5A059] ring-2 ring-[#C5A059]/35 shadow-[0_24px_60px_rgba(107,106,69,0.22)]'
-                    : 'border border-[#D8D5C0] shadow-xl'
+                    ? 'border border-[#C5A059] dark:border-[#C5A059]/60 ring-2 ring-[#C5A059]/35 shadow-[0_24px_60px_rgba(107,106,69,0.22)] dark:shadow-black/50'
+                    : 'border border-[#D8D5C0] dark:border-[#242936] shadow-xl dark:shadow-black/40'
                 }`}
               >
                 <div className="h-1.5 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] w-full" />
-                <div className="p-6 bg-gradient-to-b from-[#F8F7F2] to-white flex flex-col items-center border-b border-[#E2E0D0]">
+                <div className="p-6 bg-gradient-to-b from-[#F8F7F2] to-white dark:from-[#1C222D] dark:to-[#141820] flex flex-col items-center border-b border-[#E2E0D0] dark:border-[#242936]">
                   <div
                     className={`relative aspect-[4/5] rounded-2xl p-1 bg-gradient-to-tr from-[#6B6A45] via-[#C5A059] to-[#8C8A58] shadow-lg ring-4 ring-[#C5A059]/20 transition-all duration-500 ${
                       isDossierExpanded ? 'w-48' : 'w-40'
                     }`}
                   >
-                    <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] relative">
+                    <div className="w-full h-full rounded-xl overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D] relative">
                       {activeScholar.photoUrl ? (
                         <img
                           src={activeScholar.photoUrl}
@@ -1080,38 +1080,38 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   </div>
                 </div>
 
-                <div className="p-5 sm:p-6 bg-islamic-diamond-subtle space-y-3.5">
+                <div className="p-5 sm:p-6 bg-islamic-diamond-subtle dark:bg-[#141820] space-y-3.5">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     {(() => {
                       const sInfo = getScholarStatusInfo(activeScholar.academicStatus, activeScholar.customStatusLabel);
                       return (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6B6A45] text-[#F8F7F2] border border-[#8C8A58]/60 shadow-2xs">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#6B6A45] dark:bg-[#84CC16] text-[#F8F7F2] dark:text-[#0B0D11] border border-[#8C8A58]/60 dark:border-[#84CC16] shadow-2xs">
                           {sInfo.label}
                         </span>
                       );
                     })()}
                     {activeScholar.classOrDivision && (
-                      <span className="text-xs text-slate-500 font-semibold font-mono">
+                      <span className="text-xs text-slate-500 dark:text-gray-400 font-semibold font-mono">
                         {activeScholar.classOrDivision}
                       </span>
                     )}
                   </div>
 
-                  <h3 className="text-xl font-serif font-bold text-[#232215]">
+                  <h3 className="text-xl font-serif font-bold text-[#232215] dark:text-[#F9FAFB]">
                     {activeScholar.fullName}
                   </h3>
 
                   {(activeScholar.currentRole || activeScholar.cityCountry) && (
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-700">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-700 dark:text-gray-300">
                       {activeScholar.currentRole && (
-                        <div className="flex items-center gap-1 font-semibold text-[#504F34]">
-                          <Award className="w-3.5 h-3.5 text-[#8C8A58] shrink-0" />
+                        <div className="flex items-center gap-1 font-semibold text-[#504F34] dark:text-[#84CC16]">
+                          <Award className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
                           <span>{activeScholar.currentRole}</span>
                         </div>
                       )}
                       {activeScholar.cityCountry && (
-                        <div className="flex items-center gap-1 text-slate-600">
-                          <MapPin className="w-3 h-3 text-[#8C8A58] shrink-0" />
+                        <div className="flex items-center gap-1 text-slate-600 dark:text-gray-400">
+                          <MapPin className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
                           <span>{activeScholar.cityCountry}</span>
                         </div>
                       )}
@@ -1120,7 +1120,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
 
                   {/* Compact Statement */}
                   {!isDossierExpanded && activeScholar.bio && (
-                    <p className="text-xs leading-relaxed text-slate-700 italic bg-[#FAF8F2]/90 p-3 rounded-2xl border border-[#E2E0D0]/80 line-clamp-3">
+                    <p className="text-xs leading-relaxed text-slate-700 dark:text-[#D1D5DB] italic bg-[#FAF8F2]/90 dark:bg-[#1C222D] p-3 rounded-2xl border border-[#E2E0D0]/80 dark:border-[#242936] line-clamp-3">
                       "{activeScholar.bio}"
                     </p>
                   )}
@@ -1130,8 +1130,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                     <div className="space-y-3 pt-1 animate-in fade-in duration-300">
                       {/* Timeline */}
                       <div className="space-y-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] flex items-center gap-1.5">
-                          <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58]" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#6B6A45] dark:text-[#84CC16] flex items-center gap-1.5">
+                          <GraduationCap className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16]" />
                           <span>Complete Academic Journey</span>
                         </span>
                         {(() => {
@@ -1142,25 +1142,25 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                               ? [{ degree: activeScholar.qualification, university: activeScholar.university, year: activeScholar.batchYear }]
                               : [];
                           return (
-                            <div className="border-l-2 border-[#C5A059]/70 pl-3.5 space-y-2.5 relative ml-1">
+                            <div className="border-l-2 border-[#C5A059]/70 dark:border-[#84CC16]/50 pl-3.5 space-y-2.5 relative ml-1">
                               {quals.map((q, idx) => (
                                 <div key={idx} className="relative">
                                   <span
-                                    className="absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C5A059] ring-2 ring-white shadow-2xs"
+                                    className="absolute -left-[19px] top-1.5 w-2.5 h-2.5 rounded-full bg-[#C5A059] dark:bg-[#84CC16] ring-2 ring-white dark:ring-[#141820] shadow-2xs"
                                     aria-hidden="true"
                                   />
-                                  <div className="bg-white/95 p-2.5 rounded-xl border border-[#E2E0D0] shadow-2xs flex items-start justify-between gap-2">
+                                  <div className="bg-white/95 dark:bg-[#1C222D] p-2.5 rounded-xl border border-[#E2E0D0] dark:border-[#242936] shadow-2xs flex items-start justify-between gap-2">
                                     <div className="min-w-0">
-                                      <h4 className="font-bold text-xs text-[#232215] truncate">
+                                      <h4 className="font-bold text-xs text-[#232215] dark:text-[#F9FAFB] truncate">
                                         {q.degree || 'Degree / Award'}
                                       </h4>
-                                      <p className="text-[11px] text-slate-600 flex items-center gap-1 mt-0.5 truncate">
-                                        <Building2 className="w-3 h-3 text-[#8C8A58] shrink-0" />
+                                      <p className="text-[11px] text-slate-600 dark:text-[#D1D5DB] flex items-center gap-1 mt-0.5 truncate">
+                                        <Building2 className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
                                         <span className="truncate">{q.university || 'University'}</span>
                                       </p>
                                     </div>
                                     {q.year && (
-                                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] border border-[#C5A059]/40 text-[#8C8A58] shrink-0">
+                                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#FAF8F2] dark:bg-[#242936] border border-[#C5A059]/40 dark:border-[#242936] text-[#8C8A58] dark:text-[#84CC16] shrink-0">
                                         {q.year}
                                       </span>
                                     )}
@@ -1175,10 +1175,10 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                       {/* Full Bio */}
                       {activeScholar.bio && (
                         <div className="space-y-1">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 block">
                             Scholarly Statement
                           </span>
-                          <p className="text-xs leading-relaxed text-slate-700 italic bg-[#FAF8F2] p-3 rounded-xl border border-[#E2E0D0]/80">
+                          <p className="text-xs leading-relaxed text-slate-700 dark:text-[#D1D5DB] italic bg-[#FAF8F2] dark:bg-[#1C222D] p-3 rounded-xl border border-[#E2E0D0]/80 dark:border-[#242936]">
                             "{activeScholar.bio}"
                           </p>
                         </div>
@@ -1186,11 +1186,11 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
 
                       {/* Mentorship */}
                       {activeScholar.availableForMentorship && (
-                        <div className="p-3 bg-emerald-50/90 border border-emerald-200/90 rounded-xl flex items-start gap-2 text-xs text-emerald-900">
-                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                        <div className="p-3 bg-emerald-50/90 dark:bg-emerald-950/30 border border-emerald-200/90 dark:border-emerald-900/50 rounded-xl flex items-start gap-2 text-xs text-emerald-900 dark:text-emerald-300">
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                           <div>
                             <span className="font-bold block text-[11px]">Academic Mentorship</span>
-                            <span className="text-emerald-800 text-[10px] leading-tight block">
+                            <span className="text-emerald-800 dark:text-emerald-300/80 text-[10px] leading-tight block">
                               Open to guide junior students in higher studies.
                             </span>
                           </div>
@@ -1200,26 +1200,26 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                       {/* Connect Buttons */}
                       {activeScholar.showContactPublicly &&
                         (activeScholar.email || activeScholar.phone || activeScholar.linkedinUrl) && (
-                          <div className="pt-2 border-t border-[#E2E0D0]/80 space-y-1.5">
-                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                          <div className="pt-2 border-t border-[#E2E0D0]/80 dark:border-[#242936] space-y-1.5">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-gray-400 block">
                               Connect with Scholar
                             </span>
                             <div className="flex flex-wrap items-center gap-1.5">
                               {activeScholar.email && (
                                 <a
                                   href={`mailto:${activeScholar.email}`}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] dark:bg-[#1C222D] hover:bg-[#E2E0D0] dark:hover:bg-[#242936] text-[#232215] dark:text-[#F9FAFB] border border-transparent dark:border-[#242936] rounded-lg text-[11px] font-semibold transition-colors"
                                 >
-                                  <Mail className="w-3 h-3 text-[#6B6A45]" />
+                                  <Mail className="w-3 h-3 text-[#6B6A45] dark:text-[#84CC16]" />
                                   <span>Email</span>
                                 </a>
                               )}
                               {activeScholar.phone && (
                                 <a
                                   href={`tel:${activeScholar.phone}`}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] hover:bg-[#E2E0D0] text-[#232215] rounded-lg text-[11px] font-semibold transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#F4F3EC] dark:bg-[#1C222D] hover:bg-[#E2E0D0] dark:hover:bg-[#242936] text-[#232215] dark:text-[#F9FAFB] border border-transparent dark:border-[#242936] rounded-lg text-[11px] font-semibold transition-colors"
                                 >
-                                  <Phone className="w-3 h-3 text-[#6B6A45]" />
+                                  <Phone className="w-3 h-3 text-[#6B6A45] dark:text-[#84CC16]" />
                                   <span>Call</span>
                                 </a>
                               )}
@@ -1228,7 +1228,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                                   href={activeScholar.linkedinUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F2] hover:bg-[#F4F3EC] text-[#6B6A45] border border-[#C5A059]/40 rounded-lg text-[11px] font-bold transition-colors"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#FAF8F2] dark:bg-[#1C222D] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] text-[#6B6A45] dark:text-[#84CC16] border border-[#C5A059]/40 dark:border-[#242936] rounded-lg text-[11px] font-bold transition-colors"
                                 >
                                   <ExternalLink className="w-3 h-3" />
                                   <span>LinkedIn</span>
@@ -1241,27 +1241,27 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                   )}
 
                   {/* Mobile Actions: Smooth Toggle Button */}
-                  <div className="pt-3 border-t border-[#E2E0D0]/80 flex flex-col gap-2">
+                  <div className="pt-3 border-t border-[#E2E0D0]/80 dark:border-[#242936] flex flex-col gap-2">
                     <button
                       type="button"
                       onClick={() => setIsDossierExpanded((prev) => !prev)}
                       className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                         isDossierExpanded
-                          ? 'bg-[#504F34] hover:bg-[#3D3C27] text-white border border-[#C5A059]/60 ring-2 ring-[#C5A059]/20'
-                          : 'bg-[#6B6A45] hover:bg-[#504F34] text-white shadow-xs'
+                          ? 'bg-[#504F34] dark:bg-[#242936] hover:bg-[#3D3C27] dark:hover:bg-[#2c3342] text-white dark:text-[#F9FAFB] border border-[#C5A059]/60 dark:border-[#C5A059]/40 ring-2 ring-[#C5A059]/20'
+                          : 'bg-[#6B6A45] dark:bg-[#1C222D] hover:bg-[#504F34] dark:hover:bg-[#242936] text-white dark:text-[#F9FAFB] border border-transparent dark:border-[#242936] shadow-xs'
                       }`}
                     >
-                      <Award className="w-3.5 h-3.5 text-[#EFEFD0]" />
+                      <Award className="w-3.5 h-3.5 text-[#EFEFD0] dark:text-[#84CC16]" />
                       <span>{isDossierExpanded ? 'Collapse Royal Dossier' : 'View Full Royal Dossier'}</span>
                       {isDossierExpanded ? (
-                        <ChevronUp className="w-3.5 h-3.5 text-[#DFC076]" />
+                        <ChevronUp className="w-3.5 h-3.5 text-[#DFC076] dark:text-[#84CC16]" />
                       ) : (
-                        <ChevronDown className="w-3.5 h-3.5 text-[#DFC076]" />
+                        <ChevronDown className="w-3.5 h-3.5 text-[#DFC076] dark:text-[#84CC16]" />
                       )}
                     </button>
                     {!isDossierExpanded && activeScholar.availableForMentorship && (
-                      <span className="text-xs text-center font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center justify-center gap-1.5 shadow-2xs">
-                        <Sparkles className="w-3 h-3 text-emerald-600" />
+                      <span className="text-xs text-center font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 px-3 py-1 rounded-full flex items-center justify-center gap-1.5 shadow-2xs">
+                        <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         <span>Open to Mentor Students</span>
                       </span>
                     )}
@@ -1275,7 +1275,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
               <button
                 type="button"
                 onClick={handlePrevScholar}
-                className="p-2 rounded-xl border border-[#E2E0D0] bg-white text-[#6B6A45] cursor-pointer shadow-2xs"
+                className="p-2 rounded-xl border border-[#E2E0D0] dark:border-[#242936] bg-white dark:bg-[#1C222D] text-[#6B6A45] dark:text-[#84CC16] cursor-pointer shadow-2xs"
                 aria-label="Previous Scholar"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -1292,8 +1292,8 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
                     }}
                     className={`w-7 h-7 rounded-full text-xs font-bold transition-all shrink-0 flex items-center justify-center ${
                       s.id === activeScholarId
-                        ? 'bg-[#6B6A45] text-white ring-2 ring-[#C5A059]'
-                        : 'bg-white text-slate-600 border border-[#E2E0D0]'
+                        ? 'bg-[#6B6A45] dark:bg-[#84CC16] text-white dark:text-[#0B0D11] ring-2 ring-[#C5A059] dark:ring-[#84CC16]/50'
+                        : 'bg-white dark:bg-[#1C222D] text-slate-600 dark:text-gray-300 border border-[#E2E0D0] dark:border-[#242936]'
                     }`}
                   >
                     {idx + 1}
@@ -1304,7 +1304,7 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
               <button
                 type="button"
                 onClick={handleNextScholar}
-                className="p-2 rounded-xl border border-[#E2E0D0] bg-white text-[#6B6A45] cursor-pointer shadow-2xs"
+                className="p-2 rounded-xl border border-[#E2E0D0] dark:border-[#242936] bg-white dark:bg-[#1C222D] text-[#6B6A45] dark:text-[#84CC16] cursor-pointer shadow-2xs"
                 aria-label="Next Scholar"
               >
                 <ChevronRight className="w-4 h-4" />

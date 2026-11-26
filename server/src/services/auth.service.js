@@ -154,6 +154,7 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
         staffType: true,
         isActive: true,
         madrasaId: true,
+        notes: true,
       },
     });
 
@@ -175,11 +176,11 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
       throw error;
     }
 
-    let photoUrl = null;
+    let teacherPhotoUrl = null;
     if (ustadh.notes && ustadh.notes.startsWith('{')) {
       try {
         const parsed = JSON.parse(ustadh.notes);
-        photoUrl = parsed.photoUrl || parsed.avatarUrl || parsed.profilePhoto || parsed.base64Fallback || null;
+        teacherPhotoUrl = parsed.photoUrl || parsed.avatarUrl || parsed.profilePhoto || parsed.base64Fallback || null;
       } catch (_) {}
     }
 
@@ -188,9 +189,9 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
       ustadhCode: ustadh.ustadhCode,
       fullName: ustadh.fullName,
       staffType: ustadh.staffType,
-      photoUrl,
-      avatarUrl: photoUrl,
-      profilePhoto: photoUrl,
+      photoUrl: teacherPhotoUrl ?? null,
+      avatarUrl: teacherPhotoUrl ?? null,
+      profilePhoto: teacherPhotoUrl ?? null,
     };
   }
 
@@ -225,6 +226,9 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
     logoUrl = await resolveMadrasaLogoUrl(user.madrasa.id, user.madrasa.logoFileId);
   }
 
+  // Safely declare photoUrl from teacher profile or user record with null fallback
+  const photoUrl = teacherProfile?.photoUrl ?? user?.photoUrl ?? null;
+
   // Sanitize return object - never leak passwordHash
   const sanitizedUser = {
     id: user.id,
@@ -232,9 +236,9 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
     email: user.email,
     role: user.role,
     madrasaId: user.madrasaId,
-    avatarUrl: photoUrl || null,
-    photoUrl: photoUrl || null,
-    profilePhoto: photoUrl || null,
+    avatarUrl: photoUrl ?? null,
+    photoUrl: photoUrl ?? null,
+    profilePhoto: photoUrl ?? null,
     mustChangePassword: Boolean(user.mustChangePassword),
     ...(user.madrasa
       ? {
@@ -313,6 +317,7 @@ export const getMe = async (userId) => {
         fullName: true,
         staffType: true,
         isActive: true,
+        notes: true,
       },
     });
 
@@ -322,11 +327,11 @@ export const getMe = async (userId) => {
       throw error;
     }
 
-    let photoUrl = null;
+    let teacherPhotoUrl = null;
     if (ustadh.notes && ustadh.notes.startsWith('{')) {
       try {
         const parsed = JSON.parse(ustadh.notes);
-        photoUrl = parsed.photoUrl || parsed.avatarUrl || parsed.profilePhoto || parsed.base64Fallback || null;
+        teacherPhotoUrl = parsed.photoUrl || parsed.avatarUrl || parsed.profilePhoto || parsed.base64Fallback || null;
       } catch (_) {}
     }
 
@@ -335,9 +340,9 @@ export const getMe = async (userId) => {
       ustadhCode: ustadh.ustadhCode,
       fullName: ustadh.fullName,
       staffType: ustadh.staffType,
-      photoUrl,
-      avatarUrl: photoUrl,
-      profilePhoto: photoUrl,
+      photoUrl: teacherPhotoUrl ?? null,
+      avatarUrl: teacherPhotoUrl ?? null,
+      profilePhoto: teacherPhotoUrl ?? null,
     };
   }
 
@@ -346,15 +351,18 @@ export const getMe = async (userId) => {
     logoUrl = await resolveMadrasaLogoUrl(user.madrasa.id, user.madrasa.logoFileId);
   }
 
+  // Safely declare photoUrl from teacher profile or user record with null fallback
+  const photoUrl = teacherProfile?.photoUrl ?? user?.photoUrl ?? null;
+
   return {
     id: user.id,
     name: user.name,
     email: user.email,
     role: user.role,
     madrasaId: user.madrasaId,
-    avatarUrl: photoUrl || null,
-    photoUrl: photoUrl || null,
-    profilePhoto: photoUrl || null,
+    avatarUrl: photoUrl ?? null,
+    photoUrl: photoUrl ?? null,
+    profilePhoto: photoUrl ?? null,
     mustChangePassword: Boolean(user.mustChangePassword),
     ...(user.madrasa
       ? {

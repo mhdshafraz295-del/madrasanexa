@@ -1,6 +1,7 @@
 import { prisma } from '../lib/prisma.js';
 import { dispatchEmail } from '../services/email.service.js';
 import { getTenantLocalDateString } from '../services/gate-attendance.service.js';
+import { sendSms, normalizePhoneNumber } from '../services/sms.service.js';
 
 let workerIntervalId = null;
 let isProcessingBatch = false;
@@ -291,7 +292,15 @@ export async function processGateEmailJobs({ limit = 20, madrasaId = null } = {}
         where: { id: candidate.id },
         include: {
           student: {
-            include: {
+            select: {
+              id: true,
+              fullName: true,
+              admissionNo: true,
+              guardianEmail: true,
+              guardianPhone: true,
+              whatsappNumber: true,
+              guardianName: true,
+              category: true,
               class: {
                 select: { id: true, name: true, code: true },
               },
@@ -327,22 +336,6 @@ export async function processGateEmailJobs({ limit = 20, madrasaId = null } = {}
         continue;
       }
 
-      // Verify recipient email presence
-      const guardianEmail = event.student?.guardianEmail?.trim();
-      if (!guardianEmail) {
-        await prisma.studentGateEvent.update({
-          where: { id: event.id },
-          data: {
-            emailStatus: 'SKIPPED_NO_RECIPIENT',
-            emailSkipReason: 'NO_GUARDIAN_EMAIL_REGISTERED',
-            processingStartedAt: null,
-            nextAttemptAt: null,
-          },
-        });
-        summary.skipped++;
-        continue;
-      }
-
       // Verify student category eligibility (strictly DAY_SCHOLAR)
       if (event.category === 'BOARDING') {
         await prisma.studentGateEvent.update({
@@ -358,7 +351,27 @@ export async function processGateEmailJobs({ limit = 20, madrasaId = null } = {}
         continue;
       }
 
-      // Prepare email payload
+      // Resolve contact channels
+      const guardianEmail = event.student?.guardianEmail?.trim() || null;
+      const rawPhone = event.student?.guardianPhone || event.student?.whatsappNumber || null;
+      const normalizedPhone = normalizePhoneNumber(rawPhone);
+
+      // Verify at least one recipient channel is registered
+      if (!guardianEmail && !rawPhone) {
+        await prisma.studentGateEvent.update({
+          where: { id: event.id },
+          data: {
+            emailStatus: 'SKIPPED_NO_RECIPIENT',
+            emailSkipReason: 'NO_GUARDIAN_EMAIL_REGISTERED',
+            processingStartedAt: null,
+            nextAttemptAt: null,
+          },
+        });
+        summary.skipped++;
+        continue;
+      }
+
+      // Prepare notification payloads
       const tenantTimezone = settings?.timezone || 'Asia/Colombo';
       const timeStr = formatLocalTime(event.scannedAt, tenantTimezone);
       const dateStr = getTenantLocalDateString(event.scannedAt, tenantTimezone);
@@ -367,29 +380,58 @@ export async function processGateEmailJobs({ limit = 20, madrasaId = null } = {}
       const admissionNo = event.student?.admissionNo || 'N/A';
       const className = event.student?.class?.name || null;
 
-      const actionSubject = event.eventType === 'ENTRY' ? 'Entry Alert' : 'Exit Alert';
-      const subject = `[${madrasaName}] Gate ${actionSubject}: ${studentName}`;
+      // 1. Dispatch Text.lk SMS alert alongside Gate Entry/Exit Email (deduplicated: attempt 1 only)
+      if (rawPhone && currentAttempt === 1) {
+        console.log('[SmsService] Gate alert triggered:', {
+          admissionNo,
+          rawPhone,
+          normalizedPhone,
+        });
 
-      const html = renderGateEmailHtml({
-        madrasaName,
-        studentName,
-        admissionNo,
-        className,
-        eventType: event.eventType,
-        timeStr,
-        dateStr,
-      });
+        const actionWord = event.eventType === 'ENTRY' ? 'entered' : 'exited';
+        const smsMessage = `[${madrasaName}] Attendance Alert: ${studentName} (${admissionNo}) has ${actionWord} the campus at ${timeStr}.`;
 
-      const text = `Assalamu Alaikum / Dear Parent,\n\nYour child ${studentName} (${admissionNo}) has recorded a gate ${event.eventType} at ${madrasaName} on ${dateStr} at ${timeStr}.\n\nThis is an automated notification.`;
+        try {
+          const smsResult = await sendSms({
+            to: rawPhone,
+            message: smsMessage,
+            madrasaId: event.madrasaId,
+          });
+          console.log('[SmsService] Text.lk API response:', smsResult);
+        } catch (smsErr) {
+          console.error('[SmsService] Text.lk SMS delivery error in gate worker:', smsErr?.message || smsErr);
+        }
+      }
 
-      // Dispatch through email service
-      const dispatchResult = await dispatchEmail({
-        madrasaId: event.madrasaId,
-        to: guardianEmail,
-        subject,
-        html,
-        text,
-      });
+      // 2. Dispatch through email service if guardianEmail is present
+      let dispatchResult = null;
+      if (guardianEmail) {
+        const actionSubject = event.eventType === 'ENTRY' ? 'Entry Alert' : 'Exit Alert';
+        const subject = `[${madrasaName}] Gate ${actionSubject}: ${studentName}`;
+
+        const html = renderGateEmailHtml({
+          madrasaName,
+          studentName,
+          admissionNo,
+          className,
+          eventType: event.eventType,
+          timeStr,
+          dateStr,
+        });
+
+        const text = `Assalamu Alaikum / Dear Parent,\n\nYour child ${studentName} (${admissionNo}) has recorded a gate ${event.eventType} at ${madrasaName} on ${dateStr} at ${timeStr}.\n\nThis is an automated notification.`;
+
+        dispatchResult = await dispatchEmail({
+          madrasaId: event.madrasaId,
+          to: guardianEmail,
+          subject,
+          html,
+          text,
+        });
+      } else {
+        // SMS-only delivery (no email registered)
+        dispatchResult = { success: true, status: 'SENT', smsOnly: true };
+      }
 
       if (dispatchResult && dispatchResult.success && dispatchResult.status === 'SENT') {
         // Success: Mark as SENT

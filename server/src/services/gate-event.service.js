@@ -13,7 +13,7 @@ import {
 import { reconcileGateAttendance } from './gate-attendance.service.js';
 import { logTenantActivity } from './tenant.service.js';
 import { isValidTimezone } from '../utils/dateTime.js';
-import { sendSms } from './sms.service.js';
+import { processGateEmailJobs } from '../jobs/gate-email-worker.job.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -177,10 +177,16 @@ export async function processGateScan({
     where: { madrasaId },
   });
 
-  // 7. Determine initial email status & skip reason
+  // 7. Determine initial email/SMS status & skip reason
   let initialEmailStatus = 'NOT_APPLICABLE';
   let initialEmailSkipReason = null;
   const now = new Date();
+
+  const hasGuardianEmail = Boolean(student.guardianEmail && student.guardianEmail.trim().length > 0);
+  const hasGuardianPhone = Boolean(
+    (student.guardianPhone && student.guardianPhone.trim().length > 0) ||
+    (student.whatsappNumber && student.whatsappNumber.trim().length > 0)
+  );
 
   if (student.category === 'BOARDING') {
     initialEmailStatus = 'NOT_APPLICABLE';
@@ -188,11 +194,11 @@ export async function processGateScan({
   } else if (!settings?.gateParentEmailNotificationsEnabled) {
     initialEmailStatus = 'NOT_APPLICABLE';
     initialEmailSkipReason = 'NOTIFICATIONS_DISABLED_BY_TENANT';
-  } else if (!student.guardianEmail || student.guardianEmail.trim().length === 0) {
+  } else if (!hasGuardianEmail && !hasGuardianPhone) {
     initialEmailStatus = 'SKIPPED_NO_RECIPIENT';
-    initialEmailSkipReason = 'NO_GUARDIAN_EMAIL_REGISTERED';
+    initialEmailSkipReason = 'NO_GUARDIAN_CONTACT_REGISTERED';
   } else {
-    // Eligible DAY_SCHOLAR with active notification toggle and valid email
+    // Eligible DAY_SCHOLAR with active notification toggle and valid email or mobile
     initialEmailStatus = 'QUEUED';
     initialEmailSkipReason = null;
   }
@@ -260,25 +266,12 @@ export async function processGateScan({
     };
   });
 
-  // Asynchronously dispatch parent/guardian SMS alert (strictly non-blocking with error guards)
-  const guardianMobile = student?.guardianPhone || student?.whatsappNumber || null;
-  if (guardianMobile) {
-    const tz = isValidTimezone(settings?.timezone) ? settings.timezone : 'Asia/Colombo';
-    const timeStr = dayjs(now).tz(tz).format('hh:mm A');
-    const institutionName = student?.madrasa?.name || settings?.institutionName || 'Madrasa';
-    const actionWord = eventType === 'ENTRY' ? 'entered' : 'exited';
-    const smsMessage = `[${institutionName}] Attendance Alert: ${student.fullName} (${student.admissionNo}) has ${actionWord} the campus at ${timeStr}.`;
-
-    Promise.resolve().then(async () => {
-      try {
-        await sendSms({
-          to: guardianMobile,
-          message: smsMessage,
-          madrasaId,
-        });
-      } catch (smsErr) {
-        console.error('[GateEventService] Asynchronous gate scan SMS dispatch error:', smsErr?.message || smsErr);
-      }
+  // Trigger immediate gate outbox processing without blocking the scanner response
+  if (initialEmailStatus === 'QUEUED') {
+    setImmediate(() => {
+      processGateEmailJobs({ madrasaId, limit: 10 }).catch((err) => {
+        console.warn('[GateEventService] Immediate gate outbox trigger error:', err?.message || err);
+      });
     });
   }
 

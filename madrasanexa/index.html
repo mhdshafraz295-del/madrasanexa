@@ -10,17 +10,16 @@
       (function() {
         try {
           var saved = localStorage.getItem('madrasanexa_theme');
-          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (saved === 'dark' || (!saved && prefersDark)) {
-            document.documentElement.classList.add('dark');
-          } else {
+          if (saved === 'light') {
             document.documentElement.classList.remove('dark');
+          } else {
+            document.documentElement.classList.add('dark');
           }
         } catch (e) {}
       })();
     </script>
   </head>
-  <body>
+  <body class="bg-[#F8FAFC] dark:bg-[#0B0D11] text-[#0F172A] dark:text-[#F9FAFB] antialiased selection:bg-[#84CC16]/20 selection:text-[#F9FAFB]">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -17,7 +17,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', compac
       onClick={toggleTheme}
       className={`relative inline-flex items-center justify-center ${
         compact ? 'w-8 h-8' : 'w-8 h-8 sm:w-9 sm:h-9'
-      } rounded-lg sm:rounded-xl border border-[#E7E9EE] dark:border-slate-700 bg-white dark:bg-slate-800/90 text-slate-600 dark:text-amber-300 hover:text-slate-900 dark:hover:text-amber-200 hover:bg-slate-50 dark:hover:bg-slate-700/80 shadow-xs transition-all duration-200 cursor-pointer shrink-0 ${className}`}
+      } rounded-lg sm:rounded-xl border border-[#E7E9EE] dark:border-[#242936] bg-white dark:bg-[#141820] text-slate-600 dark:text-[#A3E635] hover:text-slate-900 dark:hover:text-[#84CC16] hover:bg-slate-50 dark:hover:bg-[#1C222D] shadow-xs transition-all duration-200 cursor-pointer shrink-0 ${className}`}
       title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
       aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
     >

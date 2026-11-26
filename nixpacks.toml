@@ -3,12 +3,12 @@
 nixPkgs = [
   "nodejs_20",
   "chromium",
+  "cacert",
   "nss",
   "freetype",
   "harfbuzz",
-  "ca-certificates",
-  "ttf-freefont",
-  "fontconfig"
+  "fontconfig",
+  "dejavu_fonts"
 ]
 
 [variables]

@@ -8,7 +8,7 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-const THEME_STORAGE_KEY = 'madrasanexa_theme';
+const THEME_STORAGE_KEY = 'madrasanexa_teacher_theme';
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 

@@ -12,7 +12,7 @@
     <script>
       (function() {
         try {
-          var saved = localStorage.getItem('madrasanexa_theme');
+          var saved = localStorage.getItem('madrasanexa_teacher_theme') || localStorage.getItem('madrasanexa_theme');
           if (saved === 'light') {
             document.documentElement.classList.remove('dark');
           } else {

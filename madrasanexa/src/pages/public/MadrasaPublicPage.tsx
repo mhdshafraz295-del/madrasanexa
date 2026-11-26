@@ -27,6 +27,11 @@ export const MadrasaPublicPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Ensure the public madrasa website strictly stays in clean Light Mode
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+  }, []);
+
   useEffect(() => {
     if (!slug) return;
     setLoading(true);

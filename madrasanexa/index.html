@@ -9,9 +9,26 @@
     <script>
       (function() {
         try {
-          var saved = localStorage.getItem('madrasanexa_theme');
-          if (saved === 'dark') {
-            document.documentElement.classList.add('dark');
+          var path = window.location.pathname;
+          var isPublic =
+            path === '/' ||
+            path.startsWith('/madrasa/') ||
+            path.startsWith('/alumni/') ||
+            path.startsWith('/pricing') ||
+            path.startsWith('/about') ||
+            path.startsWith('/login') ||
+            path.startsWith('/register') ||
+            path.startsWith('/setup-password') ||
+            path.startsWith('/change-password') ||
+            path.startsWith('/super-admin/website-content/preview');
+
+          if (!isPublic) {
+            var saved = localStorage.getItem('madrasanexa_theme');
+            if (saved === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
           } else {
             document.documentElement.classList.remove('dark');
           }

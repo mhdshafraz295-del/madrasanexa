@@ -64,6 +64,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
   const [submissionResult, setSubmissionResult] = useState<ApplicationSubmissionResult | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
 
+  // Ensure public admissions portal strictly stays in clean Light Mode
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+  }, []);
+
   useEffect(() => {
     if (submissionResult) {
       document.body.classList.add('has-admission-receipt');

@@ -12,11 +12,11 @@
     <script>
       (function() {
         try {
-          var saved = localStorage.getItem('madrasanexa_teacher_theme') || localStorage.getItem('madrasanexa_theme');
-          if (saved === 'light') {
-            document.documentElement.classList.remove('dark');
-          } else {
+          var saved = localStorage.getItem('madrasanexa_teacher_theme');
+          if (saved === 'dark') {
             document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
           }
         } catch (e) {}
       })();

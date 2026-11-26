@@ -10,26 +10,22 @@
       (function() {
         try {
           var path = window.location.pathname;
-          var isPublic =
-            path === '/' ||
-            path.startsWith('/madrasa/') ||
-            path.startsWith('/alumni/') ||
-            path.startsWith('/pricing') ||
-            path.startsWith('/about') ||
-            path.startsWith('/login') ||
-            path.startsWith('/register') ||
-            path.startsWith('/setup-password') ||
-            path.startsWith('/change-password') ||
-            path.startsWith('/super-admin/website-content/preview');
-
-          if (!isPublic) {
-            var saved = localStorage.getItem('madrasanexa_theme');
-            if (saved === 'dark') {
+          if (path.startsWith('/super-admin') && path !== '/super-admin/website-content/preview') {
+            var superAdminSaved = localStorage.getItem('madrasanexa_super_admin_theme');
+            if (superAdminSaved === 'dark') {
+              document.documentElement.classList.add('dark');
+            } else {
+              document.documentElement.classList.remove('dark');
+            }
+          } else if (path.startsWith('/madrasa-admin')) {
+            var adminSaved = localStorage.getItem('madrasanexa_admin_theme');
+            if (adminSaved === 'dark') {
               document.documentElement.classList.add('dark');
             } else {
               document.documentElement.classList.remove('dark');
             }
           } else {
+            // All public portals, system website, login, register, and preview routes are strictly Light Mode
             document.documentElement.classList.remove('dark');
           }
         } catch (e) {}

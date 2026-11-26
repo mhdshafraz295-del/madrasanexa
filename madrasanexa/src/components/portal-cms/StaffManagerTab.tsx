@@ -221,16 +221,16 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
         </div>
 
         {/* Statistics Toggle */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F6F0] border border-[#E3E8E3]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#F7F6F0] dark:bg-[#1C222D] border border-[#E3E8E3] dark:border-[#242936]">
           <div className="flex items-start space-x-3">
-            <div className="w-9 h-9 rounded-lg bg-[#E8F3ED] text-[#075E46] flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-[#E8F3ED] dark:bg-[#075E46]/25 text-[#075E46] dark:text-[#84CC16] flex items-center justify-center shrink-0">
               <BarChart3 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-[#0B3028]">
+              <h4 className="text-sm font-bold text-[#0B3028] dark:text-[#F9FAFB]">
                 Display Live Institutional Key Statistics
               </h4>
-              <p className="text-xs text-[#64716B] mt-0.5">
+              <p className="text-xs text-[#64716B] dark:text-[#9CA3AF] mt-0.5">
                 Smoothly animates live database counts for enrolled students, total staff, and teaching faculty.
               </p>
             </div>
@@ -244,8 +244,8 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
               disabled={disabled}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#075E46]"></div>
-            <span className="ms-3 text-xs font-bold text-[#202923]">
+            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#075E46] dark:peer-checked:bg-[#84CC16]"></div>
+            <span className="ms-3 text-xs font-bold text-[#202923] dark:text-[#D1D5DB]">
               {currentConfig.showStats ? 'Stats Visible' : 'Stats Hidden'}
             </span>
           </label>
@@ -357,15 +357,15 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                   key={ustadh.id}
                   className={`p-5 rounded-2xl border transition-all ${
                     item.isPublic
-                      ? 'border-[#075E46]/30 bg-white shadow-xs'
-                      : 'border-[#E3E8E3] bg-[#F7F6F0]/60 opacity-80'
+                      ? 'border-[#075E46]/30 dark:border-[#84CC16]/30 bg-white dark:bg-[#141820] shadow-xs'
+                      : 'border-[#E3E8E3] dark:border-[#242936] bg-[#F7F6F0]/60 dark:bg-[#1C222D]/60 opacity-80'
                   }`}
                 >
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#E3E8E3]">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-[#E3E8E3] dark:border-[#242936]">
                     {/* Identity & Basic Info */}
                     <div className="flex items-center space-x-3.5 min-w-0">
                       {/* Photo Preview Thumbnail */}
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#F7F6F0] border border-[#E3E8E3] shrink-0 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#F7F6F0] dark:bg-[#1C222D] border border-[#E3E8E3] dark:border-[#242936] shrink-0 flex items-center justify-center">
                         {item.photoUrl ? (
                           <img
                             src={item.photoUrl}
@@ -373,7 +373,7 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <span className="text-xs font-bold text-[#075E46]">
+                          <span className="text-xs font-bold text-[#075E46] dark:text-[#84CC16]">
                             {ustadh.fullName.slice(0, 2).toUpperCase()}
                           </span>
                         )}
@@ -381,17 +381,17 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                          <span className="text-sm font-extrabold text-[#0B3028]">
+                          <span className="text-sm font-extrabold text-[#0B3028] dark:text-[#F9FAFB]">
                             {ustadh.fullName}
                           </span>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E8F3ED] text-[#075E46] border border-[#075E46]/10">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E8F3ED] dark:bg-[#075E46]/20 text-[#075E46] dark:text-[#84CC16] border border-[#075E46]/10 dark:border-[#84CC16]/20">
                             {ustadh.ustadhCode}
                           </span>
-                          <span className="text-[10px] font-medium text-[#64716B]">
+                          <span className="text-[10px] font-medium text-[#64716B] dark:text-[#9CA3AF]">
                             {ustadh.staffType === 'USTADH' ? 'Ustadh / Scholar' : 'School Teacher'}
                           </span>
                         </div>
-                        <p className="text-xs text-[#64716B] mt-0.5">
+                        <p className="text-xs text-[#64716B] dark:text-[#9CA3AF] mt-0.5">
                           Tenure since {ustadh.joinDate ? new Date(ustadh.joinDate).getFullYear() : '—'}
                         </p>
                       </div>
@@ -399,12 +399,12 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
 
                     {/* Visibility Switch & Reorder Buttons */}
                     <div className="flex items-center space-x-3 shrink-0">
-                      <div className="flex items-center space-x-1 border border-[#E3E8E3] rounded-lg p-0.5 bg-white">
+                      <div className="flex items-center space-x-1 border border-[#E3E8E3] dark:border-[#242936] rounded-lg p-0.5 bg-white dark:bg-[#1C222D]">
                         <button
                           type="button"
                           onClick={() => handleMoveOrder(ustadh.id, 'up')}
                           disabled={disabled || !item.isPublic}
-                          className="p-1 text-[#64716B] hover:text-[#0B3028] disabled:opacity-30 rounded hover:bg-gray-100 transition-colors"
+                          className="p-1 text-[#64716B] hover:text-[#0B3028] dark:hover:text-[#F9FAFB] disabled:opacity-30 rounded hover:bg-gray-100 dark:hover:bg-[#242936] transition-colors"
                           title="Move up in display order"
                         >
                           <ArrowUp className="w-3.5 h-3.5" />
@@ -413,7 +413,7 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                           type="button"
                           onClick={() => handleMoveOrder(ustadh.id, 'down')}
                           disabled={disabled || !item.isPublic}
-                          className="p-1 text-[#64716B] hover:text-[#0B3028] disabled:opacity-30 rounded hover:bg-gray-100 transition-colors"
+                          className="p-1 text-[#64716B] hover:text-[#0B3028] dark:hover:text-[#F9FAFB] disabled:opacity-30 rounded hover:bg-gray-100 dark:hover:bg-[#242936] transition-colors"
                           title="Move down in display order"
                         >
                           <ArrowDown className="w-3.5 h-3.5" />
@@ -428,8 +428,8 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                           disabled={disabled}
                           className="sr-only peer"
                         />
-                        <div className="w-9 h-5 bg-gray-200 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#075E46]"></div>
-                        <span className="ms-2 text-xs font-semibold text-[#202923]">
+                        <div className="w-9 h-5 bg-gray-200 dark:bg-gray-700 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#075E46] dark:peer-checked:bg-[#84CC16]"></div>
+                        <span className="ms-2 text-xs font-semibold text-[#202923] dark:text-[#D1D5DB]">
                           {item.isPublic ? 'Public' : 'Hidden'}
                         </span>
                       </label>
@@ -440,7 +440,7 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                   {item.isPublic && (
                     <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
                       <div>
-                        <label className="block text-[11px] font-bold text-[#64716B] mb-1">
+                        <label className="block text-[11px] font-bold text-[#64716B] dark:text-[#9CA3AF] mb-1">
                           Public Designation
                         </label>
                         <input
@@ -449,12 +449,12 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                           onChange={(e) => updateItem(ustadh.id, { designation: e.target.value })}
                           placeholder="e.g. Senior Ustadh / Sheikh"
                           disabled={disabled}
-                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] text-xs focus:ring-1 focus:ring-[#075E46] outline-hidden bg-white"
+                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] dark:border-[#242936] text-xs focus:ring-1 focus:ring-[#075E46] dark:focus:ring-[#84CC16] outline-hidden bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-[#64716B] mb-1">
+                        <label className="block text-[11px] font-bold text-[#64716B] dark:text-[#9CA3AF] mb-1">
                           Department / Subject
                         </label>
                         <input
@@ -463,12 +463,12 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                           onChange={(e) => updateItem(ustadh.id, { department: e.target.value })}
                           placeholder="e.g. Hifz & Tajweed"
                           disabled={disabled}
-                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] text-xs focus:ring-1 focus:ring-[#075E46] outline-hidden bg-white"
+                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] dark:border-[#242936] text-xs focus:ring-1 focus:ring-[#075E46] dark:focus:ring-[#84CC16] outline-hidden bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-[#64716B] mb-1">
+                        <label className="block text-[11px] font-bold text-[#64716B] dark:text-[#9CA3AF] mb-1">
                           Academic & Islamic Credentials
                         </label>
                         <input
@@ -477,12 +477,12 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                           onChange={(e) => updateItem(ustadh.id, { qualification: e.target.value })}
                           placeholder="e.g. Al-Alimiyyah, Hafiz"
                           disabled={disabled}
-                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] text-xs focus:ring-1 focus:ring-[#075E46] outline-hidden bg-white"
+                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] dark:border-[#242936] text-xs focus:ring-1 focus:ring-[#075E46] dark:focus:ring-[#84CC16] outline-hidden bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-bold text-[#64716B] mb-1">
+                        <label className="block text-[11px] font-bold text-[#64716B] dark:text-[#9CA3AF] mb-1">
                           Teaching Experience
                         </label>
                         <input
@@ -491,13 +491,13 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                           onChange={(e) => updateItem(ustadh.id, { experienceYears: e.target.value })}
                           placeholder="e.g. 10+ Years"
                           disabled={disabled}
-                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] text-xs focus:ring-1 focus:ring-[#075E46] outline-hidden bg-white"
+                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] dark:border-[#242936] text-xs focus:ring-1 focus:ring-[#075E46] dark:focus:ring-[#84CC16] outline-hidden bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
 
                       {/* Biography / Mentorship notes */}
                       <div className="sm:col-span-2 lg:col-span-3">
-                        <label className="block text-[11px] font-bold text-[#64716B] mb-1">
+                        <label className="block text-[11px] font-bold text-[#64716B] dark:text-[#9CA3AF] mb-1">
                           Short Biography / Mentorship Focus (Max 300 chars)
                         </label>
                         <input
@@ -506,17 +506,17 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
                           onChange={(e) => updateItem(ustadh.id, { bio: e.target.value.slice(0, 300) })}
                           placeholder="Brief scholarly background, character mentorship, or teaching philosophy."
                           disabled={disabled}
-                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] text-xs focus:ring-1 focus:ring-[#075E46] outline-hidden bg-white"
+                          className="w-full px-3 py-1.5 rounded-lg border border-[#E3E8E3] dark:border-[#242936] text-xs focus:ring-1 focus:ring-[#075E46] dark:focus:ring-[#84CC16] outline-hidden bg-white dark:bg-[#141820] text-slate-900 dark:text-[#F9FAFB]"
                         />
                       </div>
 
                       {/* Photo Upload / Change Actions */}
                       <div className="flex flex-col justify-end">
-                        <label className="block text-[11px] font-bold text-[#64716B] mb-1">
+                        <label className="block text-[11px] font-bold text-[#64716B] dark:text-[#9CA3AF] mb-1">
                           Profile Photo
                         </label>
                         <div className="flex items-center space-x-2">
-                          <label className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#E3E8E3] hover:border-[#075E46] text-[#075E46] font-bold text-xs bg-white cursor-pointer transition-colors shadow-2xs">
+                          <label className="flex-1 inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-lg border border-[#E3E8E3] dark:border-[#242936] hover:border-[#075E46] dark:hover:border-[#84CC16] text-[#075E46] dark:text-[#84CC16] font-bold text-xs bg-white dark:bg-[#1C222D] cursor-pointer transition-colors shadow-2xs">
                             {isUploading ? (
                               <Loader2 className="w-3.5 h-3.5 animate-spin text-[#075E46]" />
                             ) : (

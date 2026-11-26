@@ -921,14 +921,14 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
       )}
 
       {/* Section Tabs */}
-      <div className="flex overflow-x-auto space-x-2 border-b border-slate-200 pb-2">
+      <div className="flex overflow-x-auto space-x-2 border-b border-slate-200 dark:border-[#242936] pb-2">
         <button
           type="button"
           onClick={() => setActiveTab('hero')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
             activeTab === 'hero'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           Hero & Contact Info
@@ -939,8 +939,8 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onClick={() => setActiveTab('about')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
             activeTab === 'about'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           About & Mission / Vision
@@ -951,8 +951,8 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onClick={() => setActiveTab('syllabus')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 ${
             activeTab === 'syllabus'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           Syllabus & Rules
@@ -963,8 +963,8 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onClick={() => setActiveTab('staff')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 flex items-center space-x-1.5 ${
             activeTab === 'staff'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           <Users className="w-4 h-4" />
@@ -976,8 +976,8 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onClick={() => setActiveTab('executive')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 flex items-center space-x-1.5 ${
             activeTab === 'executive'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           <Building2 className="w-4 h-4" />
@@ -989,12 +989,12 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onClick={() => setActiveTab('events')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 flex items-center space-x-1.5 ${
             activeTab === 'events'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           <span>Events</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-800">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-[#242936] text-slate-800 dark:text-[#D1D5DB]">
             {events.length}
           </span>
         </button>
@@ -1004,12 +1004,12 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onClick={() => setActiveTab('notices')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 flex items-center space-x-1.5 ${
             activeTab === 'notices'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           <span>Notices & Broadcast</span>
-          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 text-slate-800">
+          <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-[#242936] text-slate-800 dark:text-[#D1D5DB]">
             {notices.length}
           </span>
         </button>
@@ -1019,8 +1019,8 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
           onClick={() => setActiveTab('theme')}
           className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors shrink-0 flex items-center space-x-1.5 ${
             activeTab === 'theme'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              ? 'bg-emerald-700 dark:bg-[#1C222D] text-white dark:text-[#84CC16] border border-transparent dark:border-[#84CC16]/40 shadow-sm'
+              : 'text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D]'
           }`}
         >
           <Palette className="w-4 h-4" />
@@ -1567,11 +1567,11 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
 
       {/* Tab 5: Public Notices & Guardian Broadcast */}
       {activeTab === 'notices' && (
-        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 space-y-6 shadow-sm">
+        <div className="bg-white dark:bg-[#141820] rounded-2xl border border-slate-200/80 dark:border-[#242936] p-6 sm:p-8 space-y-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">Public Notices & Guardian Broadcast</h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-[#F9FAFB] tracking-tight">Public Notices & Guardian Broadcast</h2>
+              <p className="text-xs text-slate-500 dark:text-[#9CA3AF] mt-0.5">
                 Publish announcements on your portal and dispatch instant SMS / Email notifications to enrolled student guardians.
               </p>
             </div>
@@ -1591,7 +1591,9 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                 <div
                   key={nt.id}
                   className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
-                    nt.priority === 'URGENT' ? 'border-amber-200 bg-amber-50/30' : 'border-slate-200 bg-white'
+                    nt.priority === 'URGENT'
+                      ? 'border-amber-200 dark:border-amber-500/30 bg-amber-50/30 dark:bg-amber-500/10'
+                      : 'border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820]'
                   }`}
                 >
                   <div className="flex items-start gap-4 max-w-2xl min-w-0">
@@ -1599,20 +1601,20 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                       <img
                         src={nt.posterUrl}
                         alt={nt.title}
-                        className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200 shadow-xs"
+                        className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-[#242936] shadow-xs"
                       />
                     )}
                     <div className="space-y-1.5 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <span className="text-[11px] font-mono text-slate-400">{nt.postedAt}</span>
+                        <span className="text-[11px] font-mono text-slate-400 dark:text-[#9CA3AF]">{nt.postedAt}</span>
                         {nt.priority === 'URGENT' && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/40">
                             Urgent
                           </span>
                         )}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900">{nt.title}</h4>
-                      <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-3">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-[#F9FAFB]">{nt.title}</h4>
+                      <p className="text-xs text-slate-600 dark:text-[#9CA3AF] leading-relaxed whitespace-pre-line line-clamp-3">
                         {nt.content}
                       </p>
                     </div>
@@ -1623,17 +1625,17 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                       type="button"
                       disabled={broadcastingId === nt.id}
                       onClick={() => setConfirmBroadcastNotice(nt)}
-                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-[#1C222D] hover:bg-emerald-100 dark:hover:bg-[#242936] text-emerald-800 dark:text-[#84CC16] border border-emerald-200 dark:border-[#84CC16]/30 transition-colors disabled:opacity-50"
                       title="Send notice to all registered student guardians via SMS and Email"
                     >
-                      <Send className="w-3.5 h-3.5 text-emerald-700" />
+                      <Send className="w-3.5 h-3.5 text-emerald-700 dark:text-[#84CC16]" />
                       <span>{broadcastingId === nt.id ? 'Queuing Broadcast...' : 'Broadcast to Guardians'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleOpenEditNotice(nt)}
-                      className="p-1.5 text-slate-400 hover:text-emerald-700 transition-colors rounded-lg hover:bg-emerald-50"
+                      className="p-1.5 text-slate-400 hover:text-emerald-700 dark:hover:text-[#84CC16] transition-colors rounded-lg hover:bg-emerald-50 dark:hover:bg-[#1C222D]"
                       title="Edit Notice"
                     >
                       <Pencil className="w-4 h-4" />
@@ -1642,7 +1644,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveNotice(nt.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 transition-colors rounded-lg hover:bg-rose-50"
+                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30"
                       title="Delete Notice"
                     >
                       <Trash2 className="w-4 h-4" />

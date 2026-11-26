@@ -270,16 +270,16 @@ export default function EmailSenderSettingsTab() {
   }
 
   return (
-    <form onSubmit={handleSave} className="bg-white rounded-2xl border border-[#E7E9EE] p-6 sm:p-8 shadow-xs space-y-8">
+    <form onSubmit={handleSave} className="bg-white dark:bg-[#141820] rounded-2xl border border-[#E7E9EE] dark:border-[#242936] p-6 sm:p-8 shadow-xs space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E7E9EE] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-[#E7E9EE] dark:border-[#242936] pb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-[#1C222D] text-white flex items-center justify-center shrink-0 border dark:border-[#242936]">
             <Mail className="w-5 h-5 text-[#37C6A3]" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-[#0F172A]">Sender Email Settings</h2>
-            <p className="text-xs text-[#7C8A9A] mt-0.5">
+            <h2 className="text-base font-bold text-[#0F172A] dark:text-[#F9FAFB]">Sender Email Settings</h2>
+            <p className="text-xs text-[#7C8A9A] dark:text-[#9CA3AF] mt-0.5">
               Choose between MadrasaNexa Managed Email or configure your own institution email account.
             </p>
           </div>
@@ -289,13 +289,13 @@ export default function EmailSenderSettingsTab() {
         {form.mode === 'CUSTOM_SMTP' && (
           <div className="shrink-0">
             {settings?.isVerified ? (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs font-bold">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-[#84CC16]" />
                 <span>Verified</span>
               </div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs font-bold">
+                <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span>Not Verified</span>
               </div>
             )}
@@ -305,15 +305,15 @@ export default function EmailSenderSettingsTab() {
 
       {/* Feedback Alerts */}
       {successMessage && (
-        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center gap-2.5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-xs sm:text-sm flex items-center gap-2.5">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-[#84CC16] shrink-0" />
           <span>{successMessage}</span>
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300 text-xs sm:text-sm flex items-center gap-2.5">
+          <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -322,14 +322,14 @@ export default function EmailSenderSettingsTab() {
         <div
           className={`p-4 rounded-xl border text-xs sm:text-sm flex items-start gap-2.5 ${
             testResult.success
-              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-              : 'bg-rose-50 border-rose-200 text-rose-800'
+              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+              : 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-500/30 text-rose-800 dark:text-rose-300'
           }`}
         >
           {testResult.success ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-[#84CC16] shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
           )}
           <div>
             <div className="font-bold">{testResult.success ? 'Connection Test Passed' : 'Connection Test Failed'}</div>
@@ -340,7 +340,7 @@ export default function EmailSenderSettingsTab() {
 
       {/* Sending Method Selector */}
       <div className="space-y-4">
-        <label className="block text-xs font-bold text-[#0F172A] uppercase tracking-wider">
+        <label className="block text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB] uppercase tracking-wider">
           Sending Method
         </label>
 
@@ -350,18 +350,18 @@ export default function EmailSenderSettingsTab() {
             onClick={() => setForm({ ...form, mode: 'PLATFORM' })}
             className={`p-5 rounded-2xl border cursor-pointer transition flex flex-col justify-between space-y-4 ${
               form.mode === 'PLATFORM'
-                ? 'border-[#0F172A] bg-[#F7F6F1]/80 ring-2 ring-[#0F172A]/10'
-                : 'border-[#E7E9EE] bg-white hover:border-gray-300'
+                ? 'border-[#0F172A] dark:border-[#84CC16]/60 bg-[#F7F6F1]/80 dark:bg-[#1C222D] ring-2 ring-[#0F172A]/10 dark:ring-[#84CC16]/20'
+                : 'border-[#E7E9EE] dark:border-[#242936] bg-white dark:bg-[#141820] hover:border-gray-300 dark:hover:border-[#323948]'
             }`}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#37C6A3] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-[#075E46]/20 text-[#37C6A3] flex items-center justify-center">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-[#0F172A]">MadrasaNexa Managed Email</h3>
-                  <p className="text-[11px] text-[#7C8A9A] mt-0.5">Platform managed email server</p>
+                  <h3 className="text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB]">MadrasaNexa Managed Email</h3>
+                  <p className="text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF] mt-0.5">Platform managed email server</p>
                 </div>
               </div>
               <input
@@ -372,7 +372,7 @@ export default function EmailSenderSettingsTab() {
                 className="mt-1 accent-[#0F172A]"
               />
             </div>
-            <p className="text-[11px] text-[#7C8A9A] leading-relaxed">
+            <p className="text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF] leading-relaxed">
               No configuration required. Outgoing emails are delivered through MadrasaNexa managed senders with your madrasa name and reply-to address.
             </p>
           </div>
@@ -382,18 +382,18 @@ export default function EmailSenderSettingsTab() {
             onClick={() => setForm({ ...form, mode: 'CUSTOM_SMTP' })}
             className={`p-5 rounded-2xl border cursor-pointer transition flex flex-col justify-between space-y-4 ${
               form.mode === 'CUSTOM_SMTP'
-                ? 'border-[#0F172A] bg-[#F7F6F1]/80 ring-2 ring-[#0F172A]/10'
-                : 'border-[#E7E9EE] bg-white hover:border-gray-300'
+                ? 'border-[#0F172A] dark:border-[#84CC16]/60 bg-[#F7F6F1]/80 dark:bg-[#1C222D] ring-2 ring-[#0F172A]/10 dark:ring-[#84CC16]/20'
+                : 'border-[#E7E9EE] dark:border-[#242936] bg-white dark:bg-[#141820] hover:border-gray-300 dark:hover:border-[#323948]'
             }`}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
                   <Server className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-[#0F172A]">Use My Madrasa Email</h3>
-                  <p className="text-[11px] text-[#7C8A9A] mt-0.5">Custom institutional email account</p>
+                  <h3 className="text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB]">Use My Madrasa Email</h3>
+                  <p className="text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF] mt-0.5">Custom institutional email account</p>
                 </div>
               </div>
               <input
@@ -404,7 +404,7 @@ export default function EmailSenderSettingsTab() {
                 className="mt-1 accent-[#0F172A]"
               />
             </div>
-            <p className="text-[11px] text-[#7C8A9A] leading-relaxed">
+            <p className="text-[11px] text-[#7C8A9A] dark:text-[#9CA3AF] leading-relaxed">
               Configure Google Workspace, Microsoft 365, Zoho, or cPanel domain email to send directly from your domain identity.
             </p>
           </div>
@@ -413,18 +413,18 @@ export default function EmailSenderSettingsTab() {
 
       {/* MODE A PREVIEW */}
       {form.mode === 'PLATFORM' && (
-        <div className="p-5 rounded-xl border border-[#E7E9EE] bg-[#F8FAFC] space-y-4">
-          <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-600" />
+        <div className="p-5 rounded-xl border border-[#E7E9EE] dark:border-[#242936] bg-[#F8FAFC] dark:bg-[#1C222D] space-y-4">
+          <h3 className="text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB] uppercase tracking-wider flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600 dark:text-[#84CC16]" />
             <span>Platform Sender Active</span>
           </h3>
-          <p className="text-xs text-[#7C8A9A]">
+          <p className="text-xs text-[#7C8A9A] dark:text-[#9CA3AF]">
             Fee payment receipts, reminders, and salary slips will be dispatched using MadrasaNexa default server infrastructure.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-semibold text-[#64748B] dark:text-[#9CA3AF] uppercase tracking-wider mb-1">
                 Configured Reply-To Email
               </label>
               <input
@@ -432,9 +432,9 @@ export default function EmailSenderSettingsTab() {
                 value={form.replyToEmail}
                 onChange={(e) => setForm({ ...form, replyToEmail: e.target.value })}
                 placeholder="office@yourmadrasa.lk"
-                className="w-full px-3.5 py-2 text-xs bg-white border border-[#E7E9EE] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3]/30 font-medium text-[#0F172A]"
+                className="w-full px-3.5 py-2 text-xs bg-white dark:bg-[#141820] border border-[#E7E9EE] dark:border-[#242936] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37C6A3]/30 dark:focus:ring-[#84CC16]/30 font-medium text-[#0F172A] dark:text-[#F9FAFB]"
               />
-              <span className="text-[10px] text-[#7C8A9A] mt-1 block">
+              <span className="text-[10px] text-[#7C8A9A] dark:text-[#9CA3AF] mt-1 block">
                 Replies from recipients will be routed to this email address.
               </span>
             </div>
@@ -444,13 +444,13 @@ export default function EmailSenderSettingsTab() {
 
       {/* MODE B CUSTOM EMAIL FORM */}
       {form.mode === 'CUSTOM_SMTP' && (
-        <div className="space-y-6 pt-2 border-t border-[#E7E9EE]">
+        <div className="space-y-6 pt-2 border-t border-[#E7E9EE] dark:border-[#242936]">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <h3 className="text-xs font-bold text-[#0F172A] uppercase tracking-wider">
+            <h3 className="text-xs font-bold text-[#0F172A] dark:text-[#F9FAFB] uppercase tracking-wider">
               Custom Email Configuration
             </h3>
             {settings?.lastTestedAt && (
-              <span className="text-[10px] text-[#7C8A9A]">
+              <span className="text-[10px] text-[#7C8A9A] dark:text-[#9CA3AF]">
                 Last tested: {new Date(settings.lastTestedAt).toLocaleString()}
               </span>
             )}
@@ -458,7 +458,7 @@ export default function EmailSenderSettingsTab() {
 
           {/* Email Provider Selection */}
           <div className="space-y-2">
-            <label className="block text-xs font-semibold text-[#0F172A] uppercase tracking-wider">
+            <label className="block text-xs font-semibold text-[#0F172A] dark:text-[#F9FAFB] uppercase tracking-wider">
               Email Provider
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -467,8 +467,8 @@ export default function EmailSenderSettingsTab() {
                 onClick={() => handleProviderChange('GMAIL')}
                 className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition ${
                   providerPreset === 'GMAIL'
-                    ? 'border-blue-600 bg-blue-50/70 text-blue-700 ring-2 ring-blue-600/20'
-                    : 'border-[#E7E9EE] bg-white text-[#64748B] hover:border-gray-300'
+                    ? 'border-blue-600 bg-blue-50/70 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 ring-2 ring-blue-600/20'
+                    : 'border-[#E7E9EE] dark:border-[#242936] bg-white dark:bg-[#1C222D] text-[#64748B] dark:text-[#9CA3AF] hover:border-gray-300 dark:hover:border-[#323948]'
                 }`}
               >
                 <span>Gmail / Google Workspace</span>
@@ -479,8 +479,8 @@ export default function EmailSenderSettingsTab() {
                 onClick={() => handleProviderChange('OUTLOOK')}
                 className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition ${
                   providerPreset === 'OUTLOOK'
-                    ? 'border-sky-600 bg-sky-50/70 text-sky-700 ring-2 ring-sky-600/20'
-                    : 'border-[#E7E9EE] bg-white text-[#64748B] hover:border-gray-300'
+                    ? 'border-sky-600 bg-sky-50/70 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 ring-2 ring-sky-600/20'
+                    : 'border-[#E7E9EE] dark:border-[#242936] bg-white dark:bg-[#1C222D] text-[#64748B] dark:text-[#9CA3AF] hover:border-gray-300 dark:hover:border-[#323948]'
                 }`}
               >
                 <span>Microsoft 365 / Outlook</span>
@@ -491,8 +491,8 @@ export default function EmailSenderSettingsTab() {
                 onClick={() => handleProviderChange('CUSTOM')}
                 className={`px-4 py-3 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition ${
                   providerPreset === 'CUSTOM'
-                    ? 'border-slate-900 bg-slate-900 text-white ring-2 ring-slate-900/20'
-                    : 'border-[#E7E9EE] bg-white text-[#64748B] hover:border-gray-300'
+                    ? 'border-slate-900 dark:border-[#84CC16]/60 bg-slate-900 dark:bg-[#1C222D] text-white dark:text-[#84CC16] ring-2 ring-slate-900/20 dark:ring-[#84CC16]/20'
+                    : 'border-[#E7E9EE] dark:border-[#242936] bg-white dark:bg-[#1C222D] text-[#64748B] dark:text-[#9CA3AF] hover:border-gray-300 dark:hover:border-[#323948]'
                 }`}
               >
                 <span>Custom SMTP</span>

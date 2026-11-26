@@ -1056,7 +1056,7 @@ export default function FeePOSPage() {
                             <tr
                               key={inv.id}
                               onClick={() => handleToggleInvoice(inv)}
-                              className={`transition cursor-pointer ${isSelected ? 'bg-emerald-50/40 dark:bg-emerald-950/25' : 'hover:bg-gray-50/60 dark:hover:bg-[#1C222D]/60'}`}
+                              className={`transition cursor-pointer ${isSelected ? 'bg-emerald-50/40 dark:bg-[#1C222D]' : 'hover:bg-gray-50/60 dark:hover:bg-[#1C222D]/60'}`}
                             >
                               <td className="py-3 px-2" onClick={(e) => e.stopPropagation()}>
                                 <input
@@ -1098,7 +1098,7 @@ export default function FeePOSPage() {
                                     value={allocations[inv.id] || ''}
                                     onChange={(e) => handleAllocationChange(inv.id, e.target.value)}
                                     placeholder="0.00"
-                                    className="w-28 px-2 py-1 text-right font-bold text-emerald-800 bg-white border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 text-sm"
+                                    className="w-28 px-2 py-1 text-right font-bold text-emerald-800 dark:text-[#F9FAFB] bg-white dark:bg-[#141820] border border-emerald-300 dark:border-[#242936] rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 dark:focus:ring-[#84CC16] text-sm"
                                   />
                                 ) : (
                                   <span className="text-xs text-gray-400">—</span>

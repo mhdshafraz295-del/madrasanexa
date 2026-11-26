@@ -504,8 +504,8 @@ export const ThemeCustomizerTab: React.FC<ThemeCustomizerTabProps> = ({
           </div>
         </div>
       ) : (
-        <div className="bg-emerald-50/60 rounded-2xl border border-emerald-200/80 p-4 flex items-center space-x-3 text-emerald-800">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="bg-emerald-50/60 dark:bg-[#1C222D] rounded-2xl border border-emerald-200/80 dark:border-emerald-500/30 p-4 flex items-center space-x-3 text-emerald-800 dark:text-emerald-300">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-[#84CC16] shrink-0" />
           <div className="text-xs">
             <span className="font-bold">WCAG 2.1 AA Compliant:</span> All primary text, hero, button, and input combinations pass contrast accessibility guidelines.
           </div>
@@ -513,7 +513,7 @@ export const ThemeCustomizerTab: React.FC<ThemeCustomizerTabProps> = ({
       )}
 
       {/* Preset Library (6 Pre-coordinated Themes) */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 space-y-4 shadow-sm">
+      <div className="bg-white dark:bg-[#141820] rounded-2xl border border-slate-200/80 dark:border-[#242936] p-6 space-y-4 shadow-sm">
         <div>
           <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-700" />

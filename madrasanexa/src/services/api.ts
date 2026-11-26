@@ -1754,6 +1754,11 @@ export const apiArchiveStudent = async (id: string): Promise<StudentDetail> => {
   return d.student || d;
 };
 
+export const apiDeleteStudent = async (id: string): Promise<{ success: boolean; message: string }> => {
+  const response = await apiClient.delete<ApiResponse<any>>(`/madrasa-admin/students/${id}`);
+  return response.data.data;
+};
+
 export const apiGetStudentFeeHistory = async (id: string): Promise<StudentFeeHistoryItem[] | {
   history: StudentFeeHistoryItem[];
   student?: { id: string; fullName: string; admissionNo: string; class: { id: string; name: string; defaultMonthlyFee: string } | null };

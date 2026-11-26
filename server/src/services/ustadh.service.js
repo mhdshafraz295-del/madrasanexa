@@ -802,3 +802,110 @@ export function formatUstadhResponse(u) {
     updatedAt: u.updatedAt,
   };
 }
+
+/**
+ * Permanently deletes an Ustadh and cleans up related teacher records atomically.
+ *
+ * @param {string} madrasaId
+ * @param {string} ustadhId
+ * @param {string} userId
+ * @returns {Promise<{ success: boolean, message: string }>}
+ */
+export async function deleteUstadh(madrasaId, ustadhId, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
+  const existing = await prisma.ustadh.findFirst({
+    where: { id: ustadhId, madrasaId: validTenantId },
+  });
+
+  if (!existing) {
+    throw new NotFoundError('Ustadh not found.');
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Attendance sessions for Class Period
+    const sessions = await tx.classPeriodAttendanceSession.findMany({
+      where: { madrasaId: validTenantId, teacherId: ustadhId },
+      select: { id: true },
+    });
+    if (sessions.length > 0) {
+      const sessionIds = sessions.map((s) => s.id);
+      await tx.classPeriodAttendanceRecord.deleteMany({
+        where: { madrasaId: validTenantId, sessionId: { in: sessionIds } },
+      });
+      await tx.classPeriodAttendanceSession.deleteMany({
+        where: { madrasaId: validTenantId, id: { in: sessionIds } },
+      });
+    }
+
+    // 2. Unlink references in student dossiers
+    await tx.studentQualification.updateMany({
+      where: { madrasaId: validTenantId, examinerUstadhId: ustadhId },
+      data: { examinerUstadhId: null },
+    });
+    await tx.studentIncident.updateMany({
+      where: { madrasaId: validTenantId, reportedByUstadhId: ustadhId },
+      data: { reportedByUstadhId: null },
+    });
+    await tx.studentMeeting.updateMany({
+      where: { madrasaId: validTenantId, ustadhId: ustadhId },
+      data: { ustadhId: null },
+    });
+    await tx.studentFollowUp.updateMany({
+      where: { madrasaId: validTenantId, assignedToUstadhId: ustadhId },
+      data: { assignedToUstadhId: null },
+    });
+    await tx.staffNoticeRead.deleteMany({
+      where: { ustadhId },
+    });
+
+    // 3. Staff operations & payroll
+    await tx.ustadhPayslipRecord.deleteMany({ where: { madrasaId: validTenantId, ustadhId } });
+    await tx.ustadhSalaryComponent.deleteMany({ where: { madrasaId: validTenantId, ustadhId } });
+    await tx.ustadhSalary.deleteMany({ where: { madrasaId: validTenantId, ustadhId } });
+    await tx.ustadhAttendanceRecord.deleteMany({ where: { madrasaId: validTenantId, ustadhId } });
+    await tx.ustadhSchedule.deleteMany({ where: { madrasaId: validTenantId, ustadhId } });
+
+    // 4. Portal User Account
+    if (existing.userId) {
+      await tx.ustadh.update({
+        where: { id: ustadhId },
+        data: { userId: null },
+      });
+      await tx.refreshToken.deleteMany({ where: { userId: existing.userId } });
+      try {
+        await tx.user.delete({ where: { id: existing.userId } });
+      } catch {
+        await tx.user.update({
+          where: { id: existing.userId },
+          data: { status: 'INACTIVE' },
+        });
+      }
+    }
+
+    // 5. Delete Ustadh
+    await tx.ustadh.delete({
+      where: { id: ustadhId },
+    });
+  });
+
+  try {
+    await prisma.activityLog.create({
+      data: {
+        madrasaId: validTenantId,
+        userId: userId || null,
+        action: 'USTADH_DELETED',
+        entityType: 'USTADH',
+        entityId: ustadhId,
+        metadata: {
+          fullName: existing.fullName,
+          ustadhCode: existing.ustadhCode,
+        },
+      },
+    });
+  } catch {
+    // Non-fatal if activity log write fails
+  }
+
+  return { success: true, message: 'Ustadh record deleted successfully.' };
+}

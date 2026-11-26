@@ -107,6 +107,7 @@ import {
   getStudent,
   createStudent,
   updateStudent,
+  deleteStudent,
   activateStudent,
   inactivateStudent,
   archiveStudent,
@@ -197,6 +198,7 @@ import {
   listUstadhs,
   getUstadh,
   updateUstadh,
+  deleteUstadh,
   sendUstadhEmail,
   createSchedule,
   listSchedules,
@@ -488,6 +490,7 @@ router.get('/students/card-tokens', listCardTokens);
 router.get('/students/:id', getStudent);
 router.post('/students', createStudent);
 router.patch('/students/:id', updateStudent);
+router.delete('/students/:id', deleteStudent);
 router.post('/students/:id/activate', activateStudent);
 router.post('/students/:id/inactivate', inactivateStudent);
 router.post('/students/:id/archive', archiveStudent);
@@ -580,6 +583,7 @@ router.post('/ustadhs', createUstadh);
 router.get('/ustadhs', listUstadhs);
 router.get('/ustadhs/:id', getUstadh);
 router.patch('/ustadhs/:id', updateUstadh);
+router.delete('/ustadhs/:id', deleteUstadh);
 router.post('/ustadhs/:id/email', sendUstadhEmail);
 router.post('/ustadhs/:id/portal-account', createPortalAccount);
 

@@ -7,6 +7,7 @@ import {
   apiActivateStudent,
   apiInactivateStudent,
   apiArchiveStudent,
+  apiDeleteStudent,
   type StudentListItem,
   type ClassItem,
   type AcademicSectionItem,
@@ -28,6 +29,7 @@ import {
   ChevronRight,
   UserCheck,
   UserX,
+  Trash2,
 } from 'lucide-react';
 
 export default function StudentsPage() {
@@ -51,6 +53,11 @@ export default function StudentsPage() {
     type: 'ACTIVATE' | 'INACTIVATE' | 'ARCHIVE';
   } | null>(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Delete Action State
+  const [studentToDelete, setStudentToDelete] = useState<StudentListItem | null>(null);
+  const [isDeletingStudent, setIsDeletingStudent] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   // Load Classes & Sections for filter dropdowns
   useEffect(() => {
@@ -116,6 +123,26 @@ export default function StudentsPage() {
       alert(err.response?.data?.message || 'Failed to update student status.');
     } finally {
       setIsUpdatingStatus(false);
+    }
+  };
+
+  const handleConfirmDeleteStudent = async () => {
+    if (!studentToDelete) return;
+
+    try {
+      setIsDeletingStudent(true);
+      setDeleteError(null);
+      await apiDeleteStudent(studentToDelete.id);
+
+      // Immediately remove from list state without full reload
+      setStudents((prev) => prev.filter((s) => s.id !== studentToDelete.id));
+      setTotal((prev) => Math.max(0, prev - 1));
+      setStudentToDelete(null);
+    } catch (err: any) {
+      console.error('Failed to delete student:', err);
+      setDeleteError(err.response?.data?.message || 'Failed to delete student. Please try again.');
+    } finally {
+      setIsDeletingStudent(false);
     }
   };
 
@@ -441,6 +468,18 @@ export default function StudentsPage() {
                             <UserCheck className="w-3.5 h-3.5" />
                           </button>
                         )}
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDeleteError(null);
+                            setStudentToDelete(st);
+                          }}
+                          className="p-1.5 text-[#7C8A9A] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer"
+                          title="Delete Student"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -496,9 +535,21 @@ export default function StudentsPage() {
                     <Link
                       to={`/madrasa-admin/students/${st.id}/edit`}
                       className="p-1.5 text-[#7C8A9A] hover:text-[#0F172A] rounded-lg border border-[#E7E9EE]"
+                      title="Edit Student"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeleteError(null);
+                        setStudentToDelete(st);
+                      }}
+                      className="p-1.5 text-[#7C8A9A] hover:text-rose-600 rounded-lg border border-[#E7E9EE] hover:bg-rose-50 cursor-pointer"
+                      title="Delete Student"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -684,6 +735,59 @@ export default function StudentsPage() {
                     ? 'Confirm Inactive'
                     : 'Confirm Archive'}
                 </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Student Confirmation Modal */}
+      {studentToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-[#E7E9EE] shadow-xl max-w-md w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#0F172A]">Permanently Delete Student</h3>
+                <p className="text-xs text-[#7C8A9A]">
+                  {studentToDelete.fullName} ({studentToDelete.admissionNo})
+                </p>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{deleteError}</span>
+              </div>
+            )}
+
+            <p className="text-xs text-[#0F172A]/80 leading-relaxed">
+              Are you sure you want to permanently delete this student record? This action will remove the student dossier and all associated academic/fee records from the system. This action <strong className="text-rose-600">cannot be undone</strong>.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isDeletingStudent}
+                onClick={() => {
+                  setStudentToDelete(null);
+                  setDeleteError(null);
+                }}
+                className="px-3.5 py-2 text-xs font-semibold text-[#7C8A9A] hover:text-[#0F172A] rounded-xl hover:bg-[#F7F6F1] transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingStudent}
+                onClick={handleConfirmDeleteStudent}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl text-white bg-rose-600 hover:bg-rose-700 shadow-xs transition disabled:opacity-50 cursor-pointer"
+              >
+                {isDeletingStudent && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isDeletingStudent ? 'Deleting...' : 'Delete Student'}</span>
               </button>
             </div>
           </div>

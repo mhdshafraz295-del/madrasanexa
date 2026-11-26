@@ -281,3 +281,19 @@ export async function createPortalAccount(req, res, next) {
     next(err);
   }
 }
+
+export async function deleteUstadh(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const userId = req.auth?.userId || req.user?.id;
+    const { id } = req.params;
+    const data = await ustadhService.deleteUstadh(madrasaId, id, userId);
+    res.json({
+      success: true,
+      message: data.message || 'Ustadh deleted successfully.',
+      data,
+    });
+  } catch (err) {
+    next(err);
+  }
+}

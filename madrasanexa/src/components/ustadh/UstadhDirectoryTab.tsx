@@ -14,9 +14,11 @@ import {
   AlertCircle,
   Loader2,
   Key,
+  Trash2,
 } from 'lucide-react';
 import {
   listUstadhs,
+  deleteUstadh,
   type UstadhItem,
   buildUstadhWhatsAppContactUrl,
 } from '../../services/ustadh.service';
@@ -50,6 +52,29 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [selectedUstadhForPortal, setSelectedUstadhForPortal] = useState<UstadhItem | null>(null);
   const [isPortalModalOpen, setIsPortalModalOpen] = useState(false);
+  const [ustadhToDelete, setUstadhToDelete] = useState<UstadhItem | null>(null);
+  const [isDeletingUstadh, setIsDeletingUstadh] = useState(false);
+  const [deleteUstadhError, setDeleteUstadhError] = useState<string | null>(null);
+
+  const handleConfirmDeleteUstadh = async () => {
+    if (!ustadhToDelete) return;
+    setIsDeletingUstadh(true);
+    setDeleteUstadhError(null);
+    try {
+      await deleteUstadh(ustadhToDelete.id);
+      setItems((prev) => prev.filter((u) => u.id !== ustadhToDelete.id));
+      setTotal((prev) => Math.max(0, prev - 1));
+      setUstadhToDelete(null);
+    } catch (err: any) {
+      setDeleteUstadhError(
+        err?.response?.data?.message ||
+          err?.message ||
+          'Failed to delete Ustadh. Please try again.'
+      );
+    } finally {
+      setIsDeletingUstadh(false);
+    }
+  };
 
   const fetchUstadhs = async () => {
     setLoading(true);
@@ -412,6 +437,17 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setUstadhToDelete(u);
+                              setDeleteUstadhError(null);
+                            }}
+                            title="Delete Ustadh"
+                            className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -465,6 +501,54 @@ export const UstadhDirectoryTab: React.FC<UstadhDirectoryTabProps> = ({
           fetchUstadhs();
         }}
       />
+
+      {/* Delete Ustadh Confirmation Modal */}
+      {ustadhToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Permanently Delete Ustadh</h3>
+                <p className="text-xs text-slate-500">{ustadhToDelete.fullName}</p>
+              </div>
+            </div>
+            {deleteUstadhError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{deleteUstadhError}</span>
+              </div>
+            )}
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete this ustadh/staff member? All linked schedules, attendance records, and portal credentials will be removed. This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isDeletingUstadh}
+                onClick={() => {
+                  setUstadhToDelete(null);
+                  setDeleteUstadhError(null);
+                }}
+                className="px-3.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isDeletingUstadh}
+                onClick={handleConfirmDeleteUstadh}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-xl text-white bg-rose-600 hover:bg-rose-700 shadow-xs transition disabled:opacity-50 cursor-pointer"
+              >
+                {isDeletingUstadh && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isDeletingUstadh ? 'Deleting...' : 'Delete Ustadh'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

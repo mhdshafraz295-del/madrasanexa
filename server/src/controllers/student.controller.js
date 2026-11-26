@@ -124,6 +124,22 @@ export async function archiveStudent(req, res, next) {
   }
 }
 
+export async function deleteStudent(req, res, next) {
+  try {
+    const madrasaId = req.tenant.madrasaId;
+    const studentId = req.params.id;
+    const data = await studentService.deleteStudent(madrasaId, studentId, req.auth.userId);
+
+    return res.status(200).json({
+      success: true,
+      message: data.message || 'Student deleted successfully.',
+      data,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function getFeeHistory(req, res, next) {
   try {
     const data = await feeService.getStudentFeeHistory(req.params.id, req.tenant.madrasaId);

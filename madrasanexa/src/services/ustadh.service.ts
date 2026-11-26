@@ -223,6 +223,11 @@ export async function updateUstadh(id: string, payload: Partial<UstadhItem>): Pr
   return res.data.data;
 }
 
+export async function deleteUstadh(id: string): Promise<{ success: boolean; message: string }> {
+  const res = await apiClient.delete<{ success: boolean; message: string; data?: any }>(`/madrasa-admin/ustadhs/${id}`);
+  return res.data?.data || res.data;
+}
+
 export async function sendUstadhEmail(id: string, payload: { subject: string; message: string }): Promise<{ success: boolean; message: string }> {
   const res = await apiClient.post<{ success: boolean; message: string }>(`/madrasa-admin/ustadhs/${id}/email`, payload);
   return res.data;

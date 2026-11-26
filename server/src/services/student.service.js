@@ -757,3 +757,112 @@ export async function updateStudentStatus(madrasaId, studentId, targetStatus, us
     message: `Student status updated to ${targetStatus}.`,
   };
 }
+
+/**
+ * Permanently deletes a student and cleans up related tenant records atomically.
+ *
+ * @param {string} madrasaId
+ * @param {string} studentId
+ * @param {string} userId
+ * @returns {Promise<{ success: boolean, message: string }>}
+ */
+export async function deleteStudent(madrasaId, studentId, userId) {
+  const validTenantId = assertValidTenantId(madrasaId);
+
+  const existing = await prisma.student.findFirst({
+    where: { id: studentId, madrasaId: validTenantId },
+  });
+
+  if (!existing) {
+    throw new NotFoundError('Student not found.');
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Collect invoices and payments
+    const invoices = await tx.invoice.findMany({
+      where: { madrasaId: validTenantId, studentId },
+      select: { id: true },
+    });
+    const payments = await tx.payment.findMany({
+      where: { madrasaId: validTenantId, studentId },
+      select: { id: true },
+    });
+
+    // 2. Delete payment-related records
+    if (payments.length > 0) {
+      const paymentIds = payments.map((p) => p.id);
+      await tx.receipt.deleteMany({
+        where: { madrasaId: validTenantId, paymentId: { in: paymentIds } },
+      });
+      await tx.paymentAllocation.deleteMany({
+        where: { madrasaId: validTenantId, paymentId: { in: paymentIds } },
+      });
+      await tx.payment.deleteMany({
+        where: { madrasaId: validTenantId, id: { in: paymentIds } },
+      });
+    }
+
+    // 3. Delete invoice-related records
+    if (invoices.length > 0) {
+      const invoiceIds = invoices.map((i) => i.id);
+      await tx.paymentAllocation.deleteMany({
+        where: { madrasaId: validTenantId, invoiceId: { in: invoiceIds } },
+      });
+      await tx.invoiceItem.deleteMany({
+        where: { madrasaId: validTenantId, invoiceId: { in: invoiceIds } },
+      });
+      await tx.invoice.deleteMany({
+        where: { madrasaId: validTenantId, id: { in: invoiceIds } },
+      });
+    }
+
+    // 4. Delete student-specific academic, fee and activity child records
+    await tx.studentFeeSetting.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentMark.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.attendanceRecord.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.classPeriodAttendanceRecord.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentGateEvent.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentScanToken.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentQualification.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentIncident.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentMeeting.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentFollowUp.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.studentDailyActivity.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+    await tx.alumniProfile.deleteMany({ where: { madrasaId: validTenantId, studentId } });
+
+    // 5. Unlink converted application and WhatsApp logs
+    await tx.studentApplication.updateMany({
+      where: { convertedStudentId: studentId },
+      data: { convertedStudentId: null },
+    });
+    await tx.whatsAppLog.updateMany({
+      where: { studentId },
+      data: { studentId: null },
+    });
+
+    // 6. Delete the student record
+    await tx.student.delete({
+      where: { id: studentId },
+    });
+  });
+
+  try {
+    await prisma.activityLog.create({
+      data: {
+        madrasaId: validTenantId,
+        userId: userId || null,
+        action: 'STUDENT_DELETED',
+        entityType: 'STUDENT',
+        entityId: studentId,
+        metadata: {
+          fullName: existing.fullName,
+          admissionNo: existing.admissionNo,
+        },
+      },
+    });
+  } catch {
+    // Non-fatal if activity log write fails
+  }
+
+  return { success: true, message: 'Student record deleted successfully.' };
+}

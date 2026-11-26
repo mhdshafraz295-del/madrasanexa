@@ -3,6 +3,7 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
@@ -74,34 +75,119 @@ export function escapeHtml(val) {
 }
 
 /**
+ * Verifies if an executable path exists and is NOT an Ubuntu dummy snap stub.
+ * In Ubuntu/Debian containers, /usr/bin/chromium-browser is often a small shell script
+ * that fails with: "Command '/usr/bin/chromium-browser' requires the chromium snap to be installed".
+ */
+export function isUsableExecutable(filePath) {
+  if (!filePath || typeof filePath !== 'string') return false;
+  const trimmed = filePath.trim();
+  if (!trimmed) return false;
+  try {
+    if (!fs.existsSync(trimmed)) return false;
+    const stat = fs.statSync(trimmed);
+    if (!stat.isFile()) return false;
+
+    // Check if it's the Ubuntu snap stub script
+    if (stat.size < 4096) {
+      try {
+        const content = fs.readFileSync(trimmed, 'utf8');
+        if (
+          content.includes('requires the chromium snap') ||
+          (content.includes('snap') && content.includes('chromium')) ||
+          content.includes('snap install chromium')
+        ) {
+          console.warn(`[PDF] Skipping dummy snap stub executable at: ${trimmed}`);
+          return false;
+        }
+      } catch (_) {
+        // True binary format that cannot be decoded as utf-8 is acceptable
+      }
+    }
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+/**
  * Resolves the browser executable path intelligently across Railway/Linux, Windows, or env.
+ * Prioritizes Nixpacks Nix profile path (/nix/var/nix/profiles/default/bin/chromium),
+ * then dynamic 'which' lookup, then standard Linux/container locations.
  */
 export function resolveChromeExecutablePath() {
-  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
-    return process.env.PUPPETEER_EXECUTABLE_PATH;
+  // 1. Explicit env var if set and valid (not a snap stub)
+  const envPath = process.env.PUPPETEER_EXECUTABLE_PATH?.trim();
+  if (envPath && isUsableExecutable(envPath)) {
+    return envPath;
   }
 
+  // 2. Windows paths
   if (process.platform === 'win32') {
     const windowsCandidates = [
       'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
       'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
       'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+      path.join(process.env.LOCALAPPDATA || '', 'Google\\Chrome\\Application\\chrome.exe'),
+      path.join(process.env.PROGRAMFILES || '', 'Google\\Chrome\\Application\\chrome.exe'),
     ];
     for (const cand of windowsCandidates) {
-      if (fs.existsSync(cand)) return cand;
+      if (isUsableExecutable(cand)) return cand;
     }
   }
 
+  // 3. Linux / Container / Nixpacks paths
   if (process.platform === 'linux') {
     const linuxCandidates = [
+      // Nixpacks / Nix profile paths (Railway production standard)
+      '/nix/var/nix/profiles/default/bin/chromium',
+      '/nix/var/nix/profiles/default/bin/chromium-browser',
+      '/root/.nix-profile/bin/chromium',
+      '/home/railway/.nix-profile/bin/chromium',
+      // Standard Linux Google Chrome
       '/usr/bin/google-chrome',
       '/usr/bin/google-chrome-stable',
+      // Standard Chromium
       '/usr/bin/chromium',
       '/usr/bin/chromium-browser',
+      '/usr/local/bin/chromium',
+      '/usr/local/bin/chromium-browser',
+      '/usr/local/bin/google-chrome',
+      '/usr/local/bin/google-chrome-stable',
+      '/snap/bin/chromium',
     ];
+
     for (const cand of linuxCandidates) {
-      if (fs.existsSync(cand)) return cand;
+      if (isUsableExecutable(cand)) {
+        return cand;
+      }
+    }
+
+    // Dynamic 'which' fallback
+    const whichBinaries = ['chromium', 'chromium-browser', 'google-chrome-stable', 'google-chrome'];
+    for (const bin of whichBinaries) {
+      try {
+        const found = execSync(`which ${bin} 2>/dev/null`, {
+          timeout: 1000,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'ignore'],
+        })?.trim();
+        if (found && isUsableExecutable(found)) {
+          return found;
+        }
+      } catch (_) {}
+    }
+  }
+
+  // 4. macOS / Darwin candidates
+  if (process.platform === 'darwin') {
+    const macCandidates = [
+      '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      '/Applications/Chromium.app/Contents/MacOS/Chromium',
+    ];
+    for (const cand of macCandidates) {
+      if (isUsableExecutable(cand)) return cand;
     }
   }
 
@@ -118,6 +204,7 @@ let sharedBrowser = null;
 async function getSharedBrowser() {
   if (!sharedBrowser || !sharedBrowser.connected) {
     const executablePath = resolveChromeExecutablePath();
+    console.log(`[PDF] Launching Puppeteer with executablePath: ${executablePath || '(bundled chromium)'}`);
     const launchOptions = {
       headless: 'new',
       args: [
@@ -132,7 +219,13 @@ async function getSharedBrowser() {
     if (executablePath) {
       launchOptions.executablePath = executablePath;
     }
-    sharedBrowser = await puppeteer.launch(launchOptions);
+    try {
+      sharedBrowser = await puppeteer.launch(launchOptions);
+    } catch (launchErr) {
+      console.error(`[PDF] Failed to launch Puppeteer using executablePath "${executablePath}":`, launchErr.message);
+      sharedBrowser = null;
+      throw launchErr;
+    }
   }
   return sharedBrowser;
 }
@@ -245,8 +338,13 @@ export async function generateReportPdf(reportData, { landscape = false } = {}) 
 
 /**
  * Programmatic pure-Node PDF fallback generator when Chromium / Puppeteer fails or is unavailable.
- * Renders a structured, institutional 1-page A4 Landscape Grid Table with borders, headers,
- * zebra fills, and multi-script Unicode/Arabic text support.
+ * Dynamically adapts to ANY document across the app (Salary Slips, Expense Analysis, Timetables, Receipts, Reports):
+ * - Dynamically extracts actual Madrasa name, Document Title, and Subtitle (never hardcodes "WEEKLY CLASS TIMETABLE").
+ * - Renders Madrasa logo image directly from data URI when present.
+ * - Parses and renders summary metric badges and key-value panels.
+ * - Guarantees full-width table rendering with intelligent column width allocation, alignment (numbers right-aligned),
+ *   alternating zebra striping, and multi-script Unicode (Arabic, Tamil, Sinhala, Latin) font support.
+ * - Handles multi-page continuation gracefully if row count exceeds single-page budget.
  */
 export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
   return new Promise((resolve, reject) => {
@@ -256,9 +354,9 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
       const pageHeight = isLandscape ? 595.28 : 841.89;
       const margin = 22;
       const startX = margin;
-      const contentWidth = pageWidth - (margin * 2); // 797.89
+      const contentWidth = pageWidth - (margin * 2);
 
-      // Set document margins to 0 so PDFKit's text cursor NEVER auto-paginates on bottom margin
+      // Set document margins to 0 so PDFKit's text cursor NEVER auto-paginates unintentionally
       const doc = new PDFDocument({
         size: 'A4',
         layout: isLandscape ? 'landscape' : 'portrait',
@@ -266,7 +364,7 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
         autoFirstPage: false,
       });
 
-      // Add exactly 1 page with 0 margin
+      // Add initial page
       doc.addPage({
         size: 'A4',
         layout: isLandscape ? 'landscape' : 'portrait',
@@ -318,17 +416,52 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
           .replace(/\s+/g, ' ')
           .trim();
 
-      // Extract Header Metadata
-      const madrasaNameMatch = html.match(/<div class="madrasa-name">([^<]+)<\/div>/i);
-      const madrasaName = madrasaNameMatch ? decodeHtml(madrasaNameMatch[1]) : 'MADRASANEXA ACADEMY';
+      // 1. Dynamic Header Metadata & Logo Extraction
+      let madrasaName = 'MADRASANEXA ACADEMY';
+      const madrasaNameMatch =
+        html.match(/<div class=["'][^"']*madrasa-name[^"']*["']>([^<]+)<\/div>/i) ||
+        html.match(/<div class=["'][^"']*madrasa-title[^"']*["']>([^<]+)<\/div>/i) ||
+        html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+      if (madrasaNameMatch) {
+        madrasaName = decodeHtml(madrasaNameMatch[1]);
+      }
 
-      const timetableTitleMatch = html.match(/<div class="timetable-title">([^<]+)<\/div>/i);
-      const timetableTitle = timetableTitleMatch ? decodeHtml(timetableTitleMatch[1]) : 'WEEKLY CLASS TIMETABLE';
+      let documentTitle = '';
+      const docTitleMatch =
+        html.match(/<div class=["'][^"']*(?:report-title|timetable-title|title-box|document-title)[^"']*["']>([^<]+)<\/div>/i) ||
+        html.match(/<h2[^>]*>([^<]+)<\/h2>/i) ||
+        html.match(/<title[^>]*>([^<]+)<\/title>/i);
+      if (docTitleMatch) {
+        documentTitle = decodeHtml(docTitleMatch[1]);
+      } else {
+        documentTitle = 'OFFICIAL INSTITUTIONAL REPORT';
+      }
 
-      const metaBarMatch = html.match(/<div class="meta-bar">([\s\S]*?)<\/div>/i);
-      const metaBarText = metaBarMatch ? decodeHtml(metaBarMatch[1]) : '';
+      let metaBarText = '';
+      const metaBarMatch =
+        html.match(/<div class=["'][^"']*(?:meta-bar|report-period|report-meta-text|month)[^"']*["']>([\s\S]*?)<\/div>/i) ||
+        html.match(/<div class=["'][^"']*madrasa-sub[^"']*["']>([\s\S]*?)<\/div>/i);
+      if (metaBarMatch) {
+        metaBarText = decodeHtml(metaBarMatch[1]);
+      }
 
-      // 1. Render Institutional Header Banner (Fixed budget: 58pt)
+      // Extract Madrasa Logo from base64 data URI
+      let logoBuffer = null;
+      const logoMatch = html.match(/<img[^>]+src=["'](data:image\/(?:png|jpeg|jpg|webp);base64,[^"']+)["']/i);
+      if (logoMatch) {
+        try {
+          const b64 = logoMatch[1].replace(/^data:image\/[a-z]+;base64,/, '');
+          logoBuffer = Buffer.from(b64, 'base64');
+        } catch (_) {}
+      }
+
+      const isTimetable =
+        html.includes('timetable-title') ||
+        html.includes('timetable-grid') ||
+        /weekly class timetable/i.test(html) ||
+        /timetable/i.test(documentTitle);
+
+      // 2. Render Institutional Header Banner (58pt budget)
       let currentY = 16;
       const headerBannerHeight = 58;
       const topAccentBarHeight = 3;
@@ -341,86 +474,263 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
       doc.rect(startX, currentY + topAccentBarHeight, contentWidth, headerBannerHeight - topAccentBarHeight)
          .fillAndStroke('#F8FAFC', '#E2E8F0');
 
-      // Madrasa Name (14.5pt bold #0F172A)
-      doc.font(selectFont(madrasaName)).fontSize(14.5).fillColor('#0F172A')
-         .text(madrasaName, startX + 10, currentY + 7, { width: contentWidth - 20, align: 'center', lineBreak: false });
+      let renderedLogo = false;
+      if (logoBuffer) {
+        try {
+          doc.image(logoBuffer, startX + 8, currentY + topAccentBarHeight + 5, {
+            fit: [44, 44],
+            align: 'center',
+            valign: 'center',
+          });
+          renderedLogo = true;
+        } catch (imgErr) {
+          console.warn('[PDF fallback] Could not render logo image with PDFKit:', imgErr.message);
+        }
+      }
 
-      // Subtitle WEEKLY CLASS TIMETABLE (9.5pt bold #1E3A8A, letter-spaced)
-      doc.font(defaultFont).fontSize(9.5).fillColor('#1E3A8A')
-         .text(timetableTitle.toUpperCase(), startX + 10, currentY + 24, { width: contentWidth - 20, align: 'center', characterSpacing: 1.0, lineBreak: false });
+      const headerTextX = renderedLogo ? startX + 62 : startX + 10;
+      const headerTextWidth = renderedLogo ? contentWidth - 72 : contentWidth - 20;
+      const headerAlign = renderedLogo ? 'left' : 'center';
 
-      // Metadata pill line (8.5pt #475569)
+      // Madrasa Name (13.5pt bold #0F172A)
+      doc.font(selectFont(madrasaName)).fontSize(13.5).fillColor('#0F172A')
+         .text(madrasaName, headerTextX, currentY + 6, {
+           width: headerTextWidth,
+           align: headerAlign,
+           lineBreak: false,
+           ellipsis: true,
+         });
+
+      // Dynamic Document Title (9.5pt bold #1E3A8A, letter-spaced, never hardcoded)
+      doc.font(selectFont(documentTitle)).fontSize(9.5).fillColor('#1E3A8A')
+         .text(documentTitle.toUpperCase(), headerTextX, currentY + 23, {
+           width: headerTextWidth,
+           align: headerAlign,
+           characterSpacing: 0.8,
+           lineBreak: false,
+           ellipsis: true,
+         });
+
+      // Subtitle / Meta Bar text (8pt #475569)
       if (metaBarText) {
-        doc.font(selectFont(metaBarText)).fontSize(8.5).fillColor('#475569')
-           .text(metaBarText, startX + 10, currentY + 39, { width: contentWidth - 20, align: 'center', lineBreak: false });
+        doc.font(selectFont(metaBarText)).fontSize(8.0).fillColor('#475569')
+           .text(metaBarText, headerTextX, currentY + 38, {
+             width: headerTextWidth,
+             align: headerAlign,
+             lineBreak: false,
+             ellipsis: true,
+           });
       }
 
       currentY += headerBannerHeight + 6;
 
-      // 2. Parse HTML Table
-      const theadMatch = html.match(/<thead[^>]*>([\s\S]*?)<\/thead>/i);
-      const theadHtml = theadMatch ? theadMatch[1] : '';
-      const thMatches = [...theadHtml.matchAll(/<th[^>]*>([\s\S]*?)<\/th>/gi)].map((m) => decodeHtml(m[1]));
+      // 3. Render Summary Metric Badges (e.g., Expense Analysis / Financial Reports)
+      const summaryBoxes = [];
+      const boxRegex = /<div class=["'](?:summary-box|metric-box|summary-card)["']>[\s\S]*?<div class=["'](?:summary-label|metric-label)["']>([^<]+)<\/div>[\s\S]*?<div class=["'](?:summary-value|metric-val)["'][^>]*>([^<]+)<\/div>/gi;
+      let boxMatch;
+      while ((boxMatch = boxRegex.exec(html)) !== null) {
+        summaryBoxes.push({
+          label: decodeHtml(boxMatch[1]),
+          value: decodeHtml(boxMatch[2]),
+        });
+      }
 
-      const tbodyMatch = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
-      const tbodyHtml = tbodyMatch ? tbodyMatch[1] : html;
+      if (summaryBoxes.length > 0 && summaryBoxes.length <= 6) {
+        const boxGap = 6;
+        const totalGaps = (summaryBoxes.length - 1) * boxGap;
+        const boxW = Math.floor((contentWidth - totalGaps) / summaryBoxes.length);
+        const boxH = 32;
+
+        let bX = startX;
+        for (let bIdx = 0; bIdx < summaryBoxes.length; bIdx++) {
+          const box = summaryBoxes[bIdx];
+          doc.lineWidth(0.5);
+          doc.rect(bX, currentY, boxW, boxH).fillAndStroke('#F8FAFC', '#E2E8F0');
+
+          doc.font(defaultFont).fontSize(7.0).fillColor('#64748B')
+             .text(box.label.toUpperCase(), bX + 4, currentY + 4, {
+               width: boxW - 8,
+               align: 'center',
+               lineBreak: false,
+               ellipsis: true,
+             });
+
+          doc.font(defaultFont).fontSize(9.0).fillColor('#0F172A')
+             .text(box.value, bX + 4, currentY + 16, {
+               width: boxW - 8,
+               align: 'center',
+               lineBreak: false,
+               ellipsis: true,
+             });
+
+          bX += boxW + boxGap;
+        }
+        currentY += boxH + 8;
+      }
+
+      // 4. Render Key-Value Info Panels (e.g., Staff Info in Salary Slips)
+      const detailRows = [];
+      const detailRegex = /<div class=["']detail-row["']>[\s\S]*?<span class=["']detail-label["']>([^<]+)<\/span>[\s\S]*?<span class=["']detail-value["'][^>]*>([\s\S]*?)<\/span>/gi;
+      let dMatch;
+      while ((dMatch = detailRegex.exec(html)) !== null) {
+        detailRows.push({
+          label: decodeHtml(dMatch[1]),
+          value: decodeHtml(dMatch[2]),
+        });
+      }
+
+      if (detailRows.length > 0 && summaryBoxes.length === 0) {
+        const panelRowsCount = Math.ceil(detailRows.length / 2);
+        const panelH = Math.min(54, panelRowsCount * 14 + 10);
+        doc.lineWidth(0.5);
+        doc.rect(startX, currentY, contentWidth, panelH).fillAndStroke('#F8FAFC', '#E2E8F0');
+
+        const halfW = Math.floor((contentWidth - 24) / 2);
+        for (let i = 0; i < detailRows.length; i++) {
+          const colIdx = i % 2;
+          const rowIdx = Math.floor(i / 2);
+          const itemX = startX + 12 + colIdx * (halfW + 12);
+          const itemY = currentY + 6 + rowIdx * 14;
+
+          const lbl = detailRows[i].label;
+          const val = detailRows[i].value;
+
+          doc.font(defaultFont).fontSize(7.5).fillColor('#64748B')
+             .text(lbl, itemX, itemY, { width: 95, lineBreak: false });
+          doc.font(selectFont(val)).fontSize(7.5).fillColor('#0F172A')
+             .text(val, itemX + 100, itemY, { width: halfW - 100, lineBreak: false, ellipsis: true });
+        }
+        currentY += panelH + 8;
+      }
+
+      // 5. Parse Data Table
+      const allTables = [...html.matchAll(/<table([^>]*)>([\s\S]*?)<\/table>/gi)];
+      const dataTableMatch = allTables.find(m => !m[1].includes('header-table')) || allTables[0];
+      const tableHtml = dataTableMatch ? dataTableMatch[2] : html;
+
+      let headers = [];
+      let colWidthPcts = [];
+      const theadMatch = tableHtml.match(/<thead[^>]*>([\s\S]*?)<\/thead>/i);
+      if (theadMatch) {
+        const thRegex = /<th([^>]*)>([\s\S]*?)<\/th>/gi;
+        let thM;
+        while ((thM = thRegex.exec(theadMatch[1])) !== null) {
+          headers.push(decodeHtml(thM[2]));
+          const wMatch = thM[1].match(/width:\s*(\d+(?:\.\d+)?)%/i) || thM[1].match(/width=["'](\d+)%?["']/i);
+          colWidthPcts.push(wMatch ? parseFloat(wMatch[1]) : null);
+        }
+      }
+
+      const tbodyMatch = tableHtml.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/i);
+      const tbodyHtml = tbodyMatch ? tbodyMatch[1] : tableHtml;
       const trMatches = [...tbodyHtml.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/gi)];
 
-      const headers = thMatches.length > 0 ? thMatches : ['TIME', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+      if (headers.length === 0 && trMatches.length > 0) {
+        const firstRowContent = trMatches[0][1];
+        const thInFirst = [...firstRowContent.matchAll(/<th([^>]*)>([\s\S]*?)<\/th>/gi)];
+        if (thInFirst.length > 0) {
+          headers = thInFirst.map(m => decodeHtml(m[2]));
+          trMatches.shift();
+        } else if (!isTimetable) {
+          const tdInFirst = [...firstRowContent.matchAll(/<td([^>]*)>([\s\S]*?)<\/td>/gi)];
+          headers = tdInFirst.map((_, idx) => `Col ${idx + 1}`);
+        }
+      }
+
+      if (headers.length === 0) {
+        headers = isTimetable
+          ? ['TIME', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']
+          : ['ITEM', 'DESCRIPTION', 'STATUS', 'AMOUNT'];
+      }
+
       const columnCount = headers.length;
 
-      // Dynamic column width calculation
+      // Calculate strictly full-width column widths
       let colWidths = [];
-      if (columnCount > 4) {
+      const validPcts = colWidthPcts.filter(p => typeof p === 'number' && !isNaN(p) && p > 0);
+      if (validPcts.length === columnCount) {
+        const totalPct = validPcts.reduce((a, b) => a + b, 0);
+        colWidths = validPcts.map(p => Math.floor(contentWidth * (p / totalPct)));
+      } else if (isTimetable && columnCount > 4) {
         const timeColWidth = Math.min(115, Math.max(90, Math.floor(contentWidth * 0.15)));
         const otherColWidth = Math.floor((contentWidth - timeColWidth) / (columnCount - 1));
         colWidths = [timeColWidth, ...Array(columnCount - 1).fill(otherColWidth)];
-        // Adjust last column to absorb rounding
-        const sumW = colWidths.reduce((a, b) => a + b, 0);
-        colWidths[colWidths.length - 1] += (contentWidth - sumW);
       } else {
-        const c0 = Math.floor(contentWidth * 0.20);
-        const c1 = Math.floor(contentWidth * 0.25);
-        const c2 = Math.floor(contentWidth * 0.25);
-        const c3 = contentWidth - (c0 + c1 + c2);
-        colWidths = [c0, c1, c2, c3];
+        const baseColWidth = Math.floor(contentWidth / columnCount);
+        colWidths = Array(columnCount).fill(baseColWidth);
       }
+
+      const sumW = colWidths.reduce((a, b) => a + b, 0);
+      colWidths[colWidths.length - 1] += (contentWidth - sumW);
+
+      // Determine column alignments
+      const colAlignments = headers.map((h) => {
+        const hUpper = h.toUpperCase();
+        if (/(AMOUNT|PAID|FEE|TOTAL|BALANCE|EXPECTED|PRICE|SALARY|RATE|NET|VARIANCE|BUDGET)/i.test(hUpper)) {
+          return 'right';
+        }
+        if (/(TIME|DATE|STATUS|ADM NO|CODE|METHOD|DAY|SECTION|CLASS|GRADE)/i.test(hUpper)) {
+          return 'center';
+        }
+        return 'left';
+      });
 
       // Vertical layout budget calculation
       const footerHeight = 18;
-      const footerDividerY = pageHeight - margin - footerHeight + 4; // ~560pt
-      const tableHeaderHeight = 24;
+      const footerDividerY = pageHeight - margin - footerHeight + 4;
+      const tableHeaderHeight = 22;
       const availableBodyHeight = (footerDividerY - 6) - (currentY + tableHeaderHeight);
 
       const rowCount = Math.max(1, trMatches.length);
-      const rowHeight = Math.min(44, Math.max(22, Math.floor(availableBodyHeight / rowCount)));
+      const rowHeight = Math.min(36, Math.max(20, Math.floor(availableBodyHeight / rowCount)));
 
-      // 3. Render Table Header (24pt, #0F172A background, #FFFFFF text)
-      let colX = startX;
-      doc.lineWidth(0.6);
-      for (let i = 0; i < columnCount; i++) {
-        const w = colWidths[i];
-        doc.rect(colX, currentY, w, tableHeaderHeight).fillAndStroke('#0F172A', '#0F172A');
-        const headerTop = currentY + Math.floor((tableHeaderHeight - 9) / 2);
-        doc.font(defaultFont).fontSize(8.5).fillColor('#FFFFFF')
-           .text(headers[i], colX + 2, headerTop, { width: w - 4, align: 'center', lineBreak: false });
-        colX += w;
-      }
+      const renderTableHeader = (yPos) => {
+        let colX = startX;
+        doc.lineWidth(0.6);
+        for (let i = 0; i < columnCount; i++) {
+          const w = colWidths[i];
+          doc.rect(colX, yPos, w, tableHeaderHeight).fillAndStroke('#0F172A', '#0F172A');
+          const headerTop = yPos + Math.floor((tableHeaderHeight - 9) / 2);
+          doc.font(defaultFont).fontSize(8.0).fillColor('#FFFFFF')
+             .text(headers[i], colX + 4, headerTop, {
+               width: w - 8,
+               align: colAlignments[i] === 'right' ? 'right' : 'center',
+               lineBreak: false,
+               ellipsis: true,
+             });
+          colX += w;
+        }
+      };
+
+      renderTableHeader(currentY);
       currentY += tableHeaderHeight;
 
-      // 4. Render Table Rows
+      // 6. Render Table Rows
       for (let rIdx = 0; rIdx < trMatches.length; rIdx++) {
+        // Multi-page continuation if rows exceed page height
+        if (currentY + rowHeight > footerDividerY - 4) {
+          doc.addPage({
+            size: 'A4',
+            layout: isLandscape ? 'landscape' : 'portrait',
+            margins: { top: 0, bottom: 0, left: 0, right: 0 },
+          });
+          currentY = 22;
+          renderTableHeader(currentY);
+          currentY += tableHeaderHeight;
+        }
+
         const rowContent = trMatches[rIdx][1];
         const tdMatches = [...rowContent.matchAll(/<td([^>]*)>([\s\S]*?)<\/td>/gi)];
 
         const isBreakRow =
-          rowContent.includes('break-cell') ||
-          rowContent.includes('break-title') ||
-          /(\[break\]|break|interval|prayer|luhar|dhuhr|asr|maghrib|isha|juma)/i.test(rowContent);
+          isTimetable &&
+          (rowContent.includes('break-cell') ||
+           rowContent.includes('break-title') ||
+           /(\[break\]|break|interval|prayer|luhar|dhuhr|asr|maghrib|isha|juma)/i.test(rowContent));
 
-        colX = startX;
+        let colX = startX;
 
-        // Check if row is a full-width break (Time cell + 1 merged break cell)
+        // Timetable break row banner
         if (isBreakRow && tdMatches.length <= 2) {
           const timeW = colWidths[0];
           const breakW = contentWidth - timeW;
@@ -428,18 +738,26 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
           const timeText = tdMatches[0] ? decodeHtml(tdMatches[0][2]) : '';
           const breakText = tdMatches[1] ? decodeHtml(tdMatches[1][2]) : 'INTERVAL / PRAYER';
 
-          // Time slot cell
           doc.rect(colX, currentY, timeW, rowHeight).fillAndStroke('#F8FAFC', '#CBD5E1');
           const timeTop = currentY + Math.floor((rowHeight - 9) / 2);
           doc.font(defaultFont).fontSize(8.5).fillColor('#334155')
              .text(timeText, colX + 2, timeTop, { width: timeW - 4, align: 'center', lineBreak: false });
 
-          // Full-row subtle warm tint break banner
           doc.rect(colX + timeW, currentY, breakW, rowHeight).fillAndStroke('#FEF3C7', '#CBD5E1');
           const breakTop = currentY + Math.floor((rowHeight - 10) / 2);
-          doc.font(selectFont(breakText)).fontSize(9.5).fillColor('#92400E')
-             .text(breakText.toUpperCase(), colX + timeW + 4, breakTop, { width: breakW - 8, align: 'center', characterSpacing: 0.5, lineBreak: false });
+          doc.font(selectFont(breakText)).fontSize(9.0).fillColor('#92400E')
+             .text(breakText.toUpperCase(), colX + timeW + 4, breakTop, {
+               width: breakW - 8,
+               align: 'center',
+               characterSpacing: 0.5,
+               lineBreak: false,
+               ellipsis: true,
+             });
         } else {
+          const isTotalRow = /<tr[^>]*class=["'][^"']*total[^"']*["']/i.test(trMatches[rIdx][0]) ||
+                             /<strong>(total|net payable|gross)/i.test(rowContent);
+          const rowBg = isTotalRow ? '#F1F5F9' : (rIdx % 2 === 0 ? '#FFFFFF' : '#F8FAFC');
+
           for (let cIdx = 0; cIdx < columnCount; cIdx++) {
             const w = colWidths[cIdx];
             const td = tdMatches[cIdx];
@@ -452,30 +770,21 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
               rawCellHtml.includes('break-title') ||
               /(\[break\]|break|interval|prayer|luhar|dhuhr|asr|maghrib|isha|juma)/i.test(rawCellHtml);
 
-            const cellBg = isCellBreak
-              ? '#FEF3C7'
-              : cIdx === 0
-              ? '#F8FAFC'
-              : rIdx % 2 === 0
-              ? '#FFFFFF'
-              : '#FAFAFA';
+            const cellBg = isCellBreak ? '#FEF3C7' : (cIdx === 0 && isTimetable ? '#F8FAFC' : rowBg);
 
             doc.rect(colX, currentY, w, rowHeight).fillAndStroke(cellBg, '#CBD5E1');
 
-            if (cIdx === 0) {
-              // TIME Column
+            if (cIdx === 0 && isTimetable) {
               const timeText = decodeHtml(rawCellHtml);
               const timeTop = currentY + Math.floor((rowHeight - 9) / 2);
               doc.font(defaultFont).fontSize(8.5).fillColor('#334155')
                  .text(timeText, colX + 2, timeTop, { width: w - 4, align: 'center', lineBreak: false });
             } else if (isCellBreak) {
-              // Interval / Prayer cell
               const breakText = decodeHtml(rawCellHtml);
               const bTop = currentY + Math.floor((rowHeight - 9) / 2);
               doc.font(selectFont(breakText)).fontSize(8.5).fillColor('#92400E')
                  .text(breakText.toUpperCase(), colX + 2, bTop, { width: w - 4, align: 'center', lineBreak: false });
             } else if (rawCellHtml.trim()) {
-              // Regular lecture cell: Subject + Teacher
               const subjectMatch = rawCellHtml.match(/<div class="subject-title">([\s\S]*?)<\/div>/i);
               const staffMatch = rawCellHtml.match(/<div class="staff-name">([\s\S]*?)<\/div>/i);
 
@@ -483,10 +792,9 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
                 const subjText = decodeHtml(subjectMatch[1]);
                 const staffText = staffMatch ? decodeHtml(staffMatch[1]) : '';
 
-                // Responsive font sizing and line spacing
-                const subjFontSize = rowHeight >= 36 ? 10.5 : (rowHeight >= 28 ? 9.5 : 8.5);
-                const staffFontSize = rowHeight >= 36 ? 8.5 : (rowHeight >= 28 ? 7.5 : 7.0);
-                const lineGap = rowHeight >= 36 ? 2 : 1.5;
+                const subjFontSize = rowHeight >= 36 ? 10.0 : (rowHeight >= 28 ? 9.0 : 8.0);
+                const staffFontSize = rowHeight >= 36 ? 8.0 : (rowHeight >= 28 ? 7.5 : 7.0);
+                const lineGap = 1.5;
 
                 const textBlockHeight = staffText ? (subjFontSize + lineGap + staffFontSize) : subjFontSize;
                 const blockY = currentY + Math.max(1, Math.floor((rowHeight - textBlockHeight) / 2));
@@ -501,10 +809,22 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
                 }
               } else {
                 const cellText = decodeHtml(rawCellHtml);
-                const textFontSize = rowHeight >= 36 ? 9.5 : 8.5;
-                const textTop = currentY + Math.floor((rowHeight - textFontSize) / 2);
-                doc.font(selectFont(cellText)).fontSize(textFontSize).fillColor('#0F172A')
-                   .text(cellText, colX + 2, textTop, { width: w - 4, align: 'center', lineBreak: false, ellipsis: true });
+                const cellFontSize = isTotalRow ? 8.5 : (rowHeight >= 32 ? 9.0 : 8.0);
+                const textTop = currentY + Math.floor((rowHeight - cellFontSize) / 2);
+                const textColor = isTotalRow ? '#0F172A' : '#334155';
+
+                let align = colAlignments[cIdx];
+                if (cellAttrs.includes('text-right')) align = 'right';
+                else if (cellAttrs.includes('text-center')) align = 'center';
+
+                const padX = 4;
+                doc.font(selectFont(cellText)).fontSize(cellFontSize).fillColor(textColor)
+                   .text(cellText, colX + padX, textTop, {
+                     width: w - (padX * 2),
+                     align,
+                     lineBreak: false,
+                     ellipsis: true,
+                   });
               }
             }
 
@@ -515,14 +835,14 @@ export async function renderHtmlFallbackToPdf({ html, landscape = false }) {
         currentY += rowHeight;
       }
 
-      // 5. Clean Bottom Footer (Divider + Metadata)
+      // 7. Clean Institutional Bottom Footer
       const footerLineY = pageHeight - margin - 12;
       doc.lineWidth(0.5);
       doc.moveTo(startX, footerLineY).lineTo(startX + contentWidth, footerLineY).stroke('#E2E8F0');
 
       const footerTextY = footerLineY + 4;
       doc.font(defaultFont).fontSize(7.5).fillColor('#94A3B8')
-         .text('Generated by MadrasaNexa Timetable Management • Page 1 of 1', startX, footerTextY, { align: 'left', lineBreak: false });
+         .text('Generated by MadrasaNexa • Institutional Management System', startX, footerTextY, { align: 'left', lineBreak: false });
       doc.text(`Printed: ${new Date().toISOString().slice(0, 10)}`, startX, footerTextY, { width: contentWidth, align: 'right', lineBreak: false });
 
       doc.end();

@@ -1,15 +1,6 @@
 # Nixpacks configuration for Railway Node 20 LTS with Chromium for PDF generation
 [phases.setup]
-nixPkgs = [
-  "nodejs_20",
-  "chromium",
-  "cacert",
-  "nss",
-  "freetype",
-  "harfbuzz",
-  "fontconfig",
-  "dejavu_fonts"
-]
+nixPkgs = ["nodejs_20", "chromium", "dejavu_fonts"]
 
 [variables]
 NIXPACKS_NODE_VERSION = "20"

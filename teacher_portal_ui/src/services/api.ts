@@ -54,6 +54,7 @@ export interface AuthUser {
   mustChangePassword?: boolean;
   avatarUrl?: string | null;
   photoUrl?: string | null;
+  profilePhoto?: string | null;
   madrasa?: {
     id: string;
     name: string;
@@ -67,6 +68,7 @@ export interface AuthUser {
     staffType: string;
     photoUrl?: string | null;
     avatarUrl?: string | null;
+    profilePhoto?: string | null;
   };
 }
 
@@ -384,6 +386,8 @@ export const profileApi = {
     postalCode?: string;
     country?: string;
     avatarUrl?: string;
+    photoUrl?: string;
+    profilePhoto?: string;
     emergencyContact?: { name: string; relationship: string; phone: string };
     academicQualifications?: any[];
     professionalQualifications?: any[];
@@ -396,7 +400,7 @@ export const profileApi = {
     });
   },
 
-  async uploadPhoto(file: File): Promise<{ photoUrl: string; avatarUrl: string; message: string }> {
+  async uploadPhoto(file: File): Promise<{ photoUrl: string; avatarUrl: string; profilePhoto?: string; message: string }> {
     const formData = new FormData();
     formData.append('photo', file);
     const token = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_TOKEN);

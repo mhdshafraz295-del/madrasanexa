@@ -21,7 +21,7 @@ import {
 import type {
   TeacherProfile,
 } from '../mock/teacherMockData';
-import { authApi, profileApi, notificationsApi, resolveAssetUrl } from '../services/api';
+import { authApi, profileApi, notificationsApi, resolveAssetUrl, AUTH_STORAGE_KEYS } from '../services/api';
 import { teacherAiService } from '../services/ai.service';
 import { TEACHER_NAV_ITEMS, type TeacherNavItem as NavItem } from '../components/layout/TeacherNavigation';
 import NotificationDrawer from '../components/notifications/NotificationDrawer';
@@ -66,8 +66,9 @@ export default function TeacherLayout() {
         setProfile((prev) => prev ? {
           ...prev,
           fullName: stored.name || prev.fullName,
-          avatarUrl: (stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || prev.avatarUrl) as string,
-          photoUrl: (stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || prev.photoUrl) as string,
+          avatarUrl: (stored.profilePhoto || stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.profilePhoto || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || prev.avatarUrl) as string,
+          photoUrl: (stored.profilePhoto || stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.profilePhoto || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || prev.photoUrl) as string,
+          profilePhoto: (stored.profilePhoto || stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.profilePhoto || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || (prev as any).profilePhoto) as string,
         } : null);
         setPhotoError(false);
       }
@@ -111,8 +112,9 @@ export default function TeacherLayout() {
         email: stored.email,
         employeeCode: stored.teacherProfile?.ustadhCode || 'UST',
         status: 'Active',
-        avatarUrl: stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || '',
-        photoUrl: stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || '',
+        avatarUrl: stored.profilePhoto || stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.profilePhoto || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || '',
+        photoUrl: stored.profilePhoto || stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.profilePhoto || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || '',
+        profilePhoto: stored.profilePhoto || stored.photoUrl || stored.avatarUrl || stored.teacherProfile?.profilePhoto || stored.teacherProfile?.photoUrl || stored.teacherProfile?.avatarUrl || '',
         madrasa: stored.madrasa,
       } as any));
     }
@@ -120,7 +122,25 @@ export default function TeacherLayout() {
     profileApi
       .getProfile()
       .then((p) => {
-        if (isMounted && p) setProfile(p);
+        if (isMounted && p) {
+          setProfile(p);
+          setPhotoError(false);
+          const currentUser = authApi.getStoredUser();
+          if (currentUser) {
+            const freshPhoto = p.profilePhoto || p.photoUrl || p.avatarUrl;
+            if (freshPhoto) {
+              currentUser.photoUrl = freshPhoto;
+              currentUser.avatarUrl = freshPhoto;
+              currentUser.profilePhoto = freshPhoto;
+              if (currentUser.teacherProfile) {
+                currentUser.teacherProfile.photoUrl = freshPhoto;
+                currentUser.teacherProfile.avatarUrl = freshPhoto;
+                currentUser.teacherProfile.profilePhoto = freshPhoto;
+              }
+              localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(currentUser));
+            }
+          }
+        }
       })
       .catch(() => {});
 
@@ -148,7 +168,7 @@ export default function TeacherLayout() {
   const madrasaCode = profileAny?.institution?.code || profileAny?.madrasa?.code || 'MNX';
   const rawLogoUrl = profileAny?.institution?.logoUrl || profileAny?.madrasa?.logoUrl;
   const resolvedLogoUrl = resolveAssetUrl(rawLogoUrl);
-  const rawPhotoUrl = profile?.photoUrl || profile?.avatarUrl;
+  const rawPhotoUrl = profile?.profilePhoto || profile?.photoUrl || profile?.avatarUrl;
   const resolvedPhotoUrl = resolveAssetUrl(rawPhotoUrl);
   const madrasaInitials = madrasaName
     .split(' ')
@@ -325,7 +345,7 @@ export default function TeacherLayout() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      profile?.fullName?.[0]?.toUpperCase() || 'U'
+                      teacherInitials
                     )}
                   </div>
                   <div className="overflow-hidden">

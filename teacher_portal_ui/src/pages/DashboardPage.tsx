@@ -104,8 +104,10 @@ export default function DashboardPage() {
 
   const stats = dashboardData.stats;
   const resolvedPhotoUrl = resolveAssetUrl(
+    profile.profilePhoto ||
     profile.photoUrl ||
     profile.avatarUrl ||
+    (dashboardData?.teacher as any)?.profilePhoto ||
     dashboardData?.teacher?.photoUrl ||
     dashboardData?.teacher?.avatarUrl
   );
@@ -127,7 +129,7 @@ export default function DashboardPage() {
                 className="w-full h-full object-cover rounded-full"
               />
             ) : (
-              profile.fullName.slice(0, 2).toUpperCase()
+              (profile.fullName || 'MO').slice(0, 2).toUpperCase()
             )}
           </div>
           <div className="min-w-0 flex-1">

@@ -111,31 +111,37 @@ export default function ProfilePage() {
     setPhotoUploadError(null);
     try {
       const res = await profileApi.uploadPhoto(file);
+      const newPhoto = res.profilePhoto || res.photoUrl || res.avatarUrl;
       setProfile((prev) => ({
         ...prev,
-        avatarUrl: res.photoUrl || res.avatarUrl,
-        photoUrl: res.photoUrl || res.avatarUrl,
+        avatarUrl: newPhoto,
+        photoUrl: newPhoto,
+        profilePhoto: newPhoto,
       }));
       setPhotoError(false);
 
       // Update local storage teacher user object
       try {
-        const stored = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_USER);
+        const stored = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_USER) || localStorage.getItem('user');
         if (stored) {
           const userObj = JSON.parse(stored);
-          userObj.photoUrl = res.photoUrl || res.avatarUrl;
-          userObj.avatarUrl = res.photoUrl || res.avatarUrl;
+          userObj.photoUrl = newPhoto;
+          userObj.avatarUrl = newPhoto;
+          userObj.profilePhoto = newPhoto;
           if (userObj.teacherProfile) {
-            userObj.teacherProfile.photoUrl = res.photoUrl || res.avatarUrl;
-            userObj.teacherProfile.avatarUrl = res.photoUrl || res.avatarUrl;
+            userObj.teacherProfile.photoUrl = newPhoto;
+            userObj.teacherProfile.avatarUrl = newPhoto;
+            userObj.teacherProfile.profilePhoto = newPhoto;
           }
           localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(userObj));
+          localStorage.setItem('user', JSON.stringify(userObj));
         }
       } catch (err) {
         console.error('Failed to sync updated photo to localStorage', err);
       }
 
       window.dispatchEvent(new CustomEvent('teacher_user_updated'));
+      window.dispatchEvent(new CustomEvent('teacher:profile-updated', { detail: { avatarUrl: newPhoto, photoUrl: newPhoto, profilePhoto: newPhoto } }));
     } catch (err: any) {
       setPhotoUploadError(err.message || 'Failed to upload photo.');
     } finally {
@@ -152,9 +158,14 @@ export default function ProfilePage() {
     try {
       const data = await profileApi.getProfile();
       if (data) {
+        setPhotoError(false);
+        const resolvedPhoto = data.profilePhoto || data.photoUrl || data.avatarUrl || '';
         setProfile((prev) => ({
           ...prev,
           ...data,
+          avatarUrl: resolvedPhoto || prev.avatarUrl || '',
+          photoUrl: resolvedPhoto || prev.photoUrl || '',
+          profilePhoto: resolvedPhoto || (prev as any).profilePhoto || '',
           fullName: data.fullName ?? prev.fullName ?? '',
           arabicName: data.arabicName !== undefined ? data.arabicName : '',
           nicPassport: data.nicPassport !== undefined ? data.nicPassport : '',
@@ -226,7 +237,9 @@ export default function ProfilePage() {
         district: profile.district,
         postalCode: profile.postalCode,
         country: profile.country,
-        avatarUrl: profile.avatarUrl,
+        avatarUrl: profile.avatarUrl || profile.photoUrl || profile.profilePhoto,
+        photoUrl: profile.photoUrl || profile.avatarUrl || profile.profilePhoto,
+        profilePhoto: profile.profilePhoto || profile.photoUrl || profile.avatarUrl,
         emergencyContact: profile.emergencyContact,
         academicQualifications: profile.academicQualifications || [],
         professionalQualifications: profile.professionalQualifications || [],
@@ -234,14 +247,27 @@ export default function ProfilePage() {
         documents: profile.documents || [],
       });
 
-      // Synchronize updated user name and notify layout of changes
+      // Synchronize updated user profile and notify layout of changes
       try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const u = JSON.parse(storedUser);
+        const stored = localStorage.getItem(AUTH_STORAGE_KEYS.TEACHER_USER) || localStorage.getItem('user');
+        if (stored) {
+          const u = JSON.parse(stored);
           if (profile.fullName) u.name = profile.fullName;
+          const currentPhoto = profile.profilePhoto || profile.photoUrl || profile.avatarUrl;
+          if (currentPhoto) {
+            u.avatarUrl = currentPhoto;
+            u.photoUrl = currentPhoto;
+            u.profilePhoto = currentPhoto;
+            if (u.teacherProfile) {
+              u.teacherProfile.avatarUrl = currentPhoto;
+              u.teacherProfile.photoUrl = currentPhoto;
+              u.teacherProfile.profilePhoto = currentPhoto;
+            }
+          }
+          localStorage.setItem(AUTH_STORAGE_KEYS.TEACHER_USER, JSON.stringify(u));
           localStorage.setItem('user', JSON.stringify(u));
         }
+        window.dispatchEvent(new CustomEvent('teacher_user_updated'));
         window.dispatchEvent(new CustomEvent('teacher:profile-updated', { detail: profile }));
       } catch {
         // Ignore storage error
@@ -424,7 +450,9 @@ export default function ProfilePage() {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  const resolvedPhotoUrl = resolveAssetUrl(profile.photoUrl || profile.avatarUrl);
+  const resolvedPhotoUrl = resolveAssetUrl(
+    profile.profilePhoto || profile.photoUrl || profile.avatarUrl
+  );
 
   return (
     <div className="space-y-6">

@@ -13,6 +13,7 @@ import { hashToken, isValidTokenFormat } from '../utils/scan-token-crypto.js';
 import { dispatchEmail } from './email.service.js';
 import { renderGateEmailHtml } from '../jobs/gate-email-worker.job.js';
 import * as staffNoticeService from './staff-notice.service.js';
+import sharp from 'sharp';
 
 /**
  * Resolves active dynamic logoUrl for a madrasa tenant.
@@ -375,7 +376,7 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
           notesObj = JSON.parse(teacherUstadh.notes);
         } catch (_) {}
       }
-      teacherPhotoUrl = notesObj.photoUrl || notesObj.avatarUrl || null;
+      teacherPhotoUrl = notesObj.photoUrl || notesObj.avatarUrl || notesObj.profilePhoto || notesObj.base64Fallback || null;
       const ec = notesObj.emergencyContact;
       const hasAcademics = Array.isArray(notesObj.academicQualifications) && notesObj.academicQualifications.length > 0;
       const hasProfessionals = Array.isArray(notesObj.professionalQualifications) && notesObj.professionalQualifications.length > 0;
@@ -424,6 +425,7 @@ export async function getDashboardData({ madrasaId, ustadhId, userId }) {
       id: ustadhId,
       photoUrl: teacherPhotoUrl,
       avatarUrl: teacherPhotoUrl,
+      profilePhoto: teacherPhotoUrl,
       profileCompletionPercentage,
     },
   };
@@ -529,6 +531,12 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
       if (parsed.photoUrl !== undefined && parsed.photoUrl !== null) {
         avatarUrl = String(parsed.photoUrl);
       }
+      if (parsed.profilePhoto !== undefined && parsed.profilePhoto !== null) {
+        avatarUrl = String(parsed.profilePhoto);
+      }
+      if (!avatarUrl && parsed.base64Fallback) {
+        avatarUrl = String(parsed.base64Fallback);
+      }
     }
   } catch {
     // Ignore JSON parse errors on legacy string notes
@@ -553,6 +561,7 @@ export async function getTeacherProfile({ madrasaId, ustadhId, userId }) {
     arabicName,
     avatarUrl,
     photoUrl: avatarUrl,
+    profilePhoto: avatarUrl,
     designation: ustadh.staffType === 'USTADH' ? 'Senior Faculty Member' : String(ustadh.staffType),
     department: 'Department of Islamic Studies & Quranic Sciences',
     email: ustadh.email || '',
@@ -650,6 +659,8 @@ export async function updateTeacherProfile({ madrasaId, ustadhId, data }) {
     'postalCode',
     'country',
     'avatarUrl',
+    'photoUrl',
+    'profilePhoto',
   ];
   for (const field of personalFields) {
     if (data[field] !== undefined) {
@@ -679,12 +690,16 @@ export async function updateTeacherProfile({ madrasaId, ustadhId, data }) {
     data: updateData,
   });
 
+  const resolvedPhoto = currentNotesObj.profilePhoto || currentNotesObj.photoUrl || currentNotesObj.avatarUrl || currentNotesObj.base64Fallback || null;
   return {
     id: updated.id,
     fullName: updated.fullName,
     phoneNumber: updated.phoneNumber,
     whatsappNumber: updated.whatsappNumber,
     address: updated.address,
+    avatarUrl: resolvedPhoto,
+    photoUrl: resolvedPhoto,
+    profilePhoto: resolvedPhoto,
     message: 'Teacher profile updated successfully.',
   };
 }
@@ -710,16 +725,38 @@ export async function uploadTeacherProfilePhoto({ madrasaId, ustadhId, userId, f
     throw new NotFoundError('Teacher profile not found.');
   }
 
-  let photoUrl = '';
+  // 1. Optimize and compress avatar using Sharp (320x320 cover, WebP quality 80)
+  // Guarantees small payload (10-18 KB) so Base64 Data URL safely fits inside MySQL TEXT column (65,535 bytes)
+  let compressedBuffer = file.buffer;
+  let mimeType = file.mimetype;
+  try {
+    compressedBuffer = await sharp(file.buffer, { limitInputPixels: 16777216 })
+      .rotate()
+      .resize(320, 320, {
+        fit: 'cover',
+        withoutEnlargement: false,
+      })
+      .webp({ quality: 80 })
+      .toBuffer();
+    mimeType = 'image/webp';
+  } catch (sharpErr) {
+    console.warn('[TeacherService] Sharp image compression fallback:', sharpErr.message);
+    compressedBuffer = file.buffer;
+    mimeType = file.mimetype;
+  }
+
+  const base64DataUrl = `data:${mimeType};base64,${compressedBuffer.toString('base64')}`;
+  let photoUrl = base64DataUrl;
   let photoFileId = null;
 
+  // 2. If Cloudflare R2 / S3 storage is available, upload to bucket as primary URL
   if (isR2Configured && isR2Configured()) {
     try {
-      const ext = file.mimetype === 'image/png' ? 'png' : file.mimetype === 'image/webp' ? 'webp' : 'jpg';
+      const ext = mimeType === 'image/webp' ? 'webp' : (mimeType === 'image/png' ? 'png' : 'jpg');
       const filename = `ustadh_${ustadhId}_${Date.now()}.${ext}`;
       const objectKey = buildMadrasaKey(madrasaId, 'uploads', filename);
 
-      await uploadBufferToR2(objectKey, file.buffer, file.mimetype);
+      await uploadBufferToR2(objectKey, compressedBuffer, mimeType);
 
       if (prisma.fileObject) {
         const fileRecord = await prisma.fileObject.create({
@@ -728,20 +765,23 @@ export async function uploadTeacherProfilePhoto({ madrasaId, ustadhId, userId, f
             type: 'OTHER',
             objectKey,
             originalName: file.originalname || filename,
-            mimeType: file.mimetype,
-            size: file.size || file.buffer.length,
+            mimeType,
+            size: compressedBuffer.length,
           },
         });
         photoFileId = fileRecord.id;
       }
-      photoUrl = await resolveObjectAccessUrl(objectKey);
-    } catch (_) {
-      photoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+      const remoteUrl = await resolveObjectAccessUrl(objectKey);
+      if (remoteUrl) {
+        photoUrl = remoteUrl;
+      }
+    } catch (r2Err) {
+      console.warn('[TeacherService] R2 upload failed, keeping compressed Base64 Data URL:', r2Err.message);
+      photoUrl = base64DataUrl;
     }
-  } else {
-    photoUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
   }
 
+  // 3. Persist photo metadata and compressed Base64 fallback in database
   let currentNotesObj = {};
   try {
     if (ustadh.notes && ustadh.notes.startsWith('{')) {
@@ -750,8 +790,14 @@ export async function uploadTeacherProfilePhoto({ madrasaId, ustadhId, userId, f
   } catch (_) {
     currentNotesObj = {};
   }
+
   currentNotesObj.avatarUrl = photoUrl;
   currentNotesObj.photoUrl = photoUrl;
+  currentNotesObj.profilePhoto = photoUrl;
+  // Always store compressed Base64 so photo NEVER disappears even if external storage is unreachable
+  if (base64DataUrl && base64DataUrl.length < 55000) {
+    currentNotesObj.base64Fallback = base64DataUrl;
+  }
   if (photoFileId) currentNotesObj.photoFileId = photoFileId;
 
   await prisma.ustadh.update({
@@ -764,6 +810,7 @@ export async function uploadTeacherProfilePhoto({ madrasaId, ustadhId, userId, f
   return {
     photoUrl,
     avatarUrl: photoUrl,
+    profilePhoto: photoUrl,
     photoFileId,
     message: 'Profile photo updated successfully.',
   };

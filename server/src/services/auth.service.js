@@ -179,7 +179,7 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
     if (ustadh.notes && ustadh.notes.startsWith('{')) {
       try {
         const parsed = JSON.parse(ustadh.notes);
-        photoUrl = parsed.photoUrl || parsed.avatarUrl || null;
+        photoUrl = parsed.photoUrl || parsed.avatarUrl || parsed.profilePhoto || parsed.base64Fallback || null;
       } catch (_) {}
     }
 
@@ -190,6 +190,7 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
       staffType: ustadh.staffType,
       photoUrl,
       avatarUrl: photoUrl,
+      profilePhoto: photoUrl,
     };
   }
 
@@ -231,6 +232,9 @@ export const loginUser = async (email, password, ip = null, userAgent = null) =>
     email: user.email,
     role: user.role,
     madrasaId: user.madrasaId,
+    avatarUrl: photoUrl || null,
+    photoUrl: photoUrl || null,
+    profilePhoto: photoUrl || null,
     mustChangePassword: Boolean(user.mustChangePassword),
     ...(user.madrasa
       ? {
@@ -322,7 +326,7 @@ export const getMe = async (userId) => {
     if (ustadh.notes && ustadh.notes.startsWith('{')) {
       try {
         const parsed = JSON.parse(ustadh.notes);
-        photoUrl = parsed.photoUrl || parsed.avatarUrl || null;
+        photoUrl = parsed.photoUrl || parsed.avatarUrl || parsed.profilePhoto || parsed.base64Fallback || null;
       } catch (_) {}
     }
 
@@ -333,6 +337,7 @@ export const getMe = async (userId) => {
       staffType: ustadh.staffType,
       photoUrl,
       avatarUrl: photoUrl,
+      profilePhoto: photoUrl,
     };
   }
 
@@ -347,6 +352,9 @@ export const getMe = async (userId) => {
     email: user.email,
     role: user.role,
     madrasaId: user.madrasaId,
+    avatarUrl: photoUrl || null,
+    photoUrl: photoUrl || null,
+    profilePhoto: photoUrl || null,
     mustChangePassword: Boolean(user.mustChangePassword),
     ...(user.madrasa
       ? {

@@ -9,6 +9,7 @@ export interface TeacherProfile {
   arabicName: string;
   avatarUrl: string;
   photoUrl?: string;
+  profilePhoto?: string;
   designation: string;
   department: string;
   email: string;

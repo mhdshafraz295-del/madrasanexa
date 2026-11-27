@@ -14,6 +14,7 @@ import {
   ChevronDown,
   ShieldCheck,
 } from 'lucide-react';
+import { formatHijriDate } from '../../utils/hijriDate';
 import type { MadrasaThemeTokens } from '../../services/api';
 
 interface MadrasaPublicNavbarProps {
@@ -131,10 +132,38 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
     <header
       className={`sticky top-0 z-40 transition-all duration-300 print:hidden w-full max-w-full overflow-x-clip ${
         scrolled
-          ? 'bg-white/92 backdrop-blur-lg border-b border-[#C5A059]/40 shadow-[0_8px_32px_-4px_rgba(60,50,30,0.10),0_0_20px_rgba(197,160,89,0.18)]'
-          : 'bg-white/85 backdrop-blur-md border-b border-[#C5A059]/30 shadow-[0_4px_24px_-4px_rgba(60,50,30,0.06),0_0_16px_rgba(197,160,89,0.12)]'
+          ? 'bg-white/95 backdrop-blur-lg border-b border-[#C5A059]/40 shadow-[0_8px_32px_-4px_rgba(60,50,30,0.10)]'
+          : 'bg-white/90 backdrop-blur-md border-b border-[#C5A059]/30 shadow-[0_4px_24px_-4px_rgba(60,50,30,0.06)]'
       }`}
     >
+      {/* Top Editorial Info Bar in Deep Emerald */}
+      <div className="bg-[#0B3B2C] text-white/90 text-[11px] sm:text-xs py-1.5 px-3 sm:px-6 border-b border-[#0D4433] hidden sm:block">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center gap-1.5 text-[#DFC076] font-medium">
+              <Calendar className="w-3.5 h-3.5" />
+              <span>{formatHijriDate()}</span>
+            </span>
+            <span className="text-white/30">|</span>
+            <span className="text-white/80">Dedicated to Sacred Knowledge & Prophetic Excellence</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            {hasActiveAdmissions && (
+              <Link
+                to={`/madrasa/${slug}/admissions?apply=true`}
+                className="text-[#DFC076] hover:text-white font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-[#DFC076] animate-pulse" />
+                <span>Admissions Open</span>
+              </Link>
+            )}
+            <a href="#contact" className="hover:text-white text-white/80 transition-colors">
+              Campus Directory
+            </a>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 w-full">
         <div className="h-16 sm:h-20 flex items-center justify-between gap-1.5 sm:gap-4 w-full">
 

@@ -25,10 +25,10 @@ export const MadrasaPublicFooter: React.FC<MadrasaPublicFooterProps> = ({
   hasNotices = false,
 }) => {
   const currentYear = new Date().getFullYear();
-  const primaryColor = theme.primaryBtnBg || '#504F34';
-  const footerBg = theme.footerBg || '#504F34';
+  const primaryColor = theme.primaryBtnBg || '#0B3B2C';
+  const footerBg = theme.footerBg || '#0B3B2C';
   const footerTextColor = theme.footerTextColor || '#F5F5F1';
-  const accentColor = theme.secondaryBtnBorder || '#A5A477';
+  const accentColor = theme.secondaryBtnBorder || '#DFC076';
 
   const handleFooterNav = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     if (window.location.pathname === `/madrasa/${slug}`) {

@@ -7,6 +7,11 @@ import { resolvePublicTheme } from '../../components/madrasa-public/publicThemeH
 import { MadrasaPublicNavbar } from '../../components/madrasa-public/MadrasaPublicNavbar';
 import { MadrasaPublicHero } from '../../components/madrasa-public/MadrasaPublicHero';
 import { MadrasaPublicKnowledgeStrip } from '../../components/madrasa-public/MadrasaPublicKnowledgeStrip';
+import { MadrasaPublicHighlightStrip } from '../../components/madrasa-public/MadrasaPublicHighlightStrip';
+import { MadrasaPublicDisciplines } from '../../components/madrasa-public/MadrasaPublicDisciplines';
+import { MadrasaPublicSplitBanner } from '../../components/madrasa-public/MadrasaPublicSplitBanner';
+import { MadrasaPublicTestimonials } from '../../components/madrasa-public/MadrasaPublicTestimonials';
+import { MadrasaPublicNewsletter } from '../../components/madrasa-public/MadrasaPublicNewsletter';
 import { IslamicSectionDivider } from '../../components/common/IslamicSectionDivider';
 import { MadrasaPublicAbout } from '../../components/madrasa-public/MadrasaPublicAbout';
 import { MadrasaPublicMissionVision } from '../../components/madrasa-public/MadrasaPublicMissionVision';
@@ -146,9 +151,6 @@ export const MadrasaPublicPage: React.FC = () => {
         activeIntakeCount={profile.activeAdmissionPeriods?.length || 0}
       />
 
-      {/* 1.5. Live Hijri Date & Sacred Knowledge Wisdom Strip */}
-      <MadrasaPublicKnowledgeStrip theme={theme} />
-
       {/* 2. Institutional Hero Section */}
       <MadrasaPublicHero
         slug={slug!}
@@ -162,14 +164,37 @@ export const MadrasaPublicPage: React.FC = () => {
         activeAcademicYear={firstActiveIntake?.academicYear}
       />
 
+      {/* 2.5. Editorial Floating Highlight Strip */}
+      <MadrasaPublicHighlightStrip
+        slug={slug!}
+        theme={theme}
+        hasActiveAdmissions={hasActiveAdmissions}
+        activeIntakeName={firstActiveIntake?.name}
+        activeAcademicYear={firstActiveIntake?.academicYear}
+      />
+
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12 sm:space-y-16 w-full">
+
+        {/* 2.7. Live Hijri Date & Sacred Knowledge Wisdom Strip */}
+        <MadrasaPublicKnowledgeStrip theme={theme} className="rounded-2xl" />
+
+        {/* 2.8. Academic Pathways & Sacred Sciences (4-Column Feature Cards) */}
+        <MadrasaPublicDisciplines theme={theme} />
 
         {/* 3. About Our Madrasa & Summary */}
         <MadrasaPublicAbout
           madrasaName={madrasa.name}
           introduction={profile.introduction}
           generatedSummary={profile.generatedSummary}
+          theme={theme}
+        />
+
+        <IslamicSectionDivider />
+
+        {/* 3.5. Deep Green Split Feature Banner with Side Highlights */}
+        <MadrasaPublicSplitBanner
+          madrasaName={madrasa.name}
           theme={theme}
         />
 
@@ -258,6 +283,19 @@ export const MadrasaPublicPage: React.FC = () => {
             />
           </>
         ) : null}
+
+        <IslamicSectionDivider />
+
+        {/* 9.3. Words of Reflection & Community Trust (Testimonials) */}
+        <MadrasaPublicTestimonials
+          madrasaName={madrasa.name}
+          theme={theme}
+        />
+
+        {/* 9.6. Stay Informed & Connected (Newsletter Strip) */}
+        <MadrasaPublicNewsletter
+          madrasaName={madrasa.name}
+        />
 
         <IslamicSectionDivider />
 

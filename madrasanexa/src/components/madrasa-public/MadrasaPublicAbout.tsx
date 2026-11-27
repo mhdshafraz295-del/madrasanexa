@@ -26,14 +26,14 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
     <section id="about" className="scroll-mt-28 py-6">
       {/* Centered Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]" style={{ color: primaryColor }}>
-          <Building2 className="w-3.5 h-3.5" style={{ color: primaryColor }} />
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2 px-3.5 py-1.5 rounded-full public-section-badge">
+          <Building2 className="w-3.5 h-3.5" />
           <span>ABOUT OUR MADRASA</span>
         </div>
-        <h2 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-[#252525] mb-3">
+        <h2 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight mb-3 public-night-h2">
           About Our Institution
         </h2>
-        <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: primaryColor }} />
+        <div className="w-16 h-1 mx-auto rounded-full bg-gradient-to-r from-[#C5A059] to-[#DFC076]" />
       </div>
 
       {/* Cohesive Image & Description Component with Frosted Glass Surface */}

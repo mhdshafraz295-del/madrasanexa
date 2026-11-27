@@ -22,17 +22,16 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
     <section id="staff" className="public-section-enter scroll-mt-28" aria-label="Staff & Faculty">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
-          <Users className="w-3.5 h-3.5 text-[#85845C]" />
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-3 px-3.5 py-1.5 rounded-full public-section-badge">
+          <Users className="w-3.5 h-3.5" />
           <span>Scholarly Faculty & Leadership</span>
         </div>
         <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#252525]"
-          style={{ color: theme.headingColor || '#252525' }}
+          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight public-night-h2"
         >
           {staff.sectionTitle || 'Our Scholarly Faculty & Mentors'}
         </h2>
-        <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
+        <p className="mt-3 text-sm sm:text-base leading-relaxed public-night-subtext">
           {staff.sectionSubtitle ||
             'Dedicated scholars and educators guiding hearts and minds with classical wisdom, authentic character, and compassionate mentorship.'}
         </p>

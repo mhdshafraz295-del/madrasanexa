@@ -626,15 +626,15 @@ html.dark body {
 .public-card,
 .glass-panel-gold {
   position: relative;
-  background-color: rgba(255, 255, 255, 0.82) !important;
+  background-color: rgba(255, 255, 255, 0.88) !important;
   backdrop-filter: blur(16px) saturate(160%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
-  border: 1px solid rgba(197, 160, 89, 0.38) !important;
+  border: 1px solid rgba(197, 160, 89, 0.40) !important;
   border-radius: 1.25rem;
   box-shadow: 
-    0 12px 32px -4px rgba(60, 50, 30, 0.08),
-    0 4px 12px -2px rgba(60, 50, 30, 0.04),
-    0 0 18px rgba(197, 160, 89, 0.18) !important;
+    0 16px 36px -4px rgba(0, 0, 0, 0.28),
+    0 4px 12px -2px rgba(0, 0, 0, 0.16),
+    0 0 22px rgba(197, 160, 89, 0.22) !important;
   overflow: hidden;
   isolation: isolate;
   transition: box-shadow 350ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -645,36 +645,36 @@ html.dark body {
 .acju-card:hover,
 .public-card:hover,
 .glass-panel-gold:hover {
-  background-color: rgba(255, 255, 255, 0.94) !important;
-  border-color: rgba(197, 160, 89, 0.65) !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-color: rgba(212, 175, 55, 0.75) !important;
   box-shadow: 
-    0 18px 40px -6px rgba(60, 50, 30, 0.12),
-    0 6px 16px -2px rgba(60, 50, 30, 0.06),
-    0 0 26px rgba(197, 160, 89, 0.32) !important;
+    0 22px 46px -6px rgba(0, 0, 0, 0.36),
+    0 6px 18px -2px rgba(0, 0, 0, 0.22),
+    0 0 32px rgba(212, 175, 55, 0.38) !important;
 }
 
 /* Elevated Frosted Glass Card for Program Cards, Data Cards, & Sections */
 .glass-card-elevated {
-  background: rgba(255, 255, 255, 0.84) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
   backdrop-filter: blur(14px) !important;
   -webkit-backdrop-filter: blur(14px) !important;
-  border: 1px solid rgba(197, 160, 89, 0.35) !important;
+  border: 1px solid rgba(197, 160, 89, 0.38) !important;
   border-radius: 1.25rem;
   box-shadow: 
-    0 10px 28px -4px rgba(45, 38, 24, 0.07),
-    0 4px 10px -2px rgba(45, 38, 24, 0.04),
-    0 0 14px rgba(197, 160, 89, 0.16) !important;
+    0 12px 30px -4px rgba(0, 0, 0, 0.24),
+    0 4px 10px -2px rgba(0, 0, 0, 0.14),
+    0 0 18px rgba(197, 160, 89, 0.20) !important;
   transition: all 250ms ease !important;
 }
 
 .glass-card-elevated:hover {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border-color: rgba(197, 160, 89, 0.62) !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  border-color: rgba(212, 175, 55, 0.70) !important;
   transform: translateY(-2px);
   box-shadow: 
-    0 16px 36px -6px rgba(45, 38, 24, 0.12),
-    0 6px 14px -2px rgba(45, 38, 24, 0.06),
-    0 0 24px rgba(197, 160, 89, 0.28) !important;
+    0 18px 40px -6px rgba(0, 0, 0, 0.32),
+    0 6px 16px -2px rgba(0, 0, 0, 0.18),
+    0 0 28px rgba(212, 175, 55, 0.34) !important;
 }
 
 /* Interactive Filter Pills (All Disciplines, Hifz, Aalim, etc.) */
@@ -1349,6 +1349,185 @@ html.dark body {
     animation: none !important;
     transform: none !important;
   }
+}
+
+/* ==========================================================================
+   PUBLIC MADRASA PORTAL: LAYERED FULL-MOON NIGHT SKY & DRIFTING MIST SYSTEM
+   GPU-Accelerated (transform: translate3d / opacity only) with Motion Preferences
+   ========================================================================== */
+
+@keyframes publicMoonDrift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(24px, -18px, 0);
+  }
+  100% {
+    transform: translate3d(-18px, 14px, 0);
+  }
+}
+
+@keyframes publicMoonHaloGlow {
+  0%, 100% {
+    opacity: 0.78;
+    transform: scale3d(1, 1, 1);
+  }
+  50% {
+    opacity: 0.98;
+    transform: scale3d(1.08, 1.08, 1);
+  }
+}
+
+@keyframes publicMistDrift1 {
+  0% {
+    transform: translate3d(-4%, 0, 0);
+  }
+  50% {
+    transform: translate3d(4%, -14px, 0);
+  }
+  100% {
+    transform: translate3d(-4%, 0, 0);
+  }
+}
+
+@keyframes publicMistDrift2 {
+  0% {
+    transform: translate3d(3%, 0, 0);
+  }
+  50% {
+    transform: translate3d(-4%, 16px, 0);
+  }
+  100% {
+    transform: translate3d(3%, 0, 0);
+  }
+}
+
+.anim-moon-drift {
+  animation: publicMoonDrift 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.anim-moon-halo-pulse {
+  animation: publicMoonHaloGlow 14s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.anim-mist-drift-1 {
+  animation: publicMistDrift1 58s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.anim-mist-drift-2 {
+  animation: publicMistDrift2 76s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-moon-drift,
+  .anim-moon-halo-pulse,
+  .anim-mist-drift-1,
+  .anim-mist-drift-2 {
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* Moon element styles */
+.public-moon-container {
+  position: absolute;
+  top: 40px;
+  right: 6%;
+  width: 240px;
+  height: 240px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (max-width: 640px) {
+  .public-moon-container {
+    width: 140px;
+    height: 140px;
+    top: 20px;
+    right: 4%;
+  }
+}
+
+.public-moon-halo {
+  position: absolute;
+  inset: -60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(254, 249, 235, 0.28) 0%, rgba(223, 192, 118, 0.16) 40%, rgba(148, 163, 184, 0.06) 65%, transparent 75%);
+  filter: blur(28px);
+}
+
+.public-moon-disc {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #FFFFFF 0%, #FAF8EE 35%, #EBE5CF 70%, #D4CCAF 100%);
+  box-shadow: 
+    0 0 35px rgba(255, 255, 255, 0.7),
+    0 0 75px rgba(223, 192, 118, 0.4),
+    0 0 130px rgba(197, 160, 89, 0.25);
+}
+
+/* Translucent Mist Layers */
+.public-mist-layer-1 {
+  position: absolute;
+  inset: -15% -25%;
+  background: 
+    radial-gradient(ellipse 65% 42% at 20% 30%, rgba(148, 163, 184, 0.14) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 38% at 75% 65%, rgba(223, 192, 118, 0.08) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 45% at 50% 85%, rgba(100, 116, 139, 0.11) 0%, transparent 75%);
+  filter: blur(45px);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.85;
+}
+
+.public-mist-layer-2 {
+  position: absolute;
+  inset: -20% -30%;
+  background: 
+    radial-gradient(ellipse 55% 36% at 80% 20%, rgba(148, 163, 184, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 65% 45% at 25% 75%, rgba(212, 175, 55, 0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 45% 32% at 60% 45%, rgba(100, 116, 139, 0.09) 0%, transparent 60%);
+  filter: blur(55px);
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.85;
+}
+
+/* Night Sky Canvas - Headings & Contrast Enhancement */
+.night-sky-canvas {
+  color: #F8FAFC;
+}
+
+.night-sky-canvas .public-section-badge {
+  background: rgba(19, 34, 50, 0.88) !important;
+  color: #E6C687 !important;
+  border: 1px solid rgba(197, 160, 89, 0.45) !important;
+  box-shadow: 0 0 16px rgba(197, 160, 89, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.night-sky-canvas .public-section-badge svg {
+  color: #E6C687 !important;
+}
+
+.night-sky-canvas h2.public-night-h2,
+.night-sky-canvas section > .text-center > h2,
+.night-sky-canvas section > div > h2:not(.glass-panel-gold h2):not(.glass-card-elevated h2) {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7) !important;
+}
+
+.night-sky-canvas p.public-night-subtext,
+.night-sky-canvas section > .text-center > p:not(.glass-panel-gold p):not(.glass-card-elevated p) {
+  color: #E2E8F0 !important;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5) !important;
 }
 
 

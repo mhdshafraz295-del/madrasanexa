@@ -36,7 +36,7 @@ interface MadrasaPublicAlumniProps {
 export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
   madrasaCode,
   madrasaName,
-  theme,
+  theme: _theme,
 }) => {
   const [alumni, setAlumni] = useState<AlumniScholarItem[]>([]);
   const [batchYears, setBatchYears] = useState<string[]>([]);
@@ -194,17 +194,16 @@ export const MadrasaPublicAlumni: React.FC<MadrasaPublicAlumniProps> = ({
       {/* Section Header */}
       <div className="mb-8 pb-6 border-b border-[#E2E0D0] text-center sm:text-left">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2.5 px-3.5 py-1 rounded-full bg-[#F4F3EC] border border-[#E2E0D0] text-[#6B6A45] shadow-2xs">
-            <GraduationCap className="w-3.5 h-3.5 text-[#6B6A45]" />
+          <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2.5 px-3.5 py-1 rounded-full public-section-badge shadow-2xs">
+            <GraduationCap className="w-3.5 h-3.5" />
             <span>Regal Scholars Dossier</span>
           </div>
           <h2
-            className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#232215] dark:text-[#F9FAFB]"
-            style={{ color: theme.headingColor || undefined }}
+            className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight public-night-h2"
           >
             Scholarly Alumni & Graduates
           </h2>
-          <p className="mt-2 text-xs sm:text-sm text-slate-600 dark:text-[#9CA3AF] leading-relaxed">
+          <p className="mt-2 text-xs sm:text-sm leading-relaxed public-night-subtext">
             Celebrating {madrasaName} graduates pursuing sacred knowledge, higher academic degrees, and community leadership worldwide.
           </p>
         </div>

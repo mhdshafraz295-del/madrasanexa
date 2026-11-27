@@ -15,18 +15,27 @@ export const IslamicSectionDivider: React.FC<IslamicSectionDividerProps> = ({
   variant = 'olive',
 }) => {
   const isLight = variant === 'light';
+  const isGold = variant === 'gold';
 
   // Hairline gradient colors
-  const lineLeft = isLight
+  const lineLeft = isGold
+    ? 'from-transparent via-[#C5A059]/40 to-[#DFC076]/90'
+    : isLight
     ? 'from-transparent via-white/30 to-white/70'
     : 'from-transparent via-[#8C8A58]/35 to-[#6B6A45]/80';
-  const lineRight = isLight
+  const lineRight = isGold
+    ? 'from-[#DFC076]/90 via-[#C5A059]/40 to-transparent'
+    : isLight
     ? 'from-transparent via-white/30 to-white/70'
     : 'from-transparent via-[#8C8A58]/35 to-[#6B6A45]/80';
 
-  const starColor = isLight ? 'text-white/85' : 'text-[#85845C]';
-  const diamondColor = isLight ? 'fill-white/60' : 'fill-[#8C8A58]';
-  const centerDotFill = isLight ? '#252525' : '#FAF9F5';
+  const starColor = isGold
+    ? 'text-[#DFC076] drop-shadow-[0_0_10px_rgba(223,192,118,0.5)]'
+    : isLight
+    ? 'text-white/85'
+    : 'text-[#85845C]';
+  const diamondColor = isGold ? 'fill-[#DFC076]' : isLight ? 'fill-white/60' : 'fill-[#8C8A58]';
+  const centerDotFill = isGold ? '#09131F' : isLight ? '#252525' : '#FAF9F5';
 
   return (
     <div

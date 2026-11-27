@@ -308,16 +308,21 @@ export default function AnnouncementsPage() {
               onClick={() => handleOpenDetail(item)}
               className={`p-5 rounded-2xl border transition cursor-pointer bg-white ${
                 !item.isRead
-                  ? 'border-emerald-300 shadow-sm ring-1 ring-emerald-200 hover:border-emerald-400'
-                  : 'border-[#E7E9EE] shadow-xs hover:border-slate-300'
+                  ? 'border-emerald-300 border-l-4 border-l-emerald-600 bg-emerald-50/20 shadow-sm ring-1 ring-emerald-200 hover:border-emerald-400'
+                  : 'border-[#E7E9EE] border-l-4 border-l-transparent shadow-xs hover:border-slate-300'
               }`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-2.5 border-b border-[#E7E9EE]/60">
                 <div className="flex items-center gap-2.5">
                   {!item.isRead ? (
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#37C6A3] shrink-0" title="Unread" />
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-600 text-white uppercase tracking-wider shrink-0 shadow-xs flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      NEW
+                    </span>
                   ) : (
-                    <span className="w-2.5 h-2.5 rounded-full bg-slate-200 shrink-0" title="Read" />
+                    <span className="text-[10px] text-slate-400 font-semibold px-1 py-0.2 rounded bg-slate-100">
+                      Read
+                    </span>
                   )}
 
                   {renderPriorityBadge(item.priority)}

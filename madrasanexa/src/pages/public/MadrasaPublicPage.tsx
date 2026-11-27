@@ -149,7 +149,7 @@ export const MadrasaPublicPage: React.FC = () => {
       {/* 1.5. Live Hijri Date & Sacred Knowledge Wisdom Strip */}
       <MadrasaPublicKnowledgeStrip theme={theme} />
 
-      {/* 2. Institutional Hero Section */}
+      {/* 2. Institutional Hero Section (Untouched) */}
       <MadrasaPublicHero
         slug={slug!}
         madrasaName={madrasa.name}
@@ -162,126 +162,163 @@ export const MadrasaPublicPage: React.FC = () => {
         activeAcademicYear={firstActiveIntake?.academicYear}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12 sm:space-y-16 w-full">
+      {/* Non-Hero Layered Full-Moon Night Sky Backdrop & Main Area */}
+      <div className="relative overflow-hidden bg-gradient-to-b from-[#09131F] via-[#0D1C2E] via-[#0A1624] to-[#060D15] night-sky-canvas w-full flex-1">
+        {/* Layer 1: Ambient Night Celestial Radiance */}
+        <div
+          className="absolute inset-0 pointer-events-none select-none z-0 overflow-hidden"
+          aria-hidden="true"
+        >
+          <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1100px] h-[550px] bg-[radial-gradient(ellipse_at_center,rgba(223,192,118,0.14)_0%,rgba(14,35,56,0.6)_45%,transparent_75%)] blur-3xl pointer-events-none" />
+          <div className="absolute top-[28%] -left-36 w-[800px] h-[800px] bg-[radial-gradient(circle,rgba(30,58,82,0.4)_0%,transparent_70%)] blur-3xl pointer-events-none" />
+          <div className="absolute top-[62%] -right-36 w-[850px] h-[850px] bg-[radial-gradient(circle,rgba(212,175,55,0.09)_0%,transparent_70%)] blur-3xl pointer-events-none" />
+          <div className="absolute bottom-10 left-1/3 w-[700px] h-[500px] bg-[radial-gradient(ellipse,rgba(20,40,65,0.5)_0%,transparent_70%)] blur-3xl pointer-events-none" />
+        </div>
 
-        {/* 3. About Our Madrasa & Summary */}
-        <MadrasaPublicAbout
-          madrasaName={madrasa.name}
-          introduction={profile.introduction}
-          generatedSummary={profile.generatedSummary}
-          theme={theme}
+        {/* Layer 2: Glowing Full Moon with Moonlight Halo & Gentle GPU CSS Drift */}
+        <div
+          className="public-moon-container anim-moon-drift"
+          aria-hidden="true"
+        >
+          {/* Moonlight Halo with Pulsing Glow */}
+          <div className="public-moon-halo anim-moon-halo-pulse" />
+          {/* Luminous Full Moon Disc */}
+          <div className="public-moon-disc" />
+          {/* Subtle Lunar Mare / Crater Accent */}
+          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_68%_65%,rgba(168,154,124,0.22)_0%,transparent_52%)] pointer-events-none" />
+        </div>
+
+        {/* Layer 3: Moving Sky / Cloud Mist Layers (2 subtle translucent drifting mist layers) */}
+        <div
+          className="public-mist-layer-1 anim-mist-drift-1"
+          aria-hidden="true"
+        />
+        <div
+          className="public-mist-layer-2 anim-mist-drift-2"
+          aria-hidden="true"
         />
 
-        <IslamicSectionDivider />
+        {/* Main Content Area (Sitting above night backdrop at z-10) */}
+        <main className="relative z-10 flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12 sm:space-y-16 w-full">
 
-        {/* 4. Guiding Purpose: Mission & Vision */}
-        <MadrasaPublicMissionVision
-          mission={profile.mission}
-          vision={profile.vision}
-          theme={theme}
-        />
+          {/* 3. About Our Madrasa & Summary */}
+          <MadrasaPublicAbout
+            madrasaName={madrasa.name}
+            introduction={profile.introduction}
+            generatedSummary={profile.generatedSummary}
+            theme={theme}
+          />
 
-        <IslamicSectionDivider />
+          <IslamicSectionDivider variant="gold" />
 
-        {/* 5. Academic Curriculum & Institutional Conduct */}
-        <MadrasaPublicCurriculum
-          syllabusInfo={profile.syllabusInfo}
-          rulesAndRegulations={profile.rulesAndRegulations}
-          curriculum={profile.curriculum}
-          theme={theme}
-        />
+          {/* 4. Guiding Purpose: Mission & Vision */}
+          <MadrasaPublicMissionVision
+            mission={profile.mission}
+            vision={profile.vision}
+            theme={theme}
+          />
 
-        {/* 6. Living Academic Statistics */}
-        {profile.stats ? (
-          <>
-            <IslamicSectionDivider />
-            <MadrasaPublicStats
-              stats={profile.stats}
-              theme={theme}
-            />
-          </>
-        ) : null}
+          <IslamicSectionDivider variant="gold" />
 
-        {/* 7. Scholarly Faculty & Leadership */}
-        {hasStaff && profile.staff ? (
-          <>
-            <IslamicSectionDivider />
-            <MadrasaPublicStaff
-              staff={profile.staff}
-              theme={theme}
-            />
-          </>
-        ) : null}
+          {/* 5. Academic Curriculum & Institutional Conduct */}
+          <MadrasaPublicCurriculum
+            syllabusInfo={profile.syllabusInfo}
+            rulesAndRegulations={profile.rulesAndRegulations}
+            curriculum={profile.curriculum}
+            theme={theme}
+          />
 
-        {/* 7.2. Executive Committee & Board of Management */}
-        {hasExecutive && profile.executiveMembers ? (
-          <>
-            <IslamicSectionDivider />
-            <MadrasaPublicExecutive
-              executiveMembers={profile.executiveMembers}
-              theme={theme}
-            />
-          </>
-        ) : null}
+          {/* 6. Living Academic Statistics */}
+          {profile.stats ? (
+            <>
+              <IslamicSectionDivider variant="gold" />
+              <MadrasaPublicStats
+                stats={profile.stats}
+                theme={theme}
+              />
+            </>
+          ) : null}
 
-        {/* 7.5. Undergraduate & Alumni Hub */}
-        {hasAlumni ? (
-          <>
-            <IslamicSectionDivider />
-            <MadrasaPublicAlumni
-              madrasaCode={madrasa.code || slug!}
-              madrasaName={madrasa.name}
-              theme={theme}
-            />
-          </>
-        ) : null}
+          {/* 7. Scholarly Faculty & Leadership */}
+          {hasStaff && profile.staff ? (
+            <>
+              <IslamicSectionDivider variant="gold" />
+              <MadrasaPublicStaff
+                staff={profile.staff}
+                theme={theme}
+              />
+            </>
+          ) : null}
 
-        {/* 8. Upcoming Institutional Events */}
-        {hasEvents ? (
-          <>
-            <IslamicSectionDivider />
-            <MadrasaPublicEvents
-              events={profile.events}
-              theme={theme}
-            />
-          </>
-        ) : null}
+          {/* 7.2. Executive Committee & Board of Management */}
+          {hasExecutive && profile.executiveMembers ? (
+            <>
+              <IslamicSectionDivider variant="gold" />
+              <MadrasaPublicExecutive
+                executiveMembers={profile.executiveMembers}
+                theme={theme}
+              />
+            </>
+          ) : null}
 
-        {/* 9. Institutional Circulars & Notices */}
-        {hasNotices ? (
-          <>
-            <IslamicSectionDivider />
-            <MadrasaPublicNotices
-              notices={profile.notices}
-              theme={theme}
-            />
-          </>
-        ) : null}
+          {/* 7.5. Undergraduate & Alumni Hub */}
+          {hasAlumni ? (
+            <>
+              <IslamicSectionDivider variant="gold" />
+              <MadrasaPublicAlumni
+                madrasaCode={madrasa.code || slug!}
+                madrasaName={madrasa.name}
+                theme={theme}
+              />
+            </>
+          ) : null}
 
-        <IslamicSectionDivider />
+          {/* 8. Upcoming Institutional Events */}
+          {hasEvents ? (
+            <>
+              <IslamicSectionDivider variant="gold" />
+              <MadrasaPublicEvents
+                events={profile.events}
+                theme={theme}
+              />
+            </>
+          ) : null}
 
-        {/* 8. Admissions Callout Banner */}
-        <MadrasaPublicAdmissionsCTA
-          slug={slug!}
-          theme={theme}
-          hasActiveAdmissions={hasActiveAdmissions}
-          activeIntakeName={firstActiveIntake?.name}
-          activeAcademicYear={firstActiveIntake?.academicYear}
-        />
+          {/* 9. Institutional Circulars & Notices */}
+          {hasNotices ? (
+            <>
+              <IslamicSectionDivider variant="gold" />
+              <MadrasaPublicNotices
+                notices={profile.notices}
+                theme={theme}
+              />
+            </>
+          ) : null}
 
-        <IslamicSectionDivider />
+          <IslamicSectionDivider variant="gold" />
 
-        {/* 9. Contact Directory & Campus Location */}
-        <MadrasaPublicContact
-          madrasaName={madrasa.name}
-          address={profile.address}
-          contactPhone={profile.contactPhone}
-          contactEmail={profile.contactEmail}
-          theme={theme}
-        />
+          {/* 8. Admissions Callout Banner */}
+          <MadrasaPublicAdmissionsCTA
+            slug={slug!}
+            theme={theme}
+            hasActiveAdmissions={hasActiveAdmissions}
+            activeIntakeName={firstActiveIntake?.name}
+            activeAcademicYear={firstActiveIntake?.academicYear}
+          />
 
-      </main>
+          <IslamicSectionDivider variant="gold" />
+
+          {/* 9. Contact Directory & Campus Location */}
+          <MadrasaPublicContact
+            madrasaName={madrasa.name}
+            address={profile.address}
+            contactPhone={profile.contactPhone}
+            contactEmail={profile.contactEmail}
+            theme={theme}
+          />
+
+        </main>
+      </div>
 
       {/* 10. Institutional Footer */}
       <MadrasaPublicFooter

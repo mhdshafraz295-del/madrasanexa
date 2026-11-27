@@ -655,9 +655,12 @@ export default function DashboardPage() {
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   {!item.isRead ? (
-                    <span className="w-2 h-2 rounded-full bg-[#10B981] shrink-0" title="Unread" />
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-black bg-emerald-600 text-white uppercase tracking-wider shrink-0 shadow-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      NEW
+                    </span>
                   ) : (
-                    <span className="w-2 h-2 rounded-full bg-slate-200 shrink-0" title="Read" />
+                    <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" title="Read" />
                   )}
 
                   {item.priority === 'URGENT' ? (

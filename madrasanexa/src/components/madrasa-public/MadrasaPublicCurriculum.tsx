@@ -95,18 +95,17 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 px-4">
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-3 bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)] text-[#6B6A45]">
-          <BookOpen className="w-3.5 h-3.5 text-[#8C8A58]" />
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-3 public-section-badge">
+          <BookOpen className="w-3.5 h-3.5" />
           <span>Curriculum & Academic Standards</span>
         </div>
         <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight mb-3 text-[#232215]"
-          style={{ color: theme.headingColor || undefined }}
+          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight mb-3 public-night-h2"
         >
           Educational Pathways & Syllabus
         </h2>
-        <div className="w-24 h-1 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] mx-auto rounded-full" />
-        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto mt-3 leading-relaxed">
+        <div className="w-24 h-1 bg-gradient-to-r from-[#85845C] via-[#DFC076] to-[#85845C] mx-auto rounded-full" />
+        <p className="text-xs sm:text-sm max-w-2xl mx-auto mt-3 leading-relaxed public-night-subtext">
           Comprehensive, structured Islamic education combining sacred classical sciences, Quranic mastery, and recognized academic curricula.
         </p>
       </div>

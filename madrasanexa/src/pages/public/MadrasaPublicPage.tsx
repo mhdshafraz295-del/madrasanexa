@@ -168,6 +168,7 @@ export const MadrasaPublicPage: React.FC = () => {
         hasActiveAdmissions={hasActiveAdmissions}
         activeIntakeName={firstActiveIntake?.name}
         activeAcademicYear={firstActiveIntake?.academicYear}
+        publishedProgramCount={profile.curriculum?.programmes?.filter((p) => p.isPublished).length || 0}
       />
 
       {/* Main Content Area */}
@@ -176,8 +177,8 @@ export const MadrasaPublicPage: React.FC = () => {
         {/* 2.7. Live Hijri Date & Sacred Knowledge Wisdom Strip */}
         <MadrasaPublicKnowledgeStrip theme={theme} className="rounded-2xl" />
 
-        {/* 2.8. Academic Pathways & Sacred Sciences (4-Column Feature Cards) */}
-        <MadrasaPublicDisciplines theme={theme} />
+        {/* 2.8. Academic Pathways & Disciplines (Real Published Programs Only) */}
+        <MadrasaPublicDisciplines curriculum={profile.curriculum} theme={theme} />
 
         {/* 3. About Our Madrasa (Split Emerald Left Panel + Soft Cream 2x2 Real Data Grid) */}
         <MadrasaPublicAbout

@@ -78,7 +78,8 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-102"
                       loading="lazy"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) parent.style.display = 'none';
                       }}
                     />
                   </div>
@@ -159,7 +160,8 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
                   alt={selectedNotice.title}
                   className="w-full h-auto max-h-96 object-contain"
                   onError={(e) => {
-                    e.currentTarget.style.display = 'none';
+                    const parent = e.currentTarget.parentElement;
+                    if (parent) parent.style.display = 'none';
                   }}
                 />
               </div>

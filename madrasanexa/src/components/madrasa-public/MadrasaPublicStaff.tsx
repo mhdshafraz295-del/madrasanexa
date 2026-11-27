@@ -58,47 +58,37 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
                   : 'hover:-translate-y-1'
               }`}
             >
-              {/* 1. Individual Photograph Container */}
-              <div className="relative w-full aspect-square bg-[#F5F5F1] overflow-hidden border-b border-[#C5A059]/30">
-                {member.photoUrl ? (
-                  <>
-                    <img
-                      src={member.photoUrl}
-                      alt={member.fullName}
-                      loading="lazy"
-                      className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-104"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.parentElement?.querySelector('.staff-fallback-avatar');
-                        if (fallback) (fallback as HTMLElement).style.display = 'flex';
-                      }}
-                    />
-                    <div className="staff-fallback-avatar hidden w-full h-full flex-col items-center justify-center bg-[#0B3B2C] text-white p-6">
-                      <div className="w-20 h-20 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-2xl font-serif font-bold tracking-wider text-white shadow-inner mb-3">
-                        {initials || <Users className="w-8 h-8 text-white" />}
-                      </div>
-                      <span className="text-xs uppercase tracking-widest text-[#DFC076] font-bold">
-                        Faculty Profile
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-[#0B3B2C] text-white p-6">
-                    <div className="w-20 h-20 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-2xl font-serif font-bold tracking-wider text-white shadow-inner mb-3">
-                      {initials || <Users className="w-8 h-8 text-white" />}
-                    </div>
-                    <span className="text-xs uppercase tracking-widest text-[#DFC076] font-bold">
-                      Faculty Profile
-                    </span>
-                  </div>
-                )}
+              {/* 1. Optional Individual Photograph Container (Collapses cleanly if missing or error) */}
+              {member.photoUrl ? (
+                <div className="staff-photo-container relative w-full aspect-[4/3] bg-slate-50 overflow-hidden border-b border-[#E5E0D5]">
+                  <img
+                    src={member.photoUrl}
+                    alt={member.fullName}
+                    loading="lazy"
+                    className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-104"
+                    onError={(e) => {
+                      const container = e.currentTarget.closest('.staff-photo-container');
+                      if (container) (container as HTMLElement).style.display = 'none';
+                      const fallback = e.currentTarget.closest('.group')?.querySelector('.staff-inline-emblem');
+                      if (fallback) (fallback as HTMLElement).classList.remove('hidden');
+                    }}
+                  />
+                  {/* Subtle Gold Accent Band */}
+                  <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent opacity-80" />
+                </div>
+              ) : null}
 
-                {/* Subtle Gold Accent Band */}
-                <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent opacity-80" />
-              </div>
+              {/* 2. Core Identity (Refined Content-First Layout) */}
+              <div className="p-6 pb-5 flex flex-col flex-1">
+                {/* Fallback Emblem Monogram (Rendered when no photo or on photo error) */}
+                <div
+                  className={`staff-inline-emblem w-14 h-14 rounded-2xl bg-[#FAF8F3] border border-[#C5A059]/40 text-[#0B3B2C] font-bold font-serif flex items-center justify-center shadow-2xs mb-4 shrink-0 transition-transform duration-300 group-hover:scale-105 ${
+                    member.photoUrl ? 'hidden' : ''
+                  }`}
+                >
+                  <span className="text-lg tracking-wider text-[#0B3B2C]">{initials || <Users className="w-6 h-6 text-[#0B3B2C]" />}</span>
+                </div>
 
-              {/* 2. Core Identity (Visible At All Times) */}
-              <div className="p-6 pb-4 flex flex-col flex-1">
                 {/* Staff Full Name */}
                 <h3
                   className="text-lg sm:text-xl font-serif font-bold tracking-tight mb-1 text-[#252525]"

@@ -212,7 +212,8 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                       className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover/cover:scale-104"
                       loading="lazy"
                       onError={(e) => {
-                        e.currentTarget.style.display = 'none';
+                        const parent = e.currentTarget.parentElement;
+                        if (parent) parent.style.display = 'none';
                       }}
                     />
 
@@ -277,6 +278,10 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                               alt={item.img.caption || `${event.title} - Photo ${item.originalIdx + 1}`}
                               className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-108"
                               loading="lazy"
+                              onError={(e) => {
+                                const parent = e.currentTarget.parentElement;
+                                if (parent) parent.style.display = 'none';
+                              }}
                             />
 
                             {/* +N Overlay on the 4th thumbnail when extra hidden photos exist */}
@@ -296,12 +301,7 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                     </div>
                   )}
                 </div>
-              ) : (
-                <div className="w-full h-36 bg-[#504F34] rounded-xl p-4 flex flex-col items-center justify-center text-white shrink-0">
-                  <Calendar className="w-8 h-8 text-[#D4AF37] mb-2" />
-                  <span className="text-xs uppercase font-bold tracking-wider text-white/90">Institutional Event</span>
-                </div>
-              )}
+              ) : null}
 
               {/* Event Body */}
               <div className="flex-1 flex flex-col justify-between pt-1">

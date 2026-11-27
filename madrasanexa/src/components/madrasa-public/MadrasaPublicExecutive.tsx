@@ -351,14 +351,25 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                         <div className="w-[220px] xl:w-[250px] shrink-0 p-3 flex items-center justify-center bg-gradient-to-r from-transparent to-[#F8F7F2]/60 dark:to-transparent">
                           <div className="w-full h-full rounded-2xl overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D] border border-[#E2E0D0]/80 dark:border-[#242936] relative shadow-inner">
                             {member.photoUrl ? (
-                              <img
-                                src={member.photoUrl}
-                                alt={member.fullName}
-                                className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
-                                loading="eager"
-                              />
+                              <>
+                                <img
+                                  src={member.photoUrl}
+                                  alt={member.fullName}
+                                  className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
+                                  loading="eager"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    const fb = e.currentTarget.parentElement?.querySelector('.exec-fallback-avatar');
+                                    if (fb) (fb as HTMLElement).style.display = 'flex';
+                                  }}
+                                />
+                                <div className="exec-fallback-avatar hidden w-full h-full flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#0B3B2C]">
+                                  <span className="text-3xl font-bold font-serif">{getInitials(member.fullName)}</span>
+                                  <User className="w-6 h-6 mt-1.5 opacity-40" />
+                                </div>
+                              </>
                             ) : (
-                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] dark:from-[#1C222D] dark:to-[#242936] text-[#6B6A45] dark:text-[#84CC16]">
+                              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#0B3B2C]">
                                 <span className="text-3xl font-bold font-serif">{getInitials(member.fullName)}</span>
                                 <User className="w-6 h-6 mt-1.5 opacity-40" />
                               </div>
@@ -370,14 +381,25 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                       /* COLLAPSED CARD CONTENT */
                       <>
                         {member.photoUrl ? (
-                          <img
-                            src={member.photoUrl}
-                            alt={member.fullName}
-                            className="w-full h-full object-cover object-top brightness-90 group-hover:brightness-100 group-hover:scale-105 transition-all duration-500"
-                            loading="lazy"
-                          />
+                          <>
+                            <img
+                              src={member.photoUrl}
+                              alt={member.fullName}
+                              className="w-full h-full object-cover object-top brightness-90 group-hover:brightness-100 group-hover:scale-105 transition-all duration-500"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                                const fb = e.currentTarget.parentElement?.querySelector('.exec-fallback-mini');
+                                if (fb) (fb as HTMLElement).style.display = 'flex';
+                              }}
+                            />
+                            <div className="exec-fallback-mini hidden w-full h-full flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#0B3B2C]">
+                              <span className="text-xl font-bold font-serif">{getInitials(member.fullName)}</span>
+                              <User className="w-4 h-4 mt-1 opacity-50" />
+                            </div>
+                          </>
                         ) : (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#6B6A45]">
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#0B3B2C]">
                             <span className="text-xl font-bold font-serif">{getInitials(member.fullName)}</span>
                             <User className="w-4 h-4 mt-1 opacity-50" />
                           </div>
@@ -435,14 +457,25 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
               {/* Portrait Top Frame */}
               <div className="relative h-60 sm:h-72 w-full overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D]">
                 {activeCommitteeMember.photoUrl ? (
-                  <img
-                    src={activeCommitteeMember.photoUrl}
-                    alt={activeCommitteeMember.fullName}
-                    className="w-full h-full object-cover object-top"
-                    loading="eager"
-                  />
+                  <>
+                    <img
+                      src={activeCommitteeMember.photoUrl}
+                      alt={activeCommitteeMember.fullName}
+                      className="w-full h-full object-cover object-top"
+                      loading="eager"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fb = e.currentTarget.parentElement?.querySelector('.exec-active-fallback');
+                        if (fb) (fb as HTMLElement).style.display = 'flex';
+                      }}
+                    />
+                    <div className="exec-active-fallback hidden w-full h-full flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#0B3B2C]">
+                      <span className="text-4xl font-serif font-bold">{getInitials(activeCommitteeMember.fullName)}</span>
+                      <User className="w-7 h-7 mt-2 opacity-40" />
+                    </div>
+                  </>
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] dark:from-[#1C222D] dark:to-[#242936] text-[#6B6A45] dark:text-[#84CC16]">
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#0B3B2C]">
                     <span className="text-4xl font-serif font-bold">{getInitials(activeCommitteeMember.fullName)}</span>
                     <User className="w-7 h-7 mt-2 opacity-40" />
                   </div>
@@ -541,6 +574,9 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                                 src={member.photoUrl}
                                 alt={member.fullName}
                                 className="w-full h-full object-cover object-top"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
                               />
                             ) : (
                               <span className="text-[11px] font-bold text-[#6B6A45]">

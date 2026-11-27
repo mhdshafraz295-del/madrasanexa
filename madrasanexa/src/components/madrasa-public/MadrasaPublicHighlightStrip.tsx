@@ -9,6 +9,8 @@ interface MadrasaPublicHighlightStripProps {
   hasActiveAdmissions: boolean;
   activeIntakeName?: string;
   activeAcademicYear?: string | number;
+  publishedProgramCount?: number;
+  curriculumScope?: string;
 }
 
 export const MadrasaPublicHighlightStrip: React.FC<MadrasaPublicHighlightStripProps> = ({
@@ -16,8 +18,15 @@ export const MadrasaPublicHighlightStrip: React.FC<MadrasaPublicHighlightStripPr
   hasActiveAdmissions,
   activeIntakeName,
   activeAcademicYear,
+  publishedProgramCount,
+  curriculumScope,
 }) => {
   const hijri = formatHijriDate();
+  const scopeLabel =
+    curriculumScope ||
+    (publishedProgramCount && publishedProgramCount > 0
+      ? `${publishedProgramCount} Academic Track${publishedProgramCount > 1 ? 's' : ''}`
+      : 'Islamic & Arabic Studies');
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 relative z-20">
@@ -65,7 +74,7 @@ export const MadrasaPublicHighlightStrip: React.FC<MadrasaPublicHighlightStripPr
                 Curricula Scope
               </span>
               <span className="text-xs sm:text-sm font-serif font-bold text-[#1C2826] truncate block">
-                Hifz, Alim & Tajweed
+                {scopeLabel}
               </span>
             </div>
           </div>

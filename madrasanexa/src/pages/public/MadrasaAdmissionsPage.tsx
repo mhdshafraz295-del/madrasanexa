@@ -64,6 +64,25 @@ export const MadrasaAdmissionsPage: React.FC = () => {
   const [submissionResult, setSubmissionResult] = useState<ApplicationSubmissionResult | null>(null);
   const [copiedRef, setCopiedRef] = useState(false);
 
+  // Derive Academic Sections belonging strictly to the active madrasa (top-level hook)
+  const academicSectionsList = React.useMemo(() => {
+    if (!data) return [];
+    if (data.availableAcademicSections && data.availableAcademicSections.length > 0) {
+      return data.availableAcademicSections;
+    }
+    // Fallback extraction if sections were scoped through classes
+    const map = new Map<string, { id: string; name: string; code?: string | null }>();
+    for (const cls of data.availableClasses || []) {
+      if (cls.academicSection && !map.has(cls.academicSection.id)) {
+        map.set(cls.academicSection.id, {
+          id: cls.academicSection.id,
+          name: cls.academicSection.name,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [data]);
+
   // Ensure public admissions portal strictly stays in clean Light Mode
   useEffect(() => {
     document.documentElement.classList.remove('dark');
@@ -256,29 +275,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
   const {
     madrasa,
     activeAdmissionPeriods = [],
-    availableAcademicSections = [],
-    availableClasses = [],
   } = data;
   const theme = resolvePublicTheme(data.theme);
-  const primaryColor = theme.primaryBtnBg || '#504F34';
-
-  // Derive Academic Sections belonging strictly to the active madrasa
-  const academicSectionsList = React.useMemo(() => {
-    if (availableAcademicSections && availableAcademicSections.length > 0) {
-      return availableAcademicSections;
-    }
-    // Fallback extraction if sections were scoped through classes
-    const map = new Map<string, { id: string; name: string; code?: string | null }>();
-    for (const cls of availableClasses) {
-      if (cls.academicSection && !map.has(cls.academicSection.id)) {
-        map.set(cls.academicSection.id, {
-          id: cls.academicSection.id,
-          name: cls.academicSection.name,
-        });
-      }
-    }
-    return Array.from(map.values());
-  }, [availableAcademicSections, availableClasses]);
+  const primaryColor = theme.primaryBtnBg || '#0B3B2C';
+  const effectiveHeroImage = data.heroImageUrl || '/assest/images/bg.login.png';
 
   return (
     <div
@@ -338,27 +338,33 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Banner with Islamic Pattern & Themed Scrim */}
+      {/* Hero Banner with Clear, Luminous Mosque Architecture */}
       <section
-        className={`relative overflow-hidden text-white py-16 sm:py-22 admissions-hero-banner print:hidden ${
+        className={`relative overflow-hidden text-white py-16 sm:py-24 admissions-hero-banner print:hidden ${
           submissionResult ? 'print:hidden' : ''
         }`}
         style={{
           backgroundColor: theme.heroOverlay || '#0B3B2C',
-          backgroundImage: data.heroImageUrl
-            ? `linear-gradient(to bottom, rgba(11, 59, 44, 0.78) 0%, rgba(11, 59, 44, 0.90) 100%), url(${data.heroImageUrl})`
-            : `linear-gradient(to bottom, rgba(11, 59, 44, 0.85) 0%, rgba(11, 59, 44, 0.95) 100%)`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
         }}
       >
-        {/* Subtle Islamic Lattice Motif */}
+        {/* Background Hero Image (Clear, High-Clarity Architecture) */}
         <div
-          className="absolute inset-0 opacity-[0.06] pointer-events-none"
+          className="absolute inset-0 bg-cover bg-center transition-transform duration-700"
+          style={{ backgroundImage: `url(${effectiveHeroImage})` }}
+        />
+
+        {/* Luminous Scrim Overlay: unobtrusive, keeps mosque architecture clear while ensuring readable white text */}
+        <div
+          className="absolute inset-0"
           style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l15 15-15 15-15-15L30 0zm0 30l15 15-15 15-15-15 15-15zM0 30l15-15 15 15-15 15L0 30zm30 0l15-15 15 15-15 15-15-15z' fill='%23FFFFFF' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-            backgroundSize: '48px 48px',
+            backgroundImage: `radial-gradient(circle at 50% 30%, rgba(212, 175, 55, 0.15) 0%, transparent 65%), linear-gradient(to bottom, rgba(11, 59, 44, 0.55) 0%, rgba(11, 59, 44, 0.72) 100%)`,
           }}
+        />
+
+        {/* Subtle Geometric Pattern Blend */}
+        <div
+          className="absolute inset-0 bg-islamic-diamond-pattern pointer-events-none opacity-10"
+          aria-hidden="true"
         />
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -374,7 +380,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
             Admissions at {madrasa.name}
           </h1>
 
-          <p className="text-[#F5F5F1] text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-8 break-words">
+          <p className="text-[#F5F5F1] text-sm sm:text-base max-w-2xl mx-auto leading-relaxed mb-8 break-words drop-shadow-xs">
             {data.heroSubtitle ||
               'Welcome to our online enrollment portal. Review currently open intake cycles, eligibility standards, and submit your admission application below.'}
           </p>
@@ -384,11 +390,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleOpenApplication(activeAdmissionPeriods[0])}
-                className="inline-flex items-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-white bg-[#0B3B2C] hover:bg-[#07281D] border border-[#DFC076]/40 transition-all shadow-lg hover:scale-102 active:scale-98 cursor-pointer"
+                className="inline-flex items-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-xl font-bold text-xs sm:text-sm uppercase tracking-wider text-[#1C2826] bg-gradient-to-r from-[#C5A059] via-[#DFC076] to-[#C5A059] hover:from-[#B58D3D] hover:via-[#C5A059] hover:to-[#B58D3D] border border-[#F0D999]/80 shadow-md hover:shadow-xl transition-all hover:scale-102 active:scale-98 cursor-pointer"
               >
-                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-[#DFC076]" />
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-[#1C2826]" />
                 <span>Apply for Open Intake</span>
-                <ChevronRight className="w-4 h-4 text-[#DFC076]" />
+                <ChevronRight className="w-4 h-4 text-[#1C2826]" />
               </button>
             </div>
           )}

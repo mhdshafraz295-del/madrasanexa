@@ -18,11 +18,8 @@ export const MadrasaPublicContact: React.FC<MadrasaPublicContactProps> = ({
   return (
     <section
       id="contact"
-      className="scroll-mt-28 bg-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-[#E5E0D5] shadow-xs relative overflow-hidden"
+      className="scroll-mt-28 bg-white rounded-3xl p-6 sm:p-10 lg:p-12 border-0 shadow-xs relative overflow-hidden"
     >
-      {/* Top Emerald/Gold Accent Strip */}
-      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
       {/* Section Header */}
       <div className="max-w-2xl mb-8 sm:mb-10">
         <div className="inline-flex items-center space-x-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2.5 px-3.5 py-1.5 rounded-full bg-[#FAF8F3] border border-[#C5A059]/40 text-[#0B3B2C] shadow-2xs">
@@ -40,7 +37,7 @@ export const MadrasaPublicContact: React.FC<MadrasaPublicContactProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7">
 
         {/* Campus Address */}
-        <div className="flex items-start space-x-4 p-5 sm:p-6 rounded-2xl bg-[#FDFCF9] border border-[#E5E0D5] shadow-2xs transition-all duration-300 hover:border-[#C5A059]/60 hover:shadow-md hover:-translate-y-1 group">
+        <div className="flex items-start space-x-4 p-5 sm:p-6 rounded-2xl bg-[#FDFCF9] border-0 shadow-2xs transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
           <div className="w-11 h-11 rounded-xl bg-[#0B3B2C] border border-[#C5A059]/40 flex items-center justify-center text-[#DFC076] shrink-0 shadow-2xs transition-transform duration-300 group-hover:scale-105">
             <MapPin className="w-5 h-5 text-[#DFC076]" />
           </div>
@@ -55,7 +52,7 @@ export const MadrasaPublicContact: React.FC<MadrasaPublicContactProps> = ({
         </div>
 
         {/* Official Telephone */}
-        <div className="flex items-start space-x-4 p-5 sm:p-6 rounded-2xl bg-[#FDFCF9] border border-[#E5E0D5] shadow-2xs transition-all duration-300 hover:border-[#C5A059]/60 hover:shadow-md hover:-translate-y-1 group">
+        <div className="flex items-start space-x-4 p-5 sm:p-6 rounded-2xl bg-[#FDFCF9] border-0 shadow-2xs transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
           <div className="w-11 h-11 rounded-xl bg-[#0B3B2C] border border-[#C5A059]/40 flex items-center justify-center text-[#DFC076] shrink-0 shadow-2xs transition-transform duration-300 group-hover:scale-105">
             <Phone className="w-5 h-5 text-[#DFC076]" />
           </div>
@@ -78,7 +75,7 @@ export const MadrasaPublicContact: React.FC<MadrasaPublicContactProps> = ({
         </div>
 
         {/* Official Email */}
-        <div className="flex items-start space-x-4 p-5 sm:p-6 rounded-2xl bg-[#FDFCF9] border border-[#E5E0D5] shadow-2xs transition-all duration-300 hover:border-[#C5A059]/60 hover:shadow-md hover:-translate-y-1 group">
+        <div className="flex items-start space-x-4 p-5 sm:p-6 rounded-2xl bg-[#FDFCF9] border-0 shadow-2xs transition-all duration-300 hover:shadow-md hover:-translate-y-1 group">
           <div className="w-11 h-11 rounded-xl bg-[#0B3B2C] border border-[#C5A059]/40 flex items-center justify-center text-[#DFC076] shrink-0 shadow-2xs transition-transform duration-300 group-hover:scale-105">
             <Mail className="w-5 h-5 text-[#DFC076]" />
           </div>

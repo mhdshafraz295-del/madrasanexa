@@ -19,16 +19,17 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
     <section id="notices" className="scroll-mt-28 public-section-enter">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2 px-3.5 py-1.5 rounded-full public-section-badge">
-          <BellRing className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
+          <BellRing className="w-3.5 h-3.5 text-[#85845C]" />
           <span>Official Announcements</span>
         </div>
         <h2
-          className="text-2xl sm:text-4xl font-serif font-bold tracking-tight mb-3 public-night-h2"
+          className="text-2xl sm:text-4xl font-serif font-bold tracking-tight mb-3 text-[#252525]"
+          style={{ color: theme.headingColor || '#252525' }}
         >
           Institutional Circulars & Notices
         </h2>
-        <p className="text-sm sm:text-base max-w-xl mx-auto public-night-subtext">
+        <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
           Official communiqués and guidelines issued by the madrasa administration.
         </p>
         <div className="w-16 h-1 bg-gradient-to-r from-[#85845C] via-[#DFC076] to-[#85845C] mx-auto rounded-full mt-3" />

@@ -17,7 +17,7 @@ interface MadrasaPublicExecutiveProps {
 
 export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
   executiveMembers,
-  theme: _theme,
+  theme,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -143,16 +143,17 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 px-4">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-3 px-3.5 py-1.5 rounded-full public-section-badge">
-          <ShieldCheck className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#6B6A45] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#6B6A45]" />
           <span>Governance & Leadership</span>
         </div>
         <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight public-night-h2"
+          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#232215]"
+          style={{ color: theme.headingColor || undefined }}
         >
           Executive Committee & Board
         </h2>
-        <p className="mt-2.5 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl mx-auto public-night-subtext">
+        <p className="mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
           Guiding the institution with visionary leadership, steadfast Islamic stewardship, and devoted community governance.
         </p>
       </div>

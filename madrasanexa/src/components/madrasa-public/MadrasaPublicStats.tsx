@@ -16,7 +16,7 @@ interface StatItemConfig {
   accentColor: string;
 }
 
-export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, theme: _theme }) => {
+export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, theme }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [displayValues, setDisplayValues] = useState<{ [key: string]: number }>({
@@ -120,16 +120,17 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
       aria-label="Institutional Key Statistics"
     >
       <div className="text-center max-w-3xl mx-auto mb-10">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-3 px-3.5 py-1.5 rounded-full public-section-badge">
-          <Sparkles className="w-3.5 h-3.5" />
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
+          <Sparkles className="w-3.5 h-3.5 text-[#85845C]" />
           <span>Institution By Numbers</span>
         </div>
         <h2
-          className="text-2xl sm:text-3xl font-serif font-bold tracking-tight public-night-h2"
+          className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[#252525]"
+          style={{ color: theme.headingColor || '#252525' }}
         >
           Our Living Academic Community
         </h2>
-        <p className="mt-2 text-sm public-night-subtext">
+        <p className="mt-2 text-sm text-slate-600">
           Authentic institutional data reflecting our ongoing student enrollment and dedicated scholarly leadership.
         </p>
       </div>

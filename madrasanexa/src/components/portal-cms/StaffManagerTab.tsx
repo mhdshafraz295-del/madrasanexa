@@ -49,7 +49,21 @@ export const StaffManagerTab: React.FC<StaffManagerTabProps> = ({
     listUstadhs({ isActive: true, pageSize: 100 })
       .then((res) => {
         if (isMounted) {
-          setUstadhList(res.items || []);
+          const list = res.items || [];
+          setUstadhList(list);
+
+          // Prune any stale or deleted ustadh items from staffConfig that no longer exist
+          if (list.length > 0 && currentConfig.items.length > 0) {
+            const validIds = new Set(list.map((u) => u.id));
+            const hasStale = currentConfig.items.some((it) => it.ustadhId && !validIds.has(it.ustadhId));
+            if (hasStale) {
+              const cleanedItems = currentConfig.items.filter((it) => !it.ustadhId || validIds.has(it.ustadhId));
+              onChange({
+                ...currentConfig,
+                items: cleanedItems,
+              });
+            }
+          }
         }
       })
       .catch((err) => {

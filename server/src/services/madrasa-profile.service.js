@@ -362,9 +362,25 @@ export async function getTenantProfile(madrasaId) {
 
   let resolvedStaffJson = profile.staffJson;
   if (resolvedStaffJson && typeof resolvedStaffJson === 'object' && Array.isArray(resolvedStaffJson.items)) {
+    const ustadhIds = resolvedStaffJson.items.map((it) => it && it.ustadhId).filter(Boolean);
+    let validSet = new Set();
+    if (ustadhIds.length > 0) {
+      const validUstadhs = await prisma.ustadh.findMany({
+        where: { id: { in: ustadhIds }, madrasaId },
+        select: { id: true },
+      });
+      validSet = new Set(validUstadhs.map((u) => u.id));
+    }
+
     const items = [];
+    let hadStale = false;
     for (const item of resolvedStaffJson.items) {
       if (!item) continue;
+      // Filter out stale or deleted or cross-tenant Ustadh IDs so portal drafts load cleanly
+      if (item.ustadhId && !validSet.has(item.ustadhId)) {
+        hadStale = true;
+        continue;
+      }
       let photoUrl = item.photoUrl || null;
       if (item.photoFileId) {
         const file = await prisma.fileObject.findFirst({
@@ -378,6 +394,23 @@ export async function getTenantProfile(madrasaId) {
       items.push({ ...item, photoUrl });
     }
     resolvedStaffJson = { ...resolvedStaffJson, items };
+
+    // Auto-heal DB profile draft if stale Ustadhs were pruned on load
+    if (hadStale) {
+      try {
+        await prisma.madrasaProfile.update({
+          where: { madrasaId },
+          data: {
+            staffJson: {
+              ...profile.staffJson,
+              items: items.map(({ photoUrl, ...rest }) => rest),
+            },
+          },
+        });
+      } catch (err) {
+        console.warn('Failed to auto-heal stale staffJson items in madrasa profile:', err);
+      }
+    }
   }
 
   return {
@@ -406,31 +439,99 @@ export async function updateTenantProfile(madrasaId, data, userId = null) {
 
   if (data.staffJson !== undefined && data.staffJson !== null) {
     if (Array.isArray(data.staffJson.items)) {
-      const ustadhIds = data.staffJson.items.map((it) => it.ustadhId).filter(Boolean);
+      const ustadhIds = data.staffJson.items.map((it) => it && it.ustadhId).filter(Boolean);
+      let validSet = new Set();
       if (ustadhIds.length > 0) {
+        // Enforce strict tenant isolation: reject if any Ustadh belongs to another madrasa
+        const otherTenantUstadh = await prisma.ustadh.findFirst({
+          where: {
+            id: { in: ustadhIds },
+            NOT: { madrasaId },
+          },
+          select: { id: true },
+        });
+        if (otherTenantUstadh) {
+          throw new BadRequestError(`Ustadh ID ${otherTenantUstadh.id} is invalid or does not belong to this madrasa.`);
+        }
+
         const validUstadhs = await prisma.ustadh.findMany({
           where: { id: { in: ustadhIds }, madrasaId },
           select: { id: true },
         });
-        const validSet = new Set(validUstadhs.map((u) => u.id));
-        for (const uid of ustadhIds) {
-          if (!validSet.has(uid)) {
-            throw new BadRequestError(`Ustadh ID ${uid} is invalid or does not belong to this madrasa.`);
-          }
-        }
+        validSet = new Set(validUstadhs.map((u) => u.id));
       }
-      const photoFileIds = data.staffJson.items.map((it) => it.photoFileId).filter(Boolean);
+
+      // Filter out stale/deleted ustadh items so they don't block saving the portal
+      const cleanedItems = data.staffJson.items.filter((it) => {
+        if (!it) return false;
+        if (it.ustadhId && !validSet.has(it.ustadhId)) {
+          // Stale / deleted ustadh ID: prune cleanly without blocking unrelated saves
+          return false;
+        }
+        return true;
+      });
+
+      data.staffJson = {
+        ...data.staffJson,
+        items: cleanedItems,
+      };
+
+      const photoFileIds = cleanedItems.map((it) => it.photoFileId).filter(Boolean);
       if (photoFileIds.length > 0) {
+        // Enforce strict tenant isolation: reject if photo file belongs to another madrasa
+        const otherTenantFile = await prisma.fileObject.findFirst({
+          where: {
+            id: { in: photoFileIds },
+            NOT: { madrasaId },
+          },
+          select: { id: true },
+        });
+        if (otherTenantFile) {
+          throw new BadRequestError(`Photo file ID ${otherTenantFile.id} is invalid or does not belong to this madrasa.`);
+        }
+
         const validFiles = await prisma.fileObject.findMany({
           where: { id: { in: photoFileIds }, madrasaId },
           select: { id: true },
         });
         const validFileSet = new Set(validFiles.map((f) => f.id));
-        for (const fid of photoFileIds) {
-          if (!validFileSet.has(fid)) {
-            throw new BadRequestError(`Photo file ID ${fid} is invalid or does not belong to this madrasa.`);
-          }
+
+        // If file was deleted/stale, clear photoFileId gracefully
+        data.staffJson.items = cleanedItems.map((it) => ({
+          ...it,
+          photoFileId: it.photoFileId && validFileSet.has(it.photoFileId) ? it.photoFileId : null,
+        }));
+      }
+    }
+  }
+
+  if (data.noticesJson !== undefined && data.noticesJson !== null) {
+    if (Array.isArray(data.noticesJson)) {
+      const posterFileIds = data.noticesJson.map((n) => n && n.posterFileId).filter(Boolean);
+      if (posterFileIds.length > 0) {
+        // Enforce strict tenant isolation: reject if poster belongs to another madrasa
+        const otherTenantFile = await prisma.fileObject.findFirst({
+          where: {
+            id: { in: posterFileIds },
+            NOT: { madrasaId },
+          },
+          select: { id: true },
+        });
+        if (otherTenantFile) {
+          throw new BadRequestError(`Notice poster file ID ${otherTenantFile.id} is invalid or does not belong to this madrasa.`);
         }
+
+        const validFiles = await prisma.fileObject.findMany({
+          where: { id: { in: posterFileIds }, madrasaId },
+          select: { id: true },
+        });
+        const validFileSet = new Set(validFiles.map((f) => f.id));
+
+        // Clear deleted/stale posterFileId gracefully
+        data.noticesJson = data.noticesJson.map((n) => ({
+          ...n,
+          posterFileId: n.posterFileId && validFileSet.has(n.posterFileId) ? n.posterFileId : null,
+        }));
       }
     }
   }

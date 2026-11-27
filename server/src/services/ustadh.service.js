@@ -866,6 +866,21 @@ export async function deleteUstadh(madrasaId, ustadhId, userId) {
     await tx.ustadhAttendanceRecord.deleteMany({ where: { madrasaId: validTenantId, ustadhId } });
     await tx.ustadhSchedule.deleteMany({ where: { madrasaId: validTenantId, ustadhId } });
 
+    // 3b. Madrasa Profile Staff Section Cleanup
+    const profile = await tx.madrasaProfile.findUnique({ where: { madrasaId: validTenantId } });
+    if (profile?.staffJson && typeof profile.staffJson === 'object' && Array.isArray(profile.staffJson.items)) {
+      const updatedItems = profile.staffJson.items.filter((it) => it && it.ustadhId !== ustadhId);
+      await tx.madrasaProfile.update({
+        where: { madrasaId: validTenantId },
+        data: {
+          staffJson: {
+            ...profile.staffJson,
+            items: updatedItems,
+          },
+        },
+      });
+    }
+
     // 4. Portal User Account
     if (existing.userId) {
       await tx.ustadh.update({

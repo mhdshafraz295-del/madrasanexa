@@ -1567,20 +1567,24 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
 
       {/* Tab 5: Public Notices & Guardian Broadcast */}
       {activeTab === 'notices' && (
-        <div className="bg-white dark:bg-[#141820] rounded-2xl border border-slate-200/80 dark:border-[#242936] p-6 sm:p-8 space-y-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="glass-panel-gold rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#C5A059]/25">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-[#F9FAFB] tracking-tight">Public Notices & Guardian Broadcast</h2>
-              <p className="text-xs text-slate-500 dark:text-[#9CA3AF] mt-0.5">
-                Publish announcements on your portal and dispatch instant SMS / Email notifications to enrolled student guardians.
+              <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2 px-3 py-1 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_10px_rgba(197,160,89,0.15)] text-[#6B6A45]">
+                <BellRing className="w-3.5 h-3.5 text-[#8C8A58]" />
+                <span>Notices & Broadcasts</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-serif font-bold text-slate-900 tracking-tight">Public Notices & Guardian Broadcast</h2>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Publish announcements on your portal with custom graphics and dispatch instant SMS / Email notifications to enrolled student guardians.
               </p>
             </div>
             <button
               type="button"
               onClick={handleOpenAddNotice}
-              className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-700 hover:bg-emerald-800 text-white transition-colors shadow-sm shrink-0 self-start sm:self-auto"
+              className="glass-btn-admissions inline-flex items-center space-x-1.5 px-4 py-2.5 rounded-2xl text-xs font-bold text-white transition-all shadow-md hover:scale-102 cursor-pointer shrink-0 self-start sm:self-auto"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4 text-white" />
               <span>Create Notice</span>
             </button>
           </div>
@@ -1590,31 +1594,47 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
               {notices.map((nt) => (
                 <div
                   key={nt.id}
-                  className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
+                  className={`p-5 sm:p-6 rounded-2xl transition-all ${
                     nt.priority === 'URGENT'
-                      ? 'border-amber-200 dark:border-amber-500/30 bg-amber-50/30 dark:bg-amber-500/10'
-                      : 'border-slate-200 dark:border-[#242936] bg-white dark:bg-[#141820]'
-                  }`}
+                      ? 'glass-card-elevated border-amber-300 ring-1 ring-amber-400/40 shadow-[0_4px_20px_rgba(245,158,11,0.12)]'
+                      : 'glass-card-elevated'
+                  } flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4`}
                 >
                   <div className="flex items-start gap-4 max-w-2xl min-w-0">
-                    {nt.posterUrl && (
-                      <img
-                        src={nt.posterUrl}
-                        alt={nt.title}
-                        className="w-16 h-16 rounded-xl object-cover shrink-0 border border-slate-200 dark:border-[#242936] shadow-xs"
-                      />
+                    {nt.posterUrl ? (
+                      <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[#C5A059]/35 shadow-xs shrink-0 bg-white/80">
+                        <img
+                          src={nt.posterUrl}
+                          alt={nt.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-2xl bg-white/80 border border-[#C5A059]/30 flex items-center justify-center shrink-0 shadow-xs text-[#8C8A58]">
+                        <BellRing className="w-5 h-5" />
+                      </div>
                     )}
                     <div className="space-y-1.5 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <span className="text-[11px] font-mono text-slate-400 dark:text-[#9CA3AF]">{nt.postedAt}</span>
-                        {nt.priority === 'URGENT' && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-500/40">
+                        <span className="text-[11px] font-mono text-slate-500">{nt.postedAt}</span>
+                        {nt.priority === 'URGENT' ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
                             Urgent
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/90 text-[#6B6A45] border border-[#C5A059]/30 shadow-2xs">
+                            Standard
+                          </span>
+                        )}
+                        {nt.posterUrl && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-white/80 px-2 py-0.5 rounded-md border border-[#C5A059]/20">
+                            <ImageIcon className="w-3 h-3 text-[#8C8A58]" />
+                            <span>Graphic Attached</span>
                           </span>
                         )}
                       </div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-[#F9FAFB]">{nt.title}</h4>
-                      <p className="text-xs text-slate-600 dark:text-[#9CA3AF] leading-relaxed whitespace-pre-line line-clamp-3">
+                      <h4 className="text-sm sm:text-base font-serif font-bold text-slate-900">{nt.title}</h4>
+                      <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line line-clamp-3">
                         {nt.content}
                       </p>
                     </div>
@@ -1625,17 +1645,17 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                       type="button"
                       disabled={broadcastingId === nt.id}
                       onClick={() => setConfirmBroadcastNotice(nt)}
-                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-[#1C222D] hover:bg-emerald-100 dark:hover:bg-[#242936] text-emerald-800 dark:text-[#84CC16] border border-emerald-200 dark:border-[#84CC16]/30 transition-colors disabled:opacity-50"
+                      className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white/85 text-[#075E46] border border-[#C5A059]/35 hover:bg-white transition-all shadow-xs disabled:opacity-50 cursor-pointer"
                       title="Send notice to all registered student guardians via SMS and Email"
                     >
-                      <Send className="w-3.5 h-3.5 text-emerald-700 dark:text-[#84CC16]" />
+                      <Send className="w-3.5 h-3.5 text-[#075E46]" />
                       <span>{broadcastingId === nt.id ? 'Queuing Broadcast...' : 'Broadcast to Guardians'}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleOpenEditNotice(nt)}
-                      className="p-1.5 text-slate-400 hover:text-emerald-700 dark:hover:text-[#84CC16] transition-colors rounded-lg hover:bg-emerald-50 dark:hover:bg-[#1C222D]"
+                      className="p-2 text-slate-500 hover:text-[#075E46] transition-colors rounded-xl bg-white/80 border border-[#C5A059]/25 hover:bg-white shadow-2xs cursor-pointer"
                       title="Edit Notice"
                     >
                       <Pencil className="w-4 h-4" />
@@ -1644,7 +1664,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleRemoveNotice(nt.id)}
-                      className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                      className="p-2 text-slate-500 hover:text-rose-600 transition-colors rounded-xl bg-white/80 border border-[#C5A059]/25 hover:bg-white shadow-2xs cursor-pointer"
                       title="Delete Notice"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -1654,8 +1674,8 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="p-8 text-center border-2 border-dashed border-slate-200 rounded-xl">
-              <BellRing className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <div className="p-8 text-center border-2 border-dashed border-[#C5A059]/35 rounded-2xl bg-white/40">
+              <BellRing className="w-8 h-8 text-[#8C8A58]/60 mx-auto mb-2" />
               <p className="text-xs text-slate-500">No notices created yet. Click "Create Notice" to publish your first update.</p>
             </div>
           )}
@@ -2030,24 +2050,29 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
 
       {/* Add / Edit Notice Modal */}
       {showNoticeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl space-y-4 border border-slate-100 animate-in fade-in zoom-in-95 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900">
-                {editingNoticeId ? 'Edit Notice' : 'Create Public Notice'}
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4 animate-in fade-in duration-200">
+          <div className="glass-panel-gold rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[#C5A059]/25">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-8 h-8 rounded-xl bg-white/90 border border-[#C5A059]/35 shadow-xs flex items-center justify-center text-[#6B6A45]">
+                  <BellRing className="w-4 h-4 text-[#6B6A45]" />
+                </div>
+                <h3 className="text-base font-serif font-bold text-slate-900">
+                  {editingNoticeId ? 'Edit Public Notice' : 'Create Public Notice'}
+                </h3>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowNoticeModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-600 hover:bg-white/80 flex items-center justify-center transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                   Notice Title *
                 </label>
                 <input
@@ -2055,18 +2080,18 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                   value={newNoticeTitle}
                   onChange={(e) => setNewNoticeTitle(e.target.value)}
                   placeholder="e.g. Ramadan Schedule Adjustment"
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#C5A059]/30 bg-white/90 text-xs text-slate-900 focus:ring-2 focus:ring-[#C5A059] focus:outline-none shadow-xs"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                   Priority
                 </label>
                 <select
                   value={newNoticePriority}
                   onChange={(e) => setNewNoticePriority(e.target.value as 'NORMAL' | 'URGENT')}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#C5A059]/30 bg-white/90 text-xs text-slate-900 focus:ring-2 focus:ring-[#C5A059] focus:outline-none shadow-xs"
                 >
                   <option value="NORMAL">Normal Priority</option>
                   <option value="URGENT">Urgent Priority</option>
@@ -2074,7 +2099,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
                   Content / Announcement *
                 </label>
                 <textarea
@@ -2082,18 +2107,18 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                   value={newNoticeContent}
                   onChange={(e) => setNewNoticeContent(e.target.value)}
                   placeholder="Detailed text of the announcement."
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none leading-relaxed"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#C5A059]/30 bg-white/90 text-xs text-slate-900 focus:ring-2 focus:ring-[#C5A059] focus:outline-none leading-relaxed shadow-xs"
                 />
               </div>
 
               {/* Notice Poster Section */}
-              <div className="pt-2 border-t border-slate-100">
-                <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+              <div className="pt-2.5 border-t border-[#C5A059]/25">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                   Notice Poster / Graphic (Optional)
                 </label>
                 {noticePosterFeedback && (
                   <div
-                    className={`p-2 rounded-xl text-xs flex items-center justify-between mb-2 ${
+                    className={`p-2.5 rounded-xl text-xs flex items-center justify-between mb-2.5 ${
                       noticePosterFeedback.type === 'success'
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                         : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -2111,22 +2136,22 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                 )}
 
                 {noticePosterUrl ? (
-                  <div className="space-y-2">
-                    <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-50">
+                  <div className="space-y-2.5">
+                    <div className="relative aspect-video w-full rounded-2xl overflow-hidden border border-[#C5A059]/40 bg-white/80 shadow-[0_0_12px_rgba(197,160,89,0.15)]">
                       <img
                         src={noticePosterUrl}
                         alt="Notice Poster Preview"
                         className="w-full h-full object-cover"
                       />
                       {uploadingNoticePoster && (
-                        <div className="absolute inset-0 bg-white/70 backdrop-blur-xs flex items-center justify-center">
-                          <Loader2 className="w-6 h-6 text-emerald-600 animate-spin" />
+                        <div className="absolute inset-0 bg-white/80 backdrop-blur-xs flex items-center justify-center">
+                          <Loader2 className="w-6 h-6 text-[#6B6A45] animate-spin" />
                         </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">
-                        <Upload className="w-3.5 h-3.5" />
+                      <label className="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white/90 hover:bg-white text-slate-700 text-xs font-bold transition-all border border-[#C5A059]/30 shadow-xs">
+                        <Upload className="w-3.5 h-3.5 text-[#8C8A58]" />
                         <span>Replace Poster</span>
                         <input
                           type="file"
@@ -2142,7 +2167,7 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                         type="button"
                         disabled={uploadingNoticePoster}
                         onClick={() => setShowDeleteNoticePosterModal(true)}
-                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-colors disabled:opacity-50"
+                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-colors disabled:opacity-50 cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Remove Poster</span>
@@ -2156,16 +2181,16 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                       e.preventDefault();
                       if (e.dataTransfer.files?.[0]) handleNoticePosterFile(e.dataTransfer.files[0]);
                     }}
-                    className="border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-xl p-4 text-center transition-colors bg-slate-50/50"
+                    className="border-2 border-dashed border-[#C5A059]/35 hover:border-[#C5A059] rounded-2xl p-5 text-center transition-all bg-white/60 backdrop-blur-xs"
                   >
-                    <ImageIcon className="w-6 h-6 text-slate-400 mx-auto mb-1.5" />
-                    <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold transition-colors mb-1">
+                    <ImageIcon className="w-7 h-7 text-[#8C8A58] mx-auto mb-1.5" />
+                    <label className="cursor-pointer inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/90 text-[#6B6A45] hover:bg-white text-xs font-bold transition-all border border-[#C5A059]/35 shadow-xs mb-1">
                       {uploadingNoticePoster ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
-                        <Upload className="w-3.5 h-3.5" />
+                        <Upload className="w-3.5 h-3.5 text-[#8C8A58]" />
                       )}
-                      <span>{uploadingNoticePoster ? 'Uploading...' : 'Upload Poster'}</span>
+                      <span>{uploadingNoticePoster ? 'Uploading Poster...' : 'Upload Notice Poster'}</span>
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp"
@@ -2176,26 +2201,26 @@ export const MadrasaHomepageCmsPage: React.FC = () => {
                         }}
                       />
                     </label>
-                    <p className="text-[11px] text-slate-400">
-                      Drag & drop or click. Recommended: 16:9 ratio, max 5MB (JPG, PNG, WebP).
+                    <p className="text-[11px] text-slate-500">
+                      Drag & drop image or click to select. Recommended 16:9 ratio, max 5MB (JPG, PNG, WebP).
                     </p>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-end space-x-2.5 pt-3 border-t border-[#C5A059]/25">
               <button
                 type="button"
                 onClick={() => setShowNoticeModal(false)}
-                className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition-colors"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-white/80 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSaveNotice}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-700 text-white hover:bg-emerald-800 transition-colors shadow-sm"
+                className="glass-btn-admissions px-5 py-2.5 rounded-2xl text-xs font-bold text-white shadow-md hover:scale-102 transition-all cursor-pointer"
               >
                 {editingNoticeId ? 'Save Changes' : 'Add Notice'}
               </button>

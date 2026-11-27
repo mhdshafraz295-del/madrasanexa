@@ -51,13 +51,14 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
             >
               {/* Optional Notice Poster */}
               {notice.posterUrl ? (
-                <div className="w-full aspect-[16/9] bg-white/50 border-b border-[#C5A059]/30 shrink-0 overflow-hidden">
+                <div className="relative w-full aspect-[16/9] bg-white/50 border-b border-[#C5A059]/30 shrink-0 overflow-hidden group/poster">
                   <img
                     src={notice.posterUrl}
                     alt={notice.title}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-104"
+                    className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover/poster:scale-105"
                     loading="lazy"
                   />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
                 </div>
               ) : null}
 

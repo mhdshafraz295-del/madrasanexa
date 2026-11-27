@@ -17,7 +17,7 @@ interface MadrasaPublicExecutiveProps {
 
 export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
   executiveMembers,
-  theme,
+  theme: _theme,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -143,17 +143,15 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 px-4">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#6B6A45] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#6B6A45]" />
+        <div className="inline-flex items-center space-x-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0B3B2C] mb-2.5 px-3.5 py-1.5 rounded-full bg-[#FAF8F3] border border-[#C5A059]/40 shadow-2xs">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#C5A059]" />
           <span>Governance & Leadership</span>
         </div>
-        <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#232215]"
-          style={{ color: theme.headingColor || undefined }}
-        >
+        <h2 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-[#1C2826] mb-3">
           Executive Committee & Board
         </h2>
-        <p className="mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
+        <div className="w-16 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C] mx-auto rounded-full mb-3" />
+        <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
           Guiding the institution with visionary leadership, steadfast Islamic stewardship, and devoted community governance.
         </p>
       </div>
@@ -171,23 +169,16 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
             {leadershipMembers.map((leader) => (
               <div
                 key={leader.id}
-                className="glass-panel-gold rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col sm:flex-row relative bg-islamic-diamond-subtle hover:-translate-y-1"
+                className="bg-white rounded-2xl border border-[#E5E0D5] shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col sm:flex-row relative hover:-translate-y-1.5 group"
               >
-                {/* Background 8-point star watermark */}
-                <div
-                  className="absolute -top-6 -right-6 text-[#6B6A45]/5 pointer-events-none select-none"
-                  aria-hidden="true"
-                >
-                  <svg width="140" height="140" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2l2.4 2.4H18v3.6L20.4 10.4 22 12l-1.6 1.6-2.4 2.4V20h-3.6L12 22.4 9.6 20H6v-4L3.6 13.6 2 12l1.6-1.6L6 8V4.4h3.6L12 2z" />
-                  </svg>
-                </div>
+                {/* Top Accent Strip */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
 
                 {/* Left Content Pane */}
                 <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between space-y-4 relative z-10">
                   {/* Badges: Animated Antique Gold Leadership Crest Pill + Term Period */}
                   <div className="flex items-center flex-wrap gap-2">
-                    <span className="relative inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#B58D3D] via-[#DFC076] to-[#B58D3D] bg-[length:200%_100%] executive-gold-pill-shimmer text-[#1F1B0E] border border-[#F0D999]/80 shadow-[0_4px_16px_rgba(197,160,89,0.4)] overflow-hidden">
+                    <span className="relative inline-flex items-center space-x-1.5 px-3.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#B58D3D] via-[#DFC076] to-[#B58D3D] bg-[length:200%_100%] executive-gold-pill-shimmer text-[#1F1B0E] border border-[#F0D999]/80 shadow-xs overflow-hidden">
                       {/* Subtle continuous gold-sweep sheen overlay */}
                       <span
                         className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none executive-gold-pill-sheen"
@@ -197,8 +188,8 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                       <span className="relative z-10">{leader.position}</span>
                     </span>
                     {leader.termPeriod && (
-                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4F3EC] dark:bg-[#1C222D] border border-[#E2E0D0] dark:border-[#242936] text-slate-600 dark:text-[#D1D5DB]">
-                        <Calendar className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16]" />
+                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF8F3] border border-[#C5A059]/30 text-[#0B3B2C]">
+                        <Calendar className="w-3 h-3 text-[#C5A059]" />
                         <span>{leader.termPeriod}</span>
                       </span>
                     )}
@@ -206,8 +197,8 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
 
                   {/* Leadership Message / Quote */}
                   <div className="relative py-1">
-                    <Quote className="w-5 h-5 text-[#6B6A45]/20 dark:text-[#84CC16]/20 absolute -top-1 -left-1 pointer-events-none" />
-                    <p className="text-xs sm:text-sm leading-relaxed text-[#232215] dark:text-[#F9FAFB] font-medium italic pl-4 line-clamp-5">
+                    <Quote className="w-5 h-5 text-[#C5A059]/30 absolute -top-1 -left-1 pointer-events-none" />
+                    <p className="text-xs sm:text-sm leading-relaxed text-slate-700 font-medium italic pl-4 line-clamp-5">
                       {leader.messageOrBio
                         ? `"${leader.messageOrBio}"`
                         : '"Dedicated to uplifting Islamic scholarship, preserving sacred traditions, and guiding students and teachers with steadfast wisdom and community service."'}
@@ -215,13 +206,13 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                   </div>
 
                   {/* Name & Qualifications */}
-                  <div className="pt-2 border-t border-[#E2E0D0]/70 dark:border-[#242936]">
-                    <h3 className="text-lg sm:text-xl font-bold font-serif text-[#232215] dark:text-[#F9FAFB] tracking-tight">
+                  <div className="pt-2 border-t border-[#F0ECE1]">
+                    <h3 className="text-lg sm:text-xl font-bold font-serif text-[#1C2826] group-hover:text-[#0B3B2C] transition-colors tracking-tight">
                       {leader.fullName}
                     </h3>
                     {leader.qualification && (
-                      <div className="text-xs sm:text-sm font-semibold text-[#6B6A45] dark:text-[#84CC16] mt-0.5 flex items-center space-x-1.5">
-                        <Award className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
+                      <div className="text-xs sm:text-sm font-semibold text-[#0B3B2C] mt-0.5 flex items-center space-x-1.5">
+                        <Award className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
                         <span>{leader.qualification}</span>
                       </div>
                     )}
@@ -229,8 +220,8 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                 </div>
 
                 {/* Right Portrait Pane */}
-                <div className="w-full sm:w-[200px] md:w-[220px] lg:w-[230px] shrink-0 p-3 sm:p-3.5 flex items-center justify-center bg-gradient-to-r from-transparent to-[#F8F7F2]/60 dark:to-transparent">
-                  <div className="w-full h-56 sm:h-full min-h-[220px] rounded-2xl overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D] border border-[#E2E0D0]/80 dark:border-[#242936] relative shadow-inner">
+                <div className="w-full sm:w-[200px] md:w-[220px] lg:w-[230px] shrink-0 p-3 sm:p-3.5 flex items-center justify-center bg-gradient-to-r from-transparent to-[#FAF8F3]/60">
+                  <div className="w-full h-56 sm:h-full min-h-[220px] rounded-2xl overflow-hidden bg-[#FAF8F3] border border-[#E5E0D5] relative shadow-inner">
                     {leader.photoUrl ? (
                       <>
                         <img
@@ -271,9 +262,9 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
           {/* Subheader if Leadership Spotlight is also present */}
           {leadershipMembers.length > 0 && (
             <div className="text-center mb-6 sm:mb-8">
-              <span className="text-xs font-bold uppercase tracking-wider text-[#8C8A58]">
-                Board of Management & Committee Members
-              </span>
+              <div className="inline-flex items-center space-x-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0B3B2C] px-3.5 py-1.5 rounded-full bg-[#FAF8F3] border border-[#C5A059]/40 shadow-2xs">
+                <span>Board of Management & Committee Members</span>
+              </div>
             </div>
           )}
 
@@ -290,8 +281,8 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                     onClick={() => !isCurrent && setActiveCommitteeId(member.id)}
                     className={`h-[380px] overflow-hidden shrink-0 transition-[width,flex-basis,transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
                       isCurrent
-                        ? 'w-[560px] xl:w-[640px] rounded-3xl bg-white dark:bg-[#141820] border border-[#E2E0D0] dark:border-[#242936] shadow-xl relative bg-islamic-diamond-subtle flex select-text'
-                        : 'w-[115px] xl:w-[130px] rounded-2xl cursor-pointer relative group border border-[#E2E0D0] dark:border-[#242936] bg-[#F3F1E6] dark:bg-[#1C222D] shadow-sm hover:shadow-md hover:-translate-y-1.5 select-none'
+                        ? 'w-[560px] xl:w-[640px] rounded-3xl bg-white border border-[#E5E0D5] shadow-xl relative flex select-text'
+                        : 'w-[115px] xl:w-[130px] rounded-2xl cursor-pointer relative group border border-[#E5E0D5] bg-[#FAF8F3] shadow-xs hover:shadow-md hover:-translate-y-1.5 select-none'
                     }`}
                     title={!isCurrent ? `View ${member.fullName} (${member.position})` : undefined}
                   >
@@ -300,7 +291,7 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                       <>
                         {/* Background Geometric Accent */}
                         <div
-                          className="absolute -top-10 -right-10 text-[#6B6A45]/5 pointer-events-none select-none"
+                          className="absolute -top-10 -right-10 text-[#0B3B2C]/5 pointer-events-none select-none"
                           aria-hidden="true"
                         >
                           <svg width="180" height="180" viewBox="0 0 24 24" fill="currentColor">
@@ -312,12 +303,12 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                         <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between overflow-hidden relative z-10 transition-opacity duration-300 delay-150">
                           {/* Top: Position & Term */}
                           <div className="flex items-center flex-wrap gap-2">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#6B6A45] dark:bg-[#84CC16] text-white dark:text-[#0B0D11] shadow-xs">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0B3B2C] text-white shadow-2xs">
                               {member.position}
                             </span>
                             {member.termPeriod && (
-                              <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#F4F3EC] dark:bg-[#1C222D] border border-[#E2E0D0] dark:border-[#242936] text-slate-600 dark:text-[#D1D5DB]">
-                                <Calendar className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16]" />
+                              <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF8F3] border border-[#C5A059]/30 text-[#0B3B2C]">
+                                <Calendar className="w-3 h-3 text-[#C5A059]" />
                                 <span>{member.termPeriod}</span>
                               </span>
                             )}
@@ -325,8 +316,8 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
 
                           {/* Middle: Crisp Quote */}
                           <div className="relative my-auto py-2">
-                            <Quote className="w-5 h-5 text-[#6B6A45]/20 dark:text-[#84CC16]/20 absolute -top-1 -left-1 pointer-events-none" />
-                            <p className="text-xs sm:text-sm xl:text-[14.5px] leading-relaxed text-[#232215] dark:text-[#F9FAFB] font-medium italic pl-4 line-clamp-4">
+                            <Quote className="w-5 h-5 text-[#C5A059]/30 absolute -top-1 -left-1 pointer-events-none" />
+                            <p className="text-xs sm:text-sm xl:text-[14.5px] leading-relaxed text-slate-700 font-medium italic pl-4 line-clamp-4">
                               {member.messageOrBio
                                 ? `"${member.messageOrBio}"`
                                 : '"Devoted to preserving sacred Islamic knowledge, nurturing steadfast character, and serving the students and community with integrity."'}
@@ -334,13 +325,13 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                           </div>
 
                           {/* Bottom: Name & Qualifications */}
-                          <div className="pt-2 border-t border-[#E2E0D0]/60 dark:border-[#242936]">
-                            <h4 className="text-lg xl:text-xl font-bold font-serif text-[#232215] dark:text-[#F9FAFB] truncate tracking-tight">
+                          <div className="pt-2 border-t border-[#F0ECE1]">
+                            <h4 className="text-lg xl:text-xl font-bold font-serif text-[#1C2826] truncate tracking-tight">
                               {member.fullName}
                             </h4>
                             {member.qualification && (
-                              <div className="text-xs font-semibold text-[#6B6A45] dark:text-[#84CC16] mt-0.5 flex items-center space-x-1.5 truncate">
-                                <Award className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
+                              <div className="text-xs font-semibold text-[#0B3B2C] mt-0.5 flex items-center space-x-1.5 truncate">
+                                <Award className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
                                 <span className="truncate">{member.qualification}</span>
                               </div>
                             )}
@@ -427,12 +418,12 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                   type="button"
                   onClick={handlePrevCommittee}
                   aria-label="Previous Committee Member"
-                  className="w-9 h-9 rounded-full border border-[#E2E0D0] dark:border-[#242936] bg-white dark:bg-[#1C222D] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] text-[#6B6A45] dark:text-[#84CC16] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F3] text-[#0B3B2C] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
 
-                <span className="text-xs font-semibold text-slate-600 dark:text-[#D1D5DB] px-3 py-1 rounded-full bg-slate-100 dark:bg-[#1C222D] border border-slate-200 dark:border-[#242936]">
+                <span className="text-xs font-semibold text-[#0B3B2C] px-3 py-1 rounded-full bg-[#FAF8F3] border border-[#C5A059]/30">
                   {currentCommitteeIdx + 1} of {committeeMembers.length}
                 </span>
 
@@ -440,7 +431,7 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                   type="button"
                   onClick={handleNextCommittee}
                   aria-label="Next Committee Member"
-                  className="w-9 h-9 rounded-full border border-[#E2E0D0] dark:border-[#242936] bg-white dark:bg-[#1C222D] hover:bg-[#F4F3EC] dark:hover:bg-[#242936] text-[#6B6A45] dark:text-[#84CC16] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
+                  className="w-9 h-9 rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F3] text-[#0B3B2C] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -453,9 +444,9 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
           {/* --------------------------------------------------------- */}
           <div className="block lg:hidden max-w-md mx-auto">
             {/* Single Spotlight Card */}
-            <div className="w-full rounded-3xl glass-panel-gold shadow-lg overflow-hidden bg-islamic-diamond-subtle">
+            <div className="w-full rounded-2xl bg-white border border-[#E5E0D5] shadow-md overflow-hidden">
               {/* Portrait Top Frame */}
-              <div className="relative h-60 sm:h-72 w-full overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D]">
+              <div className="relative h-60 sm:h-72 w-full overflow-hidden bg-[#FAF8F3]">
                 {activeCommitteeMember.photoUrl ? (
                   <>
                     <img
@@ -482,14 +473,14 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                 )}
 
                 {/* Position Pill Floating Bottom-Left */}
-                <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#6B6A45] dark:bg-[#84CC16] text-white dark:text-[#0B0D11] shadow-md">
+                <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#0B3B2C] text-white shadow-md">
                   {activeCommitteeMember.position}
                 </div>
 
                 {/* Term Period Floating Bottom-Right */}
                 {activeCommitteeMember.termPeriod && (
-                  <div className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-white/90 dark:bg-[#1C222D] backdrop-blur-xs border border-[#E2E0D0] dark:border-[#242936] text-slate-700 dark:text-[#D1D5DB] shadow-xs flex items-center space-x-1">
-                    <Calendar className="w-3 h-3 text-[#8C8A58] dark:text-[#84CC16]" />
+                  <div className="absolute bottom-3 right-3 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#FAF8F3] border border-[#C5A059]/30 text-[#0B3B2C] shadow-xs flex items-center space-x-1">
+                    <Calendar className="w-3 h-3 text-[#C5A059]" />
                     <span>{activeCommitteeMember.termPeriod}</span>
                   </div>
                 )}
@@ -498,19 +489,19 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
               {/* Details & Quote */}
               <div className="p-5 sm:p-6 space-y-3">
                 <div>
-                  <h4 className="text-lg sm:text-xl font-bold font-serif text-[#232215] dark:text-[#F9FAFB] tracking-tight">
+                  <h4 className="text-lg sm:text-xl font-bold font-serif text-[#1C2826] tracking-tight">
                     {activeCommitteeMember.fullName}
                   </h4>
                   {activeCommitteeMember.qualification && (
-                    <div className="text-xs sm:text-sm font-semibold text-[#6B6A45] dark:text-[#84CC16] mt-0.5 flex items-center space-x-1.5">
-                      <Award className="w-3.5 h-3.5 text-[#8C8A58] dark:text-[#84CC16] shrink-0" />
+                    <div className="text-xs sm:text-sm font-semibold text-[#0B3B2C] mt-0.5 flex items-center space-x-1.5">
+                      <Award className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
                       <span>{activeCommitteeMember.qualification}</span>
                     </div>
                   )}
                 </div>
 
-                <div className="relative pl-3 border-l-2 border-[#6B6A45]/40 dark:border-[#84CC16]/40 py-1">
-                  <p className="text-xs sm:text-sm text-[#232215] dark:text-[#F9FAFB] italic leading-relaxed line-clamp-4">
+                <div className="relative pl-3 border-l-2 border-[#C5A059]/50 py-1">
+                  <p className="text-xs sm:text-sm text-slate-700 italic leading-relaxed line-clamp-4">
                     {activeCommitteeMember.messageOrBio
                       ? `"${activeCommitteeMember.messageOrBio}"`
                       : '"Devoted to preserving sacred Islamic knowledge, nurturing steadfast character, and serving the community with vision and integrity."'}
@@ -528,20 +519,18 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                     type="button"
                     onClick={handlePrevCommittee}
                     aria-label="Previous Committee Member"
-                    className="w-9 h-9 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95"
+                    className="w-9 h-9 rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F3] text-[#0B3B2C] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
                   >
                     <ChevronLeft className="w-4 h-4" />
                   </button>
-
-                  <span className="text-xs font-semibold text-slate-600 px-3 py-1 rounded-full bg-slate-100 border border-slate-200">
+                  <span className="text-xs font-semibold text-[#0B3B2C] px-3 py-1 rounded-full bg-[#FAF8F3] border border-[#C5A059]/30">
                     {currentCommitteeIdx + 1} of {committeeMembers.length}
                   </span>
-
                   <button
                     type="button"
                     onClick={handleNextCommittee}
                     aria-label="Next Committee Member"
-                    className="w-9 h-9 rounded-full border border-[#E2E0D0] bg-white hover:bg-[#F4F3EC] text-[#6B6A45] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95"
+                    className="w-9 h-9 rounded-full border border-[#E5E0D5] bg-white hover:bg-[#FAF8F3] text-[#0B3B2C] flex items-center justify-center shadow-xs transition-all hover:scale-105 active:scale-95 cursor-pointer"
                   >
                     <ChevronRight className="w-4 h-4" />
                   </button>
@@ -563,10 +552,10 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                           title={`${member.fullName} (${member.position})`}
                         >
                           <div
-                            className={`w-11 h-11 rounded-xl overflow-hidden bg-[#F3F1E6] flex items-center justify-center border-2 transition-all ${
+                            className={`w-11 h-11 rounded-xl overflow-hidden bg-[#FAF8F3] flex items-center justify-center border-2 transition-all ${
                               isCurrent
-                                ? 'border-[#6B6A45] ring-2 ring-[#6B6A45]/30 shadow-sm'
-                                : 'border-[#E2E0D0]'
+                                ? 'border-[#0B3B2C] ring-2 ring-[#0B3B2C]/30 shadow-sm'
+                                : 'border-[#E5E0D5]'
                             }`}
                           >
                             {member.photoUrl ? (
@@ -579,7 +568,7 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                                 }}
                               />
                             ) : (
-                              <span className="text-[11px] font-bold text-[#6B6A45]">
+                              <span className="text-[11px] font-bold text-[#0B3B2C]">
                                 {getInitials(member.fullName)}
                               </span>
                             )}

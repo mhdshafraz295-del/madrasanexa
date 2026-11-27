@@ -16,7 +16,7 @@ interface StatItemConfig {
   accentColor: string;
 }
 
-export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, theme }) => {
+export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, theme: _theme }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
   const [displayValues, setDisplayValues] = useState<{ [key: string]: number }>({
@@ -119,24 +119,22 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
       className="public-section-enter scroll-mt-28"
       aria-label="Institutional Key Statistics"
     >
-      <div className="text-center max-w-3xl mx-auto mb-10">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
-          <Sparkles className="w-3.5 h-3.5 text-[#85845C]" />
+      <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 px-4">
+        <div className="inline-flex items-center space-x-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0B3B2C] mb-2.5 px-3.5 py-1.5 rounded-full bg-[#FAF8F3] border border-[#C5A059]/40 shadow-2xs">
+          <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
           <span>Institution By Numbers</span>
         </div>
-        <h2
-          className="text-2xl sm:text-3xl font-serif font-bold tracking-tight text-[#252525]"
-          style={{ color: theme.headingColor || '#252525' }}
-        >
+        <h2 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-[#1C2826] mb-3">
           Our Living Academic Community
         </h2>
-        <p className="mt-2 text-sm text-slate-600">
+        <div className="w-16 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C] mx-auto rounded-full mb-3" />
+        <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
           Authentic institutional data reflecting our ongoing student enrollment and dedicated scholarly leadership.
         </p>
       </div>
 
-      {/* Centered Stats Cards Grid with Frosted Glass Surface */}
-      <div className="flex flex-wrap justify-center gap-6 items-stretch">
+      {/* Centered Stats Cards Grid with Warm Cream Surface */}
+      <div className="flex flex-wrap justify-center gap-6 sm:gap-7 items-stretch">
         {statItems.map((item) => {
           const Icon = item.icon;
           const count = displayValues[item.id] ?? 0;
@@ -144,25 +142,26 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
           return (
             <div
               key={item.id}
-              className="glass-panel-gold rounded-3xl p-7 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-md hover:-translate-y-1"
+              className="bg-white rounded-2xl border border-[#E5E0D5] p-7 sm:p-8 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-xs hover:shadow-xl hover:-translate-y-1.5 relative overflow-hidden group"
             >
+              {/* Top Accent Strip */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+
               <div>
-                <div className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-5 bg-white/90 border border-[#C5A059]/40 shadow-[0_0_14px_rgba(197,160,89,0.20)] transition-transform duration-300 hover:scale-105">
-                  <Icon className="w-7 h-7 text-[#85845C]" />
+                <div className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-5 bg-[#FAF8F3] border border-[#C5A059]/40 text-[#0B3B2C] shadow-2xs transition-transform duration-300 group-hover:scale-105">
+                  <Icon className="w-7 h-7 text-[#0B3B2C]" />
                 </div>
 
-                <div
-                  className="text-4xl sm:text-5xl font-bold tracking-tight mb-2 font-mono text-[#85845C]"
-                >
+                <div className="text-4xl sm:text-5xl font-bold tracking-tight mb-2 font-mono text-[#0B3B2C]">
                   {count.toLocaleString()}
                 </div>
 
-                <div className="text-base font-serif font-bold text-[#252525] mb-1">
+                <div className="text-base sm:text-lg font-serif font-bold text-[#1C2826] group-hover:text-[#0B3B2C] transition-colors mb-1">
                   {item.label}
                 </div>
               </div>
 
-              <p className="text-xs text-slate-600 leading-relaxed mt-3 pt-3 border-t border-[#C5A059]/25">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed mt-3 pt-3 border-t border-[#F0ECE1]">
                 {item.description}
               </p>
             </div>

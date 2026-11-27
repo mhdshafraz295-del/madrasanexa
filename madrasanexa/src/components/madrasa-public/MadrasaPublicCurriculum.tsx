@@ -95,31 +95,29 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 px-4">
-        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase mb-3 bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)] text-[#6B6A45]">
-          <BookOpen className="w-3.5 h-3.5 text-[#8C8A58]" />
+        <div className="inline-flex items-center space-x-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0B3B2C] mb-2.5 px-3.5 py-1.5 rounded-full bg-[#FAF8F3] border border-[#C5A059]/40 shadow-2xs">
+          <BookOpen className="w-3.5 h-3.5 text-[#C5A059]" />
           <span>Curriculum & Academic Standards</span>
         </div>
-        <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight mb-3 text-[#232215]"
-          style={{ color: theme.headingColor || undefined }}
-        >
+        <h2 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-[#1C2826] mb-3">
           Educational Pathways & Syllabus
         </h2>
-        <div className="w-24 h-1 bg-gradient-to-r from-[#6B6A45] via-[#C5A059] to-[#8C8A58] mx-auto rounded-full" />
-        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto mt-3 leading-relaxed">
+        <div className="w-16 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C] mx-auto rounded-full mb-3" />
+        <p className="text-xs sm:text-sm md:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
           Comprehensive, structured Islamic education combining sacred classical sciences, Quranic mastery, and recognized academic curricula.
         </p>
       </div>
 
       {/* 1. Legacy Syllabus Briefing (Rendered as institutional intro if present) */}
       {syllabusInfo && (
-        <div className="glass-panel-gold rounded-3xl p-6 sm:p-8 relative overflow-hidden max-w-5xl mx-auto bg-islamic-diamond-subtle">
-          <div className="flex items-center space-x-2 text-xs font-bold text-[#6B6A45] uppercase tracking-wider mb-2.5">
-            <Sparkles className="w-4 h-4 text-[#8C8A58]" />
+        <div className="bg-white rounded-2xl border border-[#E5E0D5] p-6 sm:p-8 relative overflow-hidden max-w-5xl mx-auto shadow-xs">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+          <div className="flex items-center space-x-2 text-[11px] font-bold text-[#C5A059] uppercase tracking-wider mb-2.5">
+            <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
             <span>Academic Framework & Overview</span>
           </div>
           <div
-            className="text-xs sm:text-sm leading-relaxed whitespace-pre-line text-slate-700"
+            className="text-xs sm:text-sm md:text-base leading-relaxed whitespace-pre-line text-slate-700 font-normal"
             style={{ color: theme.bodyTextColor || undefined }}
           >
             {syllabusInfo}
@@ -143,10 +141,10 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                     setSelectedLevelId(firstInAll.levels[0]?.id || null);
                   }
                 }}
-                className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all duration-200 cursor-pointer ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer ${
                   selectedCatId === 'all'
-                    ? 'glass-pill-active'
-                    : 'glass-pill-inactive'
+                    ? 'bg-[#0B3B2C] text-white shadow-xs'
+                    : 'bg-white text-slate-700 border border-[#E5E0D5] hover:bg-[#FAF8F3]'
                 }`}
               >
                 All Disciplines ({publishedProgrammes.length})
@@ -168,14 +166,14 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                         setSelectedLevelId(firstInCat.levels[0]?.id || null);
                       }
                     }}
-                    className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all duration-200 flex items-center space-x-1.5 cursor-pointer ${
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center space-x-1.5 cursor-pointer ${
                       selectedCatId === cat.id
-                        ? 'glass-pill-active'
-                        : 'glass-pill-inactive'
+                        ? 'bg-[#0B3B2C] text-white shadow-xs'
+                        : 'bg-white text-slate-700 border border-[#E5E0D5] hover:bg-[#FAF8F3]'
                     }`}
                   >
                     <span>{cat.label}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/10">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/10">
                       {count}
                     </span>
                   </button>
@@ -205,28 +203,31 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                     setSelectedProgId(prog.id);
                     setSelectedLevelId(prog.levels[0]?.id || null);
                   }}
-                  className={`relative rounded-3xl cursor-pointer transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden ${
+                  className={`relative rounded-2xl cursor-pointer transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden border ${
                     isSelected
-                      ? 'glass-panel-gold -translate-y-1 ring-1 ring-[#C5A059]/50 shadow-[0_16px_36px_-6px_rgba(60,50,30,0.12),0_0_24px_rgba(197,160,89,0.30)]'
-                      : 'glass-card-elevated hover:-translate-y-1'
+                      ? 'bg-white border-[#C5A059] -translate-y-1 shadow-lg ring-1 ring-[#C5A059]/40'
+                      : 'bg-white border-[#E5E0D5] hover:border-[#C5A059]/40 hover:-translate-y-1 shadow-xs hover:shadow-md'
                   }`}
                 >
-                  <div className="p-5 sm:p-6 bg-islamic-diamond-subtle flex-1 flex flex-col justify-between">
+                  {isSelected && (
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+                  )}
+                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                     <div>
-                      {/* Top Row: Code & Animated Antique Gold Duration Badge */}
+                      {/* Top Row: Code & Duration Badge */}
                       <div className="flex items-center justify-between gap-2 mb-2.5">
                         {prog.code ? (
                           <span
                             className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-[#C5A059]/30 ${
                               isSelected
-                                ? 'bg-white/90 text-[#6B6A45] shadow-[0_0_8px_rgba(197,160,89,0.15)]'
-                                : 'bg-white/70 text-[#5C533D]'
+                                ? 'bg-[#FAF8F3] text-[#0B3B2C]'
+                                : 'bg-slate-50 text-slate-600'
                             }`}
                           >
                             {prog.code}
                           </span>
                         ) : (
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C8A58]">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#C5A059]">
                             Academic Programme
                           </span>
                         )}
@@ -268,37 +269,39 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
             })}
           </div>
 
-          {/* Active Programme Explorer Workspace - Frosted Glass Container */}
+          {/* Active Programme Explorer Workspace */}
           {activeProgramme && activeProgramme.levels.length > 0 && (
-            <div className="glass-panel-gold rounded-3xl p-5 sm:p-8 space-y-8 relative overflow-hidden">
+            <div className="bg-white rounded-2xl border border-[#E5E0D5] p-6 sm:p-8 space-y-8 relative overflow-hidden shadow-xs">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+
               {/* Programme Details Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#F0ECE1] gap-4">
                 <div>
-                  <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#8C8A58] dark:text-[#84CC16]">
+                  <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#C5A059]">
                     <span>{categories.find((c) => c.id === activeProgramme.categoryId)?.label || 'Discipline'}</span>
                     <span>•</span>
-                    <span className="text-[#6B6A45] dark:text-[#D1D5DB]">Duration: {activeProgramme.durationYears || 'Flexible'}</span>
+                    <span className="text-[#0B3B2C]">Duration: {activeProgramme.durationYears || 'Flexible'}</span>
                   </div>
                   <h3
-                    className="text-xl sm:text-2xl font-serif font-bold mt-1 text-[#232215] dark:text-[#F9FAFB]"
+                    className="text-xl sm:text-2xl font-serif font-bold mt-1 text-[#1C2826]"
                     style={{ color: theme.headingColor || undefined }}
                   >
                     {activeProgramme.name}
                   </h3>
                   {activeProgramme.description && (
-                    <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed font-normal">
                       {activeProgramme.description}
                     </p>
                   )}
                 </div>
 
                 {activeProgramme.admissionRequirements && (
-                  <div className="bg-white/80 backdrop-blur-sm border border-[#C5A059]/30 rounded-2xl p-3.5 max-w-xs text-xs shadow-[0_4px_16px_rgba(60,50,30,0.06),0_0_12px_rgba(197,160,89,0.12)]">
-                    <span className="font-bold text-[#232215] block mb-0.5 flex items-center gap-1">
-                      <Compass className="w-3.5 h-3.5 text-[#8C8A58]" />
+                  <div className="bg-[#FAF8F3] border border-[#C5A059]/40 rounded-xl p-3.5 max-w-xs text-xs shadow-2xs">
+                    <span className="font-bold text-[#0B3B2C] block mb-0.5 flex items-center gap-1">
+                      <Compass className="w-3.5 h-3.5 text-[#C5A059]" />
                       Admission Criteria
                     </span>
-                    <span className="text-slate-600 leading-relaxed block">
+                    <span className="text-slate-600 leading-relaxed block font-normal">
                       {activeProgramme.admissionRequirements}
                     </span>
                   </div>
@@ -307,13 +310,13 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
               {/* Connected Year / Level Stepper Track */}
               <div className="space-y-3">
-                <span className="text-xs font-bold text-[#6B6A45] uppercase tracking-wider block">
+                <span className="text-xs font-bold text-[#0B3B2C] uppercase tracking-wider block">
                   Academic Progression Stepper
                 </span>
 
                 {/* Horizontal Stepper Track with Connected Line */}
                 <div className="w-full overflow-x-auto no-scrollbar py-2">
-                  <div className="inline-flex items-center gap-2 sm:gap-3 min-w-max p-1.5 bg-white/70 backdrop-blur-sm rounded-2xl border border-[#C5A059]/30 shadow-[inset_0_1px_3px_rgba(60,50,30,0.05)]">
+                  <div className="inline-flex items-center gap-2 sm:gap-3 min-w-max p-1.5 bg-[#FAF8F3] rounded-2xl border border-[#E5E0D5]">
                     {activeProgramme.levels.map((lvl, lvlIdx) => {
                       const isLvlSelected = activeLevel?.id === lvl.id;
                       const levelNumber = String(lvlIdx + 1).padStart(2, '0');
@@ -323,17 +326,17 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                           <button
                             type="button"
                             onClick={() => setSelectedLevelId(lvl.id)}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-250 ease-out flex items-center gap-2 cursor-pointer ${
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 flex items-center gap-2 cursor-pointer ${
                               isLvlSelected
-                                ? 'glass-pill-active -translate-y-0.5'
-                                : 'bg-white/80 border border-[#C5A059]/25 hover:border-[#C5A059]/50 hover:bg-white text-slate-700 shadow-[0_2px_8px_rgba(60,50,30,0.04)] hover:-translate-y-0.5'
+                                ? 'bg-[#0B3B2C] text-white shadow-xs -translate-y-0.5'
+                                : 'bg-white border border-[#E5E0D5] hover:border-[#C5A059]/50 text-slate-700 shadow-2xs hover:-translate-y-0.5'
                             }`}
                           >
                             <span
                               className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-mono font-bold ${
                                 isLvlSelected
-                                  ? 'bg-[#504F34] text-[#EFEFD0]'
-                                  : 'bg-[#DAD5C8] text-[#504F34]'
+                                  ? 'bg-[#C5A059] text-[#1C2826]'
+                                  : 'bg-[#FAF8F3] border border-[#C5A059]/30 text-[#0B3B2C]'
                               }`}
                             >
                               {levelNumber}
@@ -342,7 +345,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                             {lvl.streamName && (
                               <span
                                 className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                                  isLvlSelected ? 'bg-white/20 text-white' : 'bg-[#D8D3C6] text-[#504F34]'
+                                  isLvlSelected ? 'bg-white/20 text-white' : 'bg-[#FAF8F3] text-[#0B3B2C] border border-[#C5A059]/30'
                                 }`}
                               >
                                 {lvl.streamName}
@@ -352,7 +355,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
                           {/* Connecting track line */}
                           {lvlIdx < activeProgramme.levels.length - 1 && (
-                            <div className="w-4 sm:w-6 h-0.5 bg-[#C5A059]/40 rounded-full shrink-0 shadow-[0_0_6px_rgba(197,160,89,0.3)]" aria-hidden="true" />
+                            <div className="w-4 sm:w-6 h-0.5 bg-[#C5A059]/40 rounded-full shrink-0" aria-hidden="true" />
                           )}
                         </React.Fragment>
                       );
@@ -366,18 +369,18 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                 <div className="space-y-4 pt-2">
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center space-x-2 min-w-0">
-                      <GraduationCap className="w-4 h-4 shrink-0 text-[#6B6A45]" />
-                      <h4 className="text-sm font-bold text-[#232215]">
+                      <GraduationCap className="w-4 h-4 shrink-0 text-[#0B3B2C]" />
+                      <h4 className="text-sm font-bold text-[#1C2826]">
                         {activeLevel.levelLabel} {activeLevel.streamName ? `(${activeLevel.streamName})` : ''} Syllabus
                       </h4>
                     </div>
-                    <span className="text-xs font-semibold text-[#8C8A58]">
+                    <span className="text-xs font-semibold text-[#0B3B2C]">
                       {activeLevel.subjects.length} Subjects Offered
                     </span>
                   </div>
 
                   {activeLevel.subjects.length === 0 ? (
-                    <div className="p-8 text-center glass-card-elevated rounded-3xl">
+                    <div className="p-8 text-center bg-[#FAF8F3] rounded-2xl border border-[#E5E0D5]">
                       <p className="text-xs text-slate-600">
                         No subject records currently published for this academic level.
                       </p>
@@ -387,39 +390,38 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                       {activeLevel.subjects.map((sub, subIdx) => (
                         <div
                           key={sub.id}
-                          className="glass-card-elevated rounded-3xl p-5 sm:p-6 transition-all duration-250 ease-out flex flex-col justify-between animate-subject-reveal"
-                          style={{ animationDelay: `${subIdx * 55}ms` }}
+                          className="bg-[#FDFCF9] rounded-2xl border border-[#E5E0D5] p-5 sm:p-6 transition-all duration-200 flex flex-col justify-between shadow-2xs hover:shadow-md hover:border-[#C5A059]/40"
                         >
                           <div>
                             {/* Card Top: Numbered Milestone Emblem, Subject Name with dir="auto", and Compulsory Badge */}
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-2.5 min-w-0 flex-1">
                                 {/* Numbered Milestone Emblem */}
-                                <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#6B6A45] to-[#504F34] text-[#F8F7F2] font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-[#C5A059]/40 shadow-[0_2px_8px_rgba(107,106,69,0.3)] mt-0.5">
+                                <div className="w-7 h-7 rounded-xl bg-[#0B3B2C] text-[#DFC076] font-mono font-bold text-xs flex items-center justify-center shrink-0 border border-[#C5A059]/40 shadow-2xs mt-0.5">
                                   {String(subIdx + 1).padStart(2, '0')}
                                 </div>
 
                                 <div className="min-w-0 flex-1">
                                   <h5
                                     dir="auto"
-                                    className="text-sm sm:text-base font-serif font-bold text-[#232215] leading-snug"
+                                    className="text-sm sm:text-base font-serif font-bold text-[#1C2826] leading-snug"
                                   >
                                     {sub.name}
                                   </h5>
                                   {sub.code && (
-                                    <span className="text-[10px] font-mono font-bold text-[#8C8A58]">
+                                    <span className="text-[10px] font-mono font-bold text-[#C5A059]">
                                       {sub.code}
                                     </span>
                                   )}
                                 </div>
                               </div>
 
-                              {/* Borderless Tinted Compulsory / Elective Badge */}
+                              {/* Compulsory / Elective Badge */}
                               <span
-                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 border border-[#C5A059]/25 ${
+                                className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full shrink-0 border ${
                                   sub.isOptional
-                                    ? 'bg-white/80 text-[#6B6A45]'
-                                    : 'bg-white/90 text-[#5C533D]'
+                                    ? 'bg-[#FAF8F3] text-slate-600 border-[#E5E0D5]'
+                                    : 'bg-[#FAF8F3] text-[#0B3B2C] border-[#C5A059]/40'
                                 }`}
                               >
                                 {sub.isOptional ? 'Elective' : 'Compulsory'}
@@ -496,32 +498,31 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
         </div>
       ) : null}
 
-      {/* 3. Rules & Regulations Card (Frosted Glass Container with Gold Glow) */}
-      <div id="rules" className="glass-panel-gold rounded-3xl p-6 sm:p-9 scroll-mt-28 max-w-5xl mx-auto bg-islamic-diamond-subtle relative overflow-hidden">
-        <div className="flex items-center space-x-2.5 text-xs font-bold text-[#6B6A45] uppercase tracking-wider mb-3">
-          <div className="w-8 h-8 rounded-xl bg-white/90 border border-[#C5A059]/35 shadow-[0_0_10px_rgba(197,160,89,0.16)] flex items-center justify-center text-[#6B6A45]">
-            <ShieldCheck className="w-4 h-4 text-[#6B6A45]" />
-          </div>
+      {/* 3. Rules & Regulations Card */}
+      <div id="rules" className="bg-white rounded-2xl border border-[#E5E0D5] p-6 sm:p-9 scroll-mt-28 max-w-5xl mx-auto shadow-xs relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+        <div className="inline-flex items-center space-x-2 text-[11px] font-bold text-[#0B3B2C] uppercase tracking-wider mb-3 px-3 py-1 rounded-full bg-[#FAF8F3] border border-[#C5A059]/30">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#C5A059]" />
           <span>Institutional Conduct & Ethos</span>
         </div>
 
         <h3
-          className="text-xl sm:text-2xl font-serif font-bold mb-3 tracking-tight text-[#232215]"
+          className="text-xl sm:text-2xl font-serif font-bold mb-3 tracking-tight text-[#1C2826]"
           style={{ color: theme.headingColor || undefined }}
         >
           Rules & Code of Conduct
         </h3>
 
         <div
-          className="text-xs sm:text-sm leading-relaxed whitespace-pre-line flex-1 mb-6 text-slate-700"
+          className="text-xs sm:text-sm md:text-base leading-relaxed whitespace-pre-line flex-1 mb-6 text-slate-700 font-normal"
           style={{ color: theme.bodyTextColor || undefined }}
         >
           {rulesAndRegulations ||
             'Students must observe strict punctuality, dignified Islamic attire, respectful etiquette toward teachers and fellow peers, and active participation in daily congregational prayers and assemblies.'}
         </div>
 
-        <div className="pt-4 flex items-center space-x-2 text-xs font-semibold text-slate-600">
-          <Award className="w-4 h-4 text-[#8C8A58]" />
+        <div className="pt-4 flex items-center space-x-2 text-xs font-semibold text-slate-600 border-t border-[#F0ECE1]">
+          <Award className="w-4 h-4 text-[#C5A059]" />
           <span>Dedicated to nurturing discipline, reverence, and academic excellence</span>
         </div>
       </div>

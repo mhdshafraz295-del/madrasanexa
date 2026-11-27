@@ -57,15 +57,15 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
               <span>Heritage & Foundations</span>
             </div>
 
-            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight mb-4">
-              Welcome to {madrasaName}
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight mb-4 drop-shadow-xs">
+              Welcome to {madrasaName || 'Our Madrasa'}
             </h2>
 
             <div className="w-16 h-1 bg-[#DFC076] rounded-full mb-5" />
 
-            <p className="text-sm sm:text-base text-[#F5F5F1]/90 leading-relaxed font-normal whitespace-pre-line">
+            <p className="text-sm sm:text-base text-[#FDFCF9]/95 leading-relaxed font-normal whitespace-pre-line">
               {introduction ||
-                `${madrasaName} is dedicated to establishing sound religious foundations and inspiring our students toward righteousness, academic diligence, and exemplary prophetic character.`}
+                `${madrasaName || 'Our madrasa'} is dedicated to establishing sound religious foundations and inspiring our students toward righteousness, academic diligence, and exemplary prophetic character.`}
             </p>
           </div>
 
@@ -146,10 +146,9 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
                 <h3 className="font-serif font-bold text-base sm:text-lg text-[#1C2826] mb-1.5">
                   Character & Conduct
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  {rulesAndRegulations
-                    ? (rulesAndRegulations.length > 140 ? rulesAndRegulations.slice(0, 140) + '...' : rulesAndRegulations)
-                    : 'Upholding authentic Islamic adab, spiritual modesty, academic diligence, and respectful conduct across all campus environments.'}
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal line-clamp-4">
+                  {rulesAndRegulations ||
+                    'Upholding authentic Islamic adab, spiritual modesty, academic diligence, and respectful conduct across all campus environments.'}
                 </p>
               </div>
             </div>

@@ -19,14 +19,14 @@ export const IslamicSectionDivider: React.FC<IslamicSectionDividerProps> = ({
   // Hairline gradient colors
   const lineLeft = isLight
     ? 'from-transparent via-white/30 to-white/70'
-    : 'from-transparent via-[#8C8A58]/35 to-[#6B6A45]/80';
+    : 'from-transparent via-[#C5A059]/30 to-[#0B3B2C]/50';
   const lineRight = isLight
     ? 'from-transparent via-white/30 to-white/70'
-    : 'from-transparent via-[#8C8A58]/35 to-[#6B6A45]/80';
+    : 'from-transparent via-[#0B3B2C]/50 to-[#C5A059]/30';
 
-  const starColor = isLight ? 'text-white/85' : 'text-[#85845C]';
-  const diamondColor = isLight ? 'fill-white/60' : 'fill-[#8C8A58]';
-  const centerDotFill = isLight ? '#252525' : '#FAF9F5';
+  const starColor = isLight ? 'text-white/85' : 'text-[#C5A059]';
+  const diamondColor = isLight ? 'fill-white/60' : 'fill-[#C5A059]';
+  const centerDotFill = isLight ? '#252525' : '#0B3B2C';
 
   return (
     <div

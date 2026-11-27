@@ -30,7 +30,7 @@ function getEventAlbumImages(event: MadrasaProfileEvent): EventAlbumImage[] {
 
 export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
   events,
-  theme,
+  theme: _theme,
 }) => {
   const [activeAlbum, setActiveAlbum] = useState<{
     event: MadrasaProfileEvent;
@@ -142,21 +142,18 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
   return (
     <section id="events" className="scroll-mt-28 public-section-enter">
       {/* Section Header */}
-      <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
-          <Calendar className="w-3.5 h-3.5 text-[#85845C]" />
+      <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12 px-4">
+        <div className="inline-flex items-center space-x-2 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#0B3B2C] mb-2.5 px-3.5 py-1.5 rounded-full bg-[#FAF8F3] border border-[#C5A059]/40 shadow-2xs">
+          <Calendar className="w-3.5 h-3.5 text-[#C5A059]" />
           <span>Events & Gallery</span>
         </div>
-        <h2
-          className="text-2xl sm:text-4xl font-serif font-bold tracking-tight mb-3 text-[#252525]"
-          style={{ color: theme.headingColor || '#252525' }}
-        >
+        <h2 className="text-2xl sm:text-4xl font-serif font-bold tracking-tight text-[#1C2826] mb-3">
           Upcoming Institutional Events & Albums
         </h2>
-        <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+        <div className="w-16 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C] mx-auto rounded-full mb-3" />
+        <p className="text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-xl mx-auto">
           Explore commemorative milestones, academic ceremonies, and student events.
         </p>
-        <div className="w-16 h-1 bg-gradient-to-r from-[#85845C] via-[#DFC076] to-[#85845C] mx-auto rounded-full mt-3" />
       </div>
 
       {/* Events / Gallery Centered & Balanced CSS Grid Layout
@@ -187,8 +184,10 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
           return (
             <div
               key={event.id}
-              className="w-full glass-card-elevated rounded-3xl flex flex-col justify-between overflow-hidden p-5 sm:p-6 space-y-4 transition-all h-full"
+              className="w-full bg-white rounded-2xl border border-[#E5E0D5] shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden p-5 sm:p-6 space-y-4 h-full group relative"
             >
+              {/* Top Accent Strip */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
               {/* Premium Photo Album Layout */}
               {albumImages.length > 0 ? (
                 <div className="space-y-2.5">
@@ -307,32 +306,29 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
               <div className="flex-1 flex flex-col justify-between pt-1">
                 <div>
                   {/* Event Date Badge */}
-                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-lg bg-[#F5F5F1] text-[#85845C] text-xs font-bold mb-3 border border-[#E5E5DF]">
-                    <Calendar className="w-3.5 h-3.5 text-[#85845C]" />
+                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#FAF8F3] text-[#0B3B2C] text-xs font-bold mb-3 border border-[#C5A059]/30">
+                    <Calendar className="w-3.5 h-3.5 text-[#C5A059]" />
                     <span>{event.date}</span>
                   </div>
 
                   {/* Event Title */}
-                  <h3
-                    className="text-base sm:text-lg font-serif font-bold mb-2 leading-snug line-clamp-2 text-[#252525]"
-                    style={{ color: theme.headingColor || '#252525' }}
-                  >
+                  <h3 className="text-base sm:text-lg font-serif font-bold mb-2 leading-snug line-clamp-2 text-[#1C2826] group-hover:text-[#0B3B2C] transition-colors">
                     {event.title}
                   </h3>
 
                   {/* Event Description */}
                   {event.description ? (
-                    <p className="text-xs sm:text-sm text-[#666666] leading-relaxed line-clamp-3 mb-4">
+                    <p className="text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-3 mb-4 font-normal">
                       {event.description}
                     </p>
                   ) : null}
                 </div>
 
-                <div className="pt-3.5 border-t border-[#E5E5DF] space-y-3">
+                <div className="pt-3.5 border-t border-[#F0ECE1] space-y-3">
                   {/* Event Location */}
                   {event.location ? (
-                    <div className="flex items-center space-x-2 text-xs text-[#666666] font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-[#85845C] shrink-0" />
+                    <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">
+                      <MapPin className="w-3.5 h-3.5 text-[#C5A059] shrink-0" />
                       <span className="truncate">{event.location}</span>
                     </div>
                   ) : null}
@@ -342,9 +338,9 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                     <button
                       type="button"
                       onClick={() => handleOpenAlbum(event, effectiveCoverIdx)}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl text-xs font-bold bg-[#85845C] hover:bg-[#6B6A45] active:bg-[#504F34] text-white shadow-xs cursor-pointer transition-colors"
+                      className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#0B3B2C] hover:bg-[#07281D] active:bg-[#041B13] text-white shadow-xs hover:shadow-md cursor-pointer transition-all"
                     >
-                      <Images className="w-3.5 h-3.5 text-white" />
+                      <Images className="w-3.5 h-3.5 text-[#DFC076]" />
                       <span>Open Full Album ({photoCount} {photoCount === 1 ? 'Photo' : 'Photos'})</span>
                     </button>
                   )}

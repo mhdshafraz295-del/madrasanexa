@@ -120,7 +120,7 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
       aria-label="Institutional Key Statistics"
     >
       <div className="text-center max-w-3xl mx-auto mb-10">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3 px-3.5 py-1 rounded-full bg-[#F5F5F1] border border-[#E5E5DF] shadow-2xs">
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
           <Sparkles className="w-3.5 h-3.5 text-[#85845C]" />
           <span>Institution By Numbers</span>
         </div>
@@ -130,12 +130,12 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
         >
           Our Living Academic Community
         </h2>
-        <p className="mt-2 text-sm text-[#666666]">
+        <p className="mt-2 text-sm text-slate-600">
           Authentic institutional data reflecting our ongoing student enrollment and dedicated scholarly leadership.
         </p>
       </div>
 
-      {/* Centered Stats Cards Grid with ACJU Olive Hover */}
+      {/* Centered Stats Cards Grid with Frosted Glass Surface */}
       <div className="flex flex-wrap justify-center gap-6 items-stretch">
         {statItems.map((item) => {
           const Icon = item.icon;
@@ -144,25 +144,25 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
           return (
             <div
               key={item.id}
-              className="acju-card group bg-white bg-islamic-diamond-subtle rounded-2xl border border-[#E5E5DF] p-7 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-xs"
+              className="glass-panel-gold rounded-3xl p-7 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-md hover:-translate-y-1"
             >
               <div>
-                <div className="acju-icon-badge w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-5 bg-[#F5F5F1] border border-[#E5E5DF] group-hover:bg-white transition-colors duration-300">
-                  <Icon className="w-7 h-7 text-[#85845C] group-hover:text-[#85845C] transition-colors" />
+                <div className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-5 bg-white/90 border border-[#C5A059]/40 shadow-[0_0_14px_rgba(197,160,89,0.20)] transition-transform duration-300 hover:scale-105">
+                  <Icon className="w-7 h-7 text-[#85845C]" />
                 </div>
 
                 <div
-                  className="text-4xl sm:text-5xl font-bold tracking-tight mb-2 font-mono text-[#85845C] group-hover:text-white transition-colors duration-300"
+                  className="text-4xl sm:text-5xl font-bold tracking-tight mb-2 font-mono text-[#85845C]"
                 >
                   {count.toLocaleString()}
                 </div>
 
-                <div className="text-base font-serif font-bold text-[#252525] mb-1 group-hover:text-white transition-colors duration-300">
+                <div className="text-base font-serif font-bold text-[#252525] mb-1">
                   {item.label}
                 </div>
               </div>
 
-              <p className="text-xs text-[#666666] leading-relaxed mt-3 pt-3 border-t border-[#E5E5DF] group-hover:text-white/90 group-hover:border-white/20 transition-colors duration-300">
+              <p className="text-xs text-slate-600 leading-relaxed mt-3 pt-3 border-t border-[#C5A059]/25">
                 {item.description}
               </p>
             </div>

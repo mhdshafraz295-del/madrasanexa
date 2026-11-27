@@ -22,7 +22,7 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
     <section id="staff" className="public-section-enter scroll-mt-28" aria-label="Staff & Faculty">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3 px-3.5 py-1 rounded-full bg-[#F5F5F1] border border-[#E5E5DF] shadow-2xs">
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
           <Users className="w-3.5 h-3.5 text-[#85845C]" />
           <span>Scholarly Faculty & Leadership</span>
         </div>
@@ -32,7 +32,7 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
         >
           {staff.sectionTitle || 'Our Scholarly Faculty & Mentors'}
         </h2>
-        <p className="mt-3 text-sm sm:text-base text-[#666666] leading-relaxed">
+        <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
           {staff.sectionSubtitle ||
             'Dedicated scholars and educators guiding hearts and minds with classical wisdom, authentic character, and compassionate mentorship.'}
         </p>
@@ -52,14 +52,14 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
           return (
             <div
               key={member.id}
-              className={`group relative bg-white rounded-2xl border border-[#E5E5DF] overflow-hidden transition-all duration-300 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.2rem)] max-w-sm flex flex-col shadow-xs ${
+              className={`group relative glass-card-elevated rounded-3xl overflow-hidden transition-all duration-300 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.2rem)] max-w-sm flex flex-col shadow-md ${
                 isExpanded
-                  ? 'shadow-md border-[#85845C] -translate-y-1'
-                  : 'hover:shadow-md hover:border-[#85845C]/50 hover:-translate-y-1'
+                  ? 'border-[#C5A059] -translate-y-1 shadow-[0_16px_36px_-6px_rgba(60,50,30,0.12),0_0_24px_rgba(197,160,89,0.28)]'
+                  : 'hover:-translate-y-1'
               }`}
             >
               {/* 1. Individual Photograph Container */}
-              <div className="relative w-full aspect-square bg-[#F5F5F1] overflow-hidden border-b border-[#E5E5DF]">
+              <div className="relative w-full aspect-square bg-[#F5F5F1] overflow-hidden border-b border-[#C5A059]/30">
                 {member.photoUrl ? (
                   <img
                     src={member.photoUrl}
@@ -78,8 +78,8 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
                   </div>
                 )}
 
-                {/* Subtle Olive Accent Band */}
-                <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#85845C] to-transparent opacity-60" />
+                {/* Subtle Gold Accent Band */}
+                <div className="absolute bottom-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-[#C5A059] to-transparent opacity-80" />
               </div>
 
               {/* 2. Core Identity (Visible At All Times) */}
@@ -99,7 +99,7 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
 
                 {/* Department / Subject Badge */}
                 {member.department && (
-                  <div className="inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-[#F5F5F1] text-[#85845C] w-fit mb-3 border border-[#E5E5DF]">
+                  <div className="inline-flex items-center space-x-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-white/80 text-[#85845C] w-fit mb-3 border border-[#C5A059]/30 shadow-2xs">
                     <BookOpen className="w-3 h-3 shrink-0 text-[#85845C]" />
                     <span>{member.department}</span>
                   </div>
@@ -109,8 +109,8 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
                 <div
                   className={`space-y-3 transition-all duration-300 ease-in-out ${
                     isExpanded
-                      ? 'max-h-96 opacity-100 pt-3 border-t border-[#E5E5DF]'
-                      : 'max-h-0 opacity-0 lg:group-hover:max-h-96 lg:group-hover:opacity-100 lg:group-hover:pt-3 lg:group-hover:border-t lg:group-hover:border-[#E5E5DF] overflow-hidden'
+                      ? 'max-h-96 opacity-100 pt-3 border-t border-[#C5A059]/25'
+                      : 'max-h-0 opacity-0 lg:group-hover:max-h-96 lg:group-hover:opacity-100 lg:group-hover:pt-3 lg:group-hover:border-t lg:group-hover:border-[#C5A059]/25 overflow-hidden'
                   }`}
                 >
                   {/* Qualification */}
@@ -119,7 +119,7 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
                       <Award className="w-3.5 h-3.5 text-[#E56A45] shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-[#252525]">Credentials: </span>
-                        <span className="text-[#666666]">{member.qualification}</span>
+                        <span className="text-slate-600">{member.qualification}</span>
                       </div>
                     </div>
                   )}
@@ -130,7 +130,7 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
                       <Clock className="w-3.5 h-3.5 text-[#85845C] shrink-0 mt-0.5" />
                       <div>
                         <span className="font-bold text-[#252525]">Experience: </span>
-                        <span className="text-[#666666]">
+                        <span className="text-slate-600">
                           {typeof member.experienceYears === 'number'
                             ? `${member.experienceYears}+ Years`
                             : member.experienceYears}
@@ -141,14 +141,14 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
 
                   {/* Biography */}
                   {member.bio && (
-                    <p className="text-xs text-[#666666] leading-relaxed pt-1.5 border-t border-[#E5E5DF] italic">
+                    <p className="text-xs text-slate-600 leading-relaxed pt-1.5 border-t border-[#C5A059]/25 italic">
                       "{member.bio}"
                     </p>
                   )}
                 </div>
 
                 {/* Mobile Tap-To-Expand Button */}
-                <div className="mt-4 pt-3 border-t border-[#E5E5DF] flex items-center justify-between lg:hidden">
+                <div className="mt-4 pt-3 border-t border-[#C5A059]/25 flex items-center justify-between lg:hidden">
                   <button
                     type="button"
                     onClick={() => toggleExpand(member.id)}
@@ -162,7 +162,7 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
                       }`}
                     />
                   </button>
-                  <span className="text-[10px] text-[#666666] font-medium uppercase tracking-wider">
+                  <span className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">
                     {member.department || 'Faculty'}
                   </span>
                 </div>

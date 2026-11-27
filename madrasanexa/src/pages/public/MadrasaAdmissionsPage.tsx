@@ -303,10 +303,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               </div>
             )}
             <div
-              className="flex items-center space-x-1.5 text-xs font-bold px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#F5F5F1] dark:bg-[#1C222D] border border-[#E5E5DF] dark:border-[#242936] dark:!text-[#84CC16]"
+              className="flex items-center space-x-1.5 text-xs font-bold px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)] text-[#6B6A45]"
               style={{ color: primaryColor }}
             >
-              <ShieldCheck className="w-3.5 h-3.5 shrink-0 dark:!text-[#84CC16]" style={{ color: primaryColor }} />
+              <ShieldCheck className="w-3.5 h-3.5 shrink-0" style={{ color: primaryColor }} />
               <span className="hidden xs:inline sm:inline">Official Admissions Desk</span>
               <span className="xs:hidden sm:hidden">Admissions</span>
             </div>
@@ -338,7 +338,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         />
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/20 text-white text-xs font-bold uppercase tracking-wider mb-5 shadow-xs">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-[#C5A059]/40 text-white text-xs font-bold uppercase tracking-wider mb-5 shadow-[0_0_12px_rgba(197,160,89,0.22)]">
             <Sparkles className="w-3.5 h-3.5 text-white" />
             <span>Official Student Enrollment</span>
           </div>
@@ -360,14 +360,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleOpenApplication(activeAdmissionPeriods[0])}
-                className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base text-white transition-all shadow-lg hover:shadow-xl hover:scale-102 active:scale-98 border border-white/20 cursor-pointer dark:!bg-[#84CC16] dark:!text-[#0B0D11] dark:border-0"
-                style={{
-                  backgroundColor: primaryColor,
-                }}
+                className="glass-btn-admissions inline-flex items-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-white transition-all shadow-lg hover:scale-102 active:scale-98 cursor-pointer"
               >
-                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white dark:text-[#0B0D11]" />
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 <span>Apply for Open Intake</span>
-                <ChevronRight className="w-4 h-4 dark:text-[#0B0D11]" />
+                <ChevronRight className="w-4 h-4 text-white/90" />
               </button>
             </div>
           )}
@@ -380,18 +377,18 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         <section className="w-full max-w-xl mx-auto">
           <div className="text-center mb-8">
             <span
-              className="text-xs font-bold uppercase tracking-wider bg-[#F5F5F1] dark:bg-[#1C222D] px-3.5 py-1 rounded-full border border-[#E5E5DF] dark:border-[#242936] dark:!text-[#84CC16]"
+              className="text-xs font-bold uppercase tracking-wider bg-white/85 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]"
               style={{ color: primaryColor }}
             >
               Open Admissions
             </span>
             <h2
-              className="text-2xl sm:text-3xl font-serif font-bold tracking-tight mt-2.5 mb-2 text-[#252525] dark:!text-[#F9FAFB]"
+              className="text-2xl sm:text-3xl font-serif font-bold tracking-tight mt-2.5 mb-2 text-[#252525]"
               style={{ color: theme.headingColor || '#252525' }}
             >
               Active Intake Cycles
             </h2>
-            <p className="text-xs sm:text-sm text-[#666666] dark:text-[#9CA3AF] leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               Currently open admission periods accepting online candidate applications.
             </p>
             <div
@@ -405,69 +402,60 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               {activeAdmissionPeriods.map((period) => (
                 <div
                   key={period.id}
-                  className="w-full max-w-[440px] bg-white dark:!bg-[#141820] rounded-2xl border border-[#E5E5DF] dark:!border-[#242936] p-7 shadow-xs hover:border-[#85845C]/50 hover:shadow-md transition-all flex flex-col justify-between dark:!text-[#F9FAFB]"
-                  style={{
-                    backgroundColor: theme.cardBg || '#ffffff',
-                    borderColor: theme.cardBorderColor || '#E5E5DF',
-                    color: theme.bodyTextColor || '#252525',
-                  }}
+                  className="w-full max-w-[440px] glass-panel-gold rounded-3xl p-7 shadow-md hover:-translate-y-1 transition-all flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
-                      <span className="text-xs font-mono font-bold px-2.5 py-1 bg-[#F5F5F1] dark:bg-[#1C222D] text-[#252525] dark:text-[#F9FAFB] rounded-md border border-[#E5E5DF] dark:border-[#242936]">
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 bg-white/90 text-[#252525] rounded-md border border-[#C5A059]/30">
                         {period.code}
                       </span>
-                      <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F5F5F1] dark:bg-[#1C222D] text-[#85845C] dark:text-[#84CC16] border border-[#85845C]/30 dark:border-[#84CC16]/30">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/85 text-[#85845C] border border-[#C5A059]/35 shadow-2xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#85845C]" />
                         <span>Accepting Applications</span>
                       </span>
                     </div>
 
                     <h3
-                      className="text-lg sm:text-xl font-serif font-bold mb-1.5 text-[#252525] dark:!text-[#F9FAFB]"
+                      className="text-lg sm:text-xl font-serif font-bold mb-1.5 text-[#252525]"
                       style={{ color: theme.headingColor || '#252525' }}
                     >
                       {period.name}
                     </h3>
-                    <p className="text-xs font-semibold text-[#85845C] dark:text-[#84CC16] mb-4">
+                    <p className="text-xs font-semibold text-[#85845C] mb-4">
                       Academic Year: {period.academicYear}
                     </p>
 
-                    <div className="space-y-2 text-xs text-[#252525] dark:text-[#D1D5DB] mb-5 bg-[#F5F5F1] dark:bg-[#1C222D] p-4 rounded-xl border border-[#E5E5DF] dark:border-[#242936]">
+                    <div className="space-y-2 text-xs text-[#252525] mb-5 bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-[#C5A059]/25 shadow-xs">
                       <div className="flex flex-wrap items-center justify-between gap-1">
-                        <span className="text-[#666666] dark:text-[#9CA3AF]">Application Window:</span>
-                        <span className="font-bold text-[#252525] dark:text-[#F9FAFB]">
+                        <span className="text-slate-600">Application Window:</span>
+                        <span className="font-bold text-[#252525]">
                           {new Date(period.startDate).toLocaleDateString()} – {new Date(period.endDate).toLocaleDateString()}
                         </span>
                       </div>
                       {period.capacity && (
-                        <div className="flex items-center justify-between pt-1.5 border-t border-[#E5E5DF] dark:border-[#242936]">
-                          <span className="text-[#666666] dark:text-[#9CA3AF]">Intake Capacity:</span>
-                          <span className="font-bold text-[#85845C] dark:text-[#84CC16]">{period.capacity} Students</span>
+                        <div className="flex items-center justify-between pt-1.5 border-t border-[#C5A059]/20">
+                          <span className="text-slate-600">Intake Capacity:</span>
+                          <span className="font-bold text-[#85845C]">{period.capacity} Students</span>
                         </div>
                       )}
                     </div>
 
                     {period.instructions && (
-                      <p className="text-xs text-[#666666] dark:text-[#9CA3AF] leading-relaxed mb-5">
+                      <p className="text-xs text-slate-600 leading-relaxed mb-5">
                         {period.instructions}
                       </p>
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-[#E5E5DF] dark:border-[#242936]">
+                  <div className="pt-4 border-t border-[#C5A059]/25">
                     <button
                       type="button"
                       onClick={() => handleOpenApplication(period)}
-                      className="w-full inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-xl text-sm font-bold transition-all shadow-xs hover:shadow-md active:scale-98 cursor-pointer dark:!bg-[#84CC16] dark:!text-[#0B0D11]"
-                      style={{
-                        backgroundColor: theme.primaryBtnBg || '#85845C',
-                        color: theme.primaryBtnText || '#ffffff',
-                      }}
+                      className="glass-btn-admissions w-full inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-md active:scale-98 cursor-pointer"
                     >
-                      <FileText className="w-4 h-4 text-white dark:text-[#0B0D11]" />
+                      <FileText className="w-4 h-4 text-white" />
                       <span>Apply Now</span>
-                      <ChevronRight className="w-4 h-4 dark:text-[#0B0D11]" />
+                      <ChevronRight className="w-4 h-4 text-white/90" />
                     </button>
                   </div>
                 </div>
@@ -558,26 +546,26 @@ export const MadrasaAdmissionsPage: React.FC = () => {
       {/* Online Application Modal Form & Confirmation Receipt */}
       {selectedPeriod && (
         <div
-          className={`fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto ${
+          className={`fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto ${
             submissionResult ? 'print-receipt-overlay' : ''
           }`}
         >
           <div
-            className={`bg-white dark:bg-[#141820] rounded-2xl ${
+            className={`glass-panel-gold rounded-3xl ${
               submissionResult ? 'max-w-2xl print-receipt-modal' : 'max-w-2xl'
-            } w-full my-8 p-6 sm:p-8 shadow-2xl border border-slate-200 dark:border-[#242936] flex flex-col max-h-[90vh]`}
+            } w-full my-8 p-6 sm:p-8 shadow-2xl flex flex-col max-h-[90vh]`}
           >
             {/* Modal Header */}
             {!submissionResult ? (
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#242936] shrink-0">
+              <div className="flex items-center justify-between pb-4 border-b border-[#C5A059]/25 shrink-0">
                 <div>
                   <span
-                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border dark:!bg-[#1C222D] dark:!border-[#242936] dark:!text-[#84CC16]"
-                    style={{ color: primaryColor, backgroundColor: '#F5F5F1', borderColor: '#E5E5DF' }}
+                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-[#C5A059]/30 bg-white/90 text-[#6B6A45]"
+                    style={{ color: primaryColor }}
                   >
                     {selectedPeriod.code} • {selectedPeriod.academicYear}
                   </span>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-[#F9FAFB] mt-1">
+                  <h3 className="text-lg font-bold text-slate-900 mt-1">
                     Online Admission Application
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-[#9CA3AF]">{selectedPeriod.name}</p>
@@ -1082,11 +1070,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
 
             {/* Modal Footer */}
             {!submissionResult && (
-              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100 dark:border-[#242936] shrink-0">
+              <div className="flex items-center justify-end space-x-3 pt-4 border-t border-[#C5A059]/25 shrink-0">
                 <button
                   type="button"
                   onClick={() => setSelectedPeriod(null)}
-                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-[#9CA3AF] hover:bg-slate-100 dark:hover:bg-[#1C222D] dark:hover:text-[#F9FAFB] transition-colors"
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-white/80 transition-colors"
                 >
                   Cancel
                 </button>
@@ -1094,20 +1082,16 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   type="submit"
                   form="public-admissions-form"
                   disabled={submitting || uploadingDoc}
-                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs font-semibold transition-colors shadow-sm disabled:opacity-50 dark:!bg-[#84CC16] dark:!text-[#0B0D11]"
-                  style={{
-                    backgroundColor: primaryColor,
-                    color: theme.primaryBtnText || '#ffffff',
-                  }}
+                  className="glass-btn-admissions inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                       <span>Submitting Application...</span>
                     </>
                   ) : (
                     <>
-                      <Send className="w-3.5 h-3.5" />
+                      <Send className="w-3.5 h-3.5 text-white" />
                       <span>Submit Application</span>
                     </>
                   )}

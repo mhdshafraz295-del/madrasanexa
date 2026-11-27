@@ -126,16 +126,14 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
   ];
 
   const primaryColor = theme.primaryBtnBg || '#504F34';
-  const navBg = theme.navbarBg || '#ffffff';
 
   return (
     <header
       className={`sticky top-0 z-40 transition-all duration-300 print:hidden w-full max-w-full overflow-x-clip ${
         scrolled
-          ? 'shadow-xs border-b border-[#E5E5DF] backdrop-blur-md'
-          : 'border-b border-[#E5E5DF]'
+          ? 'bg-white/92 backdrop-blur-lg border-b border-[#C5A059]/40 shadow-[0_8px_32px_-4px_rgba(60,50,30,0.10),0_0_20px_rgba(197,160,89,0.18)]'
+          : 'bg-white/85 backdrop-blur-md border-b border-[#C5A059]/30 shadow-[0_4px_24px_-4px_rgba(60,50,30,0.06),0_0_16px_rgba(197,160,89,0.12)]'
       }`}
-      style={{ backgroundColor: navBg }}
     >
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 w-full">
         <div className="h-16 sm:h-20 flex items-center justify-between gap-1.5 sm:gap-4 w-full">
@@ -275,11 +273,7 @@ export const MadrasaPublicNavbar: React.FC<MadrasaPublicNavbarProps> = ({
           <div className="shrink-0 flex items-center gap-1.5 sm:gap-2.5">
             <Link
               to={`/madrasa/${slug}/admissions`}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs sm:px-3.5 sm:py-2 sm:text-sm font-semibold rounded-xl shadow-xs whitespace-nowrap shrink-0 transition-all hover:opacity-95"
-              style={{
-                backgroundColor: primaryColor,
-                color: theme.primaryBtnText || '#ffffff',
-              }}
+              className="glass-btn-admissions inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm font-bold rounded-xl whitespace-nowrap shrink-0 transition-all cursor-pointer shadow-md"
             >
               <GraduationCap className="w-3.5 h-3.5 text-white shrink-0" />
               <span>Admissions</span>

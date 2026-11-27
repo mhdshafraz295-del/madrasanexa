@@ -103,7 +103,7 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
   return (
     <section
       aria-label="Daily Islamic Wisdom and Hijri Date"
-      className={`w-full border-y border-[#E2E0D0] dark:border-[#242936] bg-[#F8F7F2] dark:bg-[#141820] py-2.5 sm:py-3 px-4 sm:px-6 lg:px-8 transition-colors select-none ${className}`}
+      className={`w-full border-y border-[#C5A059]/30 bg-white/75 backdrop-blur-md py-2.5 sm:py-3 px-4 sm:px-6 lg:px-8 transition-colors select-none shadow-[0_2px_12px_rgba(197,160,89,0.08)] ${className}`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -111,8 +111,8 @@ export const MadrasaPublicKnowledgeStrip: React.FC<MadrasaPublicKnowledgeStripPr
 
         {/* 1. Live Hijri Date Pill & Mobile Controls Header */}
         <div className="w-full md:w-auto flex items-center justify-between md:justify-start gap-3 shrink-0">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white dark:bg-[#1C222D] border border-[#D6D4C2] dark:border-[#242936] text-[#2C2B1C] dark:text-[#F9FAFB] text-xs font-semibold shadow-2xs">
-            <Calendar className="w-3.5 h-3.5 text-[#504F34] dark:text-[#84CC16] shrink-0" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 backdrop-blur-sm border border-[#C5A059]/35 text-[#2C2B1C] text-xs font-semibold shadow-[0_0_10px_rgba(197,160,89,0.12)]">
+            <Calendar className="w-3.5 h-3.5 text-[#504F34] shrink-0" />
             <span className="tracking-tight">{hijriDate}</span>
           </div>
 

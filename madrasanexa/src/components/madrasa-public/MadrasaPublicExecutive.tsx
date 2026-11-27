@@ -143,17 +143,17 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
 
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-14 px-4">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#6B6A45] dark:text-[#84CC16] mb-3 px-3.5 py-1 rounded-full bg-[#F4F3EC] dark:bg-[#1C222D] border border-[#E2E0D0] dark:border-[#242936] shadow-2xs">
-          <ShieldCheck className="w-3.5 h-3.5 text-[#6B6A45] dark:text-[#84CC16]" />
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#6B6A45] mb-3 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#6B6A45]" />
           <span>Governance & Leadership</span>
         </div>
         <h2
-          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#232215] dark:text-[#F9FAFB]"
+          className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold tracking-tight text-[#232215]"
           style={{ color: theme.headingColor || undefined }}
         >
           Executive Committee & Board
         </h2>
-        <p className="mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 dark:text-[#9CA3AF] leading-relaxed max-w-2xl mx-auto">
+        <p className="mt-2.5 text-xs sm:text-sm md:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
           Guiding the institution with visionary leadership, steadfast Islamic stewardship, and devoted community governance.
         </p>
       </div>
@@ -171,7 +171,7 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
             {leadershipMembers.map((leader) => (
               <div
                 key={leader.id}
-                className="bg-white dark:bg-[#141820] rounded-3xl border border-[#D8D5C0] dark:border-[#242936] shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden flex flex-col sm:flex-row relative bg-islamic-diamond-subtle"
+                className="glass-panel-gold rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col sm:flex-row relative bg-islamic-diamond-subtle hover:-translate-y-1"
               >
                 {/* Background 8-point star watermark */}
                 <div
@@ -420,7 +420,7 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
           {/* --------------------------------------------------------- */}
           <div className="block lg:hidden max-w-md mx-auto">
             {/* Single Spotlight Card */}
-            <div className="w-full rounded-3xl bg-white dark:bg-[#141820] border border-[#E2E0D0] dark:border-[#242936] shadow-lg overflow-hidden bg-islamic-diamond-subtle">
+            <div className="w-full rounded-3xl glass-panel-gold shadow-lg overflow-hidden bg-islamic-diamond-subtle">
               {/* Portrait Top Frame */}
               <div className="relative h-60 sm:h-72 w-full overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D]">
                 {activeCommitteeMember.photoUrl ? (

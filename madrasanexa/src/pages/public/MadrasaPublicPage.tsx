@@ -115,12 +115,21 @@ export const MadrasaPublicPage: React.FC = () => {
 
   return (
     <div
-      className="min-h-screen flex flex-col font-sans selection:bg-[#F5F5F1] selection:text-[#252525] overflow-x-clip"
+      className="min-h-screen flex flex-col font-sans selection:bg-[#F5F5F1] selection:text-[#252525] overflow-x-clip bg-gradient-to-b from-[#FAF8F3] via-[#F5F3EC] to-[#F8F6F1] relative"
       style={{
-        backgroundColor: theme.pageBg || '#ffffff',
         color: theme.bodyTextColor || '#252525',
       }}
     >
+      {/* Ambient warm golden glow lighting across background canvas */}
+      <div
+        className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden"
+        aria-hidden="true"
+      >
+        <div className="absolute -top-36 left-1/2 -translate-x-1/2 w-[950px] h-[500px] bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.11)_0%,rgba(197,160,89,0.05)_50%,transparent_75%)] blur-3xl" />
+        <div className="absolute top-[32%] -left-32 w-[650px] h-[650px] bg-[radial-gradient(circle,rgba(197,160,89,0.08)_0%,transparent_70%)] blur-3xl" />
+        <div className="absolute top-[68%] -right-32 w-[700px] h-[700px] bg-[radial-gradient(circle,rgba(212,175,55,0.09)_0%,transparent_70%)] blur-3xl" />
+      </div>
+
       {/* 1. Institutional Navigation Header */}
       <MadrasaPublicNavbar
         slug={slug!}

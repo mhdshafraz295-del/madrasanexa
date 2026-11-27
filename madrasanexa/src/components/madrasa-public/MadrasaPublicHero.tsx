@@ -83,11 +83,11 @@ export const MadrasaPublicHero: React.FC<MadrasaPublicHeroProps> = ({
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
         {/* Institutional Accreditation / Excellence Badge */}
-        <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-[#F5F5F1] text-[11px] sm:text-xs font-semibold uppercase tracking-wider mb-6 shadow-xs max-w-full">
-          <Sparkles className="w-3.5 h-3.5 text-[#A5A477] shrink-0" />
+        <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-[#C5A059]/40 backdrop-blur-md text-[#F5F5F1] text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-6 shadow-[0_0_16px_rgba(197,160,89,0.25)] max-w-full">
+          <Sparkles className="w-3.5 h-3.5 text-[#E5D7B7] shrink-0" />
           <span className="text-center">Established Arabic & Islamic College</span>
           <span className="w-1 h-1 rounded-full bg-white/60 hidden sm:inline-block" />
-          <ShieldCheck className="w-3.5 h-3.5 text-[#A5A477] shrink-0 hidden sm:inline-block" />
+          <ShieldCheck className="w-3.5 h-3.5 text-[#E5D7B7] shrink-0 hidden sm:inline-block" />
         </div>
 
         {/* Institution Title / Headline in Serif */}
@@ -111,37 +111,37 @@ export const MadrasaPublicHero: React.FC<MadrasaPublicHeroProps> = ({
           {hasActiveAdmissions ? (
             <Link
               to={`/madrasa/${slug}/admissions?apply=true`}
-              className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm text-[#504F34] bg-white hover:bg-[#F5F5F1] dark:!bg-[#84CC16] dark:!text-[#0B0D11] dark:hover:!bg-[#a3e635] dark:border-0 transition-all shadow-md hover:shadow-lg hover:scale-102 active:scale-98"
+              className="glass-btn-admissions inline-flex items-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-bold text-xs sm:text-sm text-white transition-all shadow-lg hover:scale-102 active:scale-98 cursor-pointer"
             >
-              <GraduationCap className="w-4 h-4 text-[#504F34] dark:!text-[#0B0D11]" />
+              <GraduationCap className="w-4 h-4 text-white" />
               <span>Apply for Admissions</span>
-              <ChevronRight className="w-4 h-4 text-[#504F34] dark:!text-[#0B0D11]" />
+              <ChevronRight className="w-4 h-4 text-white/90" />
             </Link>
           ) : (
             <a
               href="#about"
               onClick={(e) => handleScrollToSection(e, '#about')}
-              className="inline-flex items-center space-x-2.5 px-6 py-3 sm:px-7 sm:py-3.5 rounded-xl font-bold text-xs sm:text-sm text-[#504F34] bg-white hover:bg-[#F5F5F1] dark:!bg-[#84CC16] dark:!text-[#0B0D11] dark:hover:!bg-[#a3e635] dark:border-0 transition-all shadow-md hover:shadow-lg"
+              className="glass-btn-admissions inline-flex items-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-bold text-xs sm:text-sm text-white transition-all shadow-lg hover:scale-102 active:scale-98 cursor-pointer"
             >
               <span>Explore Our Institution</span>
-              <ArrowDown className="w-4 h-4 text-[#504F34] dark:!text-[#0B0D11]" />
+              <ArrowDown className="w-4 h-4 text-white/90" />
             </a>
           )}
 
           <a
             href="#curriculum"
             onClick={(e) => handleScrollToSection(e, '#curriculum')}
-            className="inline-flex items-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-sm text-white dark:text-[#F9FAFB] border border-white/30 dark:border-white/20 dark:bg-white/5 hover:bg-white/10 dark:hover:bg-white/10 transition-colors"
+            className="inline-flex items-center space-x-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-2xl font-semibold text-xs sm:text-sm text-white bg-white/15 backdrop-blur-md border border-[#C5A059]/40 hover:bg-white/25 hover:border-[#C5A059]/70 shadow-[0_0_15px_rgba(197,160,89,0.22)] transition-all cursor-pointer"
           >
             <span>Academic Curriculum</span>
-            <ChevronRight className="w-4 h-4 text-white/70 dark:text-[#F9FAFB]" />
+            <ChevronRight className="w-4 h-4 text-white/80" />
           </a>
         </div>
 
         {/* Active Admissions Callout Pill */}
         {hasActiveAdmissions && activeIntakeName ? (
-          <div className="mt-8 inline-flex items-center space-x-2 text-xs font-semibold px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[#F5F5F1] max-w-full">
-            <span className="w-2 h-2 rounded-full bg-[#A5A477] animate-ping shrink-0" />
+          <div className="mt-8 inline-flex items-center space-x-2 text-xs font-semibold px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-[#C5A059]/50 shadow-[0_0_16px_rgba(197,160,89,0.28)] text-white max-w-full">
+            <span className="w-2 h-2 rounded-full bg-[#E5C178] animate-ping shrink-0" />
             <span className="truncate">
               Now Enrolling: {activeIntakeName} {activeAcademicYear ? `(${activeAcademicYear})` : ''}
             </span>

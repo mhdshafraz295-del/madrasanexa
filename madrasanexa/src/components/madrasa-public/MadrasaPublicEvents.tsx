@@ -143,7 +143,7 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
     <section id="events" className="scroll-mt-28 public-section-enter">
       {/* Section Header */}
       <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-2 px-3.5 py-1 rounded-full bg-[#F5F5F1] border border-[#E5E5DF] shadow-2xs">
+        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#85845C] mb-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]">
           <Calendar className="w-3.5 h-3.5 text-[#85845C]" />
           <span>Events & Gallery</span>
         </div>
@@ -153,10 +153,10 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
         >
           Upcoming Institutional Events & Albums
         </h2>
-        <p className="text-sm sm:text-base text-[#666666] max-w-xl mx-auto">
+        <p className="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
           Explore commemorative milestones, academic ceremonies, and student events.
         </p>
-        <div className="w-16 h-1 bg-gradient-to-r from-[#85845C] via-[#A5A477] to-[#85845C] mx-auto rounded-full mt-3" />
+        <div className="w-16 h-1 bg-gradient-to-r from-[#85845C] via-[#DFC076] to-[#85845C] mx-auto rounded-full mt-3" />
       </div>
 
       {/* Events / Gallery Centered & Balanced CSS Grid Layout
@@ -187,7 +187,7 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
           return (
             <div
               key={event.id}
-              className="w-full bg-white rounded-2xl border border-[#E5E5DF] flex flex-col justify-between overflow-hidden p-5 space-y-4 shadow-xs hover:border-[#85845C]/50 hover:shadow-md transition-all h-full"
+              className="w-full glass-card-elevated rounded-3xl flex flex-col justify-between overflow-hidden p-5 sm:p-6 space-y-4 transition-all h-full"
             >
               {/* Premium Photo Album Layout */}
               {albumImages.length > 0 ? (

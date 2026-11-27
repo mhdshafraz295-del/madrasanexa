@@ -184,17 +184,17 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
           return (
             <div
               key={event.id}
-              className="w-full bg-white rounded-2xl border border-[#E5E0D5] shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden p-5 sm:p-6 space-y-4 h-full group relative"
+              className="w-full bg-white rounded-2xl shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden p-6 sm:p-7 space-y-4 h-full group relative border-0"
             >
               {/* Top Accent Strip */}
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
               {/* Premium Photo Album Layout */}
               {albumImages.length > 0 ? (
                 <div className="space-y-2.5">
-                  {/* Large Main Cover Image */}
+                  {/* Large Main Cover Image (Clean borderless) */}
                   <div
                     onClick={() => handleOpenAlbum(event, effectiveCoverIdx)}
-                    className="group/cover relative w-full h-52 sm:h-56 md:h-60 rounded-xl overflow-hidden border border-[#E5E5DF] bg-[#F5F5F1] cursor-pointer shadow-xs hover:border-[#85845C] hover:shadow-sm transition-all"
+                    className="group/cover relative w-full h-52 sm:h-56 md:h-60 rounded-xl overflow-hidden border-0 bg-[#FAF8F3] cursor-pointer shadow-xs hover:shadow-md transition-all"
                     title={`Open full album: ${event.title}`}
                     role="button"
                     tabIndex={0}
@@ -218,15 +218,15 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
 
                     {/* Top-Left: Photo Count Pill */}
                     <div className="absolute top-3 left-3 z-10">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold shadow-xs border border-white/15">
-                        <Images className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-xs font-semibold shadow-xs border-0">
+                        <Images className="w-3.5 h-3.5 text-[#DFC076]" />
                         <span>{photoCount} {photoCount === 1 ? 'Photo' : 'Photos'}</span>
                       </span>
                     </div>
 
                     {/* Top-Right: Click to View Hint */}
                     <div className="absolute top-3 right-3 z-10 opacity-90 group-hover/cover:opacity-100 transition-opacity">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#85845C]/90 backdrop-blur-md text-white text-[11px] font-medium shadow-xs">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#0B3B2C]/90 backdrop-blur-md text-white text-[11px] font-medium shadow-xs">
                         <Eye className="w-3 h-3 text-white" />
                         <span>View HD</span>
                       </span>
@@ -235,7 +235,7 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                     {/* Hover Overlay with Full Album Trigger */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover/cover:opacity-100 transition-opacity duration-300 flex items-end p-4">
                       <span className="text-white text-xs font-semibold flex items-center gap-2">
-                        <Eye className="w-4 h-4 text-[#D4AF37]" />
+                        <Eye className="w-4 h-4 text-[#DFC076]" />
                         <span>Click to Open Full Album Viewer</span>
                       </span>
                     </div>
@@ -261,7 +261,7 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                           <div
                             key={item.img.id || item.originalIdx}
                             onClick={() => handleOpenAlbum(event, item.originalIdx)}
-                            className="group/thumb relative aspect-square sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden border border-[#E5E5DF] bg-[#F5F5F1] cursor-pointer shadow-2xs hover:border-[#85845C] hover:shadow-xs transition-all"
+                            className="group/thumb relative aspect-square sm:aspect-[4/3] rounded-lg sm:rounded-xl overflow-hidden border-0 bg-[#FAF8F3] cursor-pointer shadow-2xs hover:shadow-xs transition-all"
                             title={isLastWithHidden ? `+${hiddenCount} more photos in this album` : `View photo ${item.originalIdx + 1}`}
                             role="button"
                             tabIndex={0}
@@ -287,10 +287,10 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                             {isLastWithHidden ? (
                               <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition-all group-hover/thumb:bg-black/80">
                                 <span className="font-serif font-bold text-base sm:text-lg leading-none">+{hiddenCount}</span>
-                                <span className="text-[10px] font-semibold text-[#D4AF37] tracking-wider uppercase mt-0.5">More</span>
+                                <span className="text-[10px] font-semibold text-[#DFC076] tracking-wider uppercase mt-0.5">More</span>
                               </div>
                             ) : (
-                              <div className="absolute inset-0 bg-[#504F34]/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
+                              <div className="absolute inset-0 bg-[#0B3B2C]/30 opacity-0 group-hover/thumb:opacity-100 transition-opacity flex items-center justify-center">
                                 <Eye className="w-3.5 h-3.5 text-white" />
                               </div>
                             )}
@@ -306,7 +306,7 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
               <div className="flex-1 flex flex-col justify-between pt-1">
                 <div>
                   {/* Event Date Badge */}
-                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#FAF8F3] text-[#0B3B2C] text-xs font-bold mb-3 border border-[#C5A059]/30">
+                  <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#FAF8F3] text-[#0B3B2C] text-xs font-bold mb-3 border-0 shadow-2xs">
                     <Calendar className="w-3.5 h-3.5 text-[#C5A059]" />
                     <span>{event.date}</span>
                   </div>
@@ -324,7 +324,7 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                   ) : null}
                 </div>
 
-                <div className="pt-3.5 border-t border-[#F0ECE1] space-y-3">
+                <div className="pt-3.5 border-t border-[#FAF6EE] space-y-3">
                   {/* Event Location */}
                   {event.location ? (
                     <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">

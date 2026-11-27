@@ -36,7 +36,7 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
         </p>
       </div>
 
-      {/* Editorial Notices Cards Grid */}
+      {/* Editorial Notices Cards Grid (Borderless Clean Cards) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7 items-stretch">
         {notices.map((notice) => {
           const isUrgent = notice.priority === 'URGENT';
@@ -44,20 +44,29 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
           return (
             <div
               key={notice.id}
-              className={`bg-white rounded-2xl border overflow-hidden p-6 shadow-xs hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between group ${
-                isUrgent ? 'border-amber-400/80 bg-amber-50/20' : 'border-[#E5E0D5]'
+              className={`bg-white rounded-2xl overflow-hidden p-6 sm:p-7 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between group relative border-0 ${
+                isUrgent ? 'bg-amber-50/25 ring-1 ring-amber-400/40' : ''
               }`}
             >
+              {/* Top Accent Strip */}
+              <div
+                className={`absolute top-0 left-0 right-0 h-1 ${
+                  isUrgent
+                    ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500'
+                    : 'bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]'
+                }`}
+              />
+
               <div>
                 {/* Header Metadata: Category + Date */}
-                <div className="flex items-center justify-between gap-2 mb-3.5 pb-3 border-b border-[#F0ECE1]">
+                <div className="flex items-center justify-between gap-2 mb-3.5 pb-3 border-b border-[#FAF6EE]">
                   {isUrgent ? (
-                    <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border-0">
                       <AlertCircle className="w-3.5 h-3.5 text-amber-700" />
                       <span>Urgent Notice</span>
                     </span>
                   ) : (
-                    <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#FAF8F3] text-[#0B3B2C] border border-[#C5A059]/30">
+                    <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#FAF8F3] text-[#0B3B2C] border-0 shadow-2xs">
                       <FileText className="w-3.5 h-3.5 text-[#C5A059]" />
                       <span>Official Bulletin</span>
                     </span>
@@ -69,9 +78,9 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
                   </span>
                 </div>
 
-                {/* Optional Notice Image Poster with Error Handling (Never breaks) */}
+                {/* Optional Notice Image Poster with Error Handling (Clean borderless) */}
                 {notice.posterUrl ? (
-                  <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-50 border border-[#E5E0D5] mb-4">
+                  <div className="relative w-full aspect-[16/9] rounded-xl overflow-hidden bg-slate-50 border-0 shadow-2xs mb-4">
                     <img
                       src={notice.posterUrl}
                       alt={notice.title}
@@ -100,7 +109,7 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedNotice(notice)}
-                className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-[#0B3B2C] group-hover:text-[#C5A059] transition-colors pt-3 border-t border-[#F0ECE1] w-full text-left cursor-pointer"
+                className="inline-flex items-center space-x-1.5 text-xs font-bold uppercase tracking-wider text-[#0B3B2C] group-hover:text-[#C5A059] transition-colors pt-3 border-t border-[#FAF6EE] w-full text-left cursor-pointer"
               >
                 <span>Read Full Circular</span>
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
@@ -110,21 +119,21 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
         })}
       </div>
 
-      {/* Full Notice Reading Modal */}
+      {/* Full Notice Reading Modal (Clean Borderless Surface) */}
       {selectedNotice && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
           onClick={() => setSelectedNotice(null)}
         >
           <div
-            className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border border-[#E5E0D5] relative text-left"
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto p-6 sm:p-8 shadow-2xl border-0 relative text-left"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
             <button
               type="button"
               onClick={() => setSelectedNotice(null)}
-              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#FAF8F3] hover:bg-[#F0ECE1] border border-[#E5E0D5] flex items-center justify-center text-slate-600 hover:text-[#1C2826] transition-colors cursor-pointer"
+              className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#FAF8F3] hover:bg-[#F0ECE1] border-0 shadow-2xs flex items-center justify-center text-slate-600 hover:text-[#1C2826] transition-colors cursor-pointer"
               aria-label="Close Notice"
             >
               <X className="w-4 h-4" />
@@ -133,12 +142,12 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
             {/* Modal Header */}
             <div className="flex items-center space-x-2.5 mb-3">
               {selectedNotice.priority === 'URGENT' ? (
-                <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border-0">
                   <AlertCircle className="w-3.5 h-3.5 text-amber-700" />
                   <span>Urgent Notice</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold bg-[#FAF8F3] text-[#0B3B2C] border border-[#C5A059]/30">
+                <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full text-xs font-semibold bg-[#FAF8F3] text-[#0B3B2C] border-0 shadow-2xs">
                   <CheckCircle2 className="w-3.5 h-3.5 text-[#0B3B2C]" />
                   <span>Official Circular</span>
                 </span>
@@ -154,7 +163,7 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
 
             {/* Poster if present */}
             {selectedNotice.posterUrl ? (
-              <div className="w-full rounded-xl overflow-hidden border border-[#E5E0D5] mb-5 bg-slate-50">
+              <div className="w-full rounded-xl overflow-hidden border-0 shadow-xs mb-5 bg-slate-50">
                 <img
                   src={selectedNotice.posterUrl}
                   alt={selectedNotice.title}

@@ -3616,6 +3616,12 @@ export interface PublicAdmissionsResponse {
   heroSubtitle?: string | null;
   theme?: MadrasaThemeTokens | null;
   activeAdmissionPeriods: AdmissionPeriodData[];
+  availableAcademicSections?: {
+    id: string;
+    name: string;
+    code?: string | null;
+    description?: string | null;
+  }[];
   availableClasses: {
     id: string;
     name: string;
@@ -3646,6 +3652,7 @@ export interface SubmitApplicationPayload {
   guardianEmail?: string | null;
   address: string;
   appliedClassId?: string | null;
+  appliedSectionId?: string | null;
   previousSchool?: string | null;
   documents?: ApplicationDocument[];
 }

@@ -197,6 +197,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
         guardianPhone: guardianPhone.trim(),
         guardianEmail: guardianEmail.trim() || null,
         address: address.trim(),
+        appliedSectionId: appliedClassId || null,
         appliedClassId: appliedClassId || null,
         previousSchool: previousSchool.trim() || null,
         documents: uploadedDocs,
@@ -252,9 +253,32 @@ export const MadrasaAdmissionsPage: React.FC = () => {
     );
   }
 
-  const { madrasa, activeAdmissionPeriods = [], availableClasses = [] } = data;
+  const {
+    madrasa,
+    activeAdmissionPeriods = [],
+    availableAcademicSections = [],
+    availableClasses = [],
+  } = data;
   const theme = resolvePublicTheme(data.theme);
   const primaryColor = theme.primaryBtnBg || '#504F34';
+
+  // Derive Academic Sections belonging strictly to the active madrasa
+  const academicSectionsList = React.useMemo(() => {
+    if (availableAcademicSections && availableAcademicSections.length > 0) {
+      return availableAcademicSections;
+    }
+    // Fallback extraction if sections were scoped through classes
+    const map = new Map<string, { id: string; name: string; code?: string | null }>();
+    for (const cls of availableClasses) {
+      if (cls.academicSection && !map.has(cls.academicSection.id)) {
+        map.set(cls.academicSection.id, {
+          id: cls.academicSection.id,
+          name: cls.academicSection.name,
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [availableAcademicSections, availableClasses]);
 
   return (
     <div
@@ -696,7 +720,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                             <span className="font-bold text-slate-900 dark:text-[#F9FAFB] text-right min-w-0 break-words">{submissionResult.applicantName}</span>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Requested Class:</span>
+                            <span className="text-slate-500 dark:text-[#9CA3AF] shrink-0">Academic Section:</span>
                             <span className="font-semibold text-slate-800 dark:text-[#D1D5DB] text-right min-w-0 break-words">{submissionResult.appliedClassName || 'General Admission / Baseline'}</span>
                           </div>
                           <div className="flex justify-between gap-2">
@@ -951,7 +975,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-[11px] font-bold uppercase text-slate-600 dark:text-[#9CA3AF] mb-1">
-                          Requested Class Level
+                          Requested Academic Section
                         </label>
                         <select
                           value={appliedClassId}
@@ -959,9 +983,9 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                           className="w-full px-3.5 py-2 rounded-xl border border-slate-200 dark:border-[#242936] text-sm focus:outline-none focus:ring-2 focus:ring-[#504F34] dark:focus:ring-[#84CC16] bg-white dark:bg-[#1C222D] text-slate-900 dark:text-[#F9FAFB]"
                         >
                           <option value="">-- Let Institution Determine --</option>
-                          {availableClasses.map((cls) => (
-                            <option key={cls.id} value={cls.id}>
-                              {cls.name} {cls.academicSection ? `(${cls.academicSection.name})` : ''}
+                          {academicSectionsList.map((sec) => (
+                            <option key={sec.id} value={sec.id}>
+                              {sec.name} {sec.code ? `(${sec.code})` : ''}
                             </option>
                           ))}
                         </select>

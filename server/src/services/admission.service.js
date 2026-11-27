@@ -75,6 +75,16 @@ export async function getPublicAdmissionsData(slug) {
           capacity: true,
         },
       },
+      academicSections: {
+        where: { isActive: true },
+        orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+        select: {
+          id: true,
+          name: true,
+          code: true,
+          description: true,
+        },
+      },
       classes: {
         where: { isActive: true },
         orderBy: { name: 'asc' },
@@ -145,6 +155,7 @@ export async function getPublicAdmissionsData(slug) {
     heroImageUrl,
     theme: madrasa.profile.themePublishedJson || DEFAULT_THEME_TOKENS,
     activeAdmissionPeriods: madrasa.admissionPeriods,
+    availableAcademicSections: madrasa.academicSections || [],
     availableClasses: madrasa.classes,
   };
 }
@@ -301,18 +312,52 @@ export async function submitPublicApplication(slug, data) {
     }
   }
 
-  // Validate applied class if provided
+  // Validate applied preference (academic section or class) if provided
   let appliedClass = null;
-  if (data.appliedClassId) {
-    appliedClass = await prisma.class.findFirst({
+  let appliedSectionName = null;
+  const targetPreferenceId = data.appliedSectionId || data.appliedClassId || null;
+
+  if (targetPreferenceId) {
+    // 1. Check if preference matches an Academic Section strictly belonging to this madrasa
+    const section = await prisma.academicSection.findFirst({
       where: {
-        id: data.appliedClassId,
+        id: targetPreferenceId,
         madrasaId: madrasa.id,
         isActive: true,
       },
+      include: {
+        classes: {
+          where: { isActive: true },
+          orderBy: { name: 'asc' },
+          take: 1,
+        },
+      },
     });
-    if (!appliedClass) {
-      throw new BadRequestError('Selected class is invalid or currently inactive.');
+
+    if (section) {
+      appliedSectionName = section.name;
+      if (section.classes && section.classes.length > 0) {
+        appliedClass = section.classes[0];
+      }
+    } else {
+      // 2. Fallback check if preference matches an active class strictly belonging to this madrasa
+      appliedClass = await prisma.class.findFirst({
+        where: {
+          id: targetPreferenceId,
+          madrasaId: madrasa.id,
+          isActive: true,
+        },
+        include: {
+          academicSection: true,
+        },
+      });
+
+      if (!appliedClass) {
+        throw new BadRequestError('Selected academic preference is invalid or currently inactive.');
+      }
+      if (appliedClass.academicSection) {
+        appliedSectionName = appliedClass.academicSection.name;
+      }
     }
   }
 
@@ -404,7 +449,7 @@ export async function submitPublicApplication(slug, data) {
         applicationNo,
         intakeName: period.name,
         academicYear: period.academicYear,
-        className: appliedClass ? appliedClass.name : '',
+        className: appliedSectionName || (appliedClass ? appliedClass.name : ''),
         status: 'PENDING',
         submittedAt: now,
         contactPhone: madrasa.profile?.contactPhone || madrasa.phone,
@@ -430,7 +475,7 @@ export async function submitPublicApplication(slug, data) {
             guardianName: data.guardianName.trim(),
             intakeName: period.name,
             academicYear: period.academicYear,
-            className: appliedClass ? appliedClass.name : null,
+            className: appliedSectionName || (appliedClass ? appliedClass.name : null),
             status: 'PENDING',
             subType: 'SUBMITTED',
             submittedAt: now.toISOString(),
@@ -454,7 +499,7 @@ export async function submitPublicApplication(slug, data) {
     applicantName: application.applicantName,
     intakeName: period.name,
     academicYear: period.academicYear,
-    appliedClassName: appliedClass ? appliedClass.name : null,
+    appliedClassName: appliedSectionName || (appliedClass ? appliedClass.name : null),
     submittedAt: application.submittedAt,
     madrasaName: madrasa.name,
   };

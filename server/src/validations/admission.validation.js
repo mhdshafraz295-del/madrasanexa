@@ -124,6 +124,7 @@ export const submitApplicationSchema = z.object({
     .max(1000, 'Address cannot exceed 1000 characters.')
     .transform((val) => val.trim()),
   appliedClassId: z.string().optional().nullable().or(z.literal('')).transform((val) => val || null),
+  appliedSectionId: z.string().optional().nullable().or(z.literal('')).transform((val) => val || null),
   previousSchool: z
     .string()
     .max(255, 'Previous school cannot exceed 255 characters.')

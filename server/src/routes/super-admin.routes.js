@@ -52,6 +52,8 @@ import {
   unpublishAnnouncement,
   listSuperAdminAnnouncements,
   getSuperAdminAnnouncement,
+  uploadAnnouncementImageMiddleware,
+  uploadAnnouncementImage,
 } from '../controllers/announcement.controller.js';
 import {
   listSubmissions,
@@ -139,6 +141,8 @@ router.post('/about-us/unpublish', unpublishAboutUs);
 
 // 9. In-App Announcement Center
 router.get('/announcements', listSuperAdminAnnouncements);
+router.post('/announcements/upload-image', uploadAnnouncementImageMiddleware, uploadAnnouncementImage);
+router.post('/announcements/image', uploadAnnouncementImageMiddleware, uploadAnnouncementImage);
 router.get('/announcements/:id', getSuperAdminAnnouncement);
 router.post('/announcements', createAnnouncement);
 router.put('/announcements/:id', updateAnnouncement);

@@ -25,6 +25,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Info,
+  Image as ImageIcon,
+  UploadCloud,
+  Trash2,
 } from 'lucide-react';
 
 export default function AnnouncementsPage() {
@@ -57,6 +60,12 @@ export default function AnnouncementsPage() {
   // Form State
   const [formTitle, setFormTitle] = useState('');
   const [formMessage, setFormMessage] = useState('');
+  const [formImageUrl, setFormImageUrl] = useState('');
+  const [formImageFileId, setFormImageFileId] = useState('');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageUploadError, setImageUploadError] = useState('');
+  const imageFileRef = useRef<HTMLInputElement | null>(null);
   const [formCategory, setFormCategory] = useState<AnnouncementCategory>('GENERAL');
   const [formPriority, setFormPriority] = useState<AnnouncementPriority>('NORMAL');
   const [formAudience, setFormAudience] = useState<AnnouncementAudience>('ALL_MADRASAS');
@@ -125,6 +134,11 @@ export default function AnnouncementsPage() {
     setEditingId(null);
     setFormTitle('');
     setFormMessage('');
+    setFormImageUrl('');
+    setFormImageFileId('');
+    setImagePreviewUrl('');
+    setImageUploadError('');
+    if (imageFileRef.current) imageFileRef.current.value = '';
     setFormCategory('GENERAL');
     setFormPriority('NORMAL');
     setFormAudience('ALL_MADRASAS');
@@ -143,6 +157,11 @@ export default function AnnouncementsPage() {
       setEditingId(full.id);
       setFormTitle(full.title);
       setFormMessage(full.message);
+      setFormImageUrl(full.imageUrl || '');
+      setFormImageFileId(full.imageFileId || '');
+      setImagePreviewUrl(full.imageUrl || '');
+      setImageUploadError('');
+      if (imageFileRef.current) imageFileRef.current.value = '';
       setFormCategory(full.category);
       setFormPriority(full.priority);
       setFormAudience(full.audience);
@@ -156,6 +175,51 @@ export default function AnnouncementsPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Image Selection & Upload
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setImageUploadError('Image size must be smaller than 5 MB.');
+      return;
+    }
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+      setImageUploadError('Invalid format. Only JPG, PNG, and WebP images are supported.');
+      return;
+    }
+
+    setImageUploadError('');
+    setIsUploadingImage(true);
+
+    // Instant local preview
+    const localUrl = URL.createObjectURL(file);
+    setImagePreviewUrl(localUrl);
+
+    try {
+      const res = await announcementService.uploadAnnouncementImage(file);
+      setFormImageUrl(res.url);
+      setFormImageFileId(res.fileId);
+      setImagePreviewUrl(res.url);
+    } catch (err: any) {
+      setImageUploadError(err.response?.data?.message || 'Failed to upload image. Please try again.');
+    } finally {
+      setIsUploadingImage(false);
+      if (imageFileRef.current) imageFileRef.current.value = '';
+    }
+  };
+
+  // Remove Image
+  const handleRemoveImage = () => {
+    setFormImageUrl('');
+    setFormImageFileId('');
+    setImagePreviewUrl('');
+    setImageUploadError('');
+    if (imageFileRef.current) imageFileRef.current.value = '';
   };
 
   // Save Draft (or Update)
@@ -181,6 +245,8 @@ export default function AnnouncementsPage() {
       const payload = {
         title: formTitle.trim(),
         message: formMessage.trim(),
+        imageUrl: formImageUrl || null,
+        imageFileId: formImageFileId || null,
         category: formCategory,
         priority: formPriority,
         audience: formAudience,
@@ -276,6 +342,7 @@ export default function AnnouncementsPage() {
     setPreviewData({
       title: formTitle.trim() || 'Untitled Announcement',
       message: formMessage.trim() || 'No message content provided yet.',
+      imageUrl: formImageUrl || imagePreviewUrl || null,
       category: formCategory,
       priority: formPriority,
       audience: formAudience,
@@ -552,7 +619,18 @@ export default function AnnouncementsPage() {
                   <tr key={item.id} className="hover:bg-[#F7F6F1]/50 transition">
                     {/* Title & Preview */}
                     <td className="py-3 px-4 max-w-xs sm:max-w-sm">
-                      <div className="font-bold text-[#0F172A] line-clamp-1">{item.title}</div>
+                      <div className="font-bold text-[#0F172A] line-clamp-1 flex items-center gap-1.5">
+                        {item.imageUrl && (
+                          <span
+                            title="Contains attached graphic banner"
+                            className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-200 shrink-0"
+                          >
+                            <ImageIcon className="w-2.5 h-2.5" />
+                            <span>Graphic</span>
+                          </span>
+                        )}
+                        <span className="truncate">{item.title}</span>
+                      </div>
                       <div className="text-[11px] text-[#7C8A9A] line-clamp-1 mt-0.5">
                         {item.message}
                       </div>
@@ -623,6 +701,16 @@ export default function AnnouncementsPage() {
 
                     {/* Actions */}
                     <td className="py-3 px-4 whitespace-nowrap text-right space-x-1">
+                      <button
+                        onClick={() => {
+                          setPreviewData(item);
+                          setIsPreviewOpen(true);
+                        }}
+                        className="px-2.5 py-1 text-xs font-medium text-slate-700 hover:text-[#0F172A] hover:bg-slate-100 rounded-lg transition cursor-pointer"
+                        title="Preview announcement presentation"
+                      >
+                        View
+                      </button>
                       {item.status !== 'ARCHIVED' && (
                         <>
                           <button
@@ -763,6 +851,94 @@ export default function AnnouncementsPage() {
                 <div className="text-[10px] text-[#7C8A9A] text-right mt-1">
                   {formMessage.length} / 10,000 characters
                 </div>
+              </div>
+
+              {/* Graphic / Image Upload */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-[#0F172A]">
+                    Announcement Graphic / Banner (Optional)
+                  </label>
+                  <span className="text-[10px] text-[#7C8A9A]">
+                    JPG, PNG, WebP (Max 5 MB)
+                  </span>
+                </div>
+
+                <input
+                  ref={imageFileRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+
+                {imagePreviewUrl ? (
+                  <div className="rounded-xl border border-[#E7E9EE] bg-[#F7F6F1] p-3 space-y-2">
+                    <div className="relative rounded-lg overflow-hidden bg-slate-900/5 border border-[#E7E9EE] flex items-center justify-center max-h-56">
+                      <img
+                        src={imagePreviewUrl}
+                        alt="Announcement graphic preview"
+                        className="max-h-56 w-full object-contain"
+                      />
+                      {isUploadingImage && (
+                        <div className="absolute inset-0 bg-[#0F172A]/50 backdrop-blur-xs flex items-center justify-center gap-2 text-white text-xs font-semibold">
+                          <Loader2 className="w-4 h-4 animate-spin text-white" />
+                          <span>Uploading image...</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-1.5 text-[11px] text-[#7C8A9A]">
+                        <ImageIcon className="w-3.5 h-3.5 text-[#37C6A3]" />
+                        <span className="font-medium text-[#0F172A]">Graphic attached</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => imageFileRef.current?.click()}
+                          disabled={isUploadingImage}
+                          className="px-2.5 py-1 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-[#E7E9EE] rounded-lg transition cursor-pointer"
+                        >
+                          Replace Image
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          disabled={isUploadingImage}
+                          className="px-2.5 py-1 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => imageFileRef.current?.click()}
+                    className="border-2 border-dashed border-[#E7E9EE] hover:border-[#0F172A] bg-[#F7F6F1]/50 hover:bg-[#F7F6F1] rounded-xl p-4 text-center cursor-pointer transition flex flex-col items-center justify-center gap-2"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-white border border-[#E7E9EE] flex items-center justify-center text-[#7C8A9A]">
+                      <UploadCloud className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-semibold text-[#0F172A]">
+                        Click to upload an announcement graphic
+                      </div>
+                      <div className="text-[10px] text-[#7C8A9A] mt-0.5">
+                        High-resolution PNG, JPG or WebP up to 5 MB
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {imageUploadError && (
+                  <div className="text-xs text-rose-600 font-medium mt-1.5 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>{imageUploadError}</span>
+                  </div>
+                )}
               </div>
 
               {/* Category & Priority Grid */}
@@ -1065,6 +1241,17 @@ export default function AnnouncementsPage() {
               </div>
 
               <h2 className="text-lg font-bold text-[#0F172A]">{previewData.title}</h2>
+
+              {previewData.imageUrl && (
+                <div className="rounded-xl overflow-hidden border border-[#E7E9EE] bg-[#F7F6F1] flex items-center justify-center max-h-72">
+                  <img
+                    src={previewData.imageUrl}
+                    alt={previewData.title}
+                    className="max-h-72 w-full object-contain"
+                  />
+                </div>
+              )}
+
               <div className="p-4 bg-[#F7F6F1] rounded-xl text-xs text-[#0F172A] whitespace-pre-wrap font-sans leading-relaxed border border-[#E7E9EE]">
                 {previewData.message}
               </div>

@@ -149,8 +149,19 @@ export default function AnnouncementBell() {
                       {formatDateOnly(item.publishedAt || item.createdAt)}
                     </span>
                   </div>
-                  <div className="text-xs font-bold text-[#0F172A] line-clamp-2 break-words">{item.title}</div>
-                  <div className="text-[11px] text-[#7C8A9A] line-clamp-2 break-words mt-0.5">{item.message}</div>
+                  <div className="flex items-start gap-2">
+                    {item.imageUrl && (
+                      <img
+                        src={item.imageUrl}
+                        alt=""
+                        className="w-10 h-10 rounded-lg object-cover shrink-0 border border-[#E7E9EE] mt-0.5"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-bold text-[#0F172A] line-clamp-2 break-words">{item.title}</div>
+                      <div className="text-[11px] text-[#7C8A9A] line-clamp-2 break-words mt-0.5">{item.message}</div>
+                    </div>
+                  </div>
                 </Link>
               ))
             )}

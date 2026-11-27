@@ -1,11 +1,144 @@
+import crypto from 'crypto';
+import sharp from 'sharp';
 import prisma from '../lib/prisma.js';
 import { BadRequestError, NotFoundError, ConflictError } from '../utils/errors.js';
+import {
+  uploadBufferToR2,
+  resolveObjectAccessUrl,
+  getR2PublicUrl,
+} from './r2.service.js';
+import { isR2Configured } from '../config/r2.js';
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_IMAGE_FORMATS = new Set(['jpeg', 'png', 'webp']);
+
+function sanitizeOriginalFilename(rawName, defaultName = 'announcement.webp') {
+  if (!rawName || typeof rawName !== 'string') return defaultName;
+  const clean = rawName
+    .replace(/[\/\\]+/g, '')
+    .replace(/\.\.+/g, '.')
+    .replace(/[^\w\.\-\s]/g, '')
+    .trim();
+  return clean || defaultName;
+}
+
+async function processAnnouncementImage(fileBuffer, originalName, { maxWidth = 2560, maxHeight = 1600 } = {}) {
+  if (!fileBuffer || !Buffer.isBuffer(fileBuffer) || fileBuffer.length === 0) {
+    throw new BadRequestError('No image file provided.');
+  }
+
+  if (fileBuffer.length > MAX_IMAGE_SIZE) {
+    throw new BadRequestError('Image must be smaller than 5 MB.');
+  }
+
+  const nameLower = (originalName || '').toLowerCase();
+  const isSvgExtension = nameLower.endsWith('.svg');
+  const bufferPrefix = fileBuffer.slice(0, 100).toString('utf8').toLowerCase();
+  const isSvgContent = bufferPrefix.includes('<svg') || bufferPrefix.includes('<?xml');
+
+  if (isSvgExtension || isSvgContent) {
+    throw new BadRequestError('SVG images are not allowed for security reasons. Please upload a JPG, PNG or WebP image.');
+  }
+
+  let metadata;
+  try {
+    const probe = sharp(fileBuffer, {
+      limitInputPixels: 16777216,
+      failOnError: true,
+    });
+    metadata = await probe.metadata();
+  } catch (err) {
+    throw new BadRequestError('Corrupted or invalid image file. Please upload a valid JPG, PNG, or WebP image.');
+  }
+
+  if (metadata.format === 'svg') {
+    throw new BadRequestError('SVG images are not allowed for security reasons.');
+  }
+
+  if (!metadata.format || !ALLOWED_IMAGE_FORMATS.has(metadata.format)) {
+    throw new BadRequestError('Please upload a JPG, PNG or WebP image.');
+  }
+
+  if (metadata.pages && metadata.pages > 1) {
+    throw new BadRequestError('Animated or multi-page images are not supported.');
+  }
+
+  if ((metadata.width && metadata.width > 4096) || (metadata.height && metadata.height > 4096)) {
+    throw new BadRequestError('Image dimensions are too large. Maximum supported dimensions are 4096x4096px.');
+  }
+
+  try {
+    const processedBuffer = await sharp(fileBuffer, { limitInputPixels: 16777216 })
+      .rotate()
+      .resize(maxWidth, maxHeight, {
+        fit: 'inside',
+        withoutEnlargement: true,
+        kernel: sharp.kernel.lanczos3,
+      })
+      .webp({ quality: 90 })
+      .toBuffer();
+
+    return processedBuffer;
+  } catch (err) {
+    throw new BadRequestError('Failed to process image file.');
+  }
+}
 
 /**
  * ==========================================
  * SUPER ADMIN ANNOUNCEMENT SERVICE
  * ==========================================
  */
+
+export async function uploadAnnouncementImage(file, userId, ipAddress, userAgent) {
+  if (!file || !file.buffer) {
+    throw new BadRequestError('No image file provided.');
+  }
+
+  const originalName = file.originalname || 'announcement.webp';
+  const processedBuffer = await processAnnouncementImage(file.buffer, originalName);
+
+  const uniqueId = `ann_${Date.now()}_${crypto.randomUUID().substring(0, 8)}`;
+  const objectKey = `platform/announcements/${uniqueId}.webp`;
+
+  let publicUrl = null;
+  if (isR2Configured()) {
+    try {
+      await uploadBufferToR2(objectKey, processedBuffer, 'image/webp');
+      publicUrl = getR2PublicUrl(objectKey);
+    } catch (err) {
+      console.warn('[AnnouncementService] Failed to upload to R2, continuing with fallback:', err.message);
+    }
+  }
+
+  let fileRecord = null;
+  try {
+    fileRecord = await prisma.fileObject.create({
+      data: {
+        madrasaId: null, // Platform announcement file
+        type: 'OTHER',
+        objectKey,
+        originalName: sanitizeOriginalFilename(originalName, 'announcement.webp'),
+        mimeType: 'image/webp',
+        size: processedBuffer.length,
+        publicUrl,
+      },
+    });
+  } catch (err) {
+    console.warn('[AnnouncementService] FileObject record creation error:', err.message);
+  }
+
+  const finalUrl =
+    publicUrl ||
+    (fileRecord?.objectKey ? await resolveObjectAccessUrl(fileRecord.objectKey) : null) ||
+    `data:image/webp;base64,${processedBuffer.toString('base64')}`;
+
+  return {
+    fileId: fileRecord?.id || uniqueId,
+    url: finalUrl,
+    originalName: sanitizeOriginalFilename(originalName, 'announcement.webp'),
+  };
+}
 
 export async function createAnnouncement(data, userId, ipAddress, userAgent) {
   let uniqueTargetIds = [];
@@ -29,12 +162,26 @@ export async function createAnnouncement(data, userId, ipAddress, userAgent) {
     throw new BadRequestError('Expiry date/time must be strictly after publish date/time.');
   }
 
+  // Tenant Isolation: verify image file ownership if linked
+  if (data.imageFileId) {
+    const fileObj = await prisma.fileObject.findUnique({
+      where: { id: data.imageFileId },
+    });
+    if (fileObj && fileObj.madrasaId) {
+      if (data.audience === 'ALL_MADRASAS' || !uniqueTargetIds.includes(fileObj.madrasaId)) {
+        throw new BadRequestError('Referenced image does not belong to the targeted madrasa.');
+      }
+    }
+  }
+
   // MANDATORY CORRECTION 1: POST create MUST ALWAYS create/save DRAFT.
   const announcement = await prisma.$transaction(async (tx) => {
     const record = await tx.announcement.create({
       data: {
         title: data.title,
         message: data.message,
+        imageUrl: data.imageUrl || null,
+        imageFileId: data.imageFileId || null,
         category: data.category || 'GENERAL',
         priority: data.priority || 'NORMAL',
         audience: data.audience || 'ALL_MADRASAS',
@@ -150,6 +297,18 @@ export async function updateAnnouncement(id, patch, userId, ipAddress, userAgent
     }
   }
 
+  // Tenant Isolation: verify image file ownership if linked
+  if (patch.imageFileId) {
+    const fileObj = await prisma.fileObject.findUnique({
+      where: { id: patch.imageFileId },
+    });
+    if (fileObj && fileObj.madrasaId) {
+      if (effectiveAudience === 'ALL_MADRASAS' || !uniqueTargetIds.includes(fileObj.madrasaId)) {
+        throw new BadRequestError('Referenced image does not belong to the targeted madrasa.');
+      }
+    }
+  }
+
   // Atomic update with target replacement & ActivityLog
   const updated = await prisma.$transaction(async (tx) => {
     if (effectiveAudience === 'ALL_MADRASAS') {
@@ -175,6 +334,8 @@ export async function updateAnnouncement(id, patch, userId, ipAddress, userAgent
       data: {
         title: effectiveTitle,
         message: effectiveMessage,
+        imageUrl: patch.imageUrl !== undefined ? (patch.imageUrl || null) : undefined,
+        imageFileId: patch.imageFileId !== undefined ? (patch.imageFileId || null) : undefined,
         category: effectiveCategory,
         priority: effectivePriority,
         audience: effectiveAudience,
@@ -655,6 +816,8 @@ export async function listMadrasaAnnouncements(madrasaId, userId, query) {
         id: true,
         title: true,
         message: true,
+        imageUrl: true,
+        imageFileId: true,
         category: true,
         priority: true,
         audience: true,
@@ -678,6 +841,8 @@ export async function listMadrasaAnnouncements(madrasaId, userId, query) {
       id: item.id,
       title: item.title,
       message: item.message,
+      imageUrl: item.imageUrl || null,
+      imageFileId: item.imageFileId || null,
       category: item.category,
       priority: item.priority,
       audience: item.audience,
@@ -714,6 +879,8 @@ export async function getMadrasaAnnouncementById(id, madrasaId, userId) {
       id: true,
       title: true,
       message: true,
+      imageUrl: true,
+      imageFileId: true,
       category: true,
       priority: true,
       audience: true,
@@ -739,6 +906,8 @@ export async function getMadrasaAnnouncementById(id, madrasaId, userId) {
     id: record.id,
     title: record.title,
     message: record.message,
+    imageUrl: record.imageUrl || null,
+    imageFileId: record.imageFileId || null,
     category: record.category,
     priority: record.priority,
     audience: record.audience,
@@ -846,6 +1015,8 @@ export async function getMadrasaLatestAnnouncements(madrasaId, userId, limit = 5
       id: true,
       title: true,
       message: true,
+      imageUrl: true,
+      imageFileId: true,
       category: true,
       priority: true,
       publishAt: true,
@@ -863,6 +1034,8 @@ export async function getMadrasaLatestAnnouncements(madrasaId, userId, limit = 5
     id: item.id,
     title: item.title,
     message: item.message,
+    imageUrl: item.imageUrl || null,
+    imageFileId: item.imageFileId || null,
     category: item.category,
     priority: item.priority,
     publishAt: item.publishAt,
@@ -893,6 +1066,8 @@ function formatAnnouncementResponse(record, readCount = 0, totalActiveMadrasas =
     id: record.id,
     title: record.title,
     message: record.message,
+    imageUrl: record.imageUrl || null,
+    imageFileId: record.imageFileId || null,
     category: record.category,
     priority: record.priority,
     audience: record.audience,

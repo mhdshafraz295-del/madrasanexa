@@ -1065,10 +1065,12 @@ model AboutUsTranslation {
 
 /// In-App Platform Announcements
 model Announcement {
-  id       String               @id @default(cuid())
-  title    String               @db.VarChar(255)
-  message  String               @db.Text
-  category AnnouncementCategory @default(GENERAL)
+  id          String               @id @default(cuid())
+  title       String               @db.VarChar(255)
+  message     String               @db.Text
+  imageUrl    String?              @db.Text
+  imageFileId String?              @db.VarChar(191)
+  category    AnnouncementCategory @default(GENERAL)
   priority AnnouncementPriority @default(NORMAL)
   audience AnnouncementAudience @default(ALL_MADRASAS)
   status   AnnouncementStatus   @default(DRAFT)

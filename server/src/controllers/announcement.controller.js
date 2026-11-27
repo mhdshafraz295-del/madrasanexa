@@ -1,3 +1,4 @@
+import multer from 'multer';
 import {
   createAnnouncementSchema,
   updateAnnouncementSchema,
@@ -6,6 +7,82 @@ import {
   madrasaAdminListQuerySchema,
 } from '../validations/announcement.validation.js';
 import * as announcementService from '../services/announcement.service.js';
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB
+    files: 1,
+  },
+});
+
+export const uploadAnnouncementImageMiddleware = (req, res, next) => {
+  const uploadHandler = upload.fields([
+    { name: 'image', maxCount: 1 },
+    { name: 'file', maxCount: 1 },
+    { name: 'poster', maxCount: 1 },
+  ]);
+
+  uploadHandler(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          success: false,
+          message: 'Announcement image must be smaller than 5 MB.',
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'File upload error.',
+      });
+    } else if (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message || 'File upload error.',
+      });
+    }
+
+    if (req.files) {
+      req.file =
+        req.files['image']?.[0] ||
+        req.files['file']?.[0] ||
+        req.files['poster']?.[0] ||
+        null;
+    }
+
+    next();
+  });
+};
+
+export async function uploadAnnouncementImage(req, res, next) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No image file provided. Please provide an image using form field "image" or "file".',
+      });
+    }
+
+    const userId = req.auth?.userId;
+    const ipAddress = req.ip || req.connection?.remoteAddress;
+    const userAgent = req.get('user-agent');
+
+    const result = await announcementService.uploadAnnouncementImage(
+      req.file,
+      userId,
+      ipAddress,
+      userAgent
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: 'Announcement image uploaded successfully.',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 /**
  * ==========================================

@@ -28,6 +28,8 @@ export const createAnnouncementSchema = z
   .object({
     title: plainText(255).min(1, 'Title is required'),
     message: plainText(10000).min(1, 'Message is required'),
+    imageUrl: z.string().trim().max(100000).optional().nullable(),
+    imageFileId: z.string().trim().max(191).optional().nullable(),
     category: z
       .enum(['GENERAL', 'SYSTEM', 'MAINTENANCE', 'UPDATE', 'BILLING', 'EVENT', 'OTHER'])
       .default('GENERAL'),
@@ -66,6 +68,8 @@ export const updateAnnouncementSchema = z
   .object({
     title: plainText(255).min(1, 'Title cannot be empty').optional(),
     message: plainText(10000).min(1, 'Message cannot be empty').optional(),
+    imageUrl: z.string().trim().max(100000).optional().nullable(),
+    imageFileId: z.string().trim().max(191).optional().nullable(),
     category: z
       .enum(['GENERAL', 'SYSTEM', 'MAINTENANCE', 'UPDATE', 'BILLING', 'EVENT', 'OTHER'])
       .optional(),

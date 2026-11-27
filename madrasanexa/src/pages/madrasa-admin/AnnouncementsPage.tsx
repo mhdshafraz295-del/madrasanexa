@@ -346,6 +346,16 @@ export default function AnnouncementsPage() {
 
               <div className="pt-3">
                 <h3 className="text-sm font-bold text-[#0F172A] tracking-tight">{item.title}</h3>
+                {item.imageUrl && (
+                  <div className="my-2 rounded-xl overflow-hidden border border-[#E7E9EE] bg-slate-100 max-h-48 flex items-center justify-center">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="max-h-48 w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
                 <p className="text-xs text-[#7C8A9A] line-clamp-2 mt-1 leading-relaxed">
                   {item.message}
                 </p>
@@ -436,6 +446,17 @@ export default function AnnouncementsPage() {
                   )}
                 </div>
               </div>
+
+              {/* Attached Graphic if present */}
+              {selectedAnnouncement.imageUrl && (
+                <div className="rounded-xl overflow-hidden border border-[#E7E9EE] bg-[#F7F6F1] flex items-center justify-center max-h-72">
+                  <img
+                    src={selectedAnnouncement.imageUrl}
+                    alt={selectedAnnouncement.title}
+                    className="max-h-72 w-full object-contain"
+                  />
+                </div>
+              )}
 
               {/* Message Body: plain text with whitespace-pre-wrap, strictly avoiding HTML parsing */}
               <div className="p-4 bg-[#F7F6F1] rounded-xl text-xs text-[#0F172A] leading-relaxed font-sans whitespace-pre-wrap border border-[#E7E9EE]">

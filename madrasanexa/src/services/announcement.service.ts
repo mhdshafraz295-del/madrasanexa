@@ -32,6 +32,8 @@ export interface SuperAdminAnnouncementItem {
   id: string;
   title: string;
   message: string;
+  imageUrl?: string | null;
+  imageFileId?: string | null;
   category: AnnouncementCategory;
   priority: AnnouncementPriority;
   audience: AnnouncementAudience;
@@ -72,6 +74,8 @@ export interface MadrasaAnnouncementItem {
   id: string;
   title: string;
   message: string;
+  imageUrl?: string | null;
+  imageFileId?: string | null;
   category: AnnouncementCategory;
   priority: AnnouncementPriority;
   audience?: AnnouncementAudience;
@@ -97,6 +101,8 @@ export interface MadrasaAnnouncementsResponse {
 export interface CreateAnnouncementPayload {
   title: string;
   message: string;
+  imageUrl?: string | null;
+  imageFileId?: string | null;
   category: AnnouncementCategory;
   priority: AnnouncementPriority;
   audience: AnnouncementAudience;
@@ -108,6 +114,8 @@ export interface CreateAnnouncementPayload {
 export interface UpdateAnnouncementPayload {
   title?: string;
   message?: string;
+  imageUrl?: string | null;
+  imageFileId?: string | null;
   category?: AnnouncementCategory;
   priority?: AnnouncementPriority;
   audience?: AnnouncementAudience;
@@ -143,6 +151,18 @@ export const announcementService = {
     const res = await apiClient.get<{ success: boolean; data: SuperAdminAnnouncementItem }>(
       `/super-admin/announcements/${id}`
     );
+    return res.data.data;
+  },
+
+  async uploadAnnouncementImage(file: File): Promise<{ fileId: string; url: string; originalName: string }> {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await apiClient.post<{
+      success: boolean;
+      data: { fileId: string; url: string; originalName: string };
+    }>('/super-admin/announcements/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data.data;
   },
 

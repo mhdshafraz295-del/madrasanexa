@@ -110,8 +110,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
       {/* 1. Legacy Syllabus Briefing (Rendered as institutional intro if present) */}
       {syllabusInfo && (
-        <div className="bg-white rounded-2xl border border-[#E5E0D5] p-6 sm:p-8 relative overflow-hidden max-w-5xl mx-auto shadow-xs">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+        <div className="bg-white rounded-2xl border-0 p-6 sm:p-8 relative overflow-hidden max-w-5xl mx-auto shadow-xs">
           <div className="flex items-center space-x-2 text-[11px] font-bold text-[#C5A059] uppercase tracking-wider mb-2.5">
             <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
             <span>Academic Framework & Overview</span>
@@ -203,15 +202,12 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
                     setSelectedProgId(prog.id);
                     setSelectedLevelId(prog.levels[0]?.id || null);
                   }}
-                  className={`relative rounded-2xl cursor-pointer transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden border ${
+                  className={`relative rounded-2xl cursor-pointer transition-all duration-300 ease-out flex flex-col justify-between overflow-hidden border-0 ${
                     isSelected
-                      ? 'bg-white border-[#C5A059] -translate-y-1 shadow-lg ring-1 ring-[#C5A059]/40'
-                      : 'bg-white border-[#E5E0D5] hover:border-[#C5A059]/40 hover:-translate-y-1 shadow-xs hover:shadow-md'
+                      ? 'bg-white -translate-y-1 shadow-lg ring-2 ring-[#C5A059]/60'
+                      : 'bg-white hover:-translate-y-1 shadow-xs hover:shadow-md'
                   }`}
                 >
-                  {isSelected && (
-                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-                  )}
                   <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                     <div>
                       {/* Top Row: Code & Duration Badge */}
@@ -271,8 +267,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
 
           {/* Active Programme Explorer Workspace */}
           {activeProgramme && activeProgramme.levels.length > 0 && (
-            <div className="bg-white rounded-2xl border border-[#E5E0D5] p-6 sm:p-8 space-y-8 relative overflow-hidden shadow-xs">
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+            <div className="bg-white rounded-2xl border-0 p-6 sm:p-8 space-y-8 relative overflow-hidden shadow-xs">
 
               {/* Programme Details Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#F0ECE1] gap-4">
@@ -499,8 +494,7 @@ export const MadrasaPublicCurriculum: React.FC<MadrasaPublicCurriculumProps> = (
       ) : null}
 
       {/* 3. Rules & Regulations Card */}
-      <div id="rules" className="bg-white rounded-2xl border border-[#E5E0D5] p-6 sm:p-9 scroll-mt-28 max-w-5xl mx-auto shadow-xs relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
+      <div id="rules" className="bg-white rounded-2xl border-0 p-6 sm:p-9 scroll-mt-28 max-w-5xl mx-auto shadow-xs relative overflow-hidden">
         <div className="inline-flex items-center space-x-2 text-[11px] font-bold text-[#0B3B2C] uppercase tracking-wider mb-3 px-3 py-1 rounded-full bg-[#FAF8F3] border border-[#C5A059]/30">
           <ShieldCheck className="w-3.5 h-3.5 text-[#C5A059]" />
           <span>Institutional Conduct & Ethos</span>

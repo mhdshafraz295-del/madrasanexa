@@ -169,11 +169,8 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
             {leadershipMembers.map((leader) => (
               <div
                 key={leader.id}
-                className="bg-white rounded-2xl border border-[#E5E0D5] shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col sm:flex-row relative hover:-translate-y-1.5 group"
+                className="bg-white rounded-2xl border-0 shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col sm:flex-row relative hover:-translate-y-1.5 group"
               >
-                {/* Top Accent Strip */}
-                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
                 {/* Left Content Pane */}
                 <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between space-y-4 relative z-10">
                   {/* Badges: Animated Antique Gold Leadership Crest Pill + Term Period */}

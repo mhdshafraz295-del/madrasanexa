@@ -32,8 +32,8 @@ export const MadrasaPublicHero: React.FC<MadrasaPublicHeroProps> = ({
   activeIntakeName,
   activeAcademicYear,
 }) => {
-  const overlayColor = theme.heroOverlay || '#504F34';
-  const overlayOpacity = theme.heroOverlayOpacity ?? 0.90;
+  const overlayColor = theme.heroOverlay || '#0B3B2C';
+  const effectiveHeroImage = heroImageUrl || '/assest/images/bg.login.png';
 
   const handleScrollToSection = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
@@ -55,27 +55,23 @@ export const MadrasaPublicHero: React.FC<MadrasaPublicHeroProps> = ({
       className="relative overflow-hidden w-full text-white py-16 sm:py-24 lg:py-32"
       style={{ backgroundColor: overlayColor }}
     >
-      {/* Background Hero Image */}
-      {heroImageUrl ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 scale-102"
-          style={{ backgroundImage: `url(${heroImageUrl})` }}
-        />
-      ) : null}
-
-      {/* Institutional Scrim Overlay with Subtle Radial Lighting */}
+      {/* Background Hero Image (Luminous & High-Clarity) */}
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 scale-102"
+        style={{ backgroundImage: `url(${effectiveHeroImage})` }}
+      />
+
+      {/* Luminous Directional Scrim Overlay: rich contrast on text left, open & bright on architecture right */}
+      <div
+        className="absolute inset-0 bg-gradient-to-r from-[#0B3B2C]/85 via-[#0B3B2C]/45 to-black/25 lg:from-[#0B3B2C]/80 lg:via-[#0B3B2C]/30 lg:to-transparent"
         style={{
-          backgroundColor: overlayColor,
-          opacity: overlayOpacity,
-          backgroundImage: `radial-gradient(circle at 50% 30%, rgba(165, 164, 119, 0.45) 0%, rgba(80, 79, 52, 0.95) 75%)`,
+          backgroundImage: `radial-gradient(circle at 75% 35%, rgba(212, 175, 55, 0.15) 0%, transparent 55%), linear-gradient(to right, rgba(11, 59, 44, 0.82) 0%, rgba(11, 59, 44, 0.35) 60%, rgba(0, 0, 0, 0.15) 100%)`,
         }}
       />
 
       {/* Subtle Geometric Diamond Pattern Texture Blend */}
       <div
-        className="absolute inset-0 bg-islamic-diamond-pattern pointer-events-none opacity-60"
+        className="absolute inset-0 bg-islamic-diamond-pattern pointer-events-none opacity-15"
         aria-hidden="true"
       />
 
@@ -154,10 +150,7 @@ export const MadrasaPublicHero: React.FC<MadrasaPublicHeroProps> = ({
 
           {/* Right Column: Floating Spotlight Card (Editorial reference inspired) */}
           <div className="lg:col-span-5 xl:col-span-4 mt-4 lg:mt-0">
-            <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-[0_12px_40px_rgba(0,0,0,0.22)] border border-[#E5E0D5] text-left relative overflow-hidden">
-              {/* Top Golden Accent Bar */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
+            <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-[0_12px_40px_rgba(0,0,0,0.18)] border-0 text-left relative overflow-hidden">
               <div className="w-12 h-12 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-4 shadow-2xs">
                 <Sparkles className="w-6 h-6 text-[#C5A059]" />
               </div>

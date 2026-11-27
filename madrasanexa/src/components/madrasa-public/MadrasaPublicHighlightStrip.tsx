@@ -30,11 +30,11 @@ export const MadrasaPublicHighlightStrip: React.FC<MadrasaPublicHighlightStripPr
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 sm:-mt-12 relative z-20">
-      <div className="bg-white rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.08)] border border-[#E5E0D5] p-4 sm:p-6 transition-all">
+      <div className="bg-white rounded-2xl shadow-[0_10px_35px_rgba(0,0,0,0.10)] border-0 p-4 sm:p-6 transition-all">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6 items-center">
 
           {/* 1. Hijri Date */}
-          <div className="flex items-center space-x-3.5 border-r border-[#E5E0D5] pr-3 sm:pr-4">
+          <div className="flex items-center space-x-3.5 border-r border-[#F0ECE1] pr-3 sm:pr-4">
             <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/30 flex items-center justify-center text-[#0B3B2C] shrink-0">
               <Calendar className="w-5 h-5 text-[#C5A059]" />
             </div>
@@ -49,7 +49,7 @@ export const MadrasaPublicHighlightStrip: React.FC<MadrasaPublicHighlightStripPr
           </div>
 
           {/* 2. Academic Enrollment Status */}
-          <div className="flex items-center space-x-3.5 border-r border-[#E5E0D5] pr-3 sm:pr-4">
+          <div className="flex items-center space-x-3.5 border-r border-[#F0ECE1] pr-3 sm:pr-4">
             <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/30 flex items-center justify-center text-[#0B3B2C] shrink-0">
               <GraduationCap className="w-5 h-5 text-[#0B3B2C]" />
             </div>
@@ -65,7 +65,7 @@ export const MadrasaPublicHighlightStrip: React.FC<MadrasaPublicHighlightStripPr
           </div>
 
           {/* 3. Classical Disciplines */}
-          <div className="flex items-center space-x-3.5 border-r border-[#E5E0D5] pr-3 sm:pr-4 hidden sm:flex">
+          <div className="flex items-center space-x-3.5 border-r border-[#F0ECE1] pr-3 sm:pr-4 hidden sm:flex">
             <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/30 flex items-center justify-center text-[#0B3B2C] shrink-0">
               <BookOpen className="w-5 h-5 text-[#C5A059]" />
             </div>
@@ -80,7 +80,7 @@ export const MadrasaPublicHighlightStrip: React.FC<MadrasaPublicHighlightStripPr
           </div>
 
           {/* 4. Academic Year */}
-          <div className="flex items-center space-x-3.5 border-r border-[#E5E0D5] pr-3 sm:pr-4 hidden lg:flex">
+          <div className="flex items-center space-x-3.5 border-r border-[#F0ECE1] pr-3 sm:pr-4 hidden lg:flex">
             <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/30 flex items-center justify-center text-[#0B3B2C] shrink-0">
               <Users className="w-5 h-5 text-[#0B3B2C]" />
             </div>

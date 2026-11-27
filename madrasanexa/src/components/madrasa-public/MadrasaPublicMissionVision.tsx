@@ -17,10 +17,7 @@ export const MadrasaPublicMissionVision: React.FC<MadrasaPublicMissionVisionProp
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-7 sm:gap-8 items-stretch">
 
         {/* Mission Card */}
-        <div className="bg-white rounded-2xl border border-[#E5E0D5] p-7 sm:p-9 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1.5 flex flex-col h-full relative overflow-hidden">
-          {/* Top Emerald/Gold Accent Strip */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
+        <div className="bg-white rounded-2xl border-0 p-7 sm:p-9 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1.5 flex flex-col h-full relative overflow-hidden">
           <div className="w-12 h-12 rounded-2xl bg-[#0B3B2C] border border-[#C5A059]/40 flex items-center justify-center text-[#DFC076] mb-5 shadow-2xs transition-transform duration-300 group-hover:scale-105">
             <Target className="w-6 h-6 text-[#DFC076]" />
           </div>
@@ -40,10 +37,7 @@ export const MadrasaPublicMissionVision: React.FC<MadrasaPublicMissionVisionProp
         </div>
 
         {/* Vision Card */}
-        <div className="bg-white rounded-2xl border border-[#E5E0D5] p-7 sm:p-9 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1.5 flex flex-col h-full relative overflow-hidden">
-          {/* Top Emerald/Gold Accent Strip */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
+        <div className="bg-white rounded-2xl border-0 p-7 sm:p-9 shadow-xs hover:shadow-xl transition-all duration-300 group hover:-translate-y-1.5 flex flex-col h-full relative overflow-hidden">
           <div className="w-12 h-12 rounded-2xl bg-[#0B3B2C] border border-[#C5A059]/40 flex items-center justify-center text-[#DFC076] mb-5 shadow-2xs transition-transform duration-300 group-hover:scale-105">
             <Compass className="w-6 h-6 text-[#DFC076]" />
           </div>

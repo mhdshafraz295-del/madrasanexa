@@ -142,11 +142,8 @@ export const MadrasaPublicStats: React.FC<MadrasaPublicStatsProps> = ({ stats, t
           return (
             <div
               key={item.id}
-              className="bg-white rounded-2xl border border-[#E5E0D5] p-7 sm:p-8 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-xs hover:shadow-xl hover:-translate-y-1.5 relative overflow-hidden group"
+              className="bg-white rounded-2xl border-0 p-7 sm:p-8 flex flex-col justify-between text-center w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1rem)] max-w-sm transition-all duration-300 shadow-xs hover:shadow-xl hover:-translate-y-1.5 relative overflow-hidden group"
             >
-              {/* Top Accent Strip */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
               <div>
                 <div className="w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-5 bg-[#FAF8F3] border border-[#C5A059]/40 text-[#0B3B2C] shadow-2xs transition-transform duration-300 group-hover:scale-105">
                   <Icon className="w-7 h-7 text-[#0B3B2C]" />

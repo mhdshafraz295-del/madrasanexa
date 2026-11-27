@@ -74,11 +74,8 @@ export const MadrasaPublicDisciplines: React.FC<MadrasaPublicDisciplinesProps> =
           return (
             <div
               key={prog.id}
-              className="bg-white rounded-2xl overflow-hidden border border-[#E5E0D5] shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col group p-6 sm:p-7 justify-between relative"
+              className="bg-white rounded-2xl overflow-hidden border-0 shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col group p-6 sm:p-7 justify-between relative"
             >
-              {/* Top Accent Strip */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
               <div>
                 {/* Emblem Icon Badge */}
                 <div className="w-12 h-12 rounded-2xl bg-[#0B3B2C] border border-[#C5A059]/40 flex items-center justify-center text-[#DFC076] shadow-sm mb-5 transition-transform duration-300 group-hover:scale-110">

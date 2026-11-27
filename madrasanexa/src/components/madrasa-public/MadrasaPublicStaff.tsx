@@ -50,16 +50,13 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
           return (
             <div
               key={member.id}
-              className={`group relative bg-white rounded-2xl border border-[#E5E0D5] overflow-hidden transition-all duration-300 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.2rem)] max-w-sm flex flex-col shadow-xs hover:shadow-xl hover:-translate-y-1.5 ${
-                isExpanded ? 'border-[#C5A059] shadow-md -translate-y-1' : ''
+              className={`group relative bg-white rounded-2xl border-0 overflow-hidden transition-all duration-300 w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.2rem)] max-w-sm flex flex-col shadow-xs hover:shadow-xl hover:-translate-y-1.5 ${
+                isExpanded ? 'shadow-md -translate-y-1 ring-2 ring-[#C5A059]/50' : ''
               }`}
             >
-              {/* Top Accent Strip */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
-
               {/* 1. Optional Individual Photograph Container (Collapses cleanly if missing or error) */}
               {member.photoUrl ? (
-                <div className="staff-photo-container relative w-full aspect-[4/3] bg-slate-50 overflow-hidden border-b border-[#E5E0D5]">
+                <div className="staff-photo-container relative w-full aspect-[4/3] bg-slate-50 overflow-hidden border-b border-[#F0ECE1]">
                   <img
                     src={member.photoUrl}
                     alt={member.fullName}

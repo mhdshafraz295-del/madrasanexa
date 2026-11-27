@@ -41,7 +41,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
   return (
     <section id="about" className="scroll-mt-28 py-6">
       {/* Split Container: Deep Emerald Left Panel + Soft Cream Right Panel */}
-      <div className="rounded-3xl overflow-hidden border border-[#E5E0D5] shadow-md grid grid-cols-1 lg:grid-cols-12 bg-white">
+      <div className="rounded-3xl overflow-hidden border-0 shadow-lg grid grid-cols-1 lg:grid-cols-12 bg-white">
 
         {/* Left Panel: Deep Emerald / Forest Green */}
         <div className="lg:col-span-5 bg-[#0B3B2C] text-white p-8 sm:p-10 lg:p-12 flex flex-col justify-between relative overflow-hidden">
@@ -93,7 +93,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-7 w-full">
 
             {/* 1. Academic & Moral Framework */}
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border-0 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
                   <BookOpen className="w-5 h-5 text-[#C5A059]" />
@@ -108,7 +108,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
             </div>
 
             {/* 2. Guiding Purpose / Mission */}
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border-0 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
                   <Compass className="w-5 h-5 text-[#0B3B2C]" />
@@ -123,7 +123,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
             </div>
 
             {/* 3. Future Horizon / Vision */}
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border-0 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
                   <Award className="w-5 h-5 text-[#C5A059]" />
@@ -138,7 +138,7 @@ export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
             </div>
 
             {/* 4. Institutional Discipline & Adab */}
-            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border-0 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
                   <ShieldCheck className="w-5 h-5 text-[#0B3B2C]" />

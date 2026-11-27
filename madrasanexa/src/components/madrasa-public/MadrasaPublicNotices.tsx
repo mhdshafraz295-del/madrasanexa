@@ -48,15 +48,6 @@ export const MadrasaPublicNotices: React.FC<MadrasaPublicNoticesProps> = ({
                 isUrgent ? 'bg-amber-50/25 ring-1 ring-amber-400/40' : ''
               }`}
             >
-              {/* Top Accent Strip */}
-              <div
-                className={`absolute top-0 left-0 right-0 h-1 ${
-                  isUrgent
-                    ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500'
-                    : 'bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]'
-                }`}
-              />
-
               <div>
                 {/* Header Metadata: Category + Date */}
                 <div className="flex items-center justify-between gap-2 mb-3.5 pb-3 border-b border-[#FAF6EE]">

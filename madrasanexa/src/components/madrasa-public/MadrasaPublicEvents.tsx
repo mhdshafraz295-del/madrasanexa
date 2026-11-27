@@ -186,8 +186,6 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
               key={event.id}
               className="w-full bg-white rounded-2xl shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col justify-between overflow-hidden p-6 sm:p-7 space-y-4 h-full group relative border-0"
             >
-              {/* Top Accent Strip */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B3B2C] via-[#C5A059] to-[#0B3B2C]" />
               {/* Premium Photo Album Layout */}
               {albumImages.length > 0 ? (
                 <div className="space-y-2.5">

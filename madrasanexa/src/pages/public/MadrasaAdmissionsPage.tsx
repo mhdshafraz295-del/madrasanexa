@@ -320,10 +320,10 @@ export const MadrasaAdmissionsPage: React.FC = () => {
           submissionResult ? 'print:hidden' : ''
         }`}
         style={{
-          backgroundColor: theme.heroOverlay || '#504F34',
+          backgroundColor: theme.heroOverlay || '#0B3B2C',
           backgroundImage: data.heroImageUrl
-            ? `radial-gradient(circle at 50% 30%, rgba(133, 132, 92, 0.45) 0%, rgba(80, 79, 52, 0.95) 75%), url(${data.heroImageUrl})`
-            : `radial-gradient(circle at 50% 30%, rgba(133, 132, 92, 0.45) 0%, rgba(80, 79, 52, 0.95) 75%)`,
+            ? `linear-gradient(to bottom, rgba(11, 59, 44, 0.78) 0%, rgba(11, 59, 44, 0.90) 100%), url(${data.heroImageUrl})`
+            : `linear-gradient(to bottom, rgba(11, 59, 44, 0.85) 0%, rgba(11, 59, 44, 0.95) 100%)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -339,7 +339,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md border border-[#C5A059]/40 text-white text-xs font-bold uppercase tracking-wider mb-5 shadow-[0_0_12px_rgba(197,160,89,0.22)]">
-            <Sparkles className="w-3.5 h-3.5 text-white" />
+            <Sparkles className="w-3.5 h-3.5 text-[#DFC076]" />
             <span>Official Student Enrollment</span>
           </div>
 
@@ -360,11 +360,11 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleOpenApplication(activeAdmissionPeriods[0])}
-                className="glass-btn-admissions inline-flex items-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-white transition-all shadow-lg hover:scale-102 active:scale-98 cursor-pointer"
+                className="inline-flex items-center space-x-2.5 px-6 py-3.5 sm:px-8 sm:py-4 rounded-2xl font-bold text-xs sm:text-base text-white bg-[#0B3B2C] hover:bg-[#07281D] border border-[#DFC076]/40 transition-all shadow-lg hover:scale-102 active:scale-98 cursor-pointer"
               >
-                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-[#DFC076]" />
                 <span>Apply for Open Intake</span>
-                <ChevronRight className="w-4 h-4 text-white/90" />
+                <ChevronRight className="w-4 h-4 text-[#DFC076]" />
               </button>
             </div>
           )}
@@ -402,40 +402,40 @@ export const MadrasaAdmissionsPage: React.FC = () => {
               {activeAdmissionPeriods.map((period) => (
                 <div
                   key={period.id}
-                  className="w-full max-w-[440px] glass-panel-gold rounded-3xl p-7 shadow-md hover:-translate-y-1 transition-all flex flex-col justify-between"
+                  className="w-full max-w-[440px] bg-white rounded-3xl p-7 shadow-md hover:-translate-y-1 transition-all flex flex-col justify-between border-0"
                 >
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
-                      <span className="text-xs font-mono font-bold px-2.5 py-1 bg-white/90 text-[#252525] rounded-md border border-[#C5A059]/30">
+                      <span className="text-xs font-mono font-bold px-2.5 py-1 bg-[#FAF8F3] text-[#0B3B2C] rounded-md border border-[#C5A059]/30">
                         {period.code}
                       </span>
-                      <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/85 text-[#85845C] border border-[#C5A059]/35 shadow-2xs">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#85845C]" />
+                      <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#FAF8F3] text-[#0B3B2C] border border-[#C5A059]/35 shadow-2xs">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#0B3B2C]" />
                         <span>Accepting Applications</span>
                       </span>
                     </div>
 
                     <h3
-                      className="text-lg sm:text-xl font-serif font-bold mb-1.5 text-[#252525]"
-                      style={{ color: theme.headingColor || '#252525' }}
+                      className="text-lg sm:text-xl font-serif font-bold mb-1.5 text-[#1C2826]"
+                      style={{ color: theme.headingColor || '#1C2826' }}
                     >
                       {period.name}
                     </h3>
-                    <p className="text-xs font-semibold text-[#85845C] mb-4">
+                    <p className="text-xs font-semibold text-[#0B3B2C] mb-4">
                       Academic Year: {period.academicYear}
                     </p>
 
-                    <div className="space-y-2 text-xs text-[#252525] mb-5 bg-white/70 backdrop-blur-sm p-4 rounded-2xl border border-[#C5A059]/25 shadow-xs">
+                    <div className="space-y-2 text-xs text-[#1C2826] mb-5 bg-[#FAF8F3] p-4 rounded-2xl border border-[#C5A059]/25 shadow-xs">
                       <div className="flex flex-wrap items-center justify-between gap-1">
                         <span className="text-slate-600">Application Window:</span>
-                        <span className="font-bold text-[#252525]">
+                        <span className="font-bold text-[#1C2826]">
                           {new Date(period.startDate).toLocaleDateString()} – {new Date(period.endDate).toLocaleDateString()}
                         </span>
                       </div>
                       {period.capacity && (
                         <div className="flex items-center justify-between pt-1.5 border-t border-[#C5A059]/20">
                           <span className="text-slate-600">Intake Capacity:</span>
-                          <span className="font-bold text-[#85845C]">{period.capacity} Students</span>
+                          <span className="font-bold text-[#0B3B2C]">{period.capacity} Students</span>
                         </div>
                       )}
                     </div>
@@ -447,15 +447,15 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="pt-4 border-t border-[#C5A059]/25">
+                  <div className="pt-4 border-t border-[#F0ECE1]">
                     <button
                       type="button"
                       onClick={() => handleOpenApplication(period)}
-                      className="glass-btn-admissions w-full inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl text-sm font-bold transition-all shadow-md active:scale-98 cursor-pointer"
+                      className="w-full inline-flex items-center justify-center space-x-2 px-5 py-3.5 rounded-2xl text-sm font-bold bg-[#0B3B2C] hover:bg-[#07281D] text-white transition-all shadow-md active:scale-98 cursor-pointer"
                     >
-                      <FileText className="w-4 h-4 text-white" />
+                      <FileText className="w-4 h-4 text-[#DFC076]" />
                       <span>Apply Now</span>
-                      <ChevronRight className="w-4 h-4 text-white/90" />
+                      <ChevronRight className="w-4 h-4 text-[#DFC076]" />
                     </button>
                   </div>
                 </div>
@@ -551,17 +551,16 @@ export const MadrasaAdmissionsPage: React.FC = () => {
           }`}
         >
           <div
-            className={`glass-panel-gold rounded-3xl ${
+            className={`bg-white rounded-3xl border-0 ${
               submissionResult ? 'max-w-2xl print-receipt-modal' : 'max-w-2xl'
             } w-full my-8 p-6 sm:p-8 shadow-2xl flex flex-col max-h-[90vh]`}
           >
             {/* Modal Header */}
             {!submissionResult ? (
-              <div className="flex items-center justify-between pb-4 border-b border-[#C5A059]/25 shrink-0">
+              <div className="flex items-center justify-between pb-4 border-b border-[#F0ECE1] shrink-0">
                 <div>
                   <span
-                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-[#C5A059]/30 bg-white/90 text-[#6B6A45]"
-                    style={{ color: primaryColor }}
+                    className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border border-[#C5A059]/40 bg-[#FAF8F3] text-[#0B3B2C]"
                   >
                     {selectedPeriod.code} • {selectedPeriod.academicYear}
                   </span>
@@ -1082,7 +1081,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                   type="submit"
                   form="public-admissions-form"
                   disabled={submitting || uploadingDoc}
-                  className="glass-btn-admissions inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                  className="bg-[#0B3B2C] hover:bg-[#07281D] inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl text-xs font-bold text-white transition-all shadow-md disabled:opacity-50 cursor-pointer"
                 >
                   {submitting ? (
                     <>
@@ -1091,7 +1090,7 @@ export const MadrasaAdmissionsPage: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <Send className="w-3.5 h-3.5 text-white" />
+                      <Send className="w-3.5 h-3.5 text-[#DFC076]" />
                       <span>Submit Application</span>
                     </>
                   )}

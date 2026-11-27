@@ -107,13 +107,17 @@ export const MadrasaPublicDisciplines: React.FC<MadrasaPublicDisciplinesProps> =
               key={item.id}
               className="bg-white rounded-2xl overflow-hidden border border-[#E5E0D5] shadow-xs hover:shadow-xl transition-all duration-300 hover:-translate-y-1.5 flex flex-col group"
             >
-              {/* Photo Container */}
-              <div className="relative h-44 sm:h-48 overflow-hidden bg-slate-100">
+              {/* Photo Container with Elegant Emerald Fallback (Zero broken images) */}
+              <div className="relative h-44 sm:h-48 overflow-hidden bg-gradient-to-br from-[#0B3B2C] via-[#114232] to-[#07281D]">
+                <div className="absolute inset-0 bg-islamic-diamond-pattern opacity-20 pointer-events-none" />
                 <img
                   src={item.imageUrl}
                   alt={item.title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 

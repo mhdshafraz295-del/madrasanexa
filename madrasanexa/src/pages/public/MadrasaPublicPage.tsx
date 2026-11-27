@@ -9,9 +9,6 @@ import { MadrasaPublicHero } from '../../components/madrasa-public/MadrasaPublic
 import { MadrasaPublicKnowledgeStrip } from '../../components/madrasa-public/MadrasaPublicKnowledgeStrip';
 import { MadrasaPublicHighlightStrip } from '../../components/madrasa-public/MadrasaPublicHighlightStrip';
 import { MadrasaPublicDisciplines } from '../../components/madrasa-public/MadrasaPublicDisciplines';
-import { MadrasaPublicSplitBanner } from '../../components/madrasa-public/MadrasaPublicSplitBanner';
-import { MadrasaPublicTestimonials } from '../../components/madrasa-public/MadrasaPublicTestimonials';
-import { MadrasaPublicNewsletter } from '../../components/madrasa-public/MadrasaPublicNewsletter';
 import { IslamicSectionDivider } from '../../components/common/IslamicSectionDivider';
 import { MadrasaPublicAbout } from '../../components/madrasa-public/MadrasaPublicAbout';
 import { MadrasaPublicMissionVision } from '../../components/madrasa-public/MadrasaPublicMissionVision';
@@ -182,19 +179,15 @@ export const MadrasaPublicPage: React.FC = () => {
         {/* 2.8. Academic Pathways & Sacred Sciences (4-Column Feature Cards) */}
         <MadrasaPublicDisciplines theme={theme} />
 
-        {/* 3. About Our Madrasa & Summary */}
+        {/* 3. About Our Madrasa (Split Emerald Left Panel + Soft Cream 2x2 Real Data Grid) */}
         <MadrasaPublicAbout
           madrasaName={madrasa.name}
           introduction={profile.introduction}
           generatedSummary={profile.generatedSummary}
-          theme={theme}
-        />
-
-        <IslamicSectionDivider />
-
-        {/* 3.5. Deep Green Split Feature Banner with Side Highlights */}
-        <MadrasaPublicSplitBanner
-          madrasaName={madrasa.name}
+          mission={profile.mission}
+          vision={profile.vision}
+          syllabusInfo={profile.syllabusInfo}
+          rulesAndRegulations={profile.rulesAndRegulations}
           theme={theme}
         />
 
@@ -273,29 +266,17 @@ export const MadrasaPublicPage: React.FC = () => {
           </>
         ) : null}
 
-        {/* 9. Institutional Circulars & Notices */}
-        {hasNotices ? (
+        {/* 9. Institutional Circulars & Notices (Real Data Only, Zero Fake Notices) */}
+        {hasNotices && profile.notices && profile.notices.length > 0 ? (
           <>
             <IslamicSectionDivider />
             <MadrasaPublicNotices
               notices={profile.notices}
               theme={theme}
+              madrasaName={madrasa.name}
             />
           </>
         ) : null}
-
-        <IslamicSectionDivider />
-
-        {/* 9.3. Words of Reflection & Community Trust (Testimonials) */}
-        <MadrasaPublicTestimonials
-          madrasaName={madrasa.name}
-          theme={theme}
-        />
-
-        {/* 9.6. Stay Informed & Connected (Newsletter Strip) */}
-        <MadrasaPublicNewsletter
-          madrasaName={madrasa.name}
-        />
 
         <IslamicSectionDivider />
 

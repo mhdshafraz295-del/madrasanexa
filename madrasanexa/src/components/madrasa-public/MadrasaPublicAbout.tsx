@@ -1,109 +1,162 @@
 import React from 'react';
-import { Building2, Sparkles, ArrowRight } from 'lucide-react';
+import { Building2, BookOpen, Compass, Award, ShieldCheck, ArrowRight } from 'lucide-react';
 import type { MadrasaThemeTokens } from '../../services/api';
 
-interface MadrasaPublicAboutProps {
+export interface MadrasaPublicAboutProps {
   madrasaName: string;
   introduction?: string | null;
   generatedSummary?: string | null;
   aboutImageUrl?: string | null;
+  mission?: string | null;
+  vision?: string | null;
+  syllabusInfo?: string | null;
+  rulesAndRegulations?: string | null;
   theme: MadrasaThemeTokens;
 }
-
-const DEFAULT_PORTAL_ABOUT_IMG = 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&fit=crop&w=900&q=80';
 
 export const MadrasaPublicAbout: React.FC<MadrasaPublicAboutProps> = ({
   madrasaName,
   introduction,
   generatedSummary,
-  aboutImageUrl,
-  theme,
+  mission,
+  vision,
+  syllabusInfo,
+  rulesAndRegulations,
 }) => {
-  const imgSrc = aboutImageUrl || DEFAULT_PORTAL_ABOUT_IMG;
-  const primaryColor = theme.primaryBtnBg || '#504F34';
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+    const id = href.replace('#', '');
+    const element = document.getElementById(id);
+    if (element) {
+      const headerOffset = 88;
+      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({
+        top: Math.max(0, elementPosition - headerOffset),
+        behavior: 'smooth',
+      });
+      window.history.pushState(null, '', href);
+    }
+  };
 
   return (
     <section id="about" className="scroll-mt-28 py-6">
-      {/* Centered Section Header */}
-      <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider mb-2 px-3.5 py-1.5 rounded-full bg-white/85 backdrop-blur-md border border-[#C5A059]/35 shadow-[0_0_12px_rgba(197,160,89,0.16)]" style={{ color: primaryColor }}>
-          <Building2 className="w-3.5 h-3.5" style={{ color: primaryColor }} />
-          <span>ABOUT OUR MADRASA</span>
-        </div>
-        <h2 className="font-serif text-2xl sm:text-4xl font-bold tracking-tight text-[#252525] mb-3">
-          About Our Institution
-        </h2>
-        <div className="w-16 h-1 mx-auto rounded-full" style={{ backgroundColor: primaryColor }} />
-      </div>
+      {/* Split Container: Deep Emerald Left Panel + Soft Cream Right Panel */}
+      <div className="rounded-3xl overflow-hidden border border-[#E5E0D5] shadow-md grid grid-cols-1 lg:grid-cols-12 bg-white">
 
-      {/* Cohesive Image & Description Component with Frosted Glass Surface */}
-      <div className="max-w-5xl mx-auto glass-panel-gold rounded-3xl overflow-hidden transition-all duration-300 group">
-        <div className="flex flex-col lg:flex-row items-stretch">
+        {/* Left Panel: Deep Emerald / Forest Green */}
+        <div className="lg:col-span-5 bg-[#0B3B2C] text-white p-8 sm:p-10 lg:p-12 flex flex-col justify-between relative overflow-hidden">
+          {/* Subtle Islamic Motif Overlay */}
+          <div
+            className="absolute inset-0 bg-islamic-diamond-pattern opacity-15 pointer-events-none"
+            aria-hidden="true"
+          />
 
-          {/* Medium-Sized Landscape Image (~350-450px on desktop, untouched on hover) */}
-          <div className="w-full lg:w-[420px] xl:w-[450px] shrink-0 bg-slate-100 overflow-hidden relative min-h-[260px] sm:min-h-[320px]">
-            <img
-              src={imgSrc}
-              alt={`About ${madrasaName}`}
-              className="w-full h-full object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
-            <div className="absolute bottom-4 left-4 right-4 text-white text-xs font-medium backdrop-blur-md bg-black/60 px-3.5 py-1.5 rounded-xl border border-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.2)] w-fit">
-              {madrasaName}
+          <div className="relative z-10">
+            <div className="inline-flex items-center space-x-2 text-[11px] font-bold uppercase tracking-wider text-[#DFC076] mb-3 px-3.5 py-1 rounded-full bg-white/10 border border-[#DFC076]/30 w-fit">
+              <Building2 className="w-3.5 h-3.5 text-[#DFC076]" />
+              <span>Heritage & Foundations</span>
             </div>
+
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight mb-4">
+              Welcome to {madrasaName}
+            </h2>
+
+            <div className="w-16 h-1 bg-[#DFC076] rounded-full mb-5" />
+
+            <p className="text-sm sm:text-base text-[#F5F5F1]/90 leading-relaxed font-normal whitespace-pre-line">
+              {introduction ||
+                `${madrasaName} is dedicated to establishing sound religious foundations and inspiring our students toward righteousness, academic diligence, and exemplary prophetic character.`}
+            </p>
           </div>
 
-          {/* Description Card (Transitions to Primary Olive from Bottom-Left on Hover) */}
-          <div className="acju-hover-br flex-1 p-6 sm:p-8 lg:p-10 flex flex-col justify-between transition-colors duration-300 relative bg-islamic-diamond-subtle">
-            <div>
-              <div className="flex items-center space-x-2 text-xs font-bold text-[#85845C] group-hover:text-white uppercase tracking-wider mb-3 transition-colors duration-300">
-                <div className="w-7 h-7 rounded-lg bg-white/80 border border-[#C5A059]/30 group-hover:bg-white/20 flex items-center justify-center transition-colors duration-300 shadow-xs">
-                  <Building2 className="w-3.5 h-3.5 text-[#85845C] group-hover:text-white" />
-                </div>
-                <span>Heritage & Foundations</span>
-              </div>
-
-              <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#252525] group-hover:text-white mb-4 tracking-tight transition-colors duration-300">
-                Welcome to {madrasaName}
-              </h3>
-
-              <div className="text-sm sm:text-base leading-relaxed text-[#252525]/90 group-hover:text-white transition-colors duration-300 whitespace-pre-line mb-4 font-normal">
-                {introduction ||
-                  `${madrasaName} is dedicated to establishing sound religious foundations and inspiring our students toward righteousness, academic diligence, and exemplary character.`}
-              </div>
-
-              {generatedSummary && (
-                <div className="mt-4 p-4 rounded-2xl bg-white/70 backdrop-blur-sm border border-[#C5A059]/30 shadow-[0_0_12px_rgba(197,160,89,0.12)] bg-islamic-diamond-subtle group-hover:bg-white/10 transition-colors duration-300 relative">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-[#85845C] group-hover:text-white mb-1.5 transition-colors duration-300">
-                    <Sparkles className="w-3.5 h-3.5 text-[#85845C] group-hover:text-white" />
-                    <span>Academic & Moral Framework</span>
-                  </div>
-                  <p className="text-xs sm:text-sm text-[#555555] group-hover:text-white/85 leading-relaxed transition-colors duration-300">
-                    {generatedSummary}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Read More Link */}
-            <div className="mt-6 pt-4 border-t border-[#C5A059]/25 group-hover:border-white/20 flex flex-wrap items-center justify-between gap-2 transition-colors duration-300">
-              <a
-                href="#curriculum"
-                className="text-xs sm:text-sm font-bold group-hover:text-white inline-flex items-center gap-1.5 transition-colors duration-300"
-                style={{ color: theme.linkColor || primaryColor }}
-              >
-                <span>Explore Academic Programs</span>
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </a>
-
-              <span className="text-[11px] font-semibold group-hover:text-white/80 transition-colors duration-300" style={{ color: primaryColor }}>
-                Institutional Roster
-              </span>
-            </div>
+          <div className="relative z-10 mt-8 pt-6 border-t border-white/15 flex flex-wrap items-center gap-3">
+            <a
+              href="#curriculum"
+              onClick={(e) => handleNavClick(e, '#curriculum')}
+              className="inline-flex items-center space-x-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#C5A059] via-[#DFC076] to-[#C5A059] text-[#1C2826] font-bold text-xs uppercase tracking-wider shadow-sm hover:shadow-md transition-all cursor-pointer"
+            >
+              <span>Explore Programs</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
+              href="#contact"
+              onClick={(e) => handleNavClick(e, '#contact')}
+              className="inline-flex items-center space-x-2 px-4 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"
+            >
+              <span>Campus Directory</span>
+            </a>
           </div>
-
         </div>
+
+        {/* Right Panel: Soft Cream with 2x2 Grid of Real Data */}
+        <div className="lg:col-span-7 bg-[#FDFCF9] p-6 sm:p-8 lg:p-12 flex flex-col justify-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-7 w-full">
+
+            {/* 1. Academic & Moral Framework */}
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
+                  <BookOpen className="w-5 h-5 text-[#C5A059]" />
+                </div>
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[#1C2826] mb-1.5">
+                  Academic Framework
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  {generatedSummary || syllabusInfo || 'Comprehensive Islamic education combining Quranic mastery, Hadith sciences, and accredited academic curricula.'}
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Guiding Purpose / Mission */}
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
+                  <Compass className="w-5 h-5 text-[#0B3B2C]" />
+                </div>
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[#1C2826] mb-1.5">
+                  Our Mission
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  {mission || 'To cultivate a deep, living understanding of the Quran and Sunnah, empowering students toward righteousness, piety, and exemplary service.'}
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Future Horizon / Vision */}
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
+                  <Award className="w-5 h-5 text-[#C5A059]" />
+                </div>
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[#1C2826] mb-1.5">
+                  Our Vision
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  {vision || 'To be recognized as a premier center of classical scholarship, moral refinement, and academic distinction nurturing upright community guides.'}
+                </p>
+              </div>
+            </div>
+
+            {/* 4. Institutional Discipline & Adab */}
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E5E0D5] shadow-2xs flex flex-col justify-between">
+              <div>
+                <div className="w-10 h-10 rounded-xl bg-[#FAF8F3] border border-[#C5A059]/40 flex items-center justify-center text-[#0B3B2C] mb-3">
+                  <ShieldCheck className="w-5 h-5 text-[#0B3B2C]" />
+                </div>
+                <h3 className="font-serif font-bold text-base sm:text-lg text-[#1C2826] mb-1.5">
+                  Character & Conduct
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                  {rulesAndRegulations
+                    ? (rulesAndRegulations.length > 140 ? rulesAndRegulations.slice(0, 140) + '...' : rulesAndRegulations)
+                    : 'Upholding authentic Islamic adab, spiritual modesty, academic diligence, and respectful conduct across all campus environments.'}
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
     </section>
   );

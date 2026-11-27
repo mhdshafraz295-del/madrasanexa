@@ -232,12 +232,23 @@ export const MadrasaPublicExecutive: React.FC<MadrasaPublicExecutiveProps> = ({
                 <div className="w-full sm:w-[200px] md:w-[220px] lg:w-[230px] shrink-0 p-3 sm:p-3.5 flex items-center justify-center bg-gradient-to-r from-transparent to-[#F8F7F2]/60 dark:to-transparent">
                   <div className="w-full h-56 sm:h-full min-h-[220px] rounded-2xl overflow-hidden bg-[#F3F1E6] dark:bg-[#1C222D] border border-[#E2E0D0]/80 dark:border-[#242936] relative shadow-inner">
                     {leader.photoUrl ? (
-                      <img
-                        src={leader.photoUrl}
-                        alt={leader.fullName}
-                        className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
-                        loading="eager"
-                      />
+                      <>
+                        <img
+                          src={leader.photoUrl}
+                          alt={leader.fullName}
+                          className="w-full h-full object-cover object-top transition-transform duration-700 hover:scale-105"
+                          loading="eager"
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            const fallback = e.currentTarget.parentElement?.querySelector('.exec-fallback-avatar');
+                            if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                          }}
+                        />
+                        <div className="exec-fallback-avatar hidden w-full h-full flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] text-[#0B3B2C]">
+                          <span className="text-3xl font-bold font-serif">{getInitials(leader.fullName)}</span>
+                          <User className="w-6 h-6 mt-1.5 opacity-40" />
+                        </div>
+                      </>
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#F4F3EC] to-[#E5E3D5] dark:from-[#1C222D] dark:to-[#242936] text-[#6B6A45] dark:text-[#84CC16]">
                         <span className="text-3xl font-bold font-serif">{getInitials(leader.fullName)}</span>

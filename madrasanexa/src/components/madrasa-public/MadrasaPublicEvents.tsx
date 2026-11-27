@@ -211,6 +211,9 @@ export const MadrasaPublicEvents: React.FC<MadrasaPublicEventsProps> = ({
                       alt={coverImage?.caption || event.title}
                       className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover/cover:scale-104"
                       loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
 
                     {/* Top-Left: Photo Count Pill */}

@@ -61,18 +61,33 @@ export const MadrasaPublicStaff: React.FC<MadrasaPublicStaffProps> = ({ staff, t
               {/* 1. Individual Photograph Container */}
               <div className="relative w-full aspect-square bg-[#F5F5F1] overflow-hidden border-b border-[#C5A059]/30">
                 {member.photoUrl ? (
-                  <img
-                    src={member.photoUrl}
-                    alt={member.fullName}
-                    loading="lazy"
-                    className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-104"
-                  />
+                  <>
+                    <img
+                      src={member.photoUrl}
+                      alt={member.fullName}
+                      loading="lazy"
+                      className="w-full h-full object-cover object-top transition-transform duration-500 ease-out group-hover:scale-104"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.parentElement?.querySelector('.staff-fallback-avatar');
+                        if (fallback) (fallback as HTMLElement).style.display = 'flex';
+                      }}
+                    />
+                    <div className="staff-fallback-avatar hidden w-full h-full flex-col items-center justify-center bg-[#0B3B2C] text-white p-6">
+                      <div className="w-20 h-20 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-2xl font-serif font-bold tracking-wider text-white shadow-inner mb-3">
+                        {initials || <Users className="w-8 h-8 text-white" />}
+                      </div>
+                      <span className="text-xs uppercase tracking-widest text-[#DFC076] font-bold">
+                        Faculty Profile
+                      </span>
+                    </div>
+                  </>
                 ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-[#85845C] text-white p-6">
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-[#0B3B2C] text-white p-6">
                     <div className="w-20 h-20 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center text-2xl font-serif font-bold tracking-wider text-white shadow-inner mb-3">
                       {initials || <Users className="w-8 h-8 text-white" />}
                     </div>
-                    <span className="text-xs uppercase tracking-widest text-white/90 font-bold">
+                    <span className="text-xs uppercase tracking-widest text-[#DFC076] font-bold">
                       Faculty Profile
                     </span>
                   </div>

@@ -148,45 +148,28 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     }
   }, [isFullscreen]);
 
-  // Handle ESC key to exit fullscreen or close modal
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isFullscreen) {
-        if (showManualInput) {
-          setShowManualInput(false);
-        } else if (onClose) {
-          onClose();
-        } else {
-          setIsFullscreen(false);
-        }
+  // Exit fullscreen helper: releases browser fullscreen and resets overlay state
+  const exitFullscreenMode = useCallback(async () => {
+    setIsFullscreen(false);
+    try {
+      if (typeof document !== 'undefined' && document.fullscreenElement && document.exitFullscreen) {
+        await document.exitFullscreen().catch(() => {});
       }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen, showManualInput, onClose]);
-
-  // Sync with document fullscreenchange events
-  useEffect(() => {
-    const handleFsChange = () => {
-      if (!document.fullscreenElement && isFullscreen && !isModal) {
-        setIsFullscreen(false);
-      }
-    };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
-  }, [isFullscreen, isModal]);
-
-  // Callback ref for video element: guarantees stream re-attachment across portal transitions
-  const setVideoElement = useCallback((node: HTMLVideoElement | null) => {
-    videoRef.current = node;
-    if (node && streamRef.current) {
-      node.srcObject = streamRef.current;
-      node.play().catch(() => {});
-    }
+    } catch (_) {}
   }, []);
 
-  // Stop camera tracks cleanly
-  const stopCamera = useCallback(() => {
+  // Enter fullscreen helper: triggers browser requestFullscreen and sets fullscreen overlay
+  const enterFullscreenMode = useCallback(async () => {
+    setIsFullscreen(true);
+    try {
+      if (typeof document !== 'undefined' && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        await document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } catch (_) {}
+  }, []);
+
+  // Stop camera tracks cleanly and release fullscreen
+  const stopCamera = useCallback((shouldExitFullscreen = true) => {
     if (animFrameRef.current) {
       cancelAnimationFrame(animFrameRef.current);
       animFrameRef.current = null;
@@ -216,6 +199,52 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     setIsTorchOn(false);
     setIsActive(false);
     setIsStarting(false);
+
+    if (shouldExitFullscreen) {
+      exitFullscreenMode();
+    }
+  }, [exitFullscreenMode]);
+
+  // Handle ESC key to exit fullscreen or close modal & cleanly stop camera
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isFullscreen) {
+        if (showManualInput) {
+          setShowManualInput(false);
+        } else {
+          stopCamera(true);
+          if (onClose) {
+            onClose();
+          }
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen, showManualInput, onClose, stopCamera]);
+
+  // Sync with document fullscreenchange events
+  useEffect(() => {
+    const handleFsChange = () => {
+      if (!document.fullscreenElement && isFullscreen) {
+        setIsFullscreen(false);
+        stopCamera(false);
+        if (isModal && onClose) {
+          onClose();
+        }
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, [isFullscreen, isModal, onClose, stopCamera]);
+
+  // Callback ref for video element: guarantees stream re-attachment across portal transitions
+  const setVideoElement = useCallback((node: HTMLVideoElement | null) => {
+    videoRef.current = node;
+    if (node && streamRef.current) {
+      node.srcObject = streamRef.current;
+      node.play().catch(() => {});
+    }
   }, []);
 
   // Cleanup on unmount
@@ -400,17 +429,18 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
     } catch (err: any) {
       console.error('Html5Qrcode fallback error:', err);
       setErrorMessage(err.message || 'Camera failed to start.');
-      stopCamera();
+      stopCamera(true);
     } finally {
       setIsStarting(false);
     }
   };
 
-  // Start Camera
+  // Start Camera with Automatic Fullscreen
   const startCamera = async () => {
     if (disabled) return;
     setErrorMessage(null);
     setIsStarting(true);
+    await enterFullscreenMode();
 
     if (hasNativeDetector) {
       try {
@@ -459,7 +489,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
         startNativeDetectionLoop();
       } catch (err: any) {
         console.error('Camera access error:', err);
-        stopCamera();
+        stopCamera(true);
 
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
           setErrorMessage('Camera permission denied. Please allow camera permissions in your browser address bar.');
@@ -482,7 +512,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
   const handleDeviceChange = (deviceId: string) => {
     setSelectedDeviceId(deviceId);
     if (isActive) {
-      stopCamera();
+      stopCamera(false);
       setTimeout(() => {
         startCamera();
       }, 120);
@@ -549,19 +579,9 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
   // Toggle true locked fullscreen mode
   const toggleFullscreen = async () => {
     if (!isFullscreen) {
-      setIsFullscreen(true);
-      try {
-        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
-          await document.documentElement.requestFullscreen().catch(() => {});
-        }
-      } catch (_) {}
+      await enterFullscreenMode();
     } else {
-      setIsFullscreen(false);
-      try {
-        if (document.fullscreenElement && document.exitFullscreen) {
-          await document.exitFullscreen().catch(() => {});
-        }
-      } catch (_) {}
+      stopCamera(true);
       if (isModal && onClose) {
         onClose();
       }
@@ -662,7 +682,7 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
               {isActive ? (
                 <button
                   type="button"
-                  onClick={stopCamera}
+                  onClick={() => stopCamera(true)}
                   className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0"
                 >
                   <CameraOff className="w-3.5 h-3.5" />
@@ -672,7 +692,10 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
                 <button
                   type="button"
                   disabled={disabled || isStarting}
-                  onClick={startCamera}
+                  onClick={() => {
+                    enterFullscreenMode();
+                    startCamera();
+                  }}
                   className="flex-1 sm:flex-none px-4 py-1.5 rounded-lg bg-[#0F5A47] hover:bg-[#0c4738] disabled:bg-stone-200 text-white disabled:text-stone-400 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0 active:scale-95"
                 >
                   <Camera className="w-3.5 h-3.5" />
@@ -769,9 +792,12 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
               {isFullscreen && (
                 <button
                   type="button"
-                  onClick={onClose || toggleFullscreen}
+                  onClick={() => {
+                    stopCamera(true);
+                    if (onClose) onClose();
+                  }}
                   className="p-1.5 rounded-full bg-stone-900/80 hover:bg-stone-800 text-white border border-white/20 transition cursor-pointer shadow-lg active:scale-95 shrink-0"
-                  title={onClose ? 'Close Scanner' : 'Exit Fullscreen'}
+                  title={onClose ? 'Close Scanner' : 'Exit Fullscreen & Stop Camera'}
                 >
                   {onClose ? <X className="w-3.5 h-3.5" /> : <Minimize2 className="w-3.5 h-3.5" />}
                 </button>
@@ -892,7 +918,10 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
               <button
                 type="button"
                 disabled={disabled || isStarting}
-                onClick={startCamera}
+                onClick={() => {
+                  enterFullscreenMode();
+                  startCamera();
+                }}
                 className="mt-1 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0F5A47] hover:bg-[#0c4738] text-white text-xs font-semibold shadow-sm transition active:scale-95 cursor-pointer"
               >
                 <Camera className="w-4 h-4" />
@@ -914,6 +943,19 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
             {/* Floating Dark Glass Pill Toolbar */}
             {isActive && (
               <div className="bg-stone-950/85 backdrop-blur-md border border-white/15 rounded-full px-2.5 sm:px-4 py-1.5 sm:py-2 shadow-2xl flex items-center gap-2 sm:gap-4 pointer-events-auto">
+                {/* Stop Camera & Exit Fullscreen */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopCamera(true);
+                    if (onClose) onClose();
+                  }}
+                  className="p-2 rounded-full bg-rose-600/80 hover:bg-rose-600 text-white transition cursor-pointer"
+                  title="Stop Camera & Exit"
+                >
+                  <CameraOff className="w-4 h-4" />
+                </button>
+
                 {/* Torch Toggle */}
                 {isTorchSupported && (
                   <button
@@ -954,9 +996,16 @@ export const CameraScannerView: React.FC<CameraScannerViewProps> = ({
                 {fullScreenEnabled && (
                   <button
                     type="button"
-                    onClick={toggleFullscreen}
+                    onClick={() => {
+                      if (isFullscreen) {
+                        stopCamera(true);
+                        if (onClose) onClose();
+                      } else {
+                        enterFullscreenMode();
+                      }
+                    }}
                     className="p-2 rounded-full bg-white/10 text-white hover:bg-white/20 transition cursor-pointer"
-                    title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Viewfinder'}
+                    title={isFullscreen ? 'Exit Fullscreen & Stop Camera' : 'Fullscreen Viewfinder'}
                   >
                     {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </button>
